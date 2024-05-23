@@ -9,6 +9,7 @@ import 'package:sheraccerp/screens/ui/add_screen.dart';
 import 'package:sheraccerp/screens/user_list.dart';
 import 'package:sheraccerp/screens/user_registration.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 
 class MoreWidget extends StatelessWidget {
   const MoreWidget({Key? key}) : super(key: key);
@@ -152,205 +153,250 @@ class SettingsMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: const [],
-        title: const Text('Software Settings'),
-      ),
-      body: GridView.count(
-        primary: false,
-        padding: const EdgeInsets.all(20),
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        crossAxisCount: MediaQuery.of(context).size.width > 400
-            ? (MediaQuery.of(context).size.width ~/ 250).toInt()
-            : (MediaQuery.of(context).size.width ~/ 150).toInt(),
-        children: <Widget>[
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.settings,
-                      color: blue,
-                      size: 90.0,
-                    ),
-                    Text(
-                      'General',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidgget(
+            headTxt: 'Software Settings',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )),
+      body: Scaffold(
+        backgroundColor: bagroundColor,
+        body: GridView.count(
+          primary: false,
+          padding: const EdgeInsets.all(20),
+          crossAxisSpacing: 5,
+          mainAxisSpacing: 5,
+          crossAxisCount: MediaQuery.of(context).size.width > 500
+              ? (MediaQuery.of(context).size.width ~/ 250).toInt()
+              : (MediaQuery.of(context).size.width ~/ 150).toInt(),
+          children: <Widget>[
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      Text(
+                        'General',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).pushNamed('/settings');
+              },
             ),
-            onTap: () {
-              Navigator.of(context).pushNamed('/settings');
-            },
-          ),
-          // GestureDetector(
-          //   child: Card(
-          //     elevation: 5.0,
-          //     child: Container(
-          //       padding: const EdgeInsets.all(0),
-          //       child: Column(
-          //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-          //         children: const <Widget>[
-          //           Icon(
-          //             Icons.business_rounded,
-          //             color: blue,
-          //             size: 90.0,
-          //           ),
-          //           Text('Default',
-          //               style: TextStyle(
-          //                   color: Colors.black, fontWeight: FontWeight.bold)),
-          //         ],
-          //       ),
-          //     ),
-          //   ),
-          //   onTap: () {
-          //     _showAlert(context);
-          //   },
-          // ),
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.print_rounded,
-                      size: 90.0,
-                      color: blue,
-                    ),
-                    Text(
-                      'Printer',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+            // GestureDetector(
+            //   child: Card(
+            //     elevation: 5.0,
+            //     child: Container(
+            //       padding: const EdgeInsets.all(0),
+            //       child: Column(
+            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //         children: const <Widget>[
+            //           Icon(
+            //             Icons.business_rounded,
+            //             color: blue,
+            //             size: 90.0,
+            //           ),
+            //           Text('Default',
+            //               style: TextStyle(
+            //                   color: Colors.black, fontWeight: FontWeight.bold)),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            //   onTap: () {
+            //     _showAlert(context);
+            //   },
+            // ),
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 5.0,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Printer',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) => const PrintSettings()));
+              },
             ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => const PrintSettings()));
-            },
-          ),
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.settings,
-                      color: blue,
-                      size: 90.0,
-                    ),
-                    Text(
-                      'Other',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 5.0,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Other',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).pushNamed('/OtherRegistration');
+              },
             ),
-            onTap: () {
-              Navigator.of(context).pushNamed('/OtherRegistration');
-            },
-          ),
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.man_rounded,
-                      color: blue,
-                      size: 90.0,
-                    ),
-                    Text(
-                      'Salesman',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 5.0,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Salesman',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        const SalesmanRegistration()));
+              },
             ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      const SalesmanRegistration()));
-            },
-          ),
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.supervised_user_circle,
-                      color: blue,
-                      size: 90.0,
-                    ),
-                    Text(
-                      'User',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 5.0,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'User',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        const UserRegistration()));
+              },
             ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => const UserRegistration()));
-            },
-          ),
-          GestureDetector(
-            child: Card(
-              elevation: 5.0,
-              child: Container(
-                padding: const EdgeInsets.all(0),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Icon(
-                      Icons.how_to_vote,
-                      color: blue,
-                      size: 90.0,
-                    ),
-                    Text(
-                      'Tax Group',
-                      style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+            GestureDetector(
+              child: Card(
+                color: white,
+                // elevation: 5.0,
+                child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: kPrimaryColor),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Tax Group',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        const TaxRegistration()));
+              },
             ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => const TaxRegistration()));
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

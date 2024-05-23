@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company_user.dart';
 import 'package:sheraccerp/models/form_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/user_control_list.dart';
 import 'package:sheraccerp/service/api.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -46,33 +47,75 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('User List'),
-        actions: [
-          Visibility(
-            visible: nextWidget,
-            child: IconButton(
-                onPressed: () {
-                  List<FormModel> forms = [];
-                  forms = form
-                      .where((element) => element.isChecked == true)
-                      .toList();
-                  var part = json.encode(forms);
-                  var data = {'id': userData!.userId, 'data': part};
-                  addUserControl(data).then((value) => {
-                        value
-                            ? ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Saved')),
-                              )
-                            : ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Data Error')),
-                              )
-                      });
-                },
-                icon: const Icon(Icons.save)),
-          )
-        ],
-      ),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidgget(
+            headTxt: 'User List',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            iconSecondPath: Visibility(
+              visible: nextWidget,
+              child: const Icon(
+                Icons.save,
+                color: white,
+              ),
+            ),
+            onTapSecond: () {
+              Visibility(
+                visible: nextWidget,
+                child: IconButton(
+                    onPressed: () {
+                      List<FormModel> forms = [];
+                      forms = form
+                          .where((element) => element.isChecked == true)
+                          .toList();
+                      var part = json.encode(forms);
+                      var data = {'id': userData!.userId, 'data': part};
+                      addUserControl(data).then((value) => {
+                            value
+                                ? ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Saved')),
+                                  )
+                                : ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Data Error')),
+                                  )
+                          });
+                    },
+                    icon: const Icon(
+                      Icons.save,
+                      color: white,
+                    )),
+              );
+            },
+          )),
+      // AppBar(
+      //   title: const Text('User List'),
+      //   actions: [
+      //     Visibility(
+      //       visible: nextWidget,
+      //       child: IconButton(
+      //           onPressed: () {
+      //             List<FormModel> forms = [];
+      //             forms = form
+      //                 .where((element) => element.isChecked == true)
+      //                 .toList();
+      //             var part = json.encode(forms);
+      //             var data = {'id': userData!.userId, 'data': part};
+      //             addUserControl(data).then((value) => {
+      //                   value
+      //                       ? ScaffoldMessenger.of(context).showSnackBar(
+      //                           const SnackBar(content: Text('Saved')),
+      //                         )
+      //                       : ScaffoldMessenger.of(context).showSnackBar(
+      //                           const SnackBar(content: Text('Data Error')),
+      //                         )
+      //                 });
+      //           },
+      //           icon: const Icon(Icons.save)),
+      //     )
+      //   ],
+      // ),
       body: Container(
         child: nextWidget ? userDetails(userData!) : fetchUser(regId),
       ),
@@ -85,34 +128,114 @@ class _UserScreenState extends State<UserScreen> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var data = snapshot.data;
-          return ListView.builder(
-              itemCount: data!.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text('User: ' + data[index].username),
-                    subtitle: Text('Logged In: ' +
-                        DateUtil.dateTimeDMY(data[index].loginDate)),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(data[index].userType),
-                        Icon(Icons.circle,
-                            size: 10,
-                            color: data[index].active == "false" ? red : green),
-                      ],
-                    ),
-                    onTap: () {
-                      setState(() {
-                        userData = data[index];
-                        nextWidget = true;
-                      });
-                      // showEditDialog(context, data[index]);
-                    },
-                  ),
-                );
-              });
+          return Scaffold(
+            backgroundColor: bagroundColor,
+            body: Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, top: 16),
+                child: ListView.separated(
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(
+                      height: 10,
+                    );
+                  },
+                  // physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: data!.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          userData = data[index];
+                          nextWidget = true;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        width: MediaQuery.sizeOf(context).width,
+                        height: 70,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'User: ${data[index].username}',
+                              style: const TextStyle(
+                                  fontFamily: 'poppins',
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Logged In: ${DateUtil.dateTimeDMY(data[index].loginDate)}',
+                                  style: const TextStyle(fontFamily: 'poppins'),
+                                ),
+                                Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 2),
+                                  alignment: Alignment.center,
+                                  height: 20,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(
+                                      color: const Color(0xff0008B3),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    data[index].userType,
+                                    style: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xff0008B3)),
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                )
+                // ListView.builder(
+                //     itemCount: data!.length,
+                //     itemBuilder: (BuildContext context, int index) {
+                //       return Card(
+                //         elevation: 2,
+                //         child: ListTile(
+                //           title: Text('User: ' + data[index].username),
+                //           subtitle: Text('Logged In: ' +
+                //               DateUtil.dateTimeDMY(data[index].loginDate)),
+                //           trailing: Column(
+                //             mainAxisAlignment: MainAxisAlignment.end,
+                //             children: [
+                //               Text(data[index].userType),
+                //               Icon(Icons.circle,
+                //                   size: 10,
+                //                   color: data[index].active == "false"
+                //                       ? red
+                //                       : green),
+                //             ],
+                //           ),
+                //           onTap: () {
+                //             setState(() {
+                //               userData = data[index];
+                //               nextWidget = true;
+                //             });
+                //             // showEditDialog(context, data[index]);
+                //           },
+                //         ),
+                //       );
+                //     }),
+                ),
+          );
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
