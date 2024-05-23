@@ -1,0 +1,133 @@
+name: sheraccerp
+description: "A new SherSoft Flutter project."
+
+publish_to: 'none' 
+
+
+version: 1.0.16+23
+
+environment:
+  sdk: '>=3.2.6 <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+ 
+  cupertino_icons: ^1.0.2
+  animated_text_kit:
+  autocomplete_textfield:
+  blue_thermal_printer:
+    git:
+      url: https://github.com/safvanp/blue_thermal_printer_plus.git
+  printing:
+    git:
+      url: https://github.com/saleelmhd/printing5.9.3.git
+  cloud_firestore:
+  charts_flutter:
+  charset_converter:
+  contactus:
+  csv:
+  dio:
+  device_info_plus:
+  dropdown_search:
+  # flutter_esc_pos_utils:
+  #   git:
+  #     url: https://github.com/saleelmhd/esc_pos_utils.git
+  # esc_pos_utils_x:
+  flutter_esc_pos_utils:
+  esc_pos_bluetooth:
+  firebase_messaging:
+  flutter_bluetooth_basic:
+  firebase_in_app_messaging:
+  firebase_core: ^2.25.4
+  firebase_crashlytics:
+  firebase_core_platform_interface:
+  flutter_speed_dial:
+  flutter_phone_direct_caller:
+  flutter_colorpicker:
+  form_field_validator:
+  google_translate:
+  http:
+  hive_flutter:
+  intl:
+  image:
+  image_picker:
+  json_table:
+  fluttertoast:
+  flutter_multi_formatter:
+  flutter_staggered_grid_view:
+  # flutter_sparkline:
+  # flutter_settings_screens:
+  flutter_settings_screen_ex: ^0.0.1+5
+  flutter_awesome_alert_box:
+  # flutter_sunmi_printer:
+  open_file:
+  # ping_discover_network:
+  ping_discover_network_plus:
+  pdf:
+  pdf_viewer_plugin:
+  # printing:
+  # printing:
+  # printing: ^5.11.1
+  provider:
+  path_provider:
+  permission_handler:
+  local_auth:
+  shared_preferences:
+  syncfusion_flutter_datagrid:
+  scoped_model:
+  share_plus:
+  sqflite:
+  # sunmi_printer_service:
+  # sunmi_print_ticket:
+  sunmi_printer_plus:
+  url_launcher:
+  qr_code_scanner:
+  # wifi:
+  # webview_flutter:
+  webview_flutter: ^3.0.4
+  zxing2:
+ 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+ 
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons:
+
+flutter_icons:
+  image_path: "assets/launch.png"
+  android: true
+  ios: true
+  web: true
+  windows: true
+  macos: true
+  linux: true
+  
+flutter:
+
+ 
+  uses-material-design: true
+
+ 
+  assets:
+    - assets/
+    - assets/icons/
+    - assets/images/
+
+  
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/poppins/Poppins-Regular.ttf
+        - asset: assets/fonts/poppins/Poppins-Medium.ttf
+        - asset: assets/fonts/poppins/Poppins-Bold.ttf
+    - family: roman
+      fonts:
+        - asset: assets/fonts/roman/times new roman.ttf
+        - asset: assets/fonts/roman/times new roman bold.ttf 
+      
+    
