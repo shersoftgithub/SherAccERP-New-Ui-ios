@@ -21,189 +21,206 @@ class AppSettings extends StatelessWidget {
             child: SettingsScreen(
               title: 'General Settings',
               children: [
-                DropDownSettingsTile<int>(
-                  title: 'App Language',
-                  settingKey: 'key-dropdown-language-view',
-                  values: const <int, String>{
-                    2: 'English',
-                    3: 'Arabic',
-                    4: 'Chinese',
-                    5: 'German',
-                    6: 'Hindi',
-                    7: 'Japanese',
-                    8: 'Korean',
-                    9: 'Malayalam',
-                    10: 'Malay',
-                    11: 'Russian',
-                    12: 'Portuguese',
-                    13: 'Spanish',
-                    14: 'Thai',
-                    15: 'Turkish',
-                    16: 'Italian',
-                    17: 'French',
-                  },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-language-view: $value');
-                  },
-                ),
-                DropDownSettingsTile<int>(
-                  title: 'Currency Symbol',
-                  settingKey: 'key-dropdown-currency-symbol-view',
-                  values: const <int, String>{
-                    2: "\$",
-                    3: '€',
-                    4: '¥',
-                    5: '£',
-                    6: '₽',
-                    7: '৳',
-                    8: '₹',
-                    9: 'د.إ',
-                    10: '₪',
-                    11: '£',
-                    12: '₩',
-                    13: 'د.ك',
-                    14: 'RM',
-                    15: 'रू',
-                    16: '₨',
-                    17: 'ر.ق',
-                    18: '฿',
-                    19: '₺',
-                    20: 'Rp',
-                  },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-currency-symbol-view: $value');
-                  },
-                ),
-                DropDownSettingsTile<int>(
-                  title: 'Decimal Places',
-                  settingKey: 'key-dropdown-decimal-place-view',
-                  values: const <int, String>{
-                    2: "1",
-                    3: '2',
-                    4: '3',
-                    5: '4',
-                  },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-decimal-place-view: $value');
-                  },
-                ),
-                DropDownSettingsTile<int>(
-                  title: 'Date Format',
-                  settingKey: 'key-dropdown-date-format-view',
-                  values: const <int, String>{
-                    2: "dd-mm-yyyy",
-                    3: 'dd/mm/yyyy',
-                    4: 'dd/MM/yyy',
-                    5: 'dd-MM-yyyy',
-                    6: 'yyyy/MM/dd',
-                    7: 'yyyy-MM-dd',
-                    8: 'yyyy-mm-dd',
-                    9: 'yyyy/mm/dd',
-                    10: 'mm-dd-yyyy',
-                    11: 'MM-dd-yyyy',
-                    12: 'mm/dd/yyyy',
-                    13: 'MM/dd/yyyy',
-                  },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-date-format-view: $value');
-                  },
-                ),
-                DropDownSettingsTile<int>(
-                  title: 'Theme',
-                  settingKey: 'key-dropdown-them-view',
-                  values: const <int, String>{
-                    2: "Light",
-                    3: 'Dark',
-                  },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-them-view: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default SalesMan',
-                  settingKey: 'key-dropdown-default-salesman-view',
-                  values: salesmanList.isNotEmpty
-                      ? {for (var e in salesmanList) e.key + 1: e.value}
-                      : {
-                          2: '',
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Column(
+                    children: [
+                      DropdownButtonHideUnderline(
+                        child: DropDownSettingsTile<int>(
+                          title: 'App Language',
+                          settingKey: 'key-dropdown-language-view',
+                          values: const <int, String>{
+                            2: 'English',
+                            3: 'Arabic',
+                            4: 'Chinese',
+                            5: 'German',
+                            6: 'Hindi',
+                            7: 'Japanese',
+                            8: 'Korean',
+                            9: 'Malayalam',
+                            10: 'Malay',
+                            11: 'Russian',
+                            12: 'Portuguese',
+                            13: 'Spanish',
+                            14: 'Thai',
+                            15: 'Turkish',
+                            16: 'Italian',
+                            17: 'French',
+                          },
+                          selected: 2,
+                          onChange: (value) {
+                            debugPrint('key-dropdown-language-view: $value');
+                          },
+                        ),
+                      ),
+                      DropDownSettingsTile<int>(
+                        title: 'Currency Symbol',
+                        settingKey: 'key-dropdown-currency-symbol-view',
+                        values: const <int, String>{
+                          2: "\$",
+                          3: '€',
+                          4: '¥',
+                          5: '£',
+                          6: '₽',
+                          7: '৳',
+                          8: '₹',
+                          9: 'د.إ',
+                          10: '₪',
+                          11: '£',
+                          12: '₩',
+                          13: 'د.ك',
+                          14: 'RM',
+                          15: 'रू',
+                          16: '₨',
+                          17: 'ر.ق',
+                          18: '฿',
+                          19: '₺',
+                          20: 'Rp',
                         },
-                  selected:
-                      salesmanList.isNotEmpty ? salesmanList[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-salesman-view: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default Branch',
-                  settingKey: 'key-dropdown-default-location-view',
-                  values: locationList.isNotEmpty
-                      ? {for (var e in locationList) e.key + 1: e.value}
-                      : {
-                          2: '',
+                        selected: 2,
+                        onChange: (value) {
+                          debugPrint(
+                              'key-dropdown-currency-symbol-view: $value');
                         },
-                  selected:
-                      locationList.isNotEmpty ? locationList[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-location-view: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default CASH AC',
-                  settingKey: 'key-dropdown-default-cash-ac',
-                  values: cashAccount.isNotEmpty
-                      ? {for (var e in cashAccount) e.key + 1: e.value}
-                      : {
-                          2: '',
+                      ),
+                      DropDownSettingsTile<int>(
+                        title: 'Decimal Places',
+                        settingKey: 'key-dropdown-decimal-place-view',
+                        values: const <int, String>{
+                          2: "1",
+                          3: '2',
+                          4: '3',
+                          5: '4',
                         },
-                  selected: cashAccount.isNotEmpty ? cashAccount[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-cash-ac: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default Area',
-                  settingKey: 'key-dropdown-default-area-view',
-                  values: areaList.isNotEmpty
-                      ? {for (var e in areaList) e.key + 1: e.value}
-                      : {
-                          2: '',
+                        selected: 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-decimal-place-view: $value');
                         },
-                  selected: areaList.isNotEmpty ? areaList[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-area-view: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default Group',
-                  settingKey: 'key-dropdown-default-group-view',
-                  values: groupList.isNotEmpty
-                      ? {for (var e in groupList) e.key + 1: e.value}
-                      : {
-                          2: '',
+                      ),
+                      DropDownSettingsTile<int>(
+                        title: 'Date Format',
+                        settingKey: 'key-dropdown-date-format-view',
+                        values: const <int, String>{
+                          2: "dd-mm-yyyy",
+                          3: 'dd/mm/yyyy',
+                          4: 'dd/MM/yyy',
+                          5: 'dd-MM-yyyy',
+                          6: 'yyyy/MM/dd',
+                          7: 'yyyy-MM-dd',
+                          8: 'yyyy-mm-dd',
+                          9: 'yyyy/mm/dd',
+                          10: 'mm-dd-yyyy',
+                          11: 'MM-dd-yyyy',
+                          12: 'mm/dd/yyyy',
+                          13: 'MM/dd/yyyy',
                         },
-                  selected: groupList.isNotEmpty ? groupList[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-group-view: $value');
-                  },
-                ),
-                DropDownSettingsTileNew<int>(
-                  title: 'Default Route',
-                  settingKey: 'key-dropdown-default-route-view',
-                  values: routeList.isNotEmpty
-                      ? {for (var e in routeList) e.key + 1: e.value}
-                      : {
-                          2: '',
+                        selected: 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-date-format-view: $value');
                         },
-                  selected: routeList.isNotEmpty ? routeList[0].key + 1 : 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-route-view: $value');
-                  },
-                ),
+                      ),
+                      DropDownSettingsTile<int>(
+                        title: 'Theme',
+                        settingKey: 'key-dropdown-them-view',
+                        values: const <int, String>{
+                          2: "Light",
+                          3: 'Dark',
+                        },
+                        selected: 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-them-view: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default SalesMan',
+                        settingKey: 'key-dropdown-default-salesman-view',
+                        values: salesmanList.isNotEmpty
+                            ? {for (var e in salesmanList) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected: salesmanList.isNotEmpty
+                            ? salesmanList[0].key + 1
+                            : 2,
+                        onChange: (value) {
+                          debugPrint(
+                              'key-dropdown-default-salesman-view: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default Branch',
+                        settingKey: 'key-dropdown-default-location-view',
+                        values: locationList.isNotEmpty
+                            ? {for (var e in locationList) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected: locationList.isNotEmpty
+                            ? locationList[0].key + 1
+                            : 2,
+                        onChange: (value) {
+                          debugPrint(
+                              'key-dropdown-default-location-view: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default CASH AC',
+                        settingKey: 'key-dropdown-default-cash-ac',
+                        values: cashAccount.isNotEmpty
+                            ? {for (var e in cashAccount) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected:
+                            cashAccount.isNotEmpty ? cashAccount[0].key + 1 : 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-default-cash-ac: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default Area',
+                        settingKey: 'key-dropdown-default-area-view',
+                        values: areaList.isNotEmpty
+                            ? {for (var e in areaList) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected: areaList.isNotEmpty ? areaList[0].key + 1 : 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-default-area-view: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default Group',
+                        settingKey: 'key-dropdown-default-group-view',
+                        values: groupList.isNotEmpty
+                            ? {for (var e in groupList) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected:
+                            groupList.isNotEmpty ? groupList[0].key + 1 : 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-default-group-view: $value');
+                        },
+                      ),
+                      DropDownSettingsTileNew<int>(
+                        title: 'Default Route',
+                        settingKey: 'key-dropdown-default-route-view',
+                        values: routeList.isNotEmpty
+                            ? {for (var e in routeList) e.key + 1: e.value}
+                            : {
+                                2: '',
+                              },
+                        selected:
+                            routeList.isNotEmpty ? routeList[0].key + 1 : 2,
+                        onChange: (value) {
+                          debugPrint('key-dropdown-default-route-view: $value');
+                        },
+                      ),
+                    ],
+                  ),
+                )
               ],
             ),
           ),

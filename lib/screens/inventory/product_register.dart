@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
@@ -17,6 +19,7 @@ import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/util/show_confirm_alert_box.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class ProductRegister extends StatefulWidget {
@@ -556,584 +559,778 @@ class _ProductRegisterState extends State<ProductRegister> {
 
   formWidget() {
     return nextWidget == 0
-        ? ListView(
-            padding: const EdgeInsets.all(8.0),
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: SimpleAutoCompleteTextField(
-                      clearOnSubmit: false,
-                      key: keyHsn,
-                      suggestions: hsnList,
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(), labelText: 'HSN Code'),
-                      textSubmitted: (data) {
-                        pHSNCode = data;
-                      },
-                      controller: hsnController,
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.settings, color: blue),
-                    onSelected: (value) {
-                      // Handle menu item selection
-                      setState(() {
-                        // Perform actions based on the selected value
-                        if (value == 'ReName ItemCode') {
-                          if (pItemCode.isNotEmpty) {
-                            _reNameCodeDialog(context);
-                          }
-                        } else if (value == 'ReName ItemName') {
-                          if (pItemName.isNotEmpty) {
-                            _reNameNameDialog(context);
-                          }
-                        }
-                      });
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem<String>(
-                        value: 'ReName ItemCode',
-                        child: Text('ReName ItemCode'),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'ReName ItemName',
-                        child: Text('ReName ItemName'),
-                      ),
-                      // const PopupMenuItem<String>(
-                      //   value: 'Update HSN Code',
-                      //   child: Text('Update HSN Code'),
-                      // ),
-                    ],
-                  ),
-                ],
-              ),
-              const Divider(),
-              SimpleAutoCompleteTextField(
-                key: keyItemCode,
-                controller: itemCodeController,
-                clearOnSubmit: false,
-                suggestions: itemCodeList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Item Code'),
-                textSubmitted: (data) {
-                  pItemCode = data;
-                  if (pItemCode.isNotEmpty) {
-                    findProductByCode(pItemCode);
-                  }
-                },
-              ),
-              const Divider(),
-              SimpleAutoCompleteTextField(
-                key: keyItemName,
-                controller: itemNameController,
-                clearOnSubmit: false,
-                suggestions: itemNameList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Item Name'),
-                textSubmitted: (data) {
-                  pItemName = data;
-                  if (pItemName.isNotEmpty) {
-                    findProduct(pItemName);
-                  }
-                },
-                textChanged: (data) {
-                  if (data.isNotEmpty && isGoogleTranslator) {
-                    api
-                        .translateText(data.trim())
-                        .then((value) => itemLocalNameController.text = value);
-                  }
-                },
-              ),
-              const Divider(),
-              TextField(
-                controller: itemLocalNameController,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Item Local Name'),
-              ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getTaxGroupData(filter, 'sales_list/taxGroup'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(), label: Text("TaxGroup")),
+        ? GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
                 ),
-                onChanged: (dynamic data) {
-                  taxGroup = data;
-                },
-                selectedItem: taxGroup,
-              ),
-              const Divider(),
-              ListTile(
-                  title: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                        showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  clearOnSubmit: false,
+                                  key: keyHsn,
+                                  suggestions: hsnList,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  textSubmitted: (data) {
+                                    pHSNCode = data;
+                                  },
+                                  controller: hsnController,
+                                ),
+                                headTxt: 'HSN Code')),
+                        Column(
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.settings,
+                              ),
+                              onSelected: (value) {
+                                // Handle menu item selection
+                                setState(() {
+                                  // Perform actions based on the selected value
+                                  if (value == 'ReName ItemCode') {
+                                    if (pItemCode.isNotEmpty) {
+                                      _reNameCodeDialog(context);
+                                    }
+                                  } else if (value == 'ReName ItemName') {
+                                    if (pItemName.isNotEmpty) {
+                                      _reNameNameDialog(context);
+                                    }
+                                  }
+                                });
+                              },
+                              itemBuilder: (BuildContext context) => [
+                                const PopupMenuItem<String>(
+                                  value: 'ReName ItemCode',
+                                  child: Text('ReName ItemCode'),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'ReName ItemName',
+                                  child: Text('ReName ItemName'),
+                                ),
+                                // const PopupMenuItem<String>(
+                                //   value: 'Update HSN Code',
+                                //   child: Text('Update HSN Code'),
+                                // ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          key: keyItemCode,
+                          controller: itemCodeController,
+                          clearOnSubmit: false,
+                          suggestions: itemCodeList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            pItemCode = data;
+                            if (pItemCode.isNotEmpty) {
+                              findProductByCode(pItemCode);
+                            }
+                          },
+                        ),
+                        headTxt: 'Item Code'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          key: keyItemName,
+                          controller: itemNameController,
+                          clearOnSubmit: false,
+                          suggestions: itemNameList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            pItemName = data;
+                            if (pItemName.isNotEmpty) {
+                              findProduct(pItemName);
+                            }
+                          },
+                          textChanged: (data) {
+                            if (data.isNotEmpty && isGoogleTranslator) {
+                              api.translateText(data.trim()).then((value) =>
+                                  itemLocalNameController.text = value);
+                            }
+                          },
+                        ),
+                        headTxt: 'Item Name'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ContainerFieldWidget(
+                        widget: TextField(
+                          controller: itemLocalNameController,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        headTxt: 'Item Local Name'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ContainerFieldWidget(
+                        widget: DropdownSearch<dynamic>(
+                          popupProps:
+                              const PopupPropsMultiSelection.modalBottomSheet(
+                                  showSearchBox: true,
+                                  constraints: BoxConstraints(
+                                    maxHeight: 300,
+                                  )),
+                          asyncItems: (String filter) => api.getTaxGroupData(
+                              filter, 'sales_list/taxGroup'),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          onChanged: (dynamic data) {
+                            taxGroup = data;
+                          },
+                          selectedItem: taxGroup,
+                        ),
+                        headTxt: 'Tax Group'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            flex: 2,
+                            child: ContainerFieldWidget(
+                                widget: DropdownSearch<dynamic>(
+                                  popupProps: const PopupPropsMultiSelection
+                                      .modalBottomSheet(
+                                      showSearchBox: true,
+                                      constraints: BoxConstraints(
+                                        maxHeight: 300,
+                                      )),
+                                  asyncItems: (String filter) =>
+                                      api.getSalesListData(
+                                          filter, 'sales_list/unit'),
+                                  dropdownDecoratorProps:
+                                      const DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  onChanged: (dynamic data) {
+                                    unit = data;
+                                  },
+                                  selectedItem: unit,
+                                ),
+                                headTxt: 'Select Unit')),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                        Flexible(
+                            child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 25,
+                            ),
+                            Container(
+                              width: 120,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: kPrimaryColor),
+                              child: const Center(
+                                  child: Text(
+                                'Details',
+                                style: TextStyle(
+                                    fontFamily: 'poppins', color: white),
+                              )),
+                            ),
+                          ],
+                        )
+                            // TextButton(
+                            //     style: TextButton.styleFrom(
+                            //       foregroundColor: white,
+                            //       backgroundColor: blue,
+                            //     ),
+                            //     onPressed: () {
+                            //       setState(() {
+                            //         nextWidget = 1;
+                            //       });
+                            //     },
+                            //     child: const Text('Details'))
+                            )
+                      ],
+                    ),
+                    // ListTile(
+                    //     title:
+                    //     trailing: ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    // DropdownSearch<dynamic>(
+                    //   constraints: BoxConstraints(maxHeight: 300),
+                    //   asyncItems: (String filter) =>
+                    //       api.getSalesListData(filter, 'sales_list/manufacture'),
+                    //   dropdownSearchDecoration: const InputDecoration(
+                    //       border: OutlineInputBorder(),
+                    //       label: Text('Select Manufacture')),
+                    //   onChanged: (dynamic data) {
+                    //     mfr = data;
+                    //   },
+                    //   showSearchBox: true,
+                    //   selectedItem: mfr,
+                    // ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          clearOnSubmit: false,
+                          key: keyMFR,
+                          suggestions: mfrList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            mfr = mfrDataList.firstWhere(
+                              (element) => element.name == data,
+                              orElse: () => DataJson(id: 0, name: ''),
+                            );
+                          },
+                          controller: mfrController,
+                        ),
+                        headTxt: 'Manufacture'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    // DropdownSearch<dynamic>(
+                    //   constraints: BoxConstraints(maxHeight: 300),
+                    //   asyncItems: (String filter) =>
+                    //       api.getSalesListData(filter, 'sales_list/category'),
+                    //   dropdownSearchDecoration: const InputDecoration(
+                    //       border: OutlineInputBorder(),
+                    //       label: Text('Select Category')),
+                    //   onChanged: (dynamic data) {
+                    //     category = data;
+                    //   },
+                    //   selectedItem: category,
+                    //   showSearchBox: true,
+                    // ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          clearOnSubmit: false,
+                          key: keyCategory,
+                          suggestions: categoryList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            category = categoryDataList.firstWhere(
+                              (element) => element.name == data,
+                              orElse: () => DataJson(id: 0, name: ''),
+                            );
+                          },
+                          controller: categoryController,
+                        ),
+                        headTxt: 'Category'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    // DropdownSearch<dynamic>(
+                    //   constraints: BoxConstraints(maxHeight: 300),
+                    //   asyncItems: (String filter) =>
+                    //       api.getSalesListData(filter, 'sales_list/subCategory'),
+                    //   dropdownSearchDecoration: const InputDecoration(
+                    //       border: OutlineInputBorder(),
+                    //       label: Text('Select SubCategory')),
+                    //   onChanged: (dynamic data) {
+                    //     subCategory = data;
+                    //   },
+                    //   selectedItem: subCategory,
+                    //   showSearchBox: true,
+                    // ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          clearOnSubmit: false,
+                          key: keySubCategory,
+                          suggestions: subCategoryList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            subCategory = subCategoryDataList.firstWhere(
+                              (element) => element.name == data,
+                              orElse: () => DataJson(id: 0, name: ''),
+                            );
+                          },
+                          controller: subCategoryController,
+                        ),
+                        headTxt: 'SubCategory'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          clearOnSubmit: false,
+                          key: keyBrand,
+                          suggestions: brandList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            brand = brandDataList.firstWhere(
+                              (element) => element.name == data,
+                              orElse: () => DataJson(id: 0, name: ''),
+                            );
+                          },
+                          controller: brandController,
+                        ),
+                        headTxt: 'Brand'),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Selling Rates',
+                          style: TextStyle(
+                              color: kPrimaryColor,
+                              fontSize: 15,
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500),
                         )),
-                    asyncItems: (String filter) =>
-                        api.getSalesListData(filter, 'sales_list/unit'),
-                    dropdownDecoratorProps: const DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text('Select Unit')),
+                    const SizedBox(height: 10),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                              flex: 1,
+                              child: ContainerFieldWidget(
+                                  widget: TextFormField(
+                                    controller: mrpController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  headTxt: 'MRP')),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                              child: Column(
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Container(
+                                width: 150,
+                                height: 55,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: kPrimaryColor),
+                                child: CheckboxListTile(
+                                  activeColor: white,
+                                  checkColor: kPrimaryColor,
+                                  side: const BorderSide(color: white),
+                                  title: const Text(
+                                    'Active',
+                                    style: TextStyle(
+                                        color: white, fontFamily: 'poppins'),
+                                  ),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      active = value!;
+                                    });
+                                  },
+                                  value: active,
+                                ),
+                              ),
+                            ],
+                          ))
+                        ]),
+                    const SizedBox(
+                      height: 10,
                     ),
-                    onChanged: (dynamic data) {
-                      unit = data;
-                    },
-                    selectedItem: unit,
-                  ),
-                  trailing: TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: white,
-                        backgroundColor: blue,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          nextWidget = 1;
-                        });
-                      },
-                      child: const Text('Details'))),
-              const Divider(),
-              // DropdownSearch<dynamic>(
-              //   constraints: BoxConstraints(maxHeight: 300),
-              //   asyncItems: (String filter) =>
-              //       api.getSalesListData(filter, 'sales_list/manufacture'),
-              //   dropdownSearchDecoration: const InputDecoration(
-              //       border: OutlineInputBorder(),
-              //       label: Text('Select Manufacture')),
-              //   onChanged: (dynamic data) {
-              //     mfr = data;
-              //   },
-              //   showSearchBox: true,
-              //   selectedItem: mfr,
-              // ),
-              SimpleAutoCompleteTextField(
-                clearOnSubmit: false,
-                key: keyMFR,
-                suggestions: mfrList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Select Manufacture',
-                    labelText: 'Manufacture'),
-                textSubmitted: (data) {
-                  mfr = mfrDataList.firstWhere(
-                    (element) => element.name == data,
-                    orElse: () => DataJson(id: 0, name: ''),
-                  );
-                },
-                controller: mfrController,
-              ),
-              const Divider(),
-              // DropdownSearch<dynamic>(
-              //   constraints: BoxConstraints(maxHeight: 300),
-              //   asyncItems: (String filter) =>
-              //       api.getSalesListData(filter, 'sales_list/category'),
-              //   dropdownSearchDecoration: const InputDecoration(
-              //       border: OutlineInputBorder(),
-              //       label: Text('Select Category')),
-              //   onChanged: (dynamic data) {
-              //     category = data;
-              //   },
-              //   selectedItem: category,
-              //   showSearchBox: true,
-              // ),
-              SimpleAutoCompleteTextField(
-                clearOnSubmit: false,
-                key: keyCategory,
-                suggestions: categoryList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Select Category',
-                    labelText: 'Category'),
-                textSubmitted: (data) {
-                  category = categoryDataList.firstWhere(
-                    (element) => element.name == data,
-                    orElse: () => DataJson(id: 0, name: ''),
-                  );
-                },
-                controller: categoryController,
-              ),
-              const Divider(),
-              // DropdownSearch<dynamic>(
-              //   constraints: BoxConstraints(maxHeight: 300),
-              //   asyncItems: (String filter) =>
-              //       api.getSalesListData(filter, 'sales_list/subCategory'),
-              //   dropdownSearchDecoration: const InputDecoration(
-              //       border: OutlineInputBorder(),
-              //       label: Text('Select SubCategory')),
-              //   onChanged: (dynamic data) {
-              //     subCategory = data;
-              //   },
-              //   selectedItem: subCategory,
-              //   showSearchBox: true,
-              // ),
-              SimpleAutoCompleteTextField(
-                clearOnSubmit: false,
-                key: keySubCategory,
-                suggestions: subCategoryList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Select SubCategory',
-                    labelText: 'SubCategory'),
-                textSubmitted: (data) {
-                  subCategory = subCategoryDataList.firstWhere(
-                    (element) => element.name == data,
-                    orElse: () => DataJson(id: 0, name: ''),
-                  );
-                },
-                controller: subCategoryController,
-              ),
-              const Divider(),
-              SimpleAutoCompleteTextField(
-                clearOnSubmit: false,
-                key: keyBrand,
-                suggestions: brandList,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Select Brand',
-                    labelText: 'Brand'),
-                textSubmitted: (data) {
-                  brand = brandDataList.firstWhere(
-                    (element) => element.name == data,
-                    orElse: () => DataJson(id: 0, name: ''),
-                  );
-                },
-                controller: brandController,
-              ),
-              const Divider(),
-              const Text('Selling Rates'),
-              const Divider(),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: mrpController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'MRP',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                    child: Card(
-                  elevation: 2,
-                  child: CheckboxListTile(
-                    title: const Text('Active'),
-                    onChanged: (bool? value) {
-                      setState(() {
-                        active = value!;
-                      });
-                    },
-                    value: active,
-                  ),
-                ))
-              ]),
-              const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: wholeSaleController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
-                      ],
-                      decoration: const InputDecoration(
-                        labelText: 'WholeSale',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: retailController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
-                      ],
-                      decoration: const InputDecoration(
-                        labelText: 'Retail',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Expanded(
-                  child: TextField(
-                    controller: spRetailController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'SP Retail',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: branchController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'Branch',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                )
-              ]),
-              const Divider(),
-              Column(
-                children: [
-                  const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text('Stock Valuation'),
+                            child: ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: wholeSaleController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(
+                                        RegExp(r'[0-9]'),
+                                        allow: true,
+                                        replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'WholeSale')),
+                        const SizedBox(
+                          width: 5,
                         ),
                         Expanded(
-                          child: Text('Type of Supply'),
-                        ),
-                      ]),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: DropdownButton<String>(
-                          hint: const Text('Stock Valuation'),
-                          value: dropDownStockValuation,
-                          items: stockValuationData
-                              .map<DropdownMenuItem<String>>((value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              dropDownStockValuation = value!;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: DropdownButton<String>(
-                          hint: const Text('Type of Supply'),
-                          value: dropDownTypeOfSupply,
-                          items: typeOfSupplyData
-                              .map<DropdownMenuItem<String>>((value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              dropDownTypeOfSupply = value!;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const Divider(),
-              const Card(
-                elevation: 5,
-                child: Center(
-                    child: Text(
-                  'More',
-                  style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline),
-                )),
-              ),
-              const Divider(),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: packingController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
+                            child: ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: retailController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(
+                                        RegExp(r'[0-9]'),
+                                        allow: true,
+                                        replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'Retail')),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: 'Packing',
-                        border: OutlineInputBorder(),
-                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child:
-                        // DropdownSearch<dynamic>(
-                        //   constraints: BoxConstraints(maxHeight: 300),
-                        //   asyncItems: (String filter) =>
-                        //       api.getSalesListData(filter, 'sales_list/rack'),
-                        //   dropdownSearchDecoration: const InputDecoration(
-                        //       border: OutlineInputBorder(),
-                        //       label: Text('Select Rack')),
-                        //   onChanged: (dynamic data) {
-                        //     rack = data;
-                        //   },
-                        //   selectedItem: rack,
-                        //   showSearchBox: true,
-                        //   emptyBuilder: (context, searchEntry) {
-                        //     return Center(
-                        //       child: ElevatedButton(
-                        //           onPressed: () {
-                        //             searchEntry = '';
-                        //             rack = DataJson(
-                        //                 id: -1, name: searchEntry.toUpperCase());
-                        //           },
-                        //           child: const Text('add new')),
-                        //     );
-                        //   },
-                        // ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: TextField(
+                                    controller: spRetailController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  headTxt: 'SP Reatil')),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: TextField(
+                                    controller: branchController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  headTxt: 'Branch'))
+                        ]),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: Container(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: grey,
+                                      ),
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      // hint: const Text('Stock Valuation'),
+                                      value: dropDownStockValuation,
+                                      items: stockValuationData
+                                          .map<DropdownMenuItem<String>>(
+                                              (value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          dropDownStockValuation = value!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                headTxt: 'Stock Valuation')),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  width: MediaQuery.sizeOf(context).width,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: grey,
+                                      ),
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: dropDownTypeOfSupply,
+                                      items: typeOfSupplyData
+                                          .map<DropdownMenuItem<String>>(
+                                              (value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          dropDownTypeOfSupply = value!;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                headTxt: 'Type Of Supply')),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      width: 75,
+                      height: 25,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: kPrimaryColor),
+                      child: const Center(
+                          child: Text(
+                        'More',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          color: white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: TextFormField(
+                                  controller: packingController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(
+                                        RegExp(r'[0-9]'),
+                                        allow: true,
+                                        replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'Packing')),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                            child:
+                                // DropdownSearch<dynamic>(
+                                //   constraints: BoxConstraints(maxHeight: 300),
+                                //   asyncItems: (String filter) =>
+                                //       api.getSalesListData(filter, 'sales_list/rack'),
+                                //   dropdownSearchDecoration: const InputDecoration(
+                                //       border: OutlineInputBorder(),
+                                //       label: Text('Select Rack')),
+                                //   onChanged: (dynamic data) {
+                                //     rack = data;
+                                //   },
+                                //   selectedItem: rack,
+                                //   showSearchBox: true,
+                                //   emptyBuilder: (context, searchEntry) {
+                                //     return Center(
+                                //       child: ElevatedButton(
+                                //           onPressed: () {
+                                //             searchEntry = '';
+                                //             rack = DataJson(
+                                //                 id: -1, name: searchEntry.toUpperCase());
+                                //           },
+                                //           child: const Text('add new')),
+                                //     );
+                                //   },
+                                // ),
 
-                        SimpleAutoCompleteTextField(
-                      clearOnSubmit: false,
-                      key: keyRack,
-                      suggestions: rackList,
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Select Rack',
-                          labelText: 'Rack'),
-                      textSubmitted: (data) {
-                        rack = rackDataList.firstWhere(
-                          (element) => element.name == data,
-                          orElse: () => DataJson(id: 0, name: ''),
-                        );
-                      },
-                      controller: rackController,
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: reOrderLevelController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
+                                ContainerFieldWidget(
+                                    widget: SimpleAutoCompleteTextField(
+                                      clearOnSubmit: false,
+                                      key: keyRack,
+                                      suggestions: rackList,
+                                      decoration: const InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        hintText: 'Select Rack',
+                                      ),
+                                      textSubmitted: (data) {
+                                        rack = rackDataList.firstWhere(
+                                          (element) => element.name == data,
+                                          orElse: () =>
+                                              DataJson(id: 0, name: ''),
+                                        );
+                                      },
+                                      controller: rackController,
+                                    ),
+                                    headTxt: 'Rack')),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: 'Reorder Level',
-                        border: OutlineInputBorder(),
-                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: maxOrderLevelController,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: reOrderLevelController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(
+                                        RegExp(r'[0-9]'),
+                                        allow: true,
+                                        replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'Reorder Level')),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: maxOrderLevelController,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(
+                                        RegExp(r'[0-9]'),
+                                        allow: true,
+                                        replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'Max Order Level')),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: 'Max Order Level',
-                        border: OutlineInputBorder(),
-                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: TextFormField(
+                                    controller: cessController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  headTxt: 'CESS')),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: TextFormField(
+                                    controller: addCessController,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                    ),
+                                  ),
+                                  headTxt: 'ADD CESS'))
+                        ]),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ],
+                ),
               ),
-              const Divider(),
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: cessController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'CESS',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  child: TextFormField(
-                    controller: addCessController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: 'ADD CESS',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                )
-              ]),
-            ],
+            ),
           )
         : Column(children: [
             const Center(child: Text('Unit Details')),
