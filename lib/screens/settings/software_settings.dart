@@ -12,6 +12,7 @@ import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/appbar_custom_widget.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 
 class SoftwareSettings extends StatefulWidget {
@@ -174,7 +175,7 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: PreferredSize(
-            preferredSize: Size.fromHeight(100),
+            preferredSize: const Size.fromHeight(100),
             child: AppbarWidgget(
               headTxt: 'General',
               onPressed: () {
@@ -241,635 +242,633 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
   loadData() {
     return DefaultTabController(
         length: 2,
-        child: Scaffold(
-            backgroundColor: bagroundColor,
-            // appBar: AppBar(
-            //   backgroundColor: blue,
-            //   automaticallyImplyLeading: false,
-            //   flexibleSpace:
-            // ),
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                children: [
-                  Container(
-                    color: const Color(0xff1B22BA),
-                    child: TabBar(
-                      dividerColor: white,
-                      indicator: const BoxDecoration(color: kPrimaryColor),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      dividerHeight: 0,
-                      // indicatorWeight: 5,
-                      tabs: [
-                        Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset('assets/icons/options_icon.png'),
-                              const SizedBox(width: 10),
-                              const Text('Option'),
-                            ],
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Scaffold(
+              backgroundColor: bagroundColor,
+              // appBar: AppBar(
+              //   backgroundColor: blue,
+              //   automaticallyImplyLeading: false,
+              //   flexibleSpace:
+              // ),
+              body: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  children: [
+                    Container(
+                      color: const Color(0xff1B22BA),
+                      child: TabBar(
+                        dividerColor: white,
+                        indicator: const BoxDecoration(color: kPrimaryColor),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        dividerHeight: 0,
+                        // indicatorWeight: 5,
+                        tabs: [
+                          Tab(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset('assets/icons/options_icon.png'),
+                                const SizedBox(width: 10),
+                                const Text('Option'),
+                              ],
+                            ),
                           ),
-                        ),
-                        Tab(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset('assets/icons/value_icon.png'),
-                              const SizedBox(width: 10),
-                              const Text('Value'),
-                            ],
+                          Tab(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset('assets/icons/value_icon.png'),
+                                const SizedBox(width: 10),
+                                const Text('Value'),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Expanded(
-                      flex: 1,
-                      child: TabBarView(children: [
-                        Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: ListView.builder(
-                              itemCount: settingsDisplayList.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return index == 0
-                                    ? _searchBar()
-                                    : _listItem(index - 1);
-                              }),
-                        ),
-                        ListView(children: [
-                          const SizedBox(
-                            height: 10,
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Expanded(
+                        flex: 1,
+                        child: TabBarView(children: [
+                          Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: ListView.builder(
+                                itemCount: settingsDisplayList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return index == 0
+                                      ? _searchBar()
+                                      : _listItem(index - 1);
+                                }),
                           ),
-                          // SizedBox(
-                          //   height: 40,
-                          //   child: Card(
-                          //     elevation: 5,
-                          //     child: Row(
-                          //       mainAxisAlignment:
-                          //           MainAxisAlignment.spaceEvenly,
-                          //       children: [
-                          //         const Text('Select Color '),
-                          //         Text(boxColor),
-                          //       ],
-                          //     ),
-                          //   ),
-                          // ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('Company Cash A/C        '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: SimpleAutoCompleteTextField(
-                                    key: keyCashAc,
-                                    controller: controllerCashAc,
-                                    clearOnSubmit: false,
-                                    suggestions: cashListDisplay,
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        labelText: 'Select Cash A/C'),
-                                    textSubmitted: (data) {
-                                      setState(() {
-                                        cashAC = data;
-                                      });
-                                    },
-                                  ),
-                                )),
-                              ],
+                          ListView(children: [
+                            const SizedBox(
+                              height: 10,
                             ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('ToolBar Sales                  '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: SimpleAutoCompleteTextField(
-                                    key: keySalesType,
-                                    controller: controllerToolBarSales,
-                                    clearOnSubmit: false,
-                                    suggestions: salesTypeList
-                                        .map((e) => e.type)
-                                        .toList(),
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        labelText: 'Select Sale'),
-                                    textSubmitted: (data) {
-                                      setState(() {
-                                        toolBarSale = data;
-                                        toolBarSaleId = salesTypeList
-                                            .firstWhere(
-                                                (element) =>
-                                                    element.type.toString() ==
-                                                    toolBarSale,
-                                                orElse: () => currentType!)
-                                            .id
-                                            .toString();
-                                      });
-                                    },
+                            // SizedBox(
+                            //   height: 40,
+                            //   child: Card(
+                            //     elevation: 5,
+                            //     child: Row(
+                            //       mainAxisAlignment:
+                            //           MainAxisAlignment.spaceEvenly,
+                            //       children: [
+                            //         const Text('Select Color '),
+                            //         Text(boxColor),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
+                            ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  key: keyCashAc,
+                                  controller: controllerCashAc,
+                                  clearOnSubmit: false,
+                                  suggestions: cashListDisplay,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Select Cash A/C',
+                                    hintStyle: TextStyle(
+                                        fontFamily: 'poppins', color: grey),
+                                    border: OutlineInputBorder(),
                                   ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('Stock Valuation               '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: SimpleAutoCompleteTextField(
-                                    key: keyStockType,
-                                    controller: controllerStockValuation,
-                                    clearOnSubmit: false,
-                                    suggestions: stockValuationData,
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        labelText: 'Select Stock Value'),
-                                    textSubmitted: (data) {
-                                      setState(() {
-                                        stockValue = data;
-                                      });
-                                    },
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('Default Location              '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: SimpleAutoCompleteTextField(
-                                    key: keyLocationType,
-                                    controller: controllerDefaultLocation,
-                                    clearOnSubmit: false,
-                                    suggestions: locationListDisplay,
-                                    decoration: const InputDecoration(
-                                        border: OutlineInputBorder(),
-                                        labelText: 'Select Location'),
-                                    textSubmitted: (data) {
-                                      setState(() {
-                                        defaultLocation = data;
-                                      });
-                                    },
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('Decimal Point                  '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    controller: controllerDecimalPoint,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(),
-                                    decoration: const InputDecoration(
-                                        labelText: 'Select Decimal',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('SerialNoTitle                    '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    focusNode: focusNodeKeySerialNoTitle,
-                                    controller: controllerKeySerialNoTitle,
-                                    decoration: const InputDecoration(
-                                        labelText: 'SerialNo Title',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('EWayApi Owner               '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    focusNode: focusNodeKeyEWayApi,
-                                    controller: controllerKeyEWayApi,
-                                    decoration: const InputDecoration(
-                                        labelText: 'API Owner',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('ItemSpecialRateTitle      '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    focusNode: focusNodeKeyItemSPTitle,
-                                    controller: controllerKeyItemSPTitle,
-                                    decoration: const InputDecoration(
-                                        labelText: 'SpecialRateTitle',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('HeadOffice DB                 '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    controller: controllerHeadOfficeDB,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Select DB',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          Card(
-                            elevation: 5,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                const Text('Decimal Point On Report '),
-                                Expanded(
-                                    child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(),
-                                    controller: controllerDecimalPointOnReports,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Select Decimal',
-                                        border: OutlineInputBorder()),
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ),
-                          // SizedBox(
-                          //   height: 40,
-                          //   child: Card(
-                          //     elevation: 5,
-                          //     child: Row(
-                          //       mainAxisAlignment:
-                          //           MainAxisAlignment.spaceEvenly,
-                          //       children: [
-                          //         const Text('Toolbar Color '),
-                          //         Text(toolBarColor),
-                          //       ],
-                          //     ),
-                          //   ),
-                          // ),
-                          ElevatedButton(
-                              onPressed: () {
-                                var _pass = '';
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(
-                                              20.0,
-                                            ),
-                                          ),
-                                        ),
-                                        contentPadding: const EdgeInsets.only(
-                                          top: 10.0,
-                                        ),
-                                        title: const Text(
-                                          "Enter Password",
-                                          style: TextStyle(fontSize: 24.0),
-                                        ),
-                                        content: SizedBox(
-                                          height: 400,
-                                          child: SingleChildScrollView(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    "Enter Your Password",
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: TextField(
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            border:
-                                                                OutlineInputBorder(),
-                                                            hintText:
-                                                                'Enter password',
-                                                            labelText:
-                                                                'password'),
-                                                    obscureText: true,
-                                                    onChanged: (value) =>
-                                                        _pass = value,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: double.infinity,
-                                                  height: 60,
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      if (_pass ==
-                                                          softwarePassword) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        Navigator.of(context).push(
-                                                            MaterialPageRoute(
-                                                                builder: (BuildContext
-                                                                        context) =>
-                                                                    const SalesFormRegister()));
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                'incorrect password');
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.black,
-                                                      // fixedSize: Size(250, 50),
-                                                    ),
-                                                    child: const Text(
-                                                      "Submit",
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
+                                  textSubmitted: (data) {
+                                    setState(() {
+                                      cashAC = data;
                                     });
-                              },
-                              child: const Text('Sales Forms Register')),
-                          ElevatedButton(
-                              onPressed: () {
-                                var _pass = '';
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(
-                                              20.0,
-                                            ),
-                                          ),
-                                        ),
-                                        contentPadding: const EdgeInsets.only(
-                                          top: 10.0,
-                                        ),
-                                        title: const Text(
-                                          "Enter Password",
-                                          style: TextStyle(fontSize: 24.0),
-                                        ),
-                                        content: SizedBox(
-                                          height: 400,
-                                          child: SingleChildScrollView(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    "Enter Your Password",
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: TextField(
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            border:
-                                                                OutlineInputBorder(),
-                                                            hintText:
-                                                                'Enter password',
-                                                            labelText:
-                                                                'password'),
-                                                    obscureText: true,
-                                                    onChanged: (value) =>
-                                                        _pass = value,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: double.infinity,
-                                                  height: 60,
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      if (_pass ==
-                                                          softwarePassword) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        Navigator.of(context).push(
-                                                            MaterialPageRoute(
-                                                                builder: (BuildContext
-                                                                        context) =>
-                                                                    const SalesOtherDetailRegister()));
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                'incorrect password');
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.black,
-                                                      // fixedSize: Size(250, 50),
-                                                    ),
-                                                    child: const Text(
-                                                      "Submit",
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
+                                  },
+                                ),
+                                headTxt: 'Company Cash A/C'),
+                            // Card(
+                            //   elevation: 5,
+                            //   child: Row(
+                            //     mainAxisAlignment:
+                            //         MainAxisAlignment.spaceEvenly,
+                            //     children: [
+                            //       const Text('Company Cash A/C        '),
+                            //       Expanded(
+                            //           child: SizedBox(
+                            //         height: 40,
+                            //         child:
+                            //       )),
+                            //     ],
+                            //   ),
+                            // ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  key: keySalesType,
+                                  controller: controllerToolBarSales,
+                                  clearOnSubmit: false,
+                                  suggestions:
+                                      salesTypeList.map((e) => e.type).toList(),
+                                  decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      hintText: 'Select Sale'),
+                                  textSubmitted: (data) {
+                                    setState(() {
+                                      toolBarSale = data;
+                                      toolBarSaleId = salesTypeList
+                                          .firstWhere(
+                                              (element) =>
+                                                  element.type.toString() ==
+                                                  toolBarSale,
+                                              orElse: () => currentType!)
+                                          .id
+                                          .toString();
                                     });
-                              },
-                              child: const Text('Sales OtherDetails Register')),
-                          ElevatedButton(
-                              onPressed: () {
-                                var _pass = '';
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(
-                                            Radius.circular(
-                                              20.0,
-                                            ),
-                                          ),
-                                        ),
-                                        contentPadding: const EdgeInsets.only(
-                                          top: 10.0,
-                                        ),
-                                        title: const Text(
-                                          "Enter Password",
-                                          style: TextStyle(fontSize: 24.0),
-                                        ),
-                                        content: SizedBox(
-                                          height: 400,
-                                          child: SingleChildScrollView(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: <Widget>[
-                                                const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                    "Enter Your Password",
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: TextField(
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            border:
-                                                                OutlineInputBorder(),
-                                                            hintText:
-                                                                'Enter password',
-                                                            labelText:
-                                                                'password'),
-                                                    obscureText: true,
-                                                    onChanged: (value) =>
-                                                        _pass = value,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  width: double.infinity,
-                                                  height: 60,
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: ElevatedButton(
-                                                    onPressed: () {
-                                                      if (_pass ==
-                                                          softwarePassword) {
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                        Navigator.of(context).push(
-                                                            MaterialPageRoute(
-                                                                builder: (BuildContext
-                                                                        context) =>
-                                                                    const SmsSettings()));
-                                                      } else {
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                'incorrect password');
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }
-                                                    },
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          Colors.black,
-                                                      // fixedSize: Size(250, 50),
-                                                    ),
-                                                    child: const Text(
-                                                      "Submit",
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
+                                  },
+                                ),
+                                headTxt: 'ToolBar Sale'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  key: keyStockType,
+                                  controller: controllerStockValuation,
+                                  clearOnSubmit: false,
+                                  suggestions: stockValuationData,
+                                  decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      hintText: 'Select Stock Value'),
+                                  textSubmitted: (data) {
+                                    setState(() {
+                                      stockValue = data;
                                     });
-                              },
-                              child: const Text('SMS Settings')),
-                        ]),
-                      ])),
-                ],
-              ),
-            )));
+                                  },
+                                ),
+                                headTxt: 'Select Stock Value'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  key: keyLocationType,
+                                  controller: controllerDefaultLocation,
+                                  clearOnSubmit: false,
+                                  suggestions: locationListDisplay,
+                                  decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      hintText: 'Select Location'),
+                                  textSubmitted: (data) {
+                                    setState(() {
+                                      defaultLocation = data;
+                                    });
+                                  },
+                                ),
+                                headTxt: 'Default Location'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: controllerDecimalPoint,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(),
+                                  decoration: const InputDecoration(
+                                      hintText: 'Select Decimal',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Decimal Point'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  focusNode: focusNodeKeySerialNoTitle,
+                                  controller: controllerKeySerialNoTitle,
+                                  decoration: const InputDecoration(
+                                      hintText: 'SerialNo Title',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Serial No Title'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  focusNode: focusNodeKeyEWayApi,
+                                  controller: controllerKeyEWayApi,
+                                  decoration: const InputDecoration(
+                                      hintText: 'API Owner',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'EWay Api Owner'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  focusNode: focusNodeKeyItemSPTitle,
+                                  controller: controllerKeyItemSPTitle,
+                                  decoration: const InputDecoration(
+                                      hintText: 'SpecialRateTitle',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Item Special Rate Title'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: controllerHeadOfficeDB,
+                                  decoration: const InputDecoration(
+                                      hintText: 'Select DB',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Head Of DB'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(),
+                                  controller: controllerDecimalPointOnReports,
+                                  decoration: const InputDecoration(
+                                      hintText: 'Select Decimal',
+                                      hintStyle: TextStyle(
+                                          fontFamily: 'poppins', color: grey),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Decimal Point On Rate'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            // SizedBox(
+                            //   height: 40,
+                            //   child: Card(
+                            //     elevation: 5,
+                            //     child: Row(
+                            //       mainAxisAlignment:
+                            //           MainAxisAlignment.spaceEvenly,
+                            //       children: [
+                            //         const Text('Toolbar Color '),
+                            //         Text(toolBarColor),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5)),
+                                    backgroundColor: kPrimaryColor),
+                                onPressed: () {
+                                  var _pass = '';
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(
+                                                20.0,
+                                              ),
+                                            ),
+                                          ),
+                                          contentPadding: const EdgeInsets.only(
+                                            top: 10.0,
+                                          ),
+                                          title: const Text(
+                                            "Enter Password",
+                                            style: TextStyle(fontSize: 24.0),
+                                          ),
+                                          content: SizedBox(
+                                            height: 400,
+                                            child: SingleChildScrollView(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  const Padding(
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      "Enter Your Password",
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: TextField(
+                                                      decoration:
+                                                          const InputDecoration(
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                              hintText:
+                                                                  'Enter password',
+                                                              labelText:
+                                                                  'password'),
+                                                      obscureText: true,
+                                                      onChanged: (value) =>
+                                                          _pass = value,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: double.infinity,
+                                                    height: 60,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        if (_pass ==
+                                                            softwarePassword) {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      const SalesFormRegister()));
+                                                        } else {
+                                                          Fluttertoast.showToast(
+                                                              msg:
+                                                                  'incorrect password');
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        }
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.black,
+                                                        // fixedSize: Size(250, 50),
+                                                      ),
+                                                      child: const Text(
+                                                        "Submit",
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                },
+                                child: const Text(
+                                  'Sales Forms Register',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins', color: white),
+                                )),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5)),
+                                    backgroundColor: kPrimaryColor),
+                                onPressed: () {
+                                  var _pass = '';
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(
+                                                20.0,
+                                              ),
+                                            ),
+                                          ),
+                                          contentPadding: const EdgeInsets.only(
+                                            top: 10.0,
+                                          ),
+                                          title: const Text(
+                                            "Enter Password",
+                                            style: TextStyle(fontSize: 24.0),
+                                          ),
+                                          content: SizedBox(
+                                            height: 400,
+                                            child: SingleChildScrollView(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  const Padding(
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      "Enter Your Password",
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: TextField(
+                                                      decoration:
+                                                          const InputDecoration(
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                              hintText:
+                                                                  'Enter password',
+                                                              labelText:
+                                                                  'password'),
+                                                      obscureText: true,
+                                                      onChanged: (value) =>
+                                                          _pass = value,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: double.infinity,
+                                                    height: 60,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        if (_pass ==
+                                                            softwarePassword) {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      const SalesOtherDetailRegister()));
+                                                        } else {
+                                                          Fluttertoast.showToast(
+                                                              msg:
+                                                                  'incorrect password');
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        }
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.black,
+                                                        // fixedSize: Size(250, 50),
+                                                      ),
+                                                      child: const Text(
+                                                        "Submit",
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                },
+                                child: const Text(
+                                  'Sales OtherDetails Register',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins', color: white),
+                                )),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5)),
+                                    backgroundColor: kPrimaryColor),
+                                onPressed: () {
+                                  var _pass = '';
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                              Radius.circular(
+                                                20.0,
+                                              ),
+                                            ),
+                                          ),
+                                          contentPadding: const EdgeInsets.only(
+                                            top: 10.0,
+                                          ),
+                                          title: const Text(
+                                            "Enter Password",
+                                            style: TextStyle(fontSize: 24.0),
+                                          ),
+                                          content: SizedBox(
+                                            height: 400,
+                                            child: SingleChildScrollView(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: <Widget>[
+                                                  const Padding(
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
+                                                    child: Text(
+                                                      "Enter Your Password",
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: TextField(
+                                                      decoration:
+                                                          const InputDecoration(
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                              hintText:
+                                                                  'Enter password',
+                                                              labelText:
+                                                                  'password'),
+                                                      obscureText: true,
+                                                      onChanged: (value) =>
+                                                          _pass = value,
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    width: double.infinity,
+                                                    height: 60,
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: ElevatedButton(
+                                                      onPressed: () {
+                                                        if (_pass ==
+                                                            softwarePassword) {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context).push(
+                                                              MaterialPageRoute(
+                                                                  builder: (BuildContext
+                                                                          context) =>
+                                                                      const SmsSettings()));
+                                                        } else {
+                                                          Fluttertoast.showToast(
+                                                              msg:
+                                                                  'incorrect password');
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        }
+                                                      },
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            Colors.black,
+                                                        // fixedSize: Size(250, 50),
+                                                      ),
+                                                      child: const Text(
+                                                        "Submit",
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      });
+                                },
+                                child: const Text(
+                                  'SMS Settings',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins', color: white),
+                                )),
+                          ]),
+                        ])),
+                  ],
+                ),
+              )),
+        ));
   }
 
   _searchBar() {

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/appbar_custom_widget.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class OtherRegistration extends StatefulWidget {
@@ -51,10 +54,14 @@ class _OtherRegistrationState extends State<OtherRegistration> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(
-        actions: const [],
-        title: const Text('OtherRegistration'),
-      ),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidgget(
+            headTxt: 'Other Registration',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )),
       body: ProgressHUD(
         inAsyncCall: _isLoading,
         opacity: 0.0,
@@ -64,127 +71,180 @@ class _OtherRegistrationState extends State<OtherRegistration> {
   }
 
   tabBarWidget() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 0,
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            ElevatedButton(
-              child: Text(isExist ? 'Edit' : 'Save'),
-              onPressed: () {
-                if (isExist) {
-                  if (id.isNotEmpty) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    handleSubmitted('edit');
-                  } else {
-                    showInSnackBar('Please select Name');
-                  }
-                } else {
-                  if (id.isEmpty) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    handleSubmitted('save');
-                  } else {
-                    showInSnackBar('Please add Name');
-                  }
-                }
-              },
-            ),
-            ElevatedButton(
-                onPressed: () => clear(), child: const Text('Clear')),
-            ElevatedButton(
-              onPressed: isExist
-                  ? () {
-                      if (id.isNotEmpty) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        deleteOtherRegistration(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        children: [
+          Expanded(
+            flex: 0,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        backgroundColor: kPrimaryColor),
+                    child: Text(
+                      isExist ? 'Edit' : 'Save',
+                      style: TextStyle(fontFamily: 'poppins', color: white),
+                    ),
+                    onPressed: () {
+                      if (isExist) {
+                        if (id.isNotEmpty) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          handleSubmitted('edit');
+                        } else {
+                          showInSnackBar('Please select Name');
+                        }
                       } else {
-                        showInSnackBar('Please select Name');
+                        if (id.isEmpty) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          handleSubmitted('save');
+                        } else {
+                          showInSnackBar('Please add Name');
+                        }
                       }
-                    }
-                  : null,
-              child: const Text('Delete'),
-            ),
-          ]),
-        ),
-        const Divider(),
-        const Align(
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'Type',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            alignment: Alignment.centerLeft),
-        Card(
-          elevation: 10,
-          child: DropdownButton<String>(
-            isExpanded: true,
-            hint: const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text('Select type', textAlign: TextAlign.center),
-            ),
-            value: _dropDownValue.toString(),
-            items: typeData.map<DropdownMenuItem<String>>((item) {
-              return DropdownMenuItem<String>(
-                value: item.toString(),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(item, overflow: TextOverflow.ellipsis),
-                ),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _dropDownValue = value!;
-                nameListDisplay.clear();
-                nameListDisplay.addAll(List<String>.from(otherList
-                    .where((element) =>
-                        element.type.toLowerCase() ==
-                        _dropDownValue.toLowerCase())
-                    .toList()
-                    .map((e) => e.name)));
-                nameControl.text = '';
-              });
-            },
+                    },
+                  ),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          backgroundColor: kPrimaryColor),
+                      onPressed: () => clear(),
+                      child: const Text(
+                        'Clear',
+                        style: TextStyle(fontFamily: 'poppins', color: white),
+                      )),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
+                        backgroundColor: kPrimaryColor),
+                    onPressed: isExist
+                        ? () {
+                            if (id.isNotEmpty) {
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              deleteOtherRegistration(context);
+                            } else {
+                              showInSnackBar('Please select Name');
+                            }
+                          }
+                        : null,
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(fontFamily: 'poppins', color: white),
+                    ),
+                  ),
+                ]),
           ),
-        ),
-        const Divider(),
-        SimpleAutoCompleteTextField(
-          key: keyName,
-          controller: nameControl,
-          clearOnSubmit: false,
-          suggestions: nameListDisplay,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: 'Name'),
-          textSubmitted: (data) {
-            lName = data;
-            if (lName.isNotEmpty) {
-              int _id = otherList
-                  .firstWhere((element) => element.name == lName,
-                      orElse: () => OtherRegistrationModel.emptyData())
-                  .id;
-              if (_id > 0) {
-                id = _id.toString();
-                isExist = true;
-                findOtherRegistration(id);
-              }
-            }
-          },
-        ),
-        TextField(
-          controller: descriptionControl,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: 'Description'),
-        )
-      ],
+          const SizedBox(
+            height: 10,
+          ),
+          // const Align(
+          //     child: Padding(
+          //       padding: EdgeInsets.all(8.0),
+          //       child: Text(
+          //         'Type',
+          //         style: TextStyle(fontWeight: FontWeight.bold),
+          //       ),
+          //     ),
+          //     alignment: Alignment.centerLeft),
+          ContainerFieldWidget(
+              widget: Container(
+                width: MediaQuery.sizeOf(context).width,
+                decoration: BoxDecoration(
+                    border: Border.all(color: grey),
+                    borderRadius: BorderRadius.circular(3)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    isExpanded: true,
+                    hint: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Select type', textAlign: TextAlign.center),
+                    ),
+                    value: _dropDownValue.toString(),
+                    items: typeData.map<DropdownMenuItem<String>>((item) {
+                      return DropdownMenuItem<String>(
+                        value: item.toString(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(item, overflow: TextOverflow.ellipsis),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _dropDownValue = value!;
+                        nameListDisplay.clear();
+                        nameListDisplay.addAll(List<String>.from(otherList
+                            .where((element) =>
+                                element.type.toLowerCase() ==
+                                _dropDownValue.toLowerCase())
+                            .toList()
+                            .map((e) => e.name)));
+                        nameControl.text = '';
+                      });
+                    },
+                  ),
+                ),
+              ),
+              headTxt: 'Type'),
+          // Card(
+          //   elevation: 10,
+          //   child:
+          // ),
+          const SizedBox(
+            height: 10,
+          ),
+          ContainerFieldWidget(
+              widget: SimpleAutoCompleteTextField(
+                key: keyName,
+                controller: nameControl,
+                clearOnSubmit: false,
+                suggestions: nameListDisplay,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                textSubmitted: (data) {
+                  lName = data;
+                  if (lName.isNotEmpty) {
+                    int _id = otherList
+                        .firstWhere((element) => element.name == lName,
+                            orElse: () => OtherRegistrationModel.emptyData())
+                        .id;
+                    if (_id > 0) {
+                      id = _id.toString();
+                      isExist = true;
+                      findOtherRegistration(id);
+                    }
+                  }
+                },
+              ),
+              headTxt: 'Name'),
+          const SizedBox(
+            height: 10,
+          ),
+          ContainerFieldWidget(
+              widget: TextField(
+                controller: descriptionControl,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              headTxt: 'Description')
+        ],
+      ),
     );
   }
 

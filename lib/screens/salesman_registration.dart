@@ -1,11 +1,15 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sheraccerp/models/sales_man_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/option_radio_group.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/appbar_custom_widget.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 import 'package:intl/intl.dart';
 
@@ -87,10 +91,14 @@ class _SalesmanRegistrationState extends State<SalesmanRegistration> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      appBar: AppBar(
-        actions: const [],
-        title: const Text('Salesman'),
-      ),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidgget(
+            headTxt: 'Salesman',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          )),
       body: ProgressHUD(
         inAsyncCall: _isLoading,
         opacity: 0.0,
@@ -100,518 +108,708 @@ class _SalesmanRegistrationState extends State<SalesmanRegistration> {
   }
 
   contentWidget() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(children: [
-        Expanded(
-          flex: 0,
-          child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            ElevatedButton(
-              child: Text(isExist ? 'Edit' : 'Save'),
-              onPressed: () {
-                if (isExist) {
-                  if (id.isNotEmpty) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    handleSubmitted('edit');
-                  } else {
-                    showInSnackBar('Please select Name');
-                  }
-                } else {
-                  if (id.isEmpty) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    handleSubmitted('save');
-                  } else {
-                    showInSnackBar('Please add Name');
-                  }
-                }
-              },
+    return DefaultTabController(
+      length: 3,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(children: [
+            Expanded(
+              flex: 0,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          backgroundColor: kPrimaryColor),
+                      child: Text(
+                        isExist ? 'Edit' : 'Save',
+                        style: TextStyle(fontFamily: 'poppins', color: white),
+                      ),
+                      onPressed: () {
+                        if (isExist) {
+                          if (id.isNotEmpty) {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            handleSubmitted('edit');
+                          } else {
+                            showInSnackBar('Please select Name');
+                          }
+                        } else {
+                          if (id.isEmpty) {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            handleSubmitted('save');
+                          } else {
+                            showInSnackBar('Please add Name');
+                          }
+                        }
+                      },
+                    ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5)),
+                            backgroundColor: kPrimaryColor),
+                        onPressed: () => clear(),
+                        child: const Text(
+                          'Clear',
+                          style: TextStyle(fontFamily: 'poppins', color: white),
+                        )),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5)),
+                          backgroundColor: kPrimaryColor),
+                      onPressed: isExist
+                          ? () {
+                              if (id.isNotEmpty) {
+                                setState(() {
+                                  _isLoading = true;
+                                });
+                                deleteData(context);
+                              } else {
+                                showInSnackBar('Please select Name');
+                              }
+                            }
+                          : null,
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(fontFamily: 'poppins', color: white),
+                      ),
+                    ),
+                    // PopupMenuButton<String>(
+                    //   icon: const Icon(Icons.settings, color: blue),
+                    //   onSelected: (value) {
+                    //     setState(() {
+                    //       if (value == 'ReName') {
+                    //         if (lName.isNotEmpty) {
+                    //           _reNameDialog(context);
+                    //         }
+                    //       }
+                    //     });
+                    //   },
+                    //   itemBuilder: (BuildContext context) => [
+                    //     const PopupMenuItem<String>(
+                    //       value: 'ReName',
+                    //       child: Text('ReName'),
+                    //     ),
+                    //   ],
+                    // ),
+                  ]),
             ),
-            ElevatedButton(
-                onPressed: () => clear(), child: const Text('Clear')),
-            ElevatedButton(
-              onPressed: isExist
-                  ? () {
-                      if (id.isNotEmpty) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        deleteData(context);
-                      } else {
-                        showInSnackBar('Please select Name');
+            const SizedBox(
+              height: 10,
+            ),
+            ContainerFieldWidget(
+                widget: SimpleAutoCompleteTextField(
+                  key: keyName,
+                  controller: nameControl,
+                  clearOnSubmit: false,
+                  suggestions: nameListDisplay,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                  textSubmitted: (data) {
+                    lName = data;
+                    if (lName.isNotEmpty) {
+                      int _id = salesmanList
+                          .firstWhere((element) => element.name == lName,
+                              orElse: () => SalesManModel.emptyData())
+                          .id;
+                      if (_id > 0) {
+                        id = _id.toString();
+                        isExist = true;
+                        findSalesman(lName);
                       }
                     }
-                  : null,
-              child: const Text('Delete'),
-            ),
-            // PopupMenuButton<String>(
-            //   icon: const Icon(Icons.settings, color: blue),
-            //   onSelected: (value) {
-            //     setState(() {
-            //       if (value == 'ReName') {
-            //         if (lName.isNotEmpty) {
-            //           _reNameDialog(context);
-            //         }
-            //       }
-            //     });
-            //   },
-            //   itemBuilder: (BuildContext context) => [
-            //     const PopupMenuItem<String>(
-            //       value: 'ReName',
-            //       child: Text('ReName'),
-            //     ),
-            //   ],
-            // ),
-          ]),
-        ),
-        const Divider(
-          height: 1,
-        ),
-        SimpleAutoCompleteTextField(
-          key: keyName,
-          controller: nameControl,
-          clearOnSubmit: false,
-          suggestions: nameListDisplay,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: 'Employee Name'),
-          textSubmitted: (data) {
-            lName = data;
-            if (lName.isNotEmpty) {
-              int _id = salesmanList
-                  .firstWhere((element) => element.name == lName,
-                      orElse: () => SalesManModel.emptyData())
-                  .id;
-              if (_id > 0) {
-                id = _id.toString();
-                isExist = true;
-                findSalesman(lName);
-              }
-            }
-          },
-        ),
-        const Divider(
-          height: 1,
-        ),
-        // SimpleAutoCompleteTextField(
-        //   key: keySection,
-        //   controller: sectionControl,
-        //   clearOnSubmit: false,
-        //   suggestions: [''],
-        //   decoration: const InputDecoration(
-        //       border: OutlineInputBorder(), labelText: 'Section'),
-        // ),
-        const Divider(
-          height: 1,
-        ),
-        Card(
-          elevation: 10,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Gender'),
-              Expanded(
-                child: OptionRadio(
-                    text: 'Male',
-                    index: 0,
-                    selectedButton: selectedGender,
-                    press: (val) {
-                      setState(() {
-                        selectedGender = val;
-                      });
-                    }),
-              ),
-              Expanded(
-                child: OptionRadio(
-                    text: 'Female',
-                    index: 1,
-                    selectedButton: selectedGender,
-                    press: (val) {
-                      setState(() {
-                        selectedGender = val;
-                      });
-                    }),
-              ),
-            ],
-          ),
-        ),
-        const Divider(
-          height: 2,
-        ),
-        SizedBox(
-          height: 230,
-          child: ListView(
-            children: [
-              TextField(
-                controller: addressControl,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Address'),
-              ),
-              const Divider(
-                height: 2,
-              ),
-              TextField(
-                controller: address2Control,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Address2'),
-              ),
-              const Divider(
-                height: 2,
-              ),
-              TextField(
-                controller: address3Control,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Address3'),
-              ),
-              const Divider(
-                height: 2,
-              ),
-              TextField(
-                controller: mobileControl,
-                decoration: const InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Mobile'),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: DefaultTabController(
-            length: 3,
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: blue,
-                automaticallyImplyLeading: false,
-                flexibleSpace: const TabBar(
-                  indicatorWeight: 5,
-                  tabs: [
-                    Tab(text: "Payroll", icon: Icon(Icons.roller_shades)),
-                    Tab(text: "Details", icon: Icon(Icons.read_more)),
-                    Tab(
-                        text: "Payroll App",
-                        icon: Icon(Icons.supervised_user_circle)),
-                  ],
+                  },
                 ),
-              ),
-              body: TabBarView(
+                headTxt: 'Employee Name'),
+            const SizedBox(
+              height: 10,
+            ),
+            // SimpleAutoCompleteTextField(
+            //   key: keySection,
+            //   controller: sectionControl,
+            //   clearOnSubmit: false,
+            //   suggestions: [''],
+            //   decoration: const InputDecoration(
+            //       border: OutlineInputBorder(), labelText: 'Section'),
+            // ),
+            const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Gender',
+                  style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
+                )),
+            const SizedBox(
+              height: 7,
+            ),
+            Container(
+              width: MediaQuery.sizeOf(context).width,
+              decoration: BoxDecoration(
+                  border: Border.all(color: grey),
+                  borderRadius: BorderRadius.circular(5)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: ListView(
-                      children: [
-                        Card(
-                          elevation: 10,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              const Align(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Type',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 10),
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerLeft),
-                              Expanded(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  hint: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('Select type',
-                                        textAlign: TextAlign.center),
-                                  ),
-                                  value: _dropDownValueType.toString(),
-                                  items: typeData
-                                      .map<DropdownMenuItem<String>>((item) {
-                                    return DropdownMenuItem<String>(
-                                      value: item.toString(),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(item,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 10),
-                                            overflow: TextOverflow.ellipsis),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _dropDownValueType = value!;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const Text(
-                                'Date Of Join ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 10),
-                              ),
-                              InkWell(
-                                child: Text(
-                                  formattedDate,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15),
-                                ),
-                                onTap: () => _selectDate(),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: salaryControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Basic Salary'),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: otHourControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'O.T Hour'),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: otRateControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'O.T Rate'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: dailyAllowanceControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Daily Allowances'),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: casualLeaveControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Casual Leave/Year'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: liveDeductionControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Leave Deduction'),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 2,
-                            ),
-                            Card(
-                              elevation: 2,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Active'),
-                                  Checkbox(
-                                    value: active,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        active = value!;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  Expanded(
+                    child: OptionRadio(
+                        text: 'Male',
+                        index: 0,
+                        selectedButton: selectedGender,
+                        press: (val) {
+                          setState(() {
+                            selectedGender = val;
+                          });
+                        }),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ListView(
-                      children: [
-                        const Divider(),
-                        Card(
-                          elevation: 10,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Align(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text(
-                                      'Commission Status',
-                                    ),
-                                  ),
-                                  alignment: Alignment.centerLeft),
-                              Expanded(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value:
-                                      _dropDownValueCommissionStatus.toString(),
-                                  items: commissionStatus
-                                      .map<DropdownMenuItem<String>>((item) {
-                                    return DropdownMenuItem<String>(
-                                      value: item.toString(),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(item,
-                                            overflow: TextOverflow.ellipsis),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _dropDownValueCommissionStatus = value!;
-                                    });
-                                  },
+                  Expanded(
+                    child: OptionRadio(
+                        text: 'Female',
+                        index: 1,
+                        selectedButton: selectedGender,
+                        press: (val) {
+                          setState(() {
+                            selectedGender = val;
+                          });
+                        }),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ContainerFieldWidget(
+                widget: TextField(
+                  controller: addressControl,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                headTxt: 'Address'),
+            const SizedBox(
+              height: 10,
+            ),
+            ContainerFieldWidget(
+                widget: TextField(
+                  controller: address2Control,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                headTxt: 'Address2'),
+            const SizedBox(
+              height: 10,
+            ),
+            ContainerFieldWidget(
+                widget: TextField(
+                  controller: address3Control,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                headTxt: 'Address3'),
+            const SizedBox(
+              height: 10,
+            ),
+            ContainerFieldWidget(
+                widget: TextField(
+                  controller: mobileControl,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                headTxt: 'Mobile'),
+            // SizedBox(
+            //   height: 230,
+            //   child: ListView(
+            //     children: [
+            //       const Divider(
+            //         height: 2,
+            //       ),
+            //       const Divider(
+            //         height: 2,
+            //       ),
+            //       const Divider(
+            //         height: 2,
+            //       ),
+
+            //     ],
+            //   ),
+            // ),
+            const SizedBox(
+              height: 15,
+            ),
+            Column(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(5),
+                      ),
+                      color: Color(0xFF010BCD)),
+                  width: MediaQuery.sizeOf(context).width,
+                  child: const TabBar(
+                    dividerColor: kPrimaryColor,
+                    labelColor: white,
+                    unselectedLabelColor: white,
+                    labelStyle: TextStyle(fontFamily: 'poppins'),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    indicator: BoxDecoration(
+                      color: Color(0xff0008B3),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(5),
+                      ),
+                    ),
+                    tabs: [
+                      Tab(
+                        text: 'Payroll',
+                      ),
+                      Tab(
+                        text: 'Details',
+                      ),
+                      Tab(
+                        text: 'Payroll App',
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 500,
+                  child: TabBarView(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: Container(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              hint: const Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Text('Select type',
+                                                    textAlign:
+                                                        TextAlign.center),
+                                              ),
+                                              value:
+                                                  _dropDownValueType.toString(),
+                                              items: typeData.map<
+                                                      DropdownMenuItem<String>>(
+                                                  (item) {
+                                                return DropdownMenuItem<String>(
+                                                  value: item.toString(),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Text(item,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontFamily:
+                                                                'poppins',
+                                                            fontSize: 15),
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _dropDownValueType = value!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        headTxt: 'Type')),
+                                const SizedBox(
+                                  width: 3,
                                 ),
-                              ),
-                              Expanded(
-                                child: TextField(
-                                  controller: commissionPercentageControl,
+                                Expanded(
+                                  child: ContainerFieldWidget(
+                                      widget: InkWell(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: Center(
+                                            child: Text(
+                                              formattedDate,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontFamily: 'poppins',
+                                                  fontSize: 15),
+                                            ),
+                                          ),
+                                        ),
+                                        onTap: () => _selectDate(),
+                                      ),
+                                      headTxt: 'Date Of Join'),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: salaryControl,
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
                                   decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      labelText: '%'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: pfControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
                                     border: OutlineInputBorder(),
-                                    labelText: 'P.F'),
-                              ),
+                                  ),
+                                ),
+                                headTxt: 'Basic Salary'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: otHourControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'O.T Hour')),
+                                const SizedBox(
+                                  width: 3,
+                                ),
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: otRateControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              labelText: 'O.T Rate'),
+                                        ),
+                                        headTxt: 'O.T Rate')),
+                              ],
                             ),
                             const SizedBox(
-                              width: 5,
+                              height: 10,
                             ),
-                            Expanded(
-                              child: TextField(
-                                controller: workingHourControl,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: 'Working Hours'),
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: dailyAllowanceControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'Daily Allowance')),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: casualLeaveControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'Casual Leave/Year')),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: liveDeductionControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'Leave Deduction')),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                Flexible(
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 25,
+                                      ),
+                                      Container(
+                                        height: 50,
+                                        width: 150,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color: const Color(0xff0008B3),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Checkbox(
+                                              activeColor: Colors.white,
+                                              checkColor:
+                                                  const Color(0xff0008B3),
+                                              side: const BorderSide(
+                                                  color: Colors.white),
+                                              value: active,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  active = value!;
+                                                });
+                                              },
+                                            ),
+                                            const Text(
+                                              'Active',
+                                              style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 15,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ListView(
-                      children: [
-                        const Divider(),
-                        TextField(
-                          controller: userNameControl,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'UserName'),
-                        ),
-                        const Divider(),
-                        TextField(
-                          controller: passwordControl,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'Password'),
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
                           children: [
-                            const Text('App Enable'),
-                            Switch(
-                                onChanged: (bool value) {
-                                  setState(() {
-                                    isSelectedApp = value;
-                                  });
-                                },
-                                value: isSelectedApp),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: Container(
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                              value:
+                                                  _dropDownValueCommissionStatus
+                                                      .toString(),
+                                              items: commissionStatus.map<
+                                                      DropdownMenuItem<String>>(
+                                                  (item) {
+                                                return DropdownMenuItem<String>(
+                                                  value: item.toString(),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Text(item,
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _dropDownValueCommissionStatus =
+                                                      value!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        headTxt: 'Commission Status')),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(
+                                        height: 27,
+                                      ),
+                                      SizedBox(
+                                        height: 56,
+                                        child: TextField(
+                                          controller:
+                                              commissionPercentageControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              labelText: '%'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: pfControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'P.F')),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                Expanded(
+                                    child: ContainerFieldWidget(
+                                        widget: TextField(
+                                          controller: workingHourControl,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                          ),
+                                        ),
+                                        headTxt: 'Working Hours')),
+                              ],
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: userNameControl,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'UserName'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: passwordControl,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                headTxt: 'Password'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'App Enable',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15),
+                                ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                Switch(
+                                    trackOutlineWidth:
+                                        const MaterialStatePropertyAll(14),
+                                    thumbIcon:
+                                        MaterialStateProperty.all(const Icon(
+                                      Icons.circle,
+                                      color: Color.fromARGB(255, 244, 242, 242),
+                                      size: 27,
+                                    )),
+                                    trackOutlineColor:
+                                        const MaterialStatePropertyAll(white),
+                                    thumbColor:
+                                        MaterialStateProperty.all(white),
+                                    activeTrackColor: kPrimaryColor,
+                                    inactiveTrackColor: const Color(0xffD9D9D9),
+                                    onChanged: (bool value) {
+                                      setState(() {
+                                        isSelectedApp = value;
+                                      });
+                                    },
+                                    value: isSelectedApp),
+                              ],
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
+          ]),
         ),
-      ]),
+      ),
     );
   }
 

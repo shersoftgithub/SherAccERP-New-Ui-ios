@@ -1,12 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class OptionRadio extends StatefulWidget {
   final String? text;
   final int? index;
-  final int ?selectedButton;
-  final Function ?press;
+  final int? selectedButton;
+  final Function? press;
 
   const OptionRadio({
     Key? key,
@@ -43,7 +42,7 @@ class OptionRadioPage extends State<OptionRadio> {
               child: Column(children: [
                 RadioListTile(
                   title: Text(
-                    "${widget.index! + 1}. ${widget.text}",
+                    "${widget.text}",
                     style: const TextStyle(color: Colors.black, fontSize: 16),
                     softWrap: true,
                   ),

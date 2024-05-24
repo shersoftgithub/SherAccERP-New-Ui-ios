@@ -15,7 +15,7 @@ mixin CompanyScopeModel on Model {
   var dio = Dio();
 
   CompanyInformation getCompanySettings() {
-    return _company!;
+    return _company as CompanyInformation;
   }
 
   List<CompanySettings> getSettings() {

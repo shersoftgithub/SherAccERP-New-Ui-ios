@@ -67,163 +67,250 @@ class _ProfileState extends State<Profile> {
   }
 
   widgetView() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        // Image.asset(
-        //   'assets/logo.png',
-        //   height: 90,
-        //   width: 80,
-        // ),
-        Text(
-          companySettings!.name!,
-          style: const TextStyle(
-              color: kPrimaryDarkColor,
-              fontSize: 25,
-              fontWeight: FontWeight.bold),
-        ),
-        Text(
-          companySettings!.add1!,
-          style: const TextStyle(
-              letterSpacing: 1,
-              color: kPrimaryColor,
-              fontSize: 15,
-              fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(
-          height: 20,
-          width: 150,
-          child: Divider(
-            color: indigoAccent,
-          ),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const BusinessCard(),
+    return Scaffold(
+      backgroundColor: bagroundColor,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: 90,
+              width: 80,
             ),
-          ),
-          child: const Card(
-            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-            child: ListTile(
-              leading: Icon(
-                Icons.card_membership_rounded,
-                color: indigoAccent,
+            Text(
+              companySettings!.name!,
+              style: const TextStyle(
+                  // color: kPrimaryDarkColor,
+                  fontSize: 35,
+                  fontFamily: 'roman',
+                  fontWeight: FontWeight.bold),
+            ),
+            Text(
+              companySettings!.add1!,
+              style: const TextStyle(
+                  // letterSpacing: 1,
+                  // color: kPrimaryColor,
+                  fontSize: 15,
+                  fontFamily: 'roman',
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.card_membership_rounded,
+                    color: white,
+                  ),
+                ),
+                title: const Text(
+                  'Business Card',
+                  style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
+                trailing: IconButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const BusinessCard(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.arrow_forward_ios)),
               ),
-              title: Text(
-                'Business Card',
-                style: TextStyle(
-                  color: blueAccent,
-                  fontSize: 20,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.phone,
+                    color: white,
+                  ),
+                ),
+                title: Text(
+                  'Tel:${companySettings!.telephone!}  Mob:${companySettings!.mobile!}',
+                  style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
                 ),
               ),
             ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-          child: ListTile(
-            leading: const Icon(
-              Icons.phone,
-              color: indigoAccent,
+            const SizedBox(
+              height: 10,
             ),
-            title: Text(
-              'Tel:' +
-                  companySettings!.telephone! +
-                  '  Mob:' +
-                  companySettings!.mobile!,
-              style: const TextStyle(
-                color: blueAccent,
-                fontSize: 12,
+            // Card(
+            //   margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+            //   child: ListTile(
+            //     leading: const Icon(
+            //       Icons.phone,
+            //       color: indigoAccent,
+            //     ),
+            //     title: Text(
+            //       'Tel:' +
+            //           companySettings!.telephone! +
+            //           '  Mob:' +
+            //           companySettings!.mobile!,
+            //       style: const TextStyle(
+            //         color: blueAccent,
+            //         fontSize: 12,
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.credit_card,
+                    color: white,
+                  ),
+                ),
+                title: Text(
+                  companyTaxMode == 'INDIA'
+                      ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}'
+                      : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}',
+                  style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 25),
-          child: ListTile(
-            leading: const Icon(
-              Icons.credit_card,
-              color: indigoAccent,
+            const SizedBox(
+              height: 10,
             ),
-            title: Text(
-              companyTaxMode == 'INDIA'
-                  ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}'
-                  : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}',
-              style: const TextStyle(
-                color: blueAccent,
-                fontSize: 15,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.mail,
+                    color: white,
+                  ),
+                ),
+                title: Text(
+                  '${companySettings!.email}',
+                  style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 25),
-          child: ListTile(
-            leading: const Icon(
-              Icons.email,
-              color: indigoAccent,
+            const SizedBox(
+              height: 10,
             ),
-            title: Text(
-              'Email:' + companySettings!.email.toString(),
-              style: const TextStyle(
-                color: blueAccent,
-                fontSize: 15,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.location_on_outlined,
+                    color: white,
+                  ),
+                ),
+                title: Text(
+                  '${companySettings!.add2!},${companySettings!.add3!},${companySettings!.add4!},${companySettings!.add5!}',
+                  style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 25),
-          child: ListTile(
-            leading: const Icon(
-              Icons.location_on_rounded,
-              color: indigoAccent,
+            const SizedBox(
+              height: 10,
             ),
-            title: Text(
-              companySettings!.add2! +
-                  ',' +
-                  companySettings!.add3! +
-                  ',' +
-                  companySettings!.add4! +
-                  ',' +
-                  companySettings!.add5!,
-              style: const TextStyle(
-                color: blueAccent,
-                fontSize: 12,
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: white),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      color: kPrimaryColor),
+                  child: const Icon(
+                    Icons.pin_drop_outlined,
+                    color: white,
+                  ),
+                ),
+                title: Text(
+                  'PIN:${companySettings!.pin!}',
+                  style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 25),
-          child: ListTile(
-            leading: const Icon(
-              Icons.pin_rounded,
-              color: indigoAccent,
+            const SizedBox(
+              height: 10,
             ),
-            title: Text(
-              'PIN:' + companySettings!.pin!,
-              style: const TextStyle(
-                color: blueAccent,
-                fontSize: 15,
-              ),
-            ),
-          ),
+            Center(
+              child: TextButton(
+                  style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xffDFDFDF),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      side: const BorderSide(color: black, width: .2)),
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => const AddLogo()));
+                  },
+                  child: const Text(
+                    'Add Logo',
+                    style: TextStyle(
+                        fontFamily: 'poppins', color: black, fontSize: 15),
+                  )),
+            )
+          ],
         ),
-        Center(
-          child: Card(
-            child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) => const AddLogo()));
-                },
-                child: const Text(
-                  'Add Logo',
-                )),
-          ),
-        )
-      ],
+      ),
     );
   }
 
