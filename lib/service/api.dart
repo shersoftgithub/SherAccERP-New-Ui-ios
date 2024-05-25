@@ -167,7 +167,7 @@ Future<ApiResponse> authenticateUser(
   return apiResponse;
 }
 
-Future<ApiResponse> createUser(
+Future<ApiResponse>   createUser(
     String username, String password, String regId) async {
   ApiResponse apiResponse =
       ApiResponse(data: {}, apiError: ApiError(error: ''));

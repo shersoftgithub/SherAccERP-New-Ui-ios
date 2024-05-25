@@ -212,8 +212,6 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
               padding: const EdgeInsets.only(top: 20),
               child: TabBar(
                 dividerColor: kPrimaryColor,
-
-                // indicatorWeight: 30,
                 indicator: const BoxDecoration(color: kPrimaryColor),
                 tabs: [
                   Tab(

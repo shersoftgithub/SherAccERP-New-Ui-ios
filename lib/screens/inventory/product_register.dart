@@ -750,18 +750,25 @@ class _ProductRegisterState extends State<ProductRegister> {
                             const SizedBox(
                               height: 25,
                             ),
-                            Container(
-                              width: 120,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: kPrimaryColor),
-                              child: const Center(
-                                  child: Text(
-                                'Details',
-                                style: TextStyle(
-                                    fontFamily: 'poppins', color: white),
-                              )),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  nextWidget = 1;
+                                });
+                              },
+                              child: Container(
+                                width: 120,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: kPrimaryColor),
+                                child: const Center(
+                                    child: Text(
+                                  'Details',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins', color: white),
+                                )),
+                              ),
                             ),
                           ],
                         )
@@ -1332,45 +1339,62 @@ class _ProductRegisterState extends State<ProductRegister> {
               ),
             ),
           )
-        : Column(children: [
-            const Center(child: Text('Unit Details')),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Expanded(child: Text('Purchase')),
-                  Expanded(
-                    child: DropdownButton<String>(
-                      hint: const Text('SKU'),
-                      value: dropDownUnitPurchase.toString(),
-                      items: unitModel.map<DropdownMenuItem<String>>((item) {
-                        return DropdownMenuItem<String>(
-                          value: item.id.toString(),
-                          child: Text(item.name!),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          dropDownUnitPurchase = int.tryParse(value!);
-                        });
-                      },
+        : GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(children: [
+                const Center(
+                    child: Text(
+                  'Unit Details',
+                  style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500),
+                )),
+                const SizedBox(
+                  height: 10,
+                ),
+                ContainerFieldWidget(
+                    widget: Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: grey)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          hint: const Text('SKU'),
+                          value: dropDownUnitPurchase.toString(),
+                          items:
+                              unitModel.map<DropdownMenuItem<String>>((item) {
+                            return DropdownMenuItem<String>(
+                              value: item.id.toString(),
+                              child: Text(item.name!),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              dropDownUnitPurchase = int.tryParse(value!);
+                            });
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(
-              height: 3,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Expanded(child: Text('Sales')),
-                  Expanded(
+                    headTxt: 'Purchase'),
+                const SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  width: MediaQuery.sizeOf(context).width,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: grey)),
+                  child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
+                      isExpanded: true,
                       hint: const Text('SKU'),
                       value: dropDownUnitSale.toString(),
                       items: unitModel.map<DropdownMenuItem<String>>((item) {
@@ -1386,140 +1410,185 @@ class _ProductRegisterState extends State<ProductRegister> {
                       },
                     ),
                   ),
-                ],
-              ),
-            ),
-            const Divider(
-              height: 5,
-            ),
-            Card(
-              margin: const EdgeInsets.all(10),
-              elevation: 5,
-              child: Column(
-                children: [
-                  Row(
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Card(
+                  // elevation: 5,
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: DropdownButton<String>(
-                          hint: const Text('SKU'),
-                          value: dropDownUnitData.toString(),
-                          items:
-                              unitModel.map<DropdownMenuItem<String>>((item) {
-                            return DropdownMenuItem<String>(
-                              value: item.id.toString(),
-                              child: Text(item.name!),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              dropDownUnitData = int.tryParse(value!)!;
-                            });
-                          },
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              height: 60,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  hint: const Text('SKU'),
+                                  value: dropDownUnitData.toString(),
+                                  items: unitModel
+                                      .map<DropdownMenuItem<String>>((item) {
+                                    return DropdownMenuItem<String>(
+                                      value: item.id.toString(),
+                                      child: Text(item.name!),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      dropDownUnitData = int.tryParse(value!)!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          Expanded(
+                            child: SizedBox(
+                              height: 60,
+                              child: TextField(
+                                controller: conversionController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                      allow: true, replacementString: '.')
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: 'Conversion',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Expanded(
-                        child: TextField(
-                          controller: conversionController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          inputFormatters: [
-                            FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                allow: true, replacementString: '.')
-                          ],
-                          decoration: const InputDecoration(
-                            labelText: 'Conversion',
-                            border: OutlineInputBorder(),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            height: 60,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                isExpanded: true,
+                                value: dropDownRateData.toString(),
+                                hint: const Text('Rate'),
+                                items: rateTypeModel
+                                    .map<DropdownMenuItem<String>>((item) {
+                                  return DropdownMenuItem<String>(
+                                    value: item.id.toString(),
+                                    child: Text(item.name!),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    dropDownRateData = int.tryParse(value!)!;
+                                  });
+                                },
+                              ),
+                            ),
                           ),
                         ),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                        Expanded(
+                          child: SizedBox(
+                            height: 60,
+                            child: TextField(
+                              controller: barcodeController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                    allow: true)
+                              ],
+                              decoration: const InputDecoration(
+                                labelText: 'Barcode',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]),
+                      const SizedBox(
+                        height: 10,
                       ),
+                      TextButton(
+                          style: TextButton.styleFrom(
+                              foregroundColor: white,
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5))),
+                          onPressed: () {
+                            setState(() {
+                              unitDetail.add(UnitDetailModel(
+                                  id: unitDetail.length + 1,
+                                  conversion: double.tryParse(
+                                      conversionController.text)!,
+                                  name: unitModel
+                                      .firstWhere((element) =>
+                                          element.id == dropDownUnitData)
+                                      .name!,
+                                  rateType: rateTypeModel
+                                      .firstWhere((element) =>
+                                          element.id == dropDownRateData)
+                                      .name!,
+                                  barcode: barcodeController.text,
+                                  itemId: itemCodeController.text.isNotEmpty
+                                      ? int.tryParse(itemCodeController.text)!
+                                      : 0,
+                                  unitId: dropDownUnitData!,
+                                  pUnitId: dropDownUnitPurchase!,
+                                  sUnitId: dropDownUnitSale!,
+                                  gatePass: 0));
+                            });
+                          },
+                          child: const Text(
+                            'Add Unit',
+                            style: TextStyle(fontFamily: 'poppins'),
+                          )),
                     ],
                   ),
-                  const Divider(
-                    height: 2,
-                  ),
-                  Row(children: [
-                    Expanded(
-                      child: DropdownButton<String>(
-                        value: dropDownRateData.toString(),
-                        hint: const Text('Rate'),
-                        items:
-                            rateTypeModel.map<DropdownMenuItem<String>>((item) {
-                          return DropdownMenuItem<String>(
-                            value: item.id.toString(),
-                            child: Text(item.name!),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            dropDownRateData = int.tryParse(value!)!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: barcodeController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                              allow: true)
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Barcode',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ]),
-                  TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: white,
-                        backgroundColor: blue,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          unitDetail.add(UnitDetailModel(
-                              id: unitDetail.length + 1,
-                              conversion:
-                                  double.tryParse(conversionController.text)!,
-                              name: unitModel
-                                  .firstWhere((element) =>
-                                      element.id == dropDownUnitData)
-                                  .name!,
-                              rateType: rateTypeModel
-                                  .firstWhere((element) =>
-                                      element.id == dropDownRateData)
-                                  .name!,
-                              barcode: barcodeController.text,
-                              itemId: itemCodeController.text.isNotEmpty
-                                  ? int.tryParse(itemCodeController.text)!
-                                  : 0,
-                              unitId: dropDownUnitData!,
-                              pUnitId: dropDownUnitPurchase!,
-                              sUnitId: dropDownUnitSale!,
-                              gatePass: 0));
-                        });
-                      },
-                      child: const Text('Add Unit')),
-                ],
-              ),
-            ),
-            Expanded(
-              child: unitListData(),
-            ),
-            TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: white,
-                  backgroundColor: blue,
                 ),
-                onPressed: () {
-                  setState(() {
-                    nextWidget = 0;
-                  });
-                },
-                child: const Text('OK')),
-          ]);
+                Expanded(
+                  child: unitListData(),
+                ),
+                TextButton(
+                    style: TextButton.styleFrom(
+                        foregroundColor: white,
+                        backgroundColor: kPrimaryColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5))),
+                    onPressed: () {
+                      setState(() {
+                        nextWidget = 0;
+                      });
+                    },
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(fontFamily: 'poppins'),
+                    )),
+              ]),
+            ),
+          );
   }
 
   TextEditingController conversionController = TextEditingController();
