@@ -196,11 +196,14 @@ class _DashPageState extends State<DashPage> {
     });
   }
 
+  // final kPrimaryColor = Color(0xff0008B3);
   _getSalesSeriesData() {
     List<charts.Series<ChartSales, String>> series = [
       charts.Series<ChartSales, String>(
         id: 'Sales',
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        colorFn: (_, __) =>
+            // charts.ColorUtil.fromDartColor(kPrimaryColor),
+            charts.MaterialPalette.blue.shadeDefault,
         domainFn: (ChartSales sales, _) => sales.ddate!,
         measureFn: (ChartSales sales, _) => sales.amount,
         data: _salesData,

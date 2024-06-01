@@ -554,7 +554,9 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                           ),
                                           title: const Text(
                                             "Enter Password",
-                                            style: TextStyle(fontSize: 24.0),
+                                            style: TextStyle(
+                                                fontSize: 24.0,
+                                                fontFamily: 'poppins'),
                                           ),
                                           content: SizedBox(
                                             height: 400,
@@ -573,6 +575,9 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                                         EdgeInsets.all(8.0),
                                                     child: Text(
                                                       "Enter Your Password",
+                                                      style: TextStyle(
+                                                          fontFamily:
+                                                              'poppins'),
                                                     ),
                                                   ),
                                                   Container(
@@ -620,12 +625,22 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5)),
                                                         backgroundColor:
-                                                            Colors.black,
+                                                            kPrimaryColor,
                                                         // fixedSize: Size(250, 50),
                                                       ),
                                                       child: const Text(
                                                         "Submit",
+                                                        style: TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: white),
                                                       ),
                                                     ),
                                                   ),
@@ -665,7 +680,9 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                           ),
                                           title: const Text(
                                             "Enter Password",
-                                            style: TextStyle(fontSize: 24.0),
+                                            style: TextStyle(
+                                                fontSize: 24.0,
+                                                fontFamily: 'poppins'),
                                           ),
                                           content: SizedBox(
                                             height: 400,
@@ -684,6 +701,9 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                                         EdgeInsets.all(8.0),
                                                     child: Text(
                                                       "Enter Your Password",
+                                                      style: TextStyle(
+                                                          fontFamily:
+                                                              'poppins'),
                                                     ),
                                                   ),
                                                   Container(
@@ -731,12 +751,23 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5)),
                                                         backgroundColor:
-                                                            Colors.black,
+                                                            kPrimaryColor,
+
                                                         // fixedSize: Size(250, 50),
                                                       ),
                                                       child: const Text(
                                                         "Submit",
+                                                        style: TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: white),
                                                       ),
                                                     ),
                                                   ),
@@ -842,12 +873,23 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                                       },
                                                       style: ElevatedButton
                                                           .styleFrom(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5)),
                                                         backgroundColor:
-                                                            Colors.black,
+                                                            kPrimaryColor,
+
                                                         // fixedSize: Size(250, 50),
                                                       ),
                                                       child: const Text(
                                                         "Submit",
+                                                        style: TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: white),
                                                       ),
                                                     ),
                                                   ),

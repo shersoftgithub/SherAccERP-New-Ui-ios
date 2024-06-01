@@ -164,8 +164,9 @@ class _OtherRegistrationState extends State<OtherRegistration> {
               widget: Container(
                 width: MediaQuery.sizeOf(context).width,
                 decoration: BoxDecoration(
-                    border: Border.all(color: grey),
-                    borderRadius: BorderRadius.circular(3)),
+                  border: Border.all(color: grey),
+                  borderRadius: BorderRadius.circular(3),
+                ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     isExpanded: true,
