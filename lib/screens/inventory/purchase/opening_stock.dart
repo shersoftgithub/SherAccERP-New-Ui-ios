@@ -16,6 +16,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/util/show_confirm_alert_box.dart';
+import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
@@ -356,26 +357,35 @@ class _OpeningStockState extends State<OpeningStock> {
   widgetPrefix() {
     return Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(
-          actions: [
-            TextButton(
-                child: const Text(
-                  " New ",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue[700],
-                ),
-                onPressed: () async {
-                  setState(() {
-                    widgetID = false;
-                  });
-                }),
-          ],
-          title: const Text('Opening Stock'),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidgget(
+            headTxt: 'Opening Stock',
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
+        //  AppBar(
+        //   actions: [
+        //     TextButton(
+        //         child: const Text(
+        //           " New ",
+        //           style: TextStyle(
+        //               color: Colors.white, fontWeight: FontWeight.bold),
+        //         ),
+        //         style: TextButton.styleFrom(
+        //           foregroundColor: Colors.white,
+        //           backgroundColor: Colors.blue[700],
+        //         ),
+        //         onPressed: () async {
+        //           setState(() {
+        //             widgetID = false;
+        //           });
+        //         }),
+        //   ],
+        //   title: const Text('Opening Stock'),
+        // ),
         body: Container(
           child: previousBill(),
         ));
@@ -501,9 +511,14 @@ class _OpeningStockState extends State<OpeningStock> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Cart"),
+              const Text(
+                "No items in Cart",
+                style: TextStyle(fontFamily: 'poppins'),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5))),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -515,7 +530,10 @@ class _OpeningStockState extends State<OpeningStock> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New Opening Stock'))
+                  label: const Text(
+                    'Take New Opening Stock',
+                    style: TextStyle(fontFamily: 'poppins'),
+                  ))
             ],
           ));
   }
@@ -645,60 +663,106 @@ class _OpeningStockState extends State<OpeningStock> {
 
   purchaseHeaderWidget() {
     return Center(
-        child: Column(
-      children: [
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const Text(
-                  'Date : ',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                InkWell(
-                  child: Text(
-                    formattedDate!,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  onTap: () => _selectDate(),
-                ),
-                const Text(
-                  'Tax:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Checkbox(
-                  checkColor: Colors.greenAccent,
-                  activeColor: Colors.red,
-                  value: isTax,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isTax = value!;
-                    });
-                  },
-                ),
-              ],
-            ),
-            ListTile(
-              title: Text(
-                  purchaseAccountList.isNotEmpty
-                      ? purchaseAccountList[0]['name']
-                      : '',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        InkWell(
-            child: const Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    'Item Add',
+        child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  const Text(
+                    'Date',
                     style: TextStyle(
-                        color: blue, fontSize: 25, fontWeight: FontWeight.bold),
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
                   ),
-                )),
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding:
+                          const EdgeInsetsDirectional.symmetric(horizontal: 5),
+                      height: 40,
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Center(
+                        child: Row(
+                          children: [
+                            Text(
+                              formattedDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: grey,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    onTap: () => _selectDate(),
+                  ),
+                  const SizedBox(
+                    width: 30,
+                  ),
+                  Container(
+                    width: MediaQuery.sizeOf(context).width / 2.8,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        color: kPrimaryColor),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Checkbox(
+                          checkColor: kPrimaryColor,
+                          activeColor: white,
+                          side: const BorderSide(color: white),
+                          value: isTax,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              isTax = value!;
+                            });
+                          },
+                        ),
+                        const Text(
+                          'Tax',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: white,
+                              fontFamily: 'poppins'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              ListTile(
+                title: Center(
+                  child: Text(
+                      purchaseAccountList.isNotEmpty
+                          ? purchaseAccountList[0]['name']
+                          : '',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: kPrimaryColor)),
+                ),
+              ),
+            ],
+          ),
+          InkWell(
             onTap: () {
               setState(() {
                 clearValue();
@@ -706,8 +770,51 @@ class _OpeningStockState extends State<OpeningStock> {
                 nextWidget = 1;
                 ledgerModel = null;
               });
-            }),
-      ],
+            },
+            child: Container(
+              width: 120,
+              height: 40,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5), color: kPrimaryColor),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add,
+                    color: white,
+                  ),
+                  Text(
+                    'Item Add',
+                    style: TextStyle(
+                      color: white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // InkWell(
+          //     child: Padding(
+          //       padding: EdgeInsets.only(right: 8.0),
+          //       child: Text(
+          //         'Item Add',
+          //         style: TextStyle(
+          //             color: blue, fontSize: 25, fontWeight: FontWeight.bold),
+          //       ),
+          //     ),
+          //     onTap: () {
+          //       setState(() {
+          //         clearValue();
+          //         editItem = false;
+          //         nextWidget = 1;
+          //         ledgerModel = null;
+          //       });
+          //     }),
+        ],
+      ),
     ));
   }
 
@@ -731,14 +838,20 @@ class _OpeningStockState extends State<OpeningStock> {
               itemBuilder: (context, index) {
                 return index == 0
                     ? Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                         child: Row(
                           children: [
                             Flexible(
                               child: TextField(
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
-                                  label: Text('Search...'),
+                                  label: Text(
+                                    'Search...',
+                                    style: TextStyle(
+                                      fontFamily: 'poppins',
+                                    ),
+                                  ),
                                 ),
                                 onChanged: (text) {
                                   text = text.toLowerCase();
