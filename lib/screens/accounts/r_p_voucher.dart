@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +22,7 @@ import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
@@ -331,6 +334,8 @@ class _RPVoucherState extends State<RPVoucher> {
           actions: [
             TextButton(
                 style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4)),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -423,9 +428,9 @@ class _RPVoucherState extends State<RPVoucher> {
                   )),
                 ],
               )
-            : Row(
+            : const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
+                children: [
                   Expanded(
                       child: Text(
                     'Balance : 0',
@@ -818,23 +823,37 @@ class _RPVoucherState extends State<RPVoucher> {
 
   var _dropDownValue = '';
   widgetAccount() {
-    return DropdownButton<String>(
-      hint: Text(_dropDownValue.isNotEmpty
-          ? _dropDownValue.split('-')[1]
-          : 'Select cash account'),
-      items: cashBankACList.map<DropdownMenuItem<String>>((item) {
-        return DropdownMenuItem<String>(
-          value: item.id.toString() + "-" + item.name,
-          child: Text(item.name),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _dropDownValue = value!;
-          accountId = value.split('-')[0];
-          accountName = value.split('-')[1];
-        });
-      },
+    return Container(
+      padding: const EdgeInsets.only(left: 3),
+      width: MediaQuery.sizeOf(context).width,
+      decoration: BoxDecoration(
+          border: Border.all(color: grey),
+          borderRadius: BorderRadius.circular(3)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Center(
+            child: Text(
+              _dropDownValue.isNotEmpty
+                  ? _dropDownValue.split('-')[1]
+                  : 'Select cash account',
+              style: const TextStyle(fontFamily: 'poppins', color: black),
+            ),
+          ),
+          items: cashBankACList.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: item.id.toString() + "-" + item.name,
+              child: Text(item.name),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _dropDownValue = value!;
+              accountId = value.split('-')[0];
+              accountName = value.split('-')[1];
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -903,13 +922,21 @@ class _RPVoucherState extends State<RPVoucher> {
             children: [
               Text("No data in" + mode),
               TextButton.icon(
+                  style: const ButtonStyle(
+                      backgroundColor: MaterialStatePropertyAll(kPrimaryColor)),
                   onPressed: () {
                     setState(() {
                       widgetID = false;
                     });
                   },
-                  icon: const Icon(Icons.shopping_bag),
-                  label: Text('Take New ' + mode))
+                  icon: const Icon(
+                    Icons.shopping_bag,
+                    color: white,
+                  ),
+                  label: Text(
+                    'Take New ' + mode,
+                    style: const TextStyle(color: white, fontFamily: 'poppins'),
+                  ))
             ],
           ));
   }
@@ -1010,106 +1037,184 @@ class _RPVoucherState extends State<RPVoucher> {
   }
 
   voucherWidget(var mode) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Text(
-              'Date : ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            InkWell(
-              child: Text(
-                formattedDate!,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              onTap: () => _selectDate(),
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Text('Cash Account',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            widgetAccount(),
-          ],
-        ),
-        Card(
-          elevation: 5,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              TextButton(
-                onPressed: () {
-                  var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
-                  Navigator.pushNamed(context, '/ledger',
-                      arguments: {'parent': under});
-                },
-                child: const Text('Add new ledger'),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.add_circle,
-                  color: kPrimaryColor,
+              // const Text(
+              //   'Date : ',
+              //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              // ),
+              Flexible(
+                flex: 1,
+                child: Expanded(
+                  child: ContainerFieldWidget(
+                      widget: InkWell(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          // width: 140,
+                          height: 40,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                formattedDate!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                    fontFamily: 'poppins'),
+                              ),
+                              const Icon(
+                                Icons.calendar_month_outlined,
+                                size: 20,
+                                color: grey,
+                              )
+                            ],
+                          ),
+                        ),
+                        onTap: () => _selectDate(),
+                      ),
+                      headTxt: 'Date'),
                 ),
-                onPressed: () {
-                  var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
-                  Navigator.pushNamed(context, '/ledger',
-                      arguments: {'parent': under});
-                },
               ),
+              const SizedBox(
+                width: 8,
+              ),
+              Expanded(
+                flex: 2,
+                // width: 200,
+                child: ContainerFieldWidget(
+                    widget: widgetAccount(), headTxt: 'Cash Account'),
+              )
             ],
           ),
-        ),
-        const Divider(),
-        DropdownSearch<LedgerModel>(
-          popupProps: PopupPropsMultiSelection.modalBottomSheet(
-              showSearchBox: true,
-              isFilterOnline: true,
-              constraints: BoxConstraints(
-                maxHeight: 300,
-              )),
-          asyncItems: (String filter) async {
-            nameLike = filter.isNotEmpty ? filter : 'a';
-            var models = api.getCustomerNameListLike(
-                groupId, areaId, routeId, salesManId, nameLike);
-            return models;
-          },
-          dropdownDecoratorProps: DropDownDecoratorProps(
-            dropdownSearchDecoration: InputDecoration(
-                border: OutlineInputBorder(), labelText: "Select Ledger Name"),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          //   children: [
+          //     const Text('Cash Account',
+          //         style: TextStyle(fontWeight: FontWeight.bold)),
+          //     widgetAccount(),
+          //   ],
+          // ),
+          const SizedBox(
+            height: 10,
           ),
-          onChanged: (LedgerModel? data) {
-            // print(data);
-            ledData = data;
-            setState(() {
-              isSelected = true;
-            });
-          },
-          selectedItem: ledData,
-        ),
-        const Divider(),
-        isSelected
-            ? ledgerDetailWidget(ledData!.id)
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Expanded(
-                      child: Text(
-                    'Balance : 0',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  elevation: 3,
+                  backgroundColor: kPrimaryColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5))),
+              onPressed: () {
+                var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+                Navigator.pushNamed(context, '/ledger',
+                    arguments: {'parent': under});
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add,
+                    color: white,
+                  ),
+                  Text(
+                    'Add New Ledger',
+                    style: TextStyle(
+                        fontFamily: 'poppins', color: white, fontSize: 16),
+                  )
                 ],
+              )),
+          // Card(
+          //   elevation: 5,
+          //   color: kPrimaryColor,
+
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: [
+          //       TextButton(
+          //         onPressed: () {
+          //           var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+          //           Navigator.pushNamed(context, '/ledger',
+          //               arguments: {'parent': under});
+          //         },
+          //         child: const Text('Add new ledger'),
+          //       ),
+          //       IconButton(
+          //         icon: const Icon(
+          //           Icons.add_circle,
+          //           color: kPrimaryColor,
+          //         ),
+          //         onPressed: () {
+          //           var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+          //           Navigator.pushNamed(context, '/ledger',
+          //               arguments: {'parent': under});
+          //         },
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          const SizedBox(
+            height: 10,
+          ),
+          ContainerFieldWidget(
+              widget: DropdownSearch<LedgerModel>(
+                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    showSearchBox: true,
+                    isFilterOnline: true,
+                    constraints: BoxConstraints(
+                      maxHeight: 300,
+                    )),
+                asyncItems: (String filter) async {
+                  nameLike = filter.isNotEmpty ? filter : 'a';
+                  var models = api.getCustomerNameListLike(
+                      groupId, areaId, routeId, salesManId, nameLike);
+                  return models;
+                },
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                onChanged: (LedgerModel? data) {
+                  // print(data);
+                  ledData = data;
+                  setState(() {
+                    isSelected = true;
+                  });
+                },
+                selectedItem: ledData,
               ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
+              headTxt: 'Select Ledger Name'),
+          const SizedBox(
+            height: 15,
+          ),
+          isSelected
+              ? ledgerDetailWidget(ledData!.id)
+              : const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                        child: Text(
+                      'Balance : 0',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 17,
+                          fontFamily: 'poppins',
+                          color: kPrimaryColor),
+                    )),
+                  ],
+                ),
+          const SizedBox(
+            height: 15,
+          ),
+          ContainerFieldWidget(
+              widget: TextField(
                 controller: _controllerAmount,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1119,7 +1224,6 @@ class _RPVoucherState extends State<RPVoucher> {
                 ],
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('Amount'),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -1132,15 +1236,12 @@ class _RPVoucherState extends State<RPVoucher> {
                   });
                 },
               ),
-            ),
-          ],
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
+              headTxt: 'Ammount'),
+          const SizedBox(
+            height: 10,
+          ),
+          ContainerFieldWidget(
+              widget: TextField(
                 controller: _controllerDiscount,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -1150,7 +1251,6 @@ class _RPVoucherState extends State<RPVoucher> {
                 ],
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('Discount'),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -1163,30 +1263,32 @@ class _RPVoucherState extends State<RPVoucher> {
                   });
                 },
               ),
-            ),
-          ],
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-                child: Text(
-              'Total : ${total!.toStringAsFixed(0)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            )),
-          ],
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
+              headTxt: 'Discount'),
+          const SizedBox(
+            height: 15,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                  child: Text(
+                'Total : ${total!.toStringAsFixed(0)}',
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    fontFamily: 'poppins',
+                    color: kPrimaryColor),
+              )),
+            ],
+          ),
+          const SizedBox(
+            height: 15,
+          ),
+          ContainerFieldWidget(
+              widget: TextField(
                 controller: _controllerNarration,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('Narration'),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -1194,11 +1296,10 @@ class _RPVoucherState extends State<RPVoucher> {
                   });
                 },
               ),
-            ),
-          ],
-        ),
-        const Divider(),
-      ],
+              headTxt: 'Narration')
+          // const Divider(),
+        ],
+      ),
     );
   }
 
