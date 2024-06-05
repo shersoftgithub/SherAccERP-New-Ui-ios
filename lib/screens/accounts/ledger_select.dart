@@ -1,4 +1,5 @@
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_parent.dart';
@@ -8,6 +9,7 @@ import 'package:sheraccerp/screens/report_view.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 
 class LedgerSelect extends StatefulWidget {
   const LedgerSelect({Key? key}) : super(key: key);
@@ -249,6 +251,8 @@ class _LedgerSelectState extends State<LedgerSelect> {
               },
               icon: const Icon(Icons.clear))
         ],
+        titleTextStyle:
+            const TextStyle(fontFamily: 'poppins', fontWeight: FontWeight.w500),
         title: Text(mode == 'ledger'
             ? 'Ledger Report'
             : mode == 'billByBill'
@@ -309,62 +313,131 @@ class _LedgerSelectState extends State<LedgerSelect> {
   _loadWidget() {
     return mode == "ledger"
         ? Container(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _ledger,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
+                      fontWeight: FontWeight.w500,
+                      color: kPrimaryColor,
+                      fontSize: 18,
+                      fontFamily: 'poppins'),
                 ),
-                Card(
-                  elevation: 0.5,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Text(
-                        'From : ',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      InkWell(
-                        child: Text(
-                          fromDate!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 22),
-                        ),
-                        onTap: () => _selectDate('f'),
-                      ),
-                      const Text(
-                        'To : ',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      InkWell(
-                        child: Text(
-                          toDate!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 22),
-                        ),
-                        onTap: () => _selectDate('t'),
-                      ),
-                    ],
-                  ),
+                const SizedBox(
+                  height: 15,
                 ),
                 Row(
                   children: [
-                    const Text('Opening Balance'),
+                    const Text(
+                      'From ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          fontFamily: 'poppins'),
+                    ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: Row(
+                          children: [
+                            Text(
+                              fromDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: grey,
+                              size: 20,
+                            )
+                          ],
+                        ),
+                      ),
+                      onTap: () => _selectDate('f'),
+                    ),
+                    const SizedBox(
+                      width: 16,
+                    ),
+                    const Text(
+                      'To ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          fontFamily: 'poppins'),
+                    ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: Row(
+                          children: [
+                            Text(
+                              toDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: grey,
+                              size: 20,
+                            )
+                          ],
+                        ),
+                      ),
+                      onTap: () => _selectDate('t'),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    const Text(
+                      'Opening Balance',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          fontFamily: 'poppins'),
+                    ),
                     Checkbox(
                       value: _ob,
+                      activeColor: kPrimaryColor,
                       onChanged: (value) {
                         setState(() {
                           _ob = value!;
                         });
                       },
                     ),
-                    const Text('Show Qty'),
+                    const Text(
+                      'Show Qty',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          fontFamily: 'poppins'),
+                    ),
                     Checkbox(
                       value: _showQty,
+                      activeColor: kPrimaryColor,
                       onChanged: (value) {
                         setState(() {
                           _showQty = value!;
@@ -372,6 +445,9 @@ class _LedgerSelectState extends State<LedgerSelect> {
                       },
                     )
                   ],
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
                 // Card(
                 //   elevation: 2,
@@ -390,22 +466,28 @@ class _LedgerSelectState extends State<LedgerSelect> {
                 //     },
                 //   ),
                 // ),
-                DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                      showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
-                  asyncItems: (String filter) =>
-                      api.getSalesListData(filter, 'sales_list/location'),
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        label: Text('Select Branch')),
-                  ),
-                  onChanged: (dynamic data) {
-                    locationId = data;
-                  },
+                ContainerFieldWidget(
+                    widget: DropdownSearch<dynamic>(
+                      popupProps:
+                          const PopupPropsMultiSelection.modalBottomSheet(
+                              showSearchBox: true,
+                              constraints: BoxConstraints(
+                                maxHeight: 300,
+                              )),
+                      asyncItems: (String filter) =>
+                          api.getSalesListData(filter, 'sales_list/location'),
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        dropdownSearchDecoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      onChanged: (dynamic data) {
+                        locationId = data;
+                      },
+                    ),
+                    headTxt: 'Select Branch'),
+                const SizedBox(
+                  height: 10,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -433,12 +515,23 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                     route!)));
                       },
                       style: ButtonStyle(
+                        shape: MaterialStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
                         backgroundColor:
                             MaterialStateProperty.all<Color>(kPrimaryColor),
                         foregroundColor:
                             MaterialStateProperty.all<Color>(Colors.white),
                       ),
-                      child: const Text('Show'),
+                      child: const Text(
+                        'Show',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            fontFamily: 'poppins'),
+                      ),
                     ),
                     const SizedBox(
                       width: 20,
@@ -450,47 +543,103 @@ class _LedgerSelectState extends State<LedgerSelect> {
           )
         : mode == "DayBook"
             ? Container(
-                padding: const EdgeInsets.all(8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _ledger,
                       style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 18),
+                          fontWeight: FontWeight.w500,
+                          fontSize: 18,
+                          color: kPrimaryColor,
+                          fontFamily: 'poppins'),
                     ),
-                    Card(
-                      elevation: 0.5,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          const Text(
-                            'From : ',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          InkWell(
-                            child: Text(
-                              fromDate!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 22),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          'From ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              fontFamily: 'poppins'),
+                        ),
+                        InkWell(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Row(
+                              children: [
+                                Text(
+                                  fromDate!,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                      fontFamily: 'poppins'),
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  color: grey,
+                                  size: 20,
+                                )
+                              ],
                             ),
-                            onTap: () => _selectDate('f'),
                           ),
-                          const Text(
-                            'To : ',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          InkWell(
-                            child: Text(
-                              toDate!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 22),
+                          onTap: () => _selectDate('f'),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        const Text(
+                          'To ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              fontFamily: 'poppins'),
+                        ),
+                        InkWell(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 5),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Row(
+                              children: [
+                                Text(
+                                  toDate!,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                      fontFamily: 'poppins'),
+                                ),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  color: grey,
+                                  size: 20,
+                                )
+                              ],
                             ),
-                            onTap: () => _selectDate('t'),
                           ),
-                        ],
-                      ),
+                          onTap: () => _selectDate('t'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
                     ),
                     // Card(
                     //   elevation: 2,
@@ -510,58 +659,81 @@ class _LedgerSelectState extends State<LedgerSelect> {
                     //     },
                     //   ),
                     // ),
-                    DropdownSearch<dynamic>(
-                      popupProps:
-                          const PopupPropsMultiSelection.modalBottomSheet(
-                              showSearchBox: true,
-                              constraints: BoxConstraints(
-                                maxHeight: 300,
-                              )),
-                      asyncItems: (String filter) =>
-                          api.getSalesListData(filter, 'sales_list/location'),
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            label: Text('Select Branch')),
-                      ),
-                      onChanged: (dynamic data) {
-                        locationId = data;
-                      },
+                    ContainerFieldWidget(
+                        widget: DropdownSearch<dynamic>(
+                          popupProps:
+                              const PopupPropsMultiSelection.modalBottomSheet(
+                                  showSearchBox: true,
+                                  constraints: BoxConstraints(
+                                    maxHeight: 300,
+                                  )),
+                          asyncItems: (String filter) => api.getSalesListData(
+                              filter, 'sales_list/location'),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          onChanged: (dynamic data) {
+                            locationId = data;
+                          },
+                        ),
+                        headTxt: 'Select Branch'),
+                    const SizedBox(
+                      height: 10,
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => ReportView(
-                                    _id.toString(),
-                                    '1',
-                                    DateUtil.dateDMY2YMD(fromDate),
-                                    DateUtil.dateDMY2YMD(toDate),
-                                    'Day Book',
-                                    _ledger,
-                                    statement,
-                                    salesMan,
-                                    locationId != null
-                                        ? [locationId.id]
-                                        : [_dropDownBranchId],
-                                    area!,
-                                    route!)));
-                      },
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(kPrimaryColor),
-                        foregroundColor:
-                            MaterialStateProperty.all<Color>(Colors.white),
-                      ),
-                      child: const Text('Show'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        ReportView(
+                                            _id.toString(),
+                                            '1',
+                                            DateUtil.dateDMY2YMD(fromDate),
+                                            DateUtil.dateDMY2YMD(toDate),
+                                            'Day Book',
+                                            _ledger,
+                                            statement,
+                                            salesMan,
+                                            locationId != null
+                                                ? [locationId.id]
+                                                : [_dropDownBranchId],
+                                            area!,
+                                            route!)));
+                          },
+                          style: ButtonStyle(
+                            shape: MaterialStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
+                            backgroundColor:
+                                MaterialStateProperty.all<Color>(kPrimaryColor),
+                            foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                          ),
+                          child: const Text(
+                            'Show',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                        ),
+                      ],
                     )
                   ],
                 ),
               )
             : mode == "TrialBalance"
                 ? Container(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
                     child: Column(
                       children: [
                         // Text(
@@ -569,41 +741,87 @@ class _LedgerSelectState extends State<LedgerSelect> {
                         //   style: TextStyle(
                         //       fontWeight: FontWeight.bold, fontSize: 18),
                         // ),
-                        Card(
-                          elevation: 0.5,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              const Text(
-                                'From : ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              InkWell(
-                                child: Text(
-                                  fromDate!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22),
+                        Row(
+                          children: [
+                            const Text(
+                              'From ',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  fontFamily: 'poppins'),
+                            ),
+                            InkWell(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 5),
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      fromDate!,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                          fontFamily: 'poppins'),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    const Icon(
+                                      Icons.calendar_month_outlined,
+                                      color: grey,
+                                      size: 20,
+                                    )
+                                  ],
                                 ),
-                                onTap: () => _selectDate('f'),
                               ),
-                              const Text(
-                                'To : ',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              InkWell(
-                                child: Text(
-                                  toDate!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22),
+                              onTap: () => _selectDate('f'),
+                            ),
+                            const SizedBox(
+                              width: 16,
+                            ),
+                            const Text(
+                              'To ',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                  fontFamily: 'poppins'),
+                            ),
+                            InkWell(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      toDate!,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                          fontFamily: 'poppins'),
+                                    ),
+                                    const SizedBox(
+                                      width: 8,
+                                    ),
+                                    const Icon(
+                                      Icons.calendar_month_outlined,
+                                      color: grey,
+                                      size: 20,
+                                    )
+                                  ],
                                 ),
-                                onTap: () => _selectDate('t'),
                               ),
-                            ],
-                          ),
+                              onTap: () => _selectDate('t'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
                         ),
                         // Card(
                         //   elevation: 2,
@@ -648,142 +866,268 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                             route!)));
                           },
                           style: ButtonStyle(
+                            shape: MaterialStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                            ),
                             backgroundColor:
                                 MaterialStateProperty.all<Color>(kPrimaryColor),
                             foregroundColor:
                                 MaterialStateProperty.all<Color>(Colors.white),
                           ),
-                          child: const Text('Show'),
+                          child: const Text(
+                            'Show',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
                         )
                       ],
                     ),
                   )
                 : mode == 'CashFlow'
                     ? Container(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               _ledger,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 18),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18,
+                                  color: kPrimaryColor,
+                                  fontFamily: 'poppins'),
                             ),
-                            Card(
-                              elevation: 0.5,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  const Text(
-                                    'From : ',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  InkWell(
-                                    child: Text(
-                                      fromDate!,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 22),
-                                    ),
-                                    onTap: () => _selectDate('f'),
-                                  ),
-                                  const Text(
-                                    'To : ',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
-                                  ),
-                                  InkWell(
-                                    child: Text(
-                                      toDate!,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 22),
-                                    ),
-                                    onTap: () => _selectDate('t'),
-                                  ),
-                                ],
-                              ),
+                            const SizedBox(
+                              height: 15,
                             ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (BuildContext context) =>
-                                            ReportView(
-                                                _id.toString(),
-                                                '1',
-                                                DateUtil.dateDMY2YMD(fromDate),
-                                                DateUtil.dateDMY2YMD(toDate),
-                                                'Cash Flow',
-                                                _ledger,
-                                                statement,
-                                                salesMan,
-                                                locationId != null
-                                                    ? [locationId.id]
-                                                    : [_dropDownBranchId],
-                                                area!,
-                                                route!)));
-                              },
-                              style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        kPrimaryColor),
-                                foregroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Colors.white),
-                              ),
-                              child: const Text('Show'),
+                            Row(
+                              children: [
+                                const Text(
+                                  'From ',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      fontFamily: 'poppins'),
+                                ),
+                                InkWell(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 5),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          fromDate!,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 15,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        const Icon(
+                                          Icons.calendar_month_outlined,
+                                          color: grey,
+                                          size: 20,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () => _selectDate('f'),
+                                ),
+                                const SizedBox(
+                                  width: 16,
+                                ),
+                                const Text(
+                                  'To ',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      fontFamily: 'poppins'),
+                                ),
+                                InkWell(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 5),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          toDate!,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 15,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        const Icon(
+                                          Icons.calendar_month_outlined,
+                                          color: grey,
+                                          size: 20,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () => _selectDate('t'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (BuildContext context) =>
+                                                ReportView(
+                                                    _id.toString(),
+                                                    '1',
+                                                    DateUtil.dateDMY2YMD(
+                                                        fromDate),
+                                                    DateUtil.dateDMY2YMD(
+                                                        toDate),
+                                                    'Cash Flow',
+                                                    _ledger,
+                                                    statement,
+                                                    salesMan,
+                                                    locationId != null
+                                                        ? [locationId.id]
+                                                        : [_dropDownBranchId],
+                                                    area!,
+                                                    route!)));
+                                  },
+                                  style: ButtonStyle(
+                                    shape: MaterialStatePropertyAll(
+                                      RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ),
+                                    backgroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            kPrimaryColor),
+                                    foregroundColor:
+                                        MaterialStateProperty.all<Color>(
+                                            Colors.white),
+                                  ),
+                                  child: const Text(
+                                    'Show',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                                  ),
+                                ),
+                              ],
                             )
                           ],
                         ),
                       )
                     : mode == 'FundFlow'
                         ? Container(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 16),
                             child: Column(
                               children: [
-                                Card(
-                                  elevation: 0.5,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceAround,
-                                    children: [
-                                      const Text(
-                                        'From : ',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
-                                      InkWell(
-                                        child: Text(
-                                          fromDate!,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 22),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'From ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          fontFamily: 'poppins'),
+                                    ),
+                                    InkWell(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 5),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(color: grey),
+                                            borderRadius:
+                                                BorderRadius.circular(3)),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              fromDate!,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 15,
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            const SizedBox(
+                                              width: 8,
+                                            ),
+                                            const Icon(
+                                              Icons.calendar_month_outlined,
+                                              color: grey,
+                                              size: 20,
+                                            )
+                                          ],
                                         ),
-                                        onTap: () => _selectDate('f'),
                                       ),
-                                      const Text(
-                                        'To : ',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
-                                      InkWell(
-                                        child: Text(
-                                          toDate!,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 22),
+                                      onTap: () => _selectDate('f'),
+                                    ),
+                                    const SizedBox(
+                                      width: 16,
+                                    ),
+                                    const Text(
+                                      'To ',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          fontFamily: 'poppins'),
+                                    ),
+                                    InkWell(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 5),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(color: grey),
+                                            borderRadius:
+                                                BorderRadius.circular(3)),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              toDate!,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 15,
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            const SizedBox(
+                                              width: 8,
+                                            ),
+                                            const Icon(
+                                              Icons.calendar_month_outlined,
+                                              color: grey,
+                                              size: 20,
+                                            )
+                                          ],
                                         ),
-                                        onTap: () => _selectDate('t'),
                                       ),
-                                    ],
-                                  ),
+                                      onTap: () => _selectDate('t'),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  height: 10,
                                 ),
                                 // Row(
                                 //   children: [
@@ -843,6 +1187,10 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                     route!)));
                                   },
                                   style: ButtonStyle(
+                                    shape: MaterialStatePropertyAll(
+                                        RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     backgroundColor:
                                         MaterialStateProperty.all<Color>(
                                             kPrimaryColor),
@@ -850,54 +1198,108 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                         MaterialStateProperty.all<Color>(
                                             Colors.white),
                                   ),
-                                  child: const Text('Show'),
+                                  child: const Text(
+                                    'Show',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                                  ),
                                 )
                               ],
                             ),
                           )
                         : mode == 'InvoiceWiseBalanceCustomers'
                             ? Container(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
                                 child: Column(
                                   children: [
-                                    Card(
-                                      elevation: 0.5,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          const Text(
-                                            'From : ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16),
-                                          ),
-                                          InkWell(
-                                            child: Text(
-                                              fromDate!,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 22),
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          'From ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        InkWell(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 5),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  fromDate!,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 15,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                const SizedBox(
+                                                  width: 8,
+                                                ),
+                                                const Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: grey,
+                                                  size: 20,
+                                                )
+                                              ],
                                             ),
-                                            onTap: () => _selectDate('f'),
                                           ),
-                                          const Text(
-                                            'To : ',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16),
-                                          ),
-                                          InkWell(
-                                            child: Text(
-                                              toDate!,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 22),
+                                          onTap: () => _selectDate('f'),
+                                        ),
+                                        const SizedBox(
+                                          width: 16,
+                                        ),
+                                        const Text(
+                                          'To ',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        InkWell(
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 5),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  toDate!,
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 15,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                const SizedBox(
+                                                  width: 8,
+                                                ),
+                                                const Icon(
+                                                  Icons.calendar_month_outlined,
+                                                  color: grey,
+                                                  size: 20,
+                                                )
+                                              ],
                                             ),
-                                            onTap: () => _selectDate('t'),
                                           ),
-                                        ],
-                                      ),
+                                          onTap: () => _selectDate('t'),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -926,6 +1328,12 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                         route!)));
                                       },
                                       style: ButtonStyle(
+                                        shape: MaterialStatePropertyAll(
+                                          RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                          ),
+                                        ),
                                         backgroundColor:
                                             MaterialStateProperty.all<Color>(
                                                 kPrimaryColor),
@@ -933,56 +1341,120 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                             MaterialStateProperty.all<Color>(
                                                 Colors.white),
                                       ),
-                                      child: const Text('Show'),
+                                      child: const Text(
+                                        'Show',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                            fontFamily: 'poppins'),
+                                      ),
                                     )
                                   ],
                                 ),
                               )
                             : mode == 'InvoiceWiseBalanceSuppliers'
                                 ? Container(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 16),
                                     child: Column(
                                       children: [
-                                        Card(
-                                          elevation: 0.5,
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              const Text(
-                                                'From : ',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16),
-                                              ),
-                                              InkWell(
-                                                child: Text(
-                                                  fromDate!,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 22),
+                                        Row(
+                                          children: [
+                                            const Text(
+                                              'From ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 16,
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 5),
+                                                decoration: BoxDecoration(
+                                                    border:
+                                                        Border.all(color: grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      fromDate!,
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 8,
+                                                    ),
+                                                    const Icon(
+                                                      Icons
+                                                          .calendar_month_outlined,
+                                                      color: grey,
+                                                      size: 20,
+                                                    )
+                                                  ],
                                                 ),
-                                                onTap: () => _selectDate('f'),
                                               ),
-                                              const Text(
-                                                'To : ',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16),
-                                              ),
-                                              InkWell(
-                                                child: Text(
-                                                  toDate!,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 22),
+                                              onTap: () => _selectDate('f'),
+                                            ),
+                                            const SizedBox(
+                                              width: 16,
+                                            ),
+                                            const Text(
+                                              'To ',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 16,
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 5),
+                                                decoration: BoxDecoration(
+                                                    border:
+                                                        Border.all(color: grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      toDate!,
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    const Icon(
+                                                      Icons
+                                                          .calendar_month_outlined,
+                                                      color: grey,
+                                                      size: 20,
+                                                    )
+                                                  ],
                                                 ),
-                                                onTap: () => _selectDate('t'),
                                               ),
-                                            ],
-                                          ),
+                                              onTap: () => _selectDate('t'),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
                                         ),
                                         TextButton(
                                           onPressed: () {
@@ -1017,6 +1489,12 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                             route!)));
                                           },
                                           style: ButtonStyle(
+                                            shape: MaterialStatePropertyAll(
+                                              RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(3),
+                                              ),
+                                            ),
                                             backgroundColor:
                                                 MaterialStateProperty.all<
                                                     Color>(kPrimaryColor),
@@ -1024,194 +1502,327 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                 MaterialStateProperty.all<
                                                     Color>(Colors.white),
                                           ),
-                                          child: const Text('Show'),
+                                          child: const Text(
+                                            'Show',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 15,
+                                                fontFamily: 'poppins'),
+                                          ),
                                         )
                                       ],
                                     ),
                                   )
                                 : mode == 'GroupList'
                                     ? Container(
-                                        padding: const EdgeInsets.all(8.0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 16),
                                         child: Column(
                                           children: [
-                                            Text(
-                                              _ledger,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18),
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Text(
+                                                _ledger,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 18,
+                                                    color: kPrimaryColor,
+                                                    fontFamily: 'poppins'),
+                                              ),
                                             ),
-                                            Card(
-                                              elevation: 0.5,
+                                            const SizedBox(
+                                              height: 15,
+                                            ),
+                                            Row(
+                                              children: [
+                                                const Text(
+                                                  'From ',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 16,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                InkWell(
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 5),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(3)),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          fromDate!,
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 15,
+                                                              fontFamily:
+                                                                  'poppins'),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        const Icon(
+                                                          Icons
+                                                              .calendar_month_outlined,
+                                                          color: grey,
+                                                          size: 20,
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onTap: () => _selectDate('f'),
+                                                ),
+                                                const SizedBox(
+                                                  width: 16,
+                                                ),
+                                                const Text(
+                                                  'To ',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: 16,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                InkWell(
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 5),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(3)),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          toDate!,
+                                                          style: const TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 15,
+                                                              fontFamily:
+                                                                  'poppins'),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 8,
+                                                        ),
+                                                        const Icon(
+                                                          Icons
+                                                              .calendar_month_outlined,
+                                                          color: grey,
+                                                          size: 20,
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  onTap: () => _selectDate('t'),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            Container(
+                                              width: MediaQuery.sizeOf(context)
+                                                  .width,
+                                              height: 40,
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(3),
+                                                  border:
+                                                      Border.all(color: grey)),
                                               child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
                                                 children: [
-                                                  const Text(
-                                                    'From : ',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 16),
-                                                  ),
-                                                  InkWell(
-                                                    child: Text(
-                                                      fromDate!,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 22),
-                                                    ),
-                                                    onTap: () =>
-                                                        _selectDate('f'),
+                                                  Radio(
+                                                    value: 1,
+                                                    activeColor: kPrimaryColor,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        rdId = 1;
+                                                        radioButtonItem = 'All';
+                                                        _gAll = true;
+                                                        _ob = false;
+                                                        _0b = false;
+                                                      });
+                                                    },
+                                                    groupValue: rdId,
                                                   ),
                                                   const Text(
-                                                    'To : ',
+                                                    'All',
                                                     style: TextStyle(
                                                         fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 16),
+                                                            FontWeight.w500,
+                                                        fontSize: 15,
+                                                        fontFamily: 'poppins'),
                                                   ),
-                                                  InkWell(
-                                                    child: Text(
-                                                      toDate!,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 22),
-                                                    ),
-                                                    onTap: () =>
-                                                        _selectDate('t'),
+                                                  const SizedBox(
+                                                    width: 20,
+                                                  ),
+                                                  Radio(
+                                                    value: 2,
+                                                    activeColor: kPrimaryColor,
+                                                    groupValue: rdId,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        rdId = 2;
+                                                        radioButtonItem =
+                                                            'Balance';
+                                                        _ob = true;
+                                                        _gAll = false;
+                                                        _0b = false;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                    'Balance',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15,
+                                                        fontFamily: 'poppins'),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 10,
+                                                  ),
+                                                  Radio(
+                                                    value: 3,
+                                                    activeColor: kPrimaryColor,
+                                                    groupValue: rdId,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        rdId = 3;
+                                                        radioButtonItem =
+                                                            '0 Balance';
+                                                        _0b = true;
+                                                        _gAll = false;
+                                                        _ob = false;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                    '0 Balance',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15,
+                                                        fontFamily: 'poppins'),
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Radio(
-                                                  value: 1,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      rdId = 1;
-                                                      radioButtonItem = 'All';
-                                                      _gAll = true;
-                                                      _ob = false;
-                                                      _0b = false;
-                                                    });
-                                                  },
-                                                  groupValue: rdId,
-                                                ),
-                                                const Text('All'),
-                                                Radio(
-                                                  value: 2,
-                                                  groupValue: rdId,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      rdId = 2;
-                                                      radioButtonItem =
-                                                          'Balance';
-                                                      _ob = true;
-                                                      _gAll = false;
-                                                      _0b = false;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('Balance'),
-                                                Radio(
-                                                  value: 3,
-                                                  groupValue: rdId,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      rdId = 3;
-                                                      radioButtonItem =
-                                                          '0 Balance';
-                                                      _0b = true;
-                                                      _gAll = false;
-                                                      _ob = false;
-                                                    });
-                                                  },
-                                                ),
-                                                const Text('0 Balance'),
-                                              ],
+                                            const SizedBox(
+                                              height: 10,
                                             ),
-                                            DropdownSearch<dynamic>(
-                                              popupProps:
-                                                  const PopupPropsMultiSelection
-                                                      .modalBottomSheet(
-                                                      showSearchBox: true,
-                                                      constraints:
-                                                          BoxConstraints(
-                                                              maxHeight: 300)),
-                                              asyncItems: (String filter) =>
-                                                  api.getSalesListData(filter,
-                                                      'sales_list/location'),
-                                              dropdownDecoratorProps:
-                                                  const DropDownDecoratorProps(
-                                                dropdownSearchDecoration:
-                                                    InputDecoration(
-                                                        border:
-                                                            OutlineInputBorder(),
-                                                        label: Text(
-                                                            'Select Branch')),
-                                              ),
-                                              onChanged: (dynamic data) {
-                                                locationId = data;
-                                              },
+                                            ContainerFieldWidget(
+                                                widget: DropdownSearch<dynamic>(
+                                                  popupProps:
+                                                      const PopupPropsMultiSelection
+                                                          .modalBottomSheet(
+                                                          showSearchBox: true,
+                                                          constraints:
+                                                              BoxConstraints(
+                                                                  maxHeight:
+                                                                      300)),
+                                                  asyncItems: (String filter) =>
+                                                      api.getSalesListData(
+                                                          filter,
+                                                          'sales_list/location'),
+                                                  dropdownDecoratorProps:
+                                                      const DropDownDecoratorProps(
+                                                    dropdownSearchDecoration:
+                                                        InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder(),
+                                                    ),
+                                                  ),
+                                                  onChanged: (dynamic data) {
+                                                    locationId = data;
+                                                  },
+                                                ),
+                                                headTxt: 'Select Branch'),
+                                            const SizedBox(
+                                              height: 10,
                                             ),
-                                            Card(
-                                              elevation: 2,
-                                              child: DropdownButton(
-                                                icon: const Icon(
-                                                    Icons.keyboard_arrow_down),
-                                                items: [
-                                                  'Summery',
-                                                  'Simple',
-                                                  'Ledger Model',
-                                                  'Summery Area Wise',
-                                                  'Group & Ledger',
-                                                  'PV/RV Report',
-                                                  'Salesman Wise Group List',
-                                                  'Group List All Groups',
-                                                  'Balance Order By Date'
-                                                ].map((String items) {
-                                                  return DropdownMenuItem(
-                                                    value: items,
-                                                    child: Text(items),
-                                                  );
-                                                }).toList(),
-                                                value: sType,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    sType = value;
-                                                    statement = value ==
-                                                            'Summery'
-                                                        ? 'SummeryAll'
-                                                        : value == 'Simple'
-                                                            ? 'SimpleGList'
-                                                            : value ==
-                                                                    'Ledger Model'
-                                                                ? 'Ledger_Model'
-                                                                : value ==
-                                                                        'Summery Area Wise'
-                                                                    ? 'SummeryAreaWise'
-                                                                    : value ==
-                                                                            'Group & Ledger'
-                                                                        ? 'Group_Ledger'
-                                                                        : value ==
-                                                                                'PV/RV Report'
-                                                                            ? 'PV/RV Report'
-                                                                            : value == 'Salesman Wise Group List'
-                                                                                ? 'SalesmanGroupList'
-                                                                                : value == 'Group List All Groups'
-                                                                                    ? 'GroupListAllGroups'
-                                                                                    : value == 'Balance Order By Date'
-                                                                                        ? 'Balance Order By Date'
-                                                                                        : 'SummeryAll';
-                                                  });
-                                                },
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5),
+                                              width: MediaQuery.sizeOf(context)
+                                                  .width,
+                                              decoration: BoxDecoration(
+                                                  border:
+                                                      Border.all(color: grey),
+                                                  borderRadius:
+                                                      BorderRadius.circular(3)),
+                                              child:
+                                                  DropdownButtonHideUnderline(
+                                                child: DropdownButton(
+                                                  isExpanded: true,
+                                                  icon: const Icon(Icons
+                                                      .keyboard_arrow_down),
+                                                  items: [
+                                                    'Summery',
+                                                    'Simple',
+                                                    'Ledger Model',
+                                                    'Summery Area Wise',
+                                                    'Group & Ledger',
+                                                    'PV/RV Report',
+                                                    'Salesman Wise Group List',
+                                                    'Group List All Groups',
+                                                    'Balance Order By Date'
+                                                  ].map((String items) {
+                                                    return DropdownMenuItem(
+                                                      value: items,
+                                                      child: Text(items),
+                                                    );
+                                                  }).toList(),
+                                                  value: sType,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      sType = value;
+                                                      statement = value ==
+                                                              'Summery'
+                                                          ? 'SummeryAll'
+                                                          : value == 'Simple'
+                                                              ? 'SimpleGList'
+                                                              : value ==
+                                                                      'Ledger Model'
+                                                                  ? 'Ledger_Model'
+                                                                  : value ==
+                                                                          'Summery Area Wise'
+                                                                      ? 'SummeryAreaWise'
+                                                                      : value ==
+                                                                              'Group & Ledger'
+                                                                          ? 'Group_Ledger'
+                                                                          : value == 'PV/RV Report'
+                                                                              ? 'PV/RV Report'
+                                                                              : value == 'Salesman Wise Group List'
+                                                                                  ? 'SalesmanGroupList'
+                                                                                  : value == 'Group List All Groups'
+                                                                                      ? 'GroupListAllGroups'
+                                                                                      : value == 'Balance Order By Date'
+                                                                                          ? 'Balance Order By Date'
+                                                                                          : 'SummeryAll';
+                                                    });
+                                                  },
+                                                ),
                                               ),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
                                             ),
                                             TextButton(
                                               onPressed: () {
@@ -1253,6 +1864,11 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                 route!)));
                                               },
                                               style: ButtonStyle(
+                                                shape: MaterialStatePropertyAll(
+                                                    RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(3))),
                                                 backgroundColor:
                                                     MaterialStateProperty.all<
                                                         Color>(kPrimaryColor),
@@ -1260,74 +1876,96 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                     MaterialStateProperty.all<
                                                         Color>(Colors.white),
                                               ),
-                                              child: const Text('Show'),
+                                              child: const Text(
+                                                'Show',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 15,
+                                                    fontFamily: 'poppins'),
+                                              ),
                                             ),
-                                            const Divider(),
-                                            Card(
-                                              elevation: 5,
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: [
-                                                  const Text('Select Area'),
-                                                  DropdownButton<
-                                                      OtherRegistrationModel>(
-                                                    icon: const Icon(Icons
-                                                        .keyboard_arrow_down),
-                                                    items: otherRegAreaList.map(
-                                                        (OtherRegistrationModel
-                                                            items) {
-                                                      return DropdownMenuItem<
-                                                          OtherRegistrationModel>(
-                                                        value: items,
-                                                        child: Text(items.name),
-                                                      );
-                                                    }).toList(),
-                                                    value: areaModel,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        areaModel = value;
-                                                        area = value!.id
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ContainerFieldWidget(
+                                                widget: Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(horizontal: 5),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  child:
+                                                      DropdownButtonHideUnderline(
+                                                    child: DropdownButton<
+                                                        OtherRegistrationModel>(
+                                                      isExpanded: true,
+                                                      icon: const Icon(Icons
+                                                          .keyboard_arrow_down),
+                                                      items: otherRegAreaList.map(
+                                                          (OtherRegistrationModel
+                                                              items) {
+                                                        return DropdownMenuItem<
+                                                            OtherRegistrationModel>(
+                                                          value: items,
+                                                          child:
+                                                              Text(items.name),
+                                                        );
+                                                      }).toList(),
+                                                      value: areaModel,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          areaModel = value;
+                                                          area = value!.id
+                                                              .toString();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                                headTxt: 'Select Area'),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            ContainerFieldWidget(
+                                                widget: Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(horizontal: 5),
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  child:
+                                                      DropdownButtonHideUnderline(
+                                                    child: DropdownButton<
+                                                        OtherRegistrationModel>(
+                                                      isExpanded: true,
+                                                      icon: const Icon(Icons
+                                                          .keyboard_arrow_down),
+                                                      items: otherRegRouteList.map(
+                                                          (OtherRegistrationModel
+                                                              items) {
+                                                        return DropdownMenuItem<
+                                                            OtherRegistrationModel>(
+                                                          value: items,
+                                                          child:
+                                                              Text(items.name),
+                                                        );
+                                                      }).toList(),
+                                                      value: routeModel,
+                                                      onChanged: (value) {
+                                                        routeModel = value;
+                                                        route = value!.id
                                                             .toString();
-                                                      });
-                                                    },
+                                                      },
+                                                    ),
                                                   ),
-                                                ],
-                                              ),
-                                            ),
-                                            const Divider(),
-                                            Card(
-                                              elevation: 5,
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: [
-                                                  const Text('Select Route'),
-                                                  DropdownButton<
-                                                      OtherRegistrationModel>(
-                                                    icon: const Icon(Icons
-                                                        .keyboard_arrow_down),
-                                                    items: otherRegRouteList.map(
-                                                        (OtherRegistrationModel
-                                                            items) {
-                                                      return DropdownMenuItem<
-                                                          OtherRegistrationModel>(
-                                                        value: items,
-                                                        child: Text(items.name),
-                                                      );
-                                                    }).toList(),
-                                                    value: routeModel,
-                                                    onChanged: (value) {
-                                                      routeModel = value;
-                                                      route =
-                                                          value!.id.toString();
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
+                                                ),
+                                                headTxt: 'Select Route')
                                           ],
                                         ),
                                       )
@@ -1336,90 +1974,183 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                         : mode == 'closingReport'
                                             ? Container(
                                                 padding:
-                                                    const EdgeInsets.all(8.0),
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 16),
                                                 child: Column(
                                                   children: [
-                                                    Card(
-                                                      elevation: 0.5,
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceAround,
-                                                        children: [
-                                                          const Text(
-                                                            'From : ',
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 16),
-                                                          ),
-                                                          InkWell(
-                                                            child: Text(
-                                                              fromDate!,
-                                                              style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 22),
+                                                    Row(
+                                                      children: [
+                                                        const Text(
+                                                          'From ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 16,
+                                                              fontFamily:
+                                                                  'poppins'),
+                                                        ),
+                                                        InkWell(
+                                                          child: Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        5),
+                                                            decoration: BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                        color:
+                                                                            grey),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            3)),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  fromDate!,
+                                                                  style: const TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontFamily:
+                                                                          'poppins'),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 8,
+                                                                ),
+                                                                const Icon(
+                                                                  Icons
+                                                                      .calendar_month_outlined,
+                                                                  color: grey,
+                                                                  size: 20,
+                                                                )
+                                                              ],
                                                             ),
-                                                            onTap: () =>
-                                                                _selectDate(
-                                                                    'f'),
                                                           ),
-                                                          const Text(
-                                                            'To : ',
-                                                            style: TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 16),
-                                                          ),
-                                                          InkWell(
-                                                            child: Text(
-                                                              toDate!,
-                                                              style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize: 22),
+                                                          onTap: () =>
+                                                              _selectDate('f'),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 16,
+                                                        ),
+                                                        const Text(
+                                                          'To ',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 16,
+                                                              fontFamily:
+                                                                  'poppins'),
+                                                        ),
+                                                        InkWell(
+                                                          child: Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        5),
+                                                            decoration: BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                        color:
+                                                                            grey),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            3)),
+                                                            child: Row(
+                                                              children: [
+                                                                Text(
+                                                                  toDate!,
+                                                                  style: const TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontFamily:
+                                                                          'poppins'),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 8,
+                                                                ),
+                                                                const Icon(
+                                                                  Icons
+                                                                      .calendar_month_outlined,
+                                                                  color: grey,
+                                                                  size: 20,
+                                                                )
+                                                              ],
                                                             ),
-                                                            onTap: () =>
-                                                                _selectDate(
-                                                                    't'),
                                                           ),
-                                                        ],
+                                                          onTap: () =>
+                                                              _selectDate('t'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                    Container(
+                                                      width: MediaQuery.sizeOf(
+                                                              context)
+                                                          .width,
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 5,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: grey),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(3)),
+                                                      child:
+                                                          DropdownButtonHideUnderline(
+                                                        child: DropdownButton(
+                                                          isExpanded: true,
+                                                          icon: const Icon(Icons
+                                                              .keyboard_arrow_down),
+                                                          items: [
+                                                            'Closing Report',
+                                                            'Style1',
+                                                            'Style2',
+                                                            'Daily / Monthly',
+                                                            'AsperMart'
+                                                          ].map((String items) {
+                                                            return DropdownMenuItem(
+                                                              value: items,
+                                                              child:
+                                                                  Text(items),
+                                                            );
+                                                          }).toList(),
+                                                          value: stmtType,
+                                                          onChanged: (value) {
+                                                            setState(() {
+                                                              stmtType = value!;
+                                                              statement = value;
+                                                            });
+                                                          },
+                                                        ),
                                                       ),
                                                     ),
-                                                    Card(
-                                                      elevation: 2,
-                                                      child: DropdownButton(
-                                                        icon: const Icon(Icons
-                                                            .keyboard_arrow_down),
-                                                        items: [
-                                                          'Closing Report',
-                                                          'Style1',
-                                                          'Style2',
-                                                          'Daily / Monthly',
-                                                          'AsperMart'
-                                                        ].map((String items) {
-                                                          return DropdownMenuItem(
-                                                            value: items,
-                                                            child: Text(items),
-                                                          );
-                                                        }).toList(),
-                                                        value: stmtType,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            stmtType = value!;
-                                                            statement = value;
-                                                          });
-                                                        },
-                                                      ),
+                                                    const SizedBox(
+                                                      height: 10,
                                                     ),
-                                                    DropdownSearch<dynamic>(
-                                                      popupProps:
-                                                          const PopupPropsMultiSelection
+                                                    ContainerFieldWidget(
+                                                        widget: DropdownSearch<
+                                                            dynamic>(
+                                                          popupProps: const PopupPropsMultiSelection
                                                               .modalBottomSheet(
                                                               showSearchBox:
                                                                   true,
@@ -1427,24 +2158,28 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                   BoxConstraints(
                                                                 maxHeight: 300,
                                                               )),
-                                                      asyncItems: (String
-                                                              filter) =>
-                                                          api.getSalesListData(
-                                                              filter,
-                                                              'sales_list/location'),
-                                                      dropdownDecoratorProps:
-                                                          const DropDownDecoratorProps(
-                                                        dropdownSearchDecoration:
-                                                            InputDecoration(
-                                                                border:
-                                                                    OutlineInputBorder(),
-                                                                label: Text(
-                                                                    'Select Branch')),
-                                                      ),
-                                                      onChanged:
-                                                          (dynamic data) {
-                                                        locationId = data;
-                                                      },
+                                                          asyncItems: (String
+                                                                  filter) =>
+                                                              api.getSalesListData(
+                                                                  filter,
+                                                                  'sales_list/location'),
+                                                          dropdownDecoratorProps:
+                                                              const DropDownDecoratorProps(
+                                                            dropdownSearchDecoration:
+                                                                InputDecoration(
+                                                              border:
+                                                                  OutlineInputBorder(),
+                                                            ),
+                                                          ),
+                                                          onChanged:
+                                                              (dynamic data) {
+                                                            locationId = data;
+                                                          },
+                                                        ),
+                                                        headTxt:
+                                                            'Select Branch'),
+                                                    const SizedBox(
+                                                      height: 10,
                                                     ),
                                                     TextButton(
                                                       onPressed: () {
@@ -1474,6 +2209,15 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                     route!)));
                                                       },
                                                       style: ButtonStyle(
+                                                        shape:
+                                                            MaterialStatePropertyAll(
+                                                          RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        5),
+                                                          ),
+                                                        ),
                                                         backgroundColor:
                                                             MaterialStateProperty
                                                                 .all<Color>(
@@ -1484,137 +2228,251 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                     Colors
                                                                         .white),
                                                       ),
-                                                      child: const Text('Show'),
+                                                      child: const Text(
+                                                        'Show',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 15,
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
                                                     )
                                                   ],
                                                 ),
                                               )
                                             : mode == 'P&LAccount'
                                                 ? Container(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 16),
                                                     child: Column(
                                                       children: [
-                                                        Card(
-                                                          elevation: 0.5,
-                                                          child: Row(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceAround,
-                                                            children: [
-                                                              const Text(
-                                                                'From : ',
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        16),
-                                                              ),
-                                                              InkWell(
-                                                                child: Text(
-                                                                  fromDate!,
-                                                                  style: const TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      fontSize:
-                                                                          22),
-                                                                ),
-                                                                onTap: () =>
-                                                                    _selectDate(
-                                                                        'f'),
-                                                              ),
-                                                              const Text(
-                                                                'To : ',
-                                                                style: TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    fontSize:
-                                                                        16),
-                                                              ),
-                                                              InkWell(
-                                                                child: Text(
-                                                                  toDate!,
-                                                                  style: const TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      fontSize:
-                                                                          22),
-                                                                ),
-                                                                onTap: () =>
-                                                                    _selectDate(
-                                                                        't'),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
                                                         Row(
                                                           children: [
                                                             const Text(
-                                                                'Report Type      '),
+                                                              'From ',
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 16,
+                                                                  fontFamily:
+                                                                      'poppins'),
+                                                            ),
+                                                            InkWell(
+                                                              child: Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        5),
+                                                                decoration: BoxDecoration(
+                                                                    border: Border.all(
+                                                                        color:
+                                                                            grey),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            3)),
+                                                                child: Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      fromDate!,
+                                                                      style: const TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w500,
+                                                                          fontSize:
+                                                                              15,
+                                                                          fontFamily:
+                                                                              'poppins'),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 8,
+                                                                    ),
+                                                                    const Icon(
+                                                                      Icons
+                                                                          .calendar_month_outlined,
+                                                                      color:
+                                                                          grey,
+                                                                      size: 20,
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              onTap: () =>
+                                                                  _selectDate(
+                                                                      'f'),
+                                                            ),
                                                             const SizedBox(
-                                                                width: 10),
-                                                            Expanded(
-                                                              child:
-                                                                  DropdownButton(
-                                                                      items: items.map(
-                                                                          (dynamic
-                                                                              items) {
-                                                                        return DropdownMenuItem(
-                                                                          value:
-                                                                              items['name'].toString(),
-                                                                          child:
-                                                                              Text(items['name'].toString()),
-                                                                        );
-                                                                      }).toList(),
-                                                                      value:
-                                                                          selectedGroupValues,
-                                                                      onChanged:
-                                                                          ((value) {
-                                                                        setState(
-                                                                            () {
-                                                                          selectedGroupValues =
-                                                                              value!;
-                                                                        });
-                                                                      })),
+                                                              width: 16,
+                                                            ),
+                                                            const Text(
+                                                              'To ',
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 16,
+                                                                  fontFamily:
+                                                                      'poppins'),
+                                                            ),
+                                                            InkWell(
+                                                              child: Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        8,
+                                                                    vertical:
+                                                                        5),
+                                                                decoration: BoxDecoration(
+                                                                    border: Border.all(
+                                                                        color:
+                                                                            grey),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            3)),
+                                                                child: Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      toDate!,
+                                                                      style: const TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w500,
+                                                                          fontSize:
+                                                                              15,
+                                                                          fontFamily:
+                                                                              'poppins'),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 8,
+                                                                    ),
+                                                                    const Icon(
+                                                                      Icons
+                                                                          .calendar_month_outlined,
+                                                                      color:
+                                                                          grey,
+                                                                      size: 20,
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              onTap: () =>
+                                                                  _selectDate(
+                                                                      't'),
                                                             ),
                                                           ],
                                                         ),
-                                                        Row(
-                                                          children: [
-                                                            const Text(
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        // const Text(
+                                                        //     'Report Type      '),
+
+                                                        ContainerFieldWidget(
+                                                            widget: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          5),
+                                                              width: MediaQuery
+                                                                      .sizeOf(
+                                                                          context)
+                                                                  .width,
+                                                              decoration: BoxDecoration(
+                                                                  border: Border
+                                                                      .all(
+                                                                          color:
+                                                                              grey),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3)),
+                                                              child:
+                                                                  DropdownButtonHideUnderline(
+                                                                child:
+                                                                    DropdownButton(
+                                                                        isExpanded:
+                                                                            true,
+                                                                        items: items.map((dynamic
+                                                                            items) {
+                                                                          return DropdownMenuItem(
+                                                                            value:
+                                                                                items['name'].toString(),
+                                                                            child:
+                                                                                Text(items['name'].toString()),
+                                                                          );
+                                                                        }).toList(),
+                                                                        value:
+                                                                            selectedGroupValues,
+                                                                        onChanged:
+                                                                            ((value) {
+                                                                          setState(
+                                                                              () {
+                                                                            selectedGroupValues =
+                                                                                value!;
+                                                                          });
+                                                                        })),
+                                                              ),
+                                                            ),
+                                                            headTxt:
+                                                                'Report Type'),
+                                                        const SizedBox(
+                                                          height: 10,
+                                                        ),
+                                                        ContainerFieldWidget(
+                                                            widget: Container(
+                                                              width: MediaQuery
+                                                                      .sizeOf(
+                                                                          context)
+                                                                  .width,
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          5),
+                                                              decoration: BoxDecoration(
+                                                                  border: Border
+                                                                      .all(
+                                                                          color:
+                                                                              grey),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3)),
+                                                              child:
+                                                                  DropdownButtonHideUnderline(
+                                                                child:
+                                                                    DropdownButton(
+                                                                        isExpanded:
+                                                                            true,
+                                                                        items: itemDisplay.map((dynamic
+                                                                            items) {
+                                                                          return DropdownMenuItem(
+                                                                            value:
+                                                                                items['name'].toString(),
+                                                                            child:
+                                                                                Text(items['name'].toString()),
+                                                                          );
+                                                                        }).toList(),
+                                                                        value:
+                                                                            selectedStockValue,
+                                                                        onChanged:
+                                                                            ((value) {
+                                                                          setState(
+                                                                              () {
+                                                                            selectedStockValue =
+                                                                                value!;
+                                                                          });
+                                                                        })),
+                                                              ),
+                                                            ),
+                                                            headTxt:
                                                                 'Stock Valuation'),
-                                                            const SizedBox(
-                                                                width: 10),
-                                                            Expanded(
-                                                              child:
-                                                                  DropdownButton(
-                                                                      items: itemDisplay.map(
-                                                                          (dynamic
-                                                                              items) {
-                                                                        return DropdownMenuItem(
-                                                                          value:
-                                                                              items['name'].toString(),
-                                                                          child:
-                                                                              Text(items['name'].toString()),
-                                                                        );
-                                                                      }).toList(),
-                                                                      value:
-                                                                          selectedStockValue,
-                                                                      onChanged:
-                                                                          ((value) {
-                                                                        setState(
-                                                                            () {
-                                                                          selectedStockValue =
-                                                                              value!;
-                                                                        });
-                                                                      })),
-                                                            ),
-                                                          ],
+                                                        const SizedBox(
+                                                          height: 10,
                                                         ),
                                                         TextButton(
                                                           onPressed: () {
@@ -1644,6 +2502,15 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                         route!)));
                                                           },
                                                           style: ButtonStyle(
+                                                            shape:
+                                                                MaterialStatePropertyAll(
+                                                              RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5),
+                                                              ),
+                                                            ),
                                                             backgroundColor:
                                                                 MaterialStateProperty
                                                                     .all<Color>(
@@ -1655,7 +2522,15 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                             .white),
                                                           ),
                                                           child: const Text(
-                                                              'Show'),
+                                                            'Show',
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 15,
+                                                                fontFamily:
+                                                                    'poppins'),
+                                                          ),
                                                         )
                                                       ],
                                                     ),
@@ -1664,116 +2539,218 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                     ? Container(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(8.0),
+                                                                .symmetric(
+                                                                horizontal: 20,
+                                                                vertical: 16),
                                                         child: Column(
                                                           children: [
-                                                            Card(
-                                                              elevation: 0.5,
-                                                              child: Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceAround,
-                                                                children: [
-                                                                  const Text(
-                                                                    'From : ',
-                                                                    style: TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .bold,
-                                                                        fontSize:
-                                                                            16),
-                                                                  ),
-                                                                  InkWell(
-                                                                    child: Text(
-                                                                      fromDate!,
-                                                                      style: const TextStyle(
-                                                                          fontWeight: FontWeight
-                                                                              .bold,
-                                                                          fontSize:
-                                                                              22),
-                                                                    ),
-                                                                    onTap: () =>
-                                                                        _selectDate(
-                                                                            'f'),
-                                                                  ),
-                                                                  const Text(
-                                                                    'To : ',
-                                                                    style: TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .bold,
-                                                                        fontSize:
-                                                                            16),
-                                                                  ),
-                                                                  InkWell(
-                                                                    child: Text(
-                                                                      toDate!,
-                                                                      style: const TextStyle(
-                                                                          fontWeight: FontWeight
-                                                                              .bold,
-                                                                          fontSize:
-                                                                              22),
-                                                                    ),
-                                                                    onTap: () =>
-                                                                        _selectDate(
-                                                                            't'),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ),
                                                             Row(
                                                               children: [
                                                                 const Text(
-                                                                    'Report Type      '),
+                                                                  'From ',
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          16,
+                                                                      fontFamily:
+                                                                          'poppins'),
+                                                                ),
+                                                                InkWell(
+                                                                  child:
+                                                                      Container(
+                                                                    padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            8,
+                                                                        vertical:
+                                                                            5),
+                                                                    decoration: BoxDecoration(
+                                                                        border: Border.all(
+                                                                            color:
+                                                                                grey),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(3)),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Text(
+                                                                          fromDate!,
+                                                                          style: const TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 15,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              8,
+                                                                        ),
+                                                                        const Icon(
+                                                                          Icons
+                                                                              .calendar_month_outlined,
+                                                                          color:
+                                                                              grey,
+                                                                          size:
+                                                                              20,
+                                                                        )
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  onTap: () =>
+                                                                      _selectDate(
+                                                                          'f'),
+                                                                ),
                                                                 const SizedBox(
-                                                                    width: 10),
-                                                                Expanded(
-                                                                  child: DropdownButton(
-                                                                      items: items.map((dynamic items) {
-                                                                        return DropdownMenuItem(
-                                                                          value:
-                                                                              items['name'].toString(),
-                                                                          child:
-                                                                              Text(items['name'].toString()),
-                                                                        );
-                                                                      }).toList(),
-                                                                      value: selectedGroupValues,
-                                                                      onChanged: ((value) {
-                                                                        setState(
-                                                                            () {
-                                                                          selectedGroupValues =
-                                                                              value!;
-                                                                        });
-                                                                      })),
+                                                                  width: 16,
+                                                                ),
+                                                                const Text(
+                                                                  'To ',
+                                                                  style: TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w500,
+                                                                      fontSize:
+                                                                          16,
+                                                                      fontFamily:
+                                                                          'poppins'),
+                                                                ),
+                                                                InkWell(
+                                                                  child:
+                                                                      Container(
+                                                                    padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            8,
+                                                                        vertical:
+                                                                            5),
+                                                                    decoration: BoxDecoration(
+                                                                        border: Border.all(
+                                                                            color:
+                                                                                grey),
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(3)),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Text(
+                                                                          toDate!,
+                                                                          style: const TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 15,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              8,
+                                                                        ),
+                                                                        const Icon(
+                                                                          Icons
+                                                                              .calendar_month_outlined,
+                                                                          color:
+                                                                              grey,
+                                                                          size:
+                                                                              20,
+                                                                        )
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  onTap: () =>
+                                                                      _selectDate(
+                                                                          't'),
                                                                 ),
                                                               ],
                                                             ),
-                                                            Row(
-                                                              children: [
-                                                                const Text(
+                                                            const SizedBox(
+                                                              height: 10,
+                                                            ),
+                                                            ContainerFieldWidget(
+                                                                widget:
+                                                                    Container(
+                                                                  width: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .width,
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          5),
+                                                                  decoration: BoxDecoration(
+                                                                      border: Border.all(
+                                                                          color:
+                                                                              grey),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              3)),
+                                                                  child:
+                                                                      DropdownButtonHideUnderline(
+                                                                    child: DropdownButton(
+                                                                        isExpanded: true,
+                                                                        items: items.map((dynamic items) {
+                                                                          return DropdownMenuItem(
+                                                                            value:
+                                                                                items['name'].toString(),
+                                                                            child:
+                                                                                Text(items['name'].toString()),
+                                                                          );
+                                                                        }).toList(),
+                                                                        value: selectedGroupValues,
+                                                                        onChanged: ((value) {
+                                                                          setState(
+                                                                              () {
+                                                                            selectedGroupValues =
+                                                                                value!;
+                                                                          });
+                                                                        })),
+                                                                  ),
+                                                                ),
+                                                                headTxt:
+                                                                    'Report Type'),
+                                                            const SizedBox(
+                                                              height: 10,
+                                                            ),
+                                                            ContainerFieldWidget(
+                                                                widget:
+                                                                    Container(
+                                                                  width: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .width,
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          5),
+                                                                  decoration: BoxDecoration(
+                                                                      border: Border.all(
+                                                                          color:
+                                                                              grey),
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              3)),
+                                                                  child:
+                                                                      DropdownButtonHideUnderline(
+                                                                    child: DropdownButton(
+                                                                        isExpanded: true,
+                                                                        items: itemDisplay.map((dynamic items) {
+                                                                          return DropdownMenuItem(
+                                                                            value:
+                                                                                items['name'].toString(),
+                                                                            child:
+                                                                                Text(items['name'].toString()),
+                                                                          );
+                                                                        }).toList(),
+                                                                        value: selectedStockValue,
+                                                                        onChanged: ((value) {
+                                                                          setState(
+                                                                              () {
+                                                                            selectedStockValue =
+                                                                                value!;
+                                                                          });
+                                                                        })),
+                                                                  ),
+                                                                ),
+                                                                headTxt:
                                                                     'Stock Valuation'),
-                                                                const SizedBox(
-                                                                    width: 10),
-                                                                Expanded(
-                                                                  child: DropdownButton(
-                                                                      items: itemDisplay.map((dynamic items) {
-                                                                        return DropdownMenuItem(
-                                                                          value:
-                                                                              items['name'].toString(),
-                                                                          child:
-                                                                              Text(items['name'].toString()),
-                                                                        );
-                                                                      }).toList(),
-                                                                      value: selectedStockValue,
-                                                                      onChanged: ((value) {
-                                                                        setState(
-                                                                            () {
-                                                                          selectedStockValue =
-                                                                              value!;
-                                                                        });
-                                                                      })),
-                                                                ),
-                                                              ],
+                                                            const SizedBox(
+                                                              height: 10,
                                                             ),
                                                             TextButton(
                                                               onPressed: () {
@@ -1803,6 +2780,14 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                               },
                                                               style:
                                                                   ButtonStyle(
+                                                                shape:
+                                                                    MaterialStatePropertyAll(
+                                                                  RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius
+                                                                            .circular(5),
+                                                                  ),
+                                                                ),
                                                                 backgroundColor:
                                                                     MaterialStateProperty.all<
                                                                             Color>(
@@ -1814,7 +2799,16 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                             .white),
                                                               ),
                                                               child: const Text(
-                                                                  'Show'),
+                                                                'Show',
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        15,
+                                                                    fontFamily:
+                                                                        'poppins'),
+                                                              ),
                                                             )
                                                           ],
                                                         ),
@@ -1824,121 +2818,211 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                         ? Container(
                                                             padding:
                                                                 const EdgeInsets
-                                                                    .all(8.0),
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        16),
                                                             child: Column(
                                                               children: [
-                                                                Card(
-                                                                  elevation:
-                                                                      0.5,
-                                                                  child: Row(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .spaceAround,
-                                                                    children: [
-                                                                      const Text(
-                                                                        'From : ',
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
-                                                                            fontSize: 16),
-                                                                      ),
-                                                                      InkWell(
-                                                                        child:
-                                                                            Text(
-                                                                          fromDate!,
-                                                                          style: const TextStyle(
-                                                                              fontWeight: FontWeight.bold,
-                                                                              fontSize: 22),
-                                                                        ),
-                                                                        onTap: () =>
-                                                                            _selectDate('f'),
-                                                                      ),
-                                                                      const Text(
-                                                                        'To : ',
-                                                                        style: TextStyle(
-                                                                            fontWeight:
-                                                                                FontWeight.bold,
-                                                                            fontSize: 16),
-                                                                      ),
-                                                                      InkWell(
-                                                                        child:
-                                                                            Text(
-                                                                          toDate!,
-                                                                          style: const TextStyle(
-                                                                              fontWeight: FontWeight.bold,
-                                                                              fontSize: 22),
-                                                                        ),
-                                                                        onTap: () =>
-                                                                            _selectDate('t'),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
                                                                 Row(
                                                                   children: [
                                                                     const Text(
-                                                                        'Report Type'),
+                                                                      'From ',
+                                                                      style: TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w500,
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontFamily:
+                                                                              'poppins'),
+                                                                    ),
+                                                                    InkWell(
+                                                                      child:
+                                                                          Container(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                8,
+                                                                            vertical:
+                                                                                5),
+                                                                        decoration: BoxDecoration(
+                                                                            border:
+                                                                                Border.all(color: grey),
+                                                                            borderRadius: BorderRadius.circular(3)),
+                                                                        child:
+                                                                            Row(
+                                                                          children: [
+                                                                            Text(
+                                                                              fromDate!,
+                                                                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              width: 8,
+                                                                            ),
+                                                                            const Icon(
+                                                                              Icons.calendar_month_outlined,
+                                                                              color: grey,
+                                                                              size: 20,
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      onTap: () =>
+                                                                          _selectDate(
+                                                                              'f'),
+                                                                    ),
                                                                     const SizedBox(
-                                                                        width:
-                                                                            10),
-                                                                    Expanded(
-                                                                      child: DropdownButton(
-                                                                          items: items.map((dynamic items) {
-                                                                            return DropdownMenuItem(
-                                                                              value: items['name'].toString(),
-                                                                              child: Text(items['name'].toString()),
-                                                                            );
-                                                                          }).toList(),
-                                                                          value: selectedGroupValues,
-                                                                          onChanged: ((value) {
-                                                                            setState(() {
-                                                                              selectedGroupValues = value!;
-                                                                            });
-                                                                          })),
+                                                                      width: 16,
+                                                                    ),
+                                                                    const Text(
+                                                                      'To ',
+                                                                      style: TextStyle(
+                                                                          fontWeight: FontWeight
+                                                                              .w500,
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontFamily:
+                                                                              'poppins'),
+                                                                    ),
+                                                                    InkWell(
+                                                                      child:
+                                                                          Container(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                8,
+                                                                            vertical:
+                                                                                5),
+                                                                        decoration: BoxDecoration(
+                                                                            border:
+                                                                                Border.all(color: grey),
+                                                                            borderRadius: BorderRadius.circular(3)),
+                                                                        child:
+                                                                            Row(
+                                                                          children: [
+                                                                            Text(
+                                                                              toDate!,
+                                                                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                            ),
+                                                                            const SizedBox(
+                                                                              width: 8,
+                                                                            ),
+                                                                            const Icon(
+                                                                              Icons.calendar_month_outlined,
+                                                                              color: grey,
+                                                                              size: 20,
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      onTap: () =>
+                                                                          _selectDate(
+                                                                              't'),
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                Row(
-                                                                  children: [
-                                                                    const Text(
-                                                                        'Group          '),
-                                                                    const SizedBox(
-                                                                        width:
-                                                                            10),
-                                                                    itemDisplay
-                                                                            .isEmpty
-                                                                        ? DropdownButton(
-                                                                            items:
-                                                                                [
-                                                                              LedgerParent(id: 12, name: 'CUSTOMERS'),
-                                                                            ].map((dynamic items) {
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                ContainerFieldWidget(
+                                                                    widget:
+                                                                        Container(
+                                                                      width: MediaQuery.sizeOf(
+                                                                              context)
+                                                                          .width,
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              5),
+                                                                      decoration: BoxDecoration(
+                                                                          border: Border.all(
+                                                                              color:
+                                                                                  grey),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(3)),
+                                                                      child:
+                                                                          DropdownButtonHideUnderline(
+                                                                        child: DropdownButton(
+                                                                            isExpanded: true,
+                                                                            items: items.map((dynamic items) {
                                                                               return DropdownMenuItem(
-                                                                                value: items,
-                                                                                child: Text(items.name.toString()),
+                                                                                value: items['name'].toString(),
+                                                                                child: Text(items['name'].toString()),
                                                                               );
                                                                             }).toList(),
-                                                                            value: selectedItem,
+                                                                            value: selectedGroupValues,
                                                                             onChanged: ((value) {
                                                                               setState(() {
-                                                                                selectedItem = value;
+                                                                                selectedGroupValues = value!;
                                                                               });
-                                                                            }))
-                                                                        : Expanded(
-                                                                            child: DropdownButton(
-                                                                                items: itemDisplay.map((dynamic items) {
-                                                                                  return DropdownMenuItem(
-                                                                                    value: items,
-                                                                                    child: Text(items.name.toString()),
-                                                                                  );
-                                                                                }).toList(),
-                                                                                value: selectedItem,
-                                                                                onChanged: ((value) {
-                                                                                  setState(() {
-                                                                                    selectedItem = value;
-                                                                                  });
-                                                                                })),
+                                                                            })),
+                                                                      ),
+                                                                    ),
+                                                                    headTxt:
+                                                                        'ReportType'),
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                ContainerFieldWidget(
+                                                                    widget: itemDisplay
+                                                                            .isEmpty
+                                                                        ? Container(
+                                                                            width:
+                                                                                MediaQuery.sizeOf(context).width,
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 3),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                            child:
+                                                                                DropdownButtonHideUnderline(
+                                                                              child: DropdownButton(
+                                                                                  isExpanded: true,
+                                                                                  items: [
+                                                                                    LedgerParent(id: 12, name: 'CUSTOMERS'),
+                                                                                  ].map((dynamic items) {
+                                                                                    return DropdownMenuItem(
+                                                                                      value: items,
+                                                                                      child: Text(items.name.toString()),
+                                                                                    );
+                                                                                  }).toList(),
+                                                                                  value: selectedItem,
+                                                                                  onChanged: ((value) {
+                                                                                    setState(() {
+                                                                                      selectedItem = value;
+                                                                                    });
+                                                                                  })),
+                                                                            ),
+                                                                          )
+                                                                        : Container(
+                                                                            width:
+                                                                                MediaQuery.sizeOf(context).width,
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 3),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                            child:
+                                                                                DropdownButtonHideUnderline(
+                                                                              child: DropdownButton(
+                                                                                  isExpanded: true,
+                                                                                  items: itemDisplay.map((dynamic items) {
+                                                                                    return DropdownMenuItem(
+                                                                                      value: items,
+                                                                                      child: Text(items.name.toString()),
+                                                                                    );
+                                                                                  }).toList(),
+                                                                                  value: selectedItem,
+                                                                                  onChanged: ((value) {
+                                                                                    setState(() {
+                                                                                      selectedItem = value;
+                                                                                    });
+                                                                                  })),
+                                                                            ),
                                                                           ),
-                                                                  ],
+                                                                    headTxt:
+                                                                        'Group'),
+                                                                const SizedBox(
+                                                                  height: 10,
                                                                 ),
                                                                 TextButton(
                                                                   onPressed:
@@ -1979,6 +3063,9 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                   },
                                                                   style:
                                                                       ButtonStyle(
+                                                                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(5))),
                                                                     backgroundColor:
                                                                         MaterialStateProperty.all<Color>(
                                                                             kPrimaryColor),
@@ -1989,7 +3076,16 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                   ),
                                                                   child:
                                                                       const Text(
-                                                                          'Show'),
+                                                                    'Show',
+                                                                    style: TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w500,
+                                                                        fontSize:
+                                                                            15,
+                                                                        fontFamily:
+                                                                            'poppins'),
+                                                                  ),
                                                                 )
                                                               ],
                                                             ),
@@ -1998,146 +3094,194 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                 mode ==
                                                                     'ReceiptList'
                                                             ? Container(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        8.0),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        16),
                                                                 child: Column(
                                                                   children: [
-                                                                    Card(
-                                                                      elevation:
-                                                                          0.5,
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceAround,
-                                                                        children: [
-                                                                          const Text(
-                                                                            'From : ',
-                                                                            style:
-                                                                                TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                                                          ),
-                                                                          InkWell(
+                                                                    Row(
+                                                                      children: [
+                                                                        const Text(
+                                                                          'From ',
+                                                                          style: TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 16,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        InkWell(
+                                                                          child:
+                                                                              Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
                                                                             child:
+                                                                                Row(
+                                                                              children: [
                                                                                 Text(
-                                                                              fromDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                                                                  fromDate!,
+                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  width: 8,
+                                                                                ),
+                                                                                const Icon(
+                                                                                  Icons.calendar_month_outlined,
+                                                                                  color: grey,
+                                                                                  size: 20,
+                                                                                )
+                                                                              ],
                                                                             ),
-                                                                            onTap: () =>
-                                                                                _selectDate('f'),
                                                                           ),
-                                                                          const Text(
-                                                                            'To : ',
-                                                                            style:
-                                                                                TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                                                          ),
-                                                                          InkWell(
+                                                                          onTap: () =>
+                                                                              _selectDate('f'),
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              16,
+                                                                        ),
+                                                                        const Text(
+                                                                          'To ',
+                                                                          style: TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 16,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        InkWell(
+                                                                          child:
+                                                                              Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
                                                                             child:
+                                                                                Row(
+                                                                              children: [
                                                                                 Text(
-                                                                              toDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                                                                  toDate!,
+                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  width: 8,
+                                                                                ),
+                                                                                const Icon(
+                                                                                  Icons.calendar_month_outlined,
+                                                                                  color: grey,
+                                                                                  size: 20,
+                                                                                )
+                                                                              ],
                                                                             ),
-                                                                            onTap: () =>
-                                                                                _selectDate('t'),
                                                                           ),
-                                                                        ],
-                                                                      ),
+                                                                          onTap: () =>
+                                                                              _selectDate('t'),
+                                                                        ),
+                                                                      ],
                                                                     ),
-                                                                    DropdownSearch<
-                                                                        dynamic>(
-                                                                      popupProps: const PopupPropsMultiSelection
-                                                                          .modalBottomSheet(
-                                                                          showSearchBox:
-                                                                              true,
-                                                                          constraints:
-                                                                              BoxConstraints(
-                                                                            maxHeight:
-                                                                                300,
-                                                                          )),
-                                                                      asyncItems: (String
-                                                                              filter) =>
-                                                                          api.getSalesListData(
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
+                                                                    ),
+                                                                    ContainerFieldWidget(
+                                                                        widget: DropdownSearch<
+                                                                            dynamic>(
+                                                                          popupProps: const PopupPropsMultiSelection
+                                                                              .modalBottomSheet(
+                                                                              showSearchBox: true,
+                                                                              constraints: BoxConstraints(
+                                                                                maxHeight: 300,
+                                                                              )),
+                                                                          asyncItems: (String filter) => api.getSalesListData(
                                                                               filter,
                                                                               'sales_list/location'),
-                                                                      dropdownDecoratorProps:
-                                                                          const DropDownDecoratorProps(
-                                                                        dropdownSearchDecoration: InputDecoration(
-                                                                            border:
-                                                                                OutlineInputBorder(),
-                                                                            label:
-                                                                                Text('Select Branch')),
-                                                                      ),
-                                                                      onChanged:
-                                                                          (dynamic
-                                                                              data) {
-                                                                        locationId =
-                                                                            data;
-                                                                      },
-                                                                    ),
-                                                                    const Divider(),
-                                                                    Card(
-                                                                      elevation:
-                                                                          5,
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceAround,
-                                                                        children: [
-                                                                          const Text(
-                                                                              'Select Area'),
-                                                                          DropdownButton<
-                                                                              OtherRegistrationModel>(
-                                                                            icon:
-                                                                                const Icon(Icons.keyboard_arrow_down),
-                                                                            items:
-                                                                                otherRegAreaList.map((OtherRegistrationModel items) {
-                                                                              return DropdownMenuItem<OtherRegistrationModel>(
-                                                                                value: items,
-                                                                                child: Text(items.name),
-                                                                              );
-                                                                            }).toList(),
-                                                                            value:
-                                                                                areaModel,
-                                                                            onChanged:
-                                                                                (value) {
-                                                                              setState(() {
-                                                                                areaModel = value;
-                                                                                area = value!.id.toString();
-                                                                              });
-                                                                            },
+                                                                          dropdownDecoratorProps:
+                                                                              const DropDownDecoratorProps(
+                                                                            dropdownSearchDecoration:
+                                                                                InputDecoration(
+                                                                              border: OutlineInputBorder(),
+                                                                            ),
                                                                           ),
-                                                                        ],
-                                                                      ),
+                                                                          onChanged:
+                                                                              (dynamic data) {
+                                                                            locationId =
+                                                                                data;
+                                                                          },
+                                                                        ),
+                                                                        headTxt:
+                                                                            'Select Branch'),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
                                                                     ),
-                                                                    const Divider(),
-                                                                    DropdownSearch<
-                                                                        dynamic>(
-                                                                      popupProps: const PopupPropsMultiSelection
-                                                                          .modalBottomSheet(
-                                                                          showSearchBox:
-                                                                              true,
-                                                                          constraints:
-                                                                              BoxConstraints(maxHeight: 300)),
-                                                                      asyncItems: (String
-                                                                              filter) =>
-                                                                          api.getSalesListData(
+                                                                    ContainerFieldWidget(
+                                                                        widget:
+                                                                            Container(
+                                                                          width:
+                                                                              MediaQuery.sizeOf(context).width,
+                                                                          padding: const EdgeInsets
+                                                                              .symmetric(
+                                                                              horizontal: 5),
+                                                                          decoration: BoxDecoration(
+                                                                              border: Border.all(color: grey),
+                                                                              borderRadius: BorderRadius.circular(3)),
+                                                                          child:
+                                                                              DropdownButtonHideUnderline(
+                                                                            child:
+                                                                                DropdownButton<OtherRegistrationModel>(
+                                                                              isExpanded: true,
+                                                                              icon: const Icon(Icons.keyboard_arrow_down),
+                                                                              items: otherRegAreaList.map((OtherRegistrationModel items) {
+                                                                                return DropdownMenuItem<OtherRegistrationModel>(
+                                                                                  value: items,
+                                                                                  child: Text(items.name),
+                                                                                );
+                                                                              }).toList(),
+                                                                              value: areaModel,
+                                                                              onChanged: (value) {
+                                                                                setState(() {
+                                                                                  areaModel = value;
+                                                                                  area = value!.id.toString();
+                                                                                });
+                                                                              },
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        headTxt:
+                                                                            'Select Area'),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
+                                                                    ),
+                                                                    ContainerFieldWidget(
+                                                                        widget: DropdownSearch<
+                                                                            dynamic>(
+                                                                          popupProps: const PopupPropsMultiSelection
+                                                                              .modalBottomSheet(
+                                                                              showSearchBox: true,
+                                                                              constraints: BoxConstraints(maxHeight: 300)),
+                                                                          asyncItems: (String filter) => api.getSalesListData(
                                                                               filter,
                                                                               'sales_list/salesMan'),
-                                                                      dropdownDecoratorProps:
-                                                                          const DropDownDecoratorProps(
-                                                                        dropdownSearchDecoration: InputDecoration(
-                                                                            border:
-                                                                                OutlineInputBorder(),
-                                                                            label:
-                                                                                Text('Select Salesman')),
-                                                                      ),
-                                                                      onChanged:
-                                                                          (dynamic
-                                                                              data) {
-                                                                        salesMan = data
-                                                                            .id
-                                                                            .toString();
-                                                                      },
+                                                                          dropdownDecoratorProps:
+                                                                              const DropDownDecoratorProps(
+                                                                            dropdownSearchDecoration:
+                                                                                InputDecoration(
+                                                                              border: OutlineInputBorder(),
+                                                                            ),
+                                                                          ),
+                                                                          onChanged:
+                                                                              (dynamic data) {
+                                                                            salesMan =
+                                                                                data.id.toString();
+                                                                          },
+                                                                        ),
+                                                                        headTxt:
+                                                                            'Select Salesman'),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
                                                                     ),
                                                                     TextButton(
                                                                       onPressed:
@@ -2148,62 +3292,119 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
+                                                                        shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(5))),
                                                                         backgroundColor:
                                                                             MaterialStateProperty.all<Color>(kPrimaryColor),
                                                                         foregroundColor:
                                                                             MaterialStateProperty.all<Color>(Colors.white),
                                                                       ),
-                                                                      child: const Text(
-                                                                          'Show'),
+                                                                      child:
+                                                                          const Text(
+                                                                        'Show',
+                                                                        style: TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .w500,
+                                                                            fontSize:
+                                                                                15,
+                                                                            fontFamily:
+                                                                                'poppins'),
+                                                                      ),
                                                                     )
                                                                   ],
                                                                 ),
                                                               )
                                                             : Container(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .all(
-                                                                        8.0),
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        16),
                                                                 child: Column(
                                                                   children: [
-                                                                    Card(
-                                                                      elevation:
-                                                                          0.5,
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceAround,
-                                                                        children: [
-                                                                          const Text(
-                                                                            'From : ',
-                                                                            style:
-                                                                                TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                                                          ),
-                                                                          InkWell(
+                                                                    Row(
+                                                                      children: [
+                                                                        const Text(
+                                                                          'From ',
+                                                                          style: TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 16,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        InkWell(
+                                                                          child:
+                                                                              Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
                                                                             child:
+                                                                                Row(
+                                                                              children: [
                                                                                 Text(
-                                                                              fromDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                                                                  fromDate!,
+                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  width: 8,
+                                                                                ),
+                                                                                const Icon(
+                                                                                  Icons.calendar_month_outlined,
+                                                                                  color: grey,
+                                                                                  size: 20,
+                                                                                )
+                                                                              ],
                                                                             ),
-                                                                            onTap: () =>
-                                                                                _selectDate('f'),
                                                                           ),
-                                                                          const Text(
-                                                                            'To : ',
-                                                                            style:
-                                                                                TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                                                          ),
-                                                                          InkWell(
+                                                                          onTap: () =>
+                                                                              _selectDate('f'),
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              16,
+                                                                        ),
+                                                                        const Text(
+                                                                          'To ',
+                                                                          style: TextStyle(
+                                                                              fontWeight: FontWeight.w500,
+                                                                              fontSize: 16,
+                                                                              fontFamily: 'poppins'),
+                                                                        ),
+                                                                        InkWell(
+                                                                          child:
+                                                                              Container(
+                                                                            padding:
+                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                            decoration:
+                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
                                                                             child:
+                                                                                Row(
+                                                                              children: [
                                                                                 Text(
-                                                                              toDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                                                                  toDate!,
+                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  width: 8,
+                                                                                ),
+                                                                                const Icon(
+                                                                                  Icons.calendar_month_outlined,
+                                                                                  color: grey,
+                                                                                  size: 20,
+                                                                                )
+                                                                              ],
                                                                             ),
-                                                                            onTap: () =>
-                                                                                _selectDate('t'),
                                                                           ),
-                                                                        ],
-                                                                      ),
+                                                                          onTap: () =>
+                                                                              _selectDate('t'),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
                                                                     ),
                                                                     // Card(
                                                                     //   elevation: 2,
@@ -2231,36 +3432,36 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                     //     },
                                                                     //   ),
                                                                     // ),
-                                                                    DropdownSearch<
-                                                                        dynamic>(
-                                                                      popupProps: const PopupPropsMultiSelection
-                                                                          .modalBottomSheet(
-                                                                          showSearchBox:
-                                                                              true,
-                                                                          constraints:
-                                                                              BoxConstraints(
-                                                                            maxHeight:
-                                                                                300,
-                                                                          )),
-                                                                      asyncItems: (String
-                                                                              filter) =>
-                                                                          api.getSalesListData(
+                                                                    ContainerFieldWidget(
+                                                                        widget: DropdownSearch<
+                                                                            dynamic>(
+                                                                          popupProps: const PopupPropsMultiSelection
+                                                                              .modalBottomSheet(
+                                                                              showSearchBox: true,
+                                                                              constraints: BoxConstraints(
+                                                                                maxHeight: 300,
+                                                                              )),
+                                                                          asyncItems: (String filter) => api.getSalesListData(
                                                                               filter,
                                                                               'sales_list/location'),
-                                                                      dropdownDecoratorProps:
-                                                                          const DropDownDecoratorProps(
-                                                                        dropdownSearchDecoration: InputDecoration(
-                                                                            border:
-                                                                                OutlineInputBorder(),
-                                                                            label:
-                                                                                Text('Select Branch')),
-                                                                      ),
-                                                                      onChanged:
-                                                                          (dynamic
-                                                                              data) {
-                                                                        locationId =
-                                                                            data;
-                                                                      },
+                                                                          dropdownDecoratorProps:
+                                                                              const DropDownDecoratorProps(
+                                                                            dropdownSearchDecoration:
+                                                                                InputDecoration(
+                                                                              border: OutlineInputBorder(),
+                                                                            ),
+                                                                          ),
+                                                                          onChanged:
+                                                                              (dynamic data) {
+                                                                            locationId =
+                                                                                data;
+                                                                          },
+                                                                        ),
+                                                                        headTxt:
+                                                                            'Select Branc'),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
                                                                     ),
                                                                     TextButton(
                                                                       onPressed:
@@ -2271,13 +3472,25 @@ class _LedgerSelectState extends State<LedgerSelect> {
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
+                                                                        shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(5))),
                                                                         backgroundColor:
                                                                             MaterialStateProperty.all<Color>(kPrimaryColor),
                                                                         foregroundColor:
                                                                             MaterialStateProperty.all<Color>(Colors.white),
                                                                       ),
-                                                                      child: const Text(
-                                                                          'Show'),
+                                                                      child:
+                                                                          const Text(
+                                                                        'Show',
+                                                                        style: TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .w500,
+                                                                            fontSize:
+                                                                                15,
+                                                                            fontFamily:
+                                                                                'poppins'),
+                                                                      ),
                                                                     )
                                                                   ],
                                                                 ),
@@ -2285,54 +3498,77 @@ class _LedgerSelectState extends State<LedgerSelect> {
   }
 
   _listItem(index) {
-    return InkWell(
-      child: Card(
-        child: ListTile(
-          title: Text(itemDisplay[index].name),
+    return Container(
+      width: MediaQuery.sizeOf(context).width,
+      color: bagroundColor,
+      child: InkWell(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+          child: Container(
+            // padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+            decoration: BoxDecoration(
+                border: Border.all(color: grey),
+                color: white,
+                borderRadius: BorderRadius.circular(3)),
+            child: ListTile(
+              title: Text(itemDisplay[index].name),
+            ),
+          ),
         ),
-      ),
-      onTap: () {
-        setState(() {
-          _loading = false;
-          _ledger = itemDisplay[index].name;
-          _id = itemDisplay[index].id;
+        onTap: () {
+          setState(() {
+            _loading = false;
+            _ledger = itemDisplay[index].name;
+            _id = itemDisplay[index].id;
 
-          api.getCustomerDetail(_id).then((_data) => tempLedgerData =
-              CustomerModel(
-                  id: _data.id,
-                  name: _ledger,
-                  address1: _data.address1,
-                  address2: _data.address2,
-                  address3: _data.address3,
-                  address4: _data.address4,
-                  balance: _data.balance,
-                  city: _data.city,
-                  email: _data.email,
-                  phone: _data.phone,
-                  route: _data.route,
-                  state: _data.state,
-                  stateCode: _data.stateCode,
-                  taxNumber: _data.taxNumber));
-        });
-      },
+            api.getCustomerDetail(_id).then((_data) => tempLedgerData =
+                CustomerModel(
+                    id: _data.id,
+                    name: _ledger,
+                    address1: _data.address1,
+                    address2: _data.address2,
+                    address3: _data.address3,
+                    address4: _data.address4,
+                    balance: _data.balance,
+                    city: _data.city,
+                    email: _data.email,
+                    phone: _data.phone,
+                    route: _data.route,
+                    state: _data.state,
+                    stateCode: _data.stateCode,
+                    taxNumber: _data.taxNumber));
+          });
+        },
+      ),
     );
   }
 
   _searchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(), label: Text('Search...')),
-        onChanged: (text) {
-          text = text.toLowerCase();
-          setState(() {
-            itemDisplay = items.where((item) {
-              var itemName = item.name.toString().toLowerCase();
-              return itemName.contains(text);
-            }).toList();
-          });
-        },
+    return Container(
+      width: MediaQuery.sizeOf(context).width,
+      color: bagroundColor,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Container(
+          color: white,
+          child: TextField(
+            decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                label: Text(
+                  'Search...',
+                  style: TextStyle(fontFamily: 'poppins'),
+                )),
+            onChanged: (text) {
+              text = text.toLowerCase();
+              setState(() {
+                itemDisplay = items.where((item) {
+                  var itemName = item.name.toString().toLowerCase();
+                  return itemName.contains(text);
+                }).toList();
+              });
+            },
+          ),
+        ),
       ),
     );
   }

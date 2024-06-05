@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -19,20 +18,21 @@ import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../inventory/sales/sales_list.dart';
 
 class TaxReport extends StatefulWidget {
-  const TaxReport({Key ?key}) : super(key: key);
+  const TaxReport({Key? key}) : super(key: key);
 
   @override
   State<TaxReport> createState() => _TaxReportState();
 }
 
 class _TaxReportState extends State<TaxReport> {
-  String ?fromDate, toDate, sType = 'Summery';
+  String? fromDate, toDate, sType = 'Summery';
   var _data;
   DateTime now = DateTime.now();
   DioService api = DioService();
@@ -69,7 +69,7 @@ class _TaxReportState extends State<TaxReport> {
 
   bool valueSalesReturn = false, valuePurchaseReturn = false;
 
-  List<CompanySettings> ?settings;
+  List<CompanySettings>? settings;
   @override
   void initState() {
     super.initState();
@@ -219,7 +219,8 @@ class _TaxReportState extends State<TaxReport> {
                   // debugPrint(menuId.toString());
                   if (menuId == 1) {
                     Future.delayed(const Duration(milliseconds: 1000), () {
-                      _createPDF(title + ' Date :' + fromDate! + ' - ' + toDate!)
+                      _createPDF(
+                              title + ' Date :' + fromDate! + ' - ' + toDate!)
                           .then((value) =>
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (_) => PDFScreen(
@@ -239,12 +240,13 @@ class _TaxReportState extends State<TaxReport> {
                     });
                   } else if (menuId == 2) {
                     Future.delayed(const Duration(milliseconds: 1000), () {
-                      _createCSV(title + ' Date :' + fromDate! + ' - ' + toDate!)
+                      _createCSV(
+                              title + ' Date :' + fromDate! + ' - ' + toDate!)
                           .then((value) {
                         var text = 'this is ' +
                             title +
                             ' Date :' +
-                            fromDate !+
+                            fromDate! +
                             ' - ' +
                             toDate!;
                         var subject =
@@ -324,11 +326,14 @@ class _TaxReportState extends State<TaxReport> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            color: white,
+                            fontWeight: FontWeight.w500),
                         dataRowHeight: 20,
                         headingRowHeight: 30,
                         columns: [
@@ -338,8 +343,8 @@ class _TaxReportState extends State<TaxReport> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   col[i],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -437,111 +442,195 @@ class _TaxReportState extends State<TaxReport> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  const Text('Month : '),
-                  DropdownButton(
-                    value: valueMonth,
-                    items: monthList.map((item) {
-                      return DropdownMenuItem<String>(
-                        child: Text(item),
-                        value: item,
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        valueMonth = value!;
-                      });
-                    },
+                  const Text(
+                    'Month ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                    ),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: grey),
+                        borderRadius: BorderRadius.circular(3)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        value: valueMonth,
+                        items: monthList.map((item) {
+                          return DropdownMenuItem<String>(
+                            child: Text(item),
+                            value: item,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            valueMonth = value!;
+                          });
+                        },
+                      ),
+                    ),
                   ),
                 ],
               ),
-              Card(
-                elevation: 0.5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    const Text(
-                      ' From : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    InkWell(
-                      child: Text(
-                        fromDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
-                      ),
-                      onTap: () => _selectDate('f'),
-                    ),
-                    const Text(
-                      ' To : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    InkWell(
-                      child: Text(
-                        toDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
-                      ),
-                      onTap: () => _selectDate('t'),
-                    ),
-                  ],
-                ),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  const Text('Voucher '),
-                  DropdownButton(
-                    value: voucherType,
-                    items: dropdownFormType.map((TypeItem item) {
-                      return DropdownMenuItem<int>(
-                        child: Text(item.name),
-                        value: item.id,
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      voucherType = value!;
-                      voucherTypeData = dropdownFormType.firstWhere(
-                        (element) => element.id == voucherType,
-                        orElse: () => TypeItem(0, ''),
-                      );
-                      changeSelection();
-                    },
+                  const Text(
+                    'From ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            fromDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
+                      ),
+                    ),
+                    onTap: () => _selectDate('f'),
+                  ),
+                  const SizedBox(
+                    width: 16,
+                  ),
+                  const Text(
+                    'To ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            toDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
+                      ),
+                    ),
+                    onTap: () => _selectDate('t'),
                   ),
                 ],
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              ContainerFieldWidget(
+                  widget: Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: grey),
+                        borderRadius: BorderRadius.circular(3)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        value: voucherType,
+                        items: dropdownFormType.map((TypeItem item) {
+                          return DropdownMenuItem<int>(
+                            child: Text(item.name),
+                            value: item.id,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          voucherType = value!;
+                          voucherTypeData = dropdownFormType.firstWhere(
+                            (element) => element.id == voucherType,
+                            orElse: () => TypeItem(0, ''),
+                          );
+                          changeSelection();
+                        },
+                      ),
+                    ),
+                  ),
+                  headTxt: 'Voucher'),
+              const SizedBox(
+                height: 10,
               ),
               Visibility(
-                visible: dropdownModelTypeList.isNotEmpty,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    const Text('Select Model '),
-                    DropdownButton(
-                      value: valueModelType,
-                      items: dropdownModelTypeList.map((var item) {
-                        return DropdownMenuItem<String>(
-                          child: Text(item),
-                          value: item,
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          valueModelType = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                  visible: dropdownModelTypeList.isNotEmpty,
+                  child: ContainerFieldWidget(
+                      widget: Container(
+                        width: MediaQuery.sizeOf(context).width,
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton(
+                            isExpanded: true,
+                            value: valueModelType,
+                            items: dropdownModelTypeList.map((var item) {
+                              return DropdownMenuItem<String>(
+                                child: Text(item),
+                                value: item,
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                valueModelType = value!;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      headTxt: 'Select Model')),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
               TextButton(
                 onPressed: () {
                   if (voucherTypeData != null && valueModelType.isNotEmpty) {
@@ -555,41 +644,90 @@ class _TaxReportState extends State<TaxReport> {
                         const SnackBar(content: Text('Select Model')));
                   }
                 },
-                child: const Text('Show'),
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5))),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                 ),
+                child: const Text(
+                  'Show',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                      fontFamily: 'poppins'),
+                ),
               ),
-              const Divider(),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Text('Sales Return'),
-                Checkbox(
-                  value: valueSalesReturn,
-                  onChanged: (value) {
-                    setState(() {
-                      valueSalesReturn = value!;
-                    });
-                  },
-                ),
-                const Divider(),
-                const Text('Purchase Return'),
-                Checkbox(
-                  value: valuePurchaseReturn,
-                  onChanged: (value) {
-                    setState(() {
-                      valuePurchaseReturn = value!;
-                    });
-                  },
-                ),
-                const Divider()
-              ]),
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5),
+                decoration: BoxDecoration(
+                    border: Border.all(color: grey),
+                    borderRadius: BorderRadius.circular(3)),
+                child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      const Text(
+                        'Sales Return',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            fontFamily: 'poppins'),
+                      ),
+                      Checkbox(
+                        value: valueSalesReturn,
+                        activeColor: kPrimaryColor,
+                        onChanged: (value) {
+                          setState(() {
+                            valueSalesReturn = value!;
+                          });
+                        },
+                      ),
+                      const Spacer(),
+                      const Text(
+                        'Purchase Return',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15,
+                            fontFamily: 'poppins'),
+                      ),
+                      Checkbox(
+                        value: valuePurchaseReturn,
+                        activeColor: kPrimaryColor,
+                        onChanged: (value) {
+                          setState(() {
+                            valuePurchaseReturn = value!;
+                          });
+                        },
+                      ),
+                    ]),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
               salesTypeDataList.isNotEmpty
-                  ? ExpansionTile(
-                      title: const Text('Sales Name'),
-                      children: _getChildren(salesTypeDataList),
+                  ? Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: ExpansionTile(
+                        dense: true,
+                        title: const Text(
+                          'Sales Name',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                              fontFamily: 'poppins'),
+                        ),
+                        children: _getChildren(salesTypeDataList),
+                      ),
                     )
                   : Container(),
             ],
@@ -600,7 +738,7 @@ class _TaxReportState extends State<TaxReport> {
   }
 
   Future _selectDate(String type) async {
-    DateTime ?picked = await showDatePicker(
+    DateTime? picked = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
         firstDate: DateTime(2000),

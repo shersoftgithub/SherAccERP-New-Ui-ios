@@ -1040,6 +1040,7 @@ class _RPVoucherState extends State<RPVoucher> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1048,40 +1049,38 @@ class _RPVoucherState extends State<RPVoucher> {
               //   'Date : ',
               //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               // ),
-              Flexible(
+              Expanded(
                 flex: 1,
-                child: Expanded(
-                  child: ContainerFieldWidget(
-                      widget: InkWell(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          // width: 140,
-                          height: 40,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: grey),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                formattedDate!,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 13,
-                                    fontFamily: 'poppins'),
-                              ),
-                              const Icon(
-                                Icons.calendar_month_outlined,
-                                size: 20,
-                                color: grey,
-                              )
-                            ],
-                          ),
+                child: ContainerFieldWidget(
+                    widget: InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        // width: 140,
+                        height: 40,
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              formattedDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              size: 20,
+                              color: grey,
+                            )
+                          ],
                         ),
-                        onTap: () => _selectDate(),
                       ),
-                      headTxt: 'Date'),
-                ),
+                      onTap: () => _selectDate(),
+                    ),
+                    headTxt: 'Date'),
               ),
               const SizedBox(
                 width: 8,
@@ -1196,19 +1195,13 @@ class _RPVoucherState extends State<RPVoucher> {
           ),
           isSelected
               ? ledgerDetailWidget(ledData!.id)
-              : const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                        child: Text(
-                      'Balance : 0',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 17,
-                          fontFamily: 'poppins',
-                          color: kPrimaryColor),
-                    )),
-                  ],
+              : const Text(
+                  'Balance : 0',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 17,
+                      fontFamily: 'poppins',
+                      color: kPrimaryColor),
                 ),
           const SizedBox(
             height: 15,
@@ -1267,19 +1260,13 @@ class _RPVoucherState extends State<RPVoucher> {
           const SizedBox(
             height: 15,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                  child: Text(
-                'Total : ${total!.toStringAsFixed(0)}',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 17,
-                    fontFamily: 'poppins',
-                    color: kPrimaryColor),
-              )),
-            ],
+          Text(
+            'Total : ${total!.toStringAsFixed(0)}',
+            style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 17,
+                fontFamily: 'poppins',
+                color: kPrimaryColor),
           ),
           const SizedBox(
             height: 15,

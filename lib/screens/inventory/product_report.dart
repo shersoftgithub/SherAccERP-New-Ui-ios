@@ -14,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
 // ignore: avoid_web_libraries_in_flutter
@@ -154,13 +155,17 @@ class _ProductReportState extends State<ProductReport> {
                       'Product List',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     )),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -171,8 +176,8 @@ class _ProductReportState extends State<ProductReport> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   col[i],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -308,7 +313,7 @@ class _ProductReportState extends State<ProductReport> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
               Row(
@@ -316,10 +321,17 @@ class _ProductReportState extends State<ProductReport> {
                 children: [
                   Checkbox(
                       value: pluNo,
+                      activeColor: kPrimaryColor,
                       onChanged: (value) => setState(() {
                             pluNo = value!;
                           })),
-                  const Text('PLU No'),
+                  const Text(
+                    'PLU No',
+                    style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500),
+                  ),
                   const SizedBox(
                     width: 20,
                   ),
@@ -329,17 +341,27 @@ class _ProductReportState extends State<ProductReport> {
                         loadReport = true;
                       });
                     },
-                    child: const Text('Show'),
                     style: ButtonStyle(
+                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5))),
                       backgroundColor:
                           MaterialStateProperty.all<Color>(kPrimaryColor),
                       foregroundColor:
                           MaterialStateProperty.all<Color>(Colors.white),
                     ),
+                    child: const Text(
+                      'Show',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
                   ),
                 ],
               ),
-              const Divider(),
+              const SizedBox(
+                height: 10,
+              ),
               // DropdownSearch<dynamic>(
               //   constraints: BoxConstraints(maxHeight: 300),
               //   asyncItems: (String filter) =>
@@ -362,177 +384,226 @@ class _ProductReportState extends State<ProductReport> {
               //   showSearchBox: true,
               // ),
               // const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/unit'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(), label: Text('Select Unit')),
-                ),
-                onChanged: (dynamic data) {
-                  unit = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/unit'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      unit = data;
+                    },
+                  ),
+                  headTxt: 'Select Unit'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/manufacture'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration:
-                      InputDecoration(label: Text("Select Item MFR")),
-                ),
-                onChanged: (dynamic data) {
-                  mfr = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownButtonHideUnderline(
+                    child: DropdownSearch<dynamic>(
+                      popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                          showSearchBox: true,
+                          constraints: BoxConstraints(
+                              // maxHeight: 300,
+                              )),
+                      asyncItems: (String filter) => api.getSalesListData(
+                          filter, 'sales_list/manufacture'),
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        dropdownSearchDecoration:
+                            InputDecoration(border: OutlineInputBorder()),
+                      ),
+                      onChanged: (dynamic data) {
+                        mfr = data;
+                      },
+                    ),
+                  ),
+                  headTxt: 'Select Item MFR'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/category'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text("Select Category")),
-                ),
-                onChanged: (dynamic data) {
-                  category = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/category'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      category = data;
+                    },
+                  ),
+                  headTxt: 'Select Category'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/subCategory'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text("Select SubCategory")),
-                ),
-                onChanged: (dynamic data) {
-                  subCategory = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/subCategory'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      subCategory = data;
+                    },
+                  ),
+                  headTxt: 'Select Sub Category'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownButton<String>(
-                hint: const Text('Type of Supply'),
-                value: dropDownTypeOfSupply,
-                items: typeOfSupplyData.map<DropdownMenuItem<String>>((value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    dropDownTypeOfSupply = value;
-                  });
-                },
+              ContainerFieldWidget(
+                  widget: Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    decoration: BoxDecoration(
+                        border: Border.all(color: grey),
+                        borderRadius: BorderRadius.circular(3)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: dropDownTypeOfSupply,
+                        items: typeOfSupplyData
+                            .map<DropdownMenuItem<String>>((value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            dropDownTypeOfSupply = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  headTxt: 'Type of Supply'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/taxGroup'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text("Select TaxGroup")),
-                ),
-                onChanged: (dynamic data) {
-                  taxGroup = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/taxGroup'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      taxGroup = data;
+                    },
+                  ),
+                  headTxt: 'Select Tax Group'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'Product/getHsnCodeList'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text("Select HSN Code")),
-                ),
-                onChanged: (dynamic data) {
-                  hsnCode = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'Product/getHsnCodeList'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      hsnCode = data;
+                    },
+                  ),
+                  headTxt: "Select HSN Code"),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/rack'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(), label: Text("Select Rack")),
-                ),
-                onChanged: (dynamic data) {
-                  rack = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/rack'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      rack = data;
+                    },
+                  ),
+                  headTxt: 'Select Rack'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: taxPController,
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(), label: Text('TAX %')),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                            allow: true, replacementString: '.')
-                      ],
-                    ),
-                  ),
+                      child: ContainerFieldWidget(
+                          widget: TextField(
+                            controller: taxPController,
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                label: Text('TAX %')),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                  allow: true, replacementString: '.')
+                            ],
+                          ),
+                          headTxt: 'Tax')),
                   const SizedBox(
-                    width: 20,
+                    width: 5,
                   ),
                   Expanded(
-                      child: TextField(
-                    controller: reorderController,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), label: Text('Reorder')),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                  )),
+                      child: ContainerFieldWidget(
+                          widget: TextField(
+                            controller: reorderController,
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                label: Text('Reorder')),
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                  allow: true, replacementString: '.')
+                            ],
+                          ),
+                          headTxt: 'Reorder')),
                 ],
               ),
             ],

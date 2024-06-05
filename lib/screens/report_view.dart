@@ -142,56 +142,101 @@ class _ReportViewState extends State<ReportView> {
                               Wrap(
                                 children: [
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     onPressed: () {
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       showDateBottomSheet(context);
                                     },
-                                    child: const Text('Date'),
+                                    child: const Text(
+                                      'Date',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins', color: white),
+                                    ),
                                   ),
                                   const SizedBox(
                                     width: 10,
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     onPressed: () {
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       showParticularsBottomSheet(context);
                                     },
-                                    child: const Text('Particulars'),
+                                    child: const Text(
+                                      'Particulars',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins', color: white),
+                                    ),
                                   ),
                                   const SizedBox(
                                     width: 10,
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     onPressed: () {
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       showDebitBottomSheet(context);
                                     },
-                                    child: const Text('Debit'),
+                                    child: const Text(
+                                      'Debit',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins', color: white),
+                                    ),
                                   ),
                                   const SizedBox(
                                     width: 10,
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     onPressed: () {
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       showCreditBottomSheet(context);
                                     },
-                                    child: const Text('Credit'),
+                                    child: const Text(
+                                      'Credit',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins', color: white),
+                                    ),
                                   ),
                                   const SizedBox(
                                     width: 10,
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(3))),
                                     onPressed: () {
                                       setState(() {});
                                       Navigator.of(context).pop();
                                       showBalanceBottomSheet(context);
                                     },
-                                    child: const Text('Balance'),
+                                    child: const Text(
+                                      'Balance',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins', color: white),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -306,7 +351,7 @@ class _ReportViewState extends State<ReportView> {
           ],
           // title: Text(widget.type),
           title: Text(
-            'Ledger Report of ${tempLedgerData!.name}',
+            'Ledger Report of ${tempLedgerData?.name ?? ''}',
             style: const TextStyle(fontSize: 12),
           ),
         ),
@@ -905,7 +950,9 @@ class _ReportViewState extends State<ReportView> {
                         .fold(
                             0.0,
                             (a, b) =>
-                                a + double.parse(b[tableColumn[i]].toString()))
+                                a +
+                                double.parse(
+                                    b[tableColumn[i].toString()].toString()))
                         .toStringAsFixed(2);
                   }
                   if (i == 0) {
@@ -929,18 +976,27 @@ class _ReportViewState extends State<ReportView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(
-                          child: Text(widget.name +
-                              ' Date : From ' +
-                              DateUtil.dateDMY(widget.sDate) +
-                              ' To ' +
-                              DateUtil.dateDMY(widget.eDate))),
+                          child: Text(
+                        widget.name +
+                            ' Date : From ' +
+                            DateUtil.dateDMY(widget.sDate) +
+                            ' To ' +
+                            DateUtil.dateDMY(widget.eDate),
+                        // style: const TextStyle(fontFamily: 'poppins'),
+                      )),
+                      const SizedBox(
+                        height: 10,
+                      ),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          headingRowColor: MaterialStateColor.resolveWith(
-                              (states) => Colors.grey.shade200),
-                          border:
-                              TableBorder.all(width: 1.0, color: Colors.black),
+                          headingRowColor:
+                              const MaterialStatePropertyAll(kPrimaryColor),
+                          border: TableBorder.all(width: 1.0, color: grey),
+                          headingTextStyle: const TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              color: white),
                           columnSpacing: 12,
                           dataRowHeight: 20,
                           headingRowHeight: 30,
@@ -951,9 +1007,9 @@ class _ReportViewState extends State<ReportView> {
                                   alignment: Alignment.center,
                                   child: Text(
                                     tableColumn[i],
-                                    style: const TextStyle(
-                                        // color: Colors.black,
-                                        fontWeight: FontWeight.bold),
+                                    // style: const TextStyle(
+                                    //     // color: Colors.black,
+                                    //     fontWeight: FontWeight.bold),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -981,7 +1037,8 @@ class _ReportViewState extends State<ReportView> {
                                                 : '',
                                             softWrap: true,
                                             overflow: TextOverflow.ellipsis,
-                                            //style: TextStyle(fontSize: 6),
+                                            style: const TextStyle(
+                                                fontFamily: 'poppins'),
                                           ),
                                         ),
                                       ),
@@ -1348,10 +1405,13 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            color: white,
+                            fontWeight: FontWeight.w500),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -1364,7 +1424,8 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumn[i],
                                   style: const TextStyle(
                                       // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                                      // fontWeight: FontWeight.bold
+                                      ),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -1495,9 +1556,13 @@ class _ReportViewState extends State<ReportView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.grey.shade200),
-                    border: TableBorder.all(width: 1.0, color: Colors.black),
+                    headingRowColor:
+                        const MaterialStatePropertyAll(kPrimaryColor),
+                    border: TableBorder.all(width: 1.0, color: grey),
+                    headingTextStyle: const TextStyle(
+                        fontFamily: 'poppins',
+                        color: white,
+                        fontWeight: FontWeight.w500),
                     columnSpacing: 12,
                     dataRowHeight: 20,
                     headingRowHeight: 30,
@@ -1510,7 +1575,8 @@ class _ReportViewState extends State<ReportView> {
                               tableColumn[i],
                               style: const TextStyle(
                                   // color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  // fontWeight: FontWeight.bold
+                                  ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -1621,9 +1687,13 @@ class _ReportViewState extends State<ReportView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.grey.shade200),
-                    border: TableBorder.all(width: 1.0, color: Colors.black),
+                    headingRowColor:
+                        const MaterialStatePropertyAll(kPrimaryColor),
+                    border: TableBorder.all(width: 1.0, color: grey),
+                    headingTextStyle: const TextStyle(
+                        fontFamily: 'poppins',
+                        color: white,
+                        fontWeight: FontWeight.w500),
                     columnSpacing: 12,
                     dataRowHeight: 20,
                     headingRowHeight: 30,
@@ -1636,7 +1706,8 @@ class _ReportViewState extends State<ReportView> {
                               tableColumn[i],
                               style: const TextStyle(
                                   // color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  // fontWeight: FontWeight.bold
+                                  ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -1747,10 +1818,14 @@ class _ReportViewState extends State<ReportView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.grey.shade200),
-                    border: TableBorder.all(width: 1.0, color: Colors.black),
+                    headingRowColor:
+                        const MaterialStatePropertyAll(kPrimaryColor),
+                    border: TableBorder.all(width: 1.0, color: grey),
                     columnSpacing: 12,
+                    headingTextStyle: const TextStyle(
+                        fontFamily: 'poppins',
+                        color: white,
+                        fontWeight: FontWeight.w500),
                     dataRowHeight: 20,
                     headingRowHeight: 30,
                     columns: [
@@ -1762,7 +1837,8 @@ class _ReportViewState extends State<ReportView> {
                               tableColumn[i],
                               style: const TextStyle(
                                   // color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  // fontWeight: FontWeight.bold
+                                  ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -1873,10 +1949,14 @@ class _ReportViewState extends State<ReportView> {
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
-                    headingRowColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.grey.shade200),
-                    border: TableBorder.all(width: 1.0, color: Colors.black),
+                    headingRowColor:
+                        const MaterialStatePropertyAll(kPrimaryColor),
+                    border: TableBorder.all(width: 1.0, color: grey),
                     columnSpacing: 12,
+                    headingTextStyle: const TextStyle(
+                        fontFamily: 'poppins',
+                        color: white,
+                        fontWeight: FontWeight.w500),
                     dataRowHeight: 20,
                     headingRowHeight: 30,
                     columns: [
@@ -1888,7 +1968,8 @@ class _ReportViewState extends State<ReportView> {
                               tableColumn[i],
                               style: const TextStyle(
                                   // color: Colors.black,
-                                  fontWeight: FontWeight.bold),
+                                  // fontWeight: FontWeight.bold
+                                  ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -2198,8 +2279,7 @@ class _ReportViewState extends State<ReportView> {
                       child: DataTable(
                         headingRowColor: MaterialStateColor.resolveWith(
                             (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         // dividerThickness: 1,
@@ -2329,11 +2409,14 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            color: white,
+                            fontWeight: FontWeight.w500),
                         dataRowHeight: 20,
                         headingRowHeight: 30,
                         columns: [
@@ -2345,7 +2428,8 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumn[i],
                                   style: const TextStyle(
                                       // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                                      // fontWeight: FontWeight.bold
+                                      ),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -2517,10 +2601,11 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -2531,9 +2616,9 @@ class _ReportViewState extends State<ReportView> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   tableColumn[i],
-                                  style: const TextStyle(
-                                      // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     // color: Colors.black,
+                                  //     fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -2781,11 +2866,14 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            color: white,
+                            fontWeight: FontWeight.w500),
                         dataRowHeight: 20,
                         headingRowHeight: 30,
                         columns: [
@@ -2797,7 +2885,8 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumn[i],
                                   style: const TextStyle(
                                       // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                                      // fontWeight: FontWeight.bold
+                                      ),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -3592,13 +3681,17 @@ class _ReportViewState extends State<ReportView> {
                             DateUtil.dateDMY(widget.sDate) +
                             ' To ' +
                             DateUtil.dateDMY(widget.eDate))),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -3609,9 +3702,9 @@ class _ReportViewState extends State<ReportView> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   tableColumn[i],
-                                  style: const TextStyle(
-                                      // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     // color: Colors.black,
+                                  //     fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -3745,11 +3838,14 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            color: white,
+                            fontWeight: FontWeight.w500),
                         dataRowHeight: 20,
                         headingRowHeight: 30,
                         columns: [
@@ -3759,9 +3855,6 @@ class _ReportViewState extends State<ReportView> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   tableColumn[i],
-                                  style: const TextStyle(
-                                      // color: Colors.black,
-                                      fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -3787,6 +3880,8 @@ class _ReportViewState extends State<ReportView> {
                                               ? values[tableColumn[i]]
                                                   .toString()
                                               : '',
+                                          style:
+                                              TextStyle(fontFamily: 'poppins'),
                                           softWrap: true,
                                           overflow: TextOverflow.ellipsis,
                                           //style: TextStyle(fontSize: 6),

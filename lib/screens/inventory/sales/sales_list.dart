@@ -9,6 +9,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -442,13 +443,18 @@ class _SalesListState extends State<SalesList> {
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             )),
+                            const SizedBox(
+                              height: 10,
+                            ),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: DataTable(
-                                headingRowColor: MaterialStateColor.resolveWith(
-                                    (states) => Colors.grey.shade200),
-                                border: TableBorder.all(
-                                    width: 1.0, color: Colors.black),
+                                headingRowColor: const MaterialStatePropertyAll(
+                                    kPrimaryColor),
+                                border:
+                                    TableBorder.all(width: 1.0, color: grey),
+                                headingTextStyle: const TextStyle(
+                                    fontFamily: 'poppins', color: white),
                                 columnSpacing: 12,
                                 dataRowHeight: 20,
                                 headingRowHeight: 30,
@@ -459,8 +465,8 @@ class _SalesListState extends State<SalesList> {
                                         alignment: Alignment.center,
                                         child: Text(
                                           col[i],
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
+                                          // style: const TextStyle(
+                                          //     fontWeight: FontWeight.bold),
                                           textAlign: TextAlign.center,
                                         ),
                                       ),

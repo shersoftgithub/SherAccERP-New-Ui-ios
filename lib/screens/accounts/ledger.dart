@@ -1021,7 +1021,7 @@ class _LedgerState extends State<Ledger> {
                                       value: item['Auto'].toString(),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: Text(item['Name'],
+                                        child: Text(item['Name'],   
                                             overflow: TextOverflow.ellipsis),
                                       ),
                                     );
