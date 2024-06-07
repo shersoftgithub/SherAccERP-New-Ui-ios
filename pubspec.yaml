@@ -88,6 +88,8 @@ dependencies:
   # webview_flutter:
   webview_flutter: ^3.0.4
   zxing2:
+  flutter_typeahead: ^5.2.0
+  easy_autocomplete: ^1.6.0
  
 
 dev_dependencies:

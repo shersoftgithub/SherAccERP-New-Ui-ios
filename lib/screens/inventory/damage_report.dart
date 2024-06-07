@@ -1,11 +1,14 @@
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 // import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:intl/intl.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 
 class DamageReport extends StatefulWidget {
   const DamageReport({Key? key}) : super(key: key);
@@ -62,6 +65,7 @@ class _DamageReportState extends State<DamageReport> {
                 }),
           ],
           title: const Text('Damage Report'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: loadReport ? reportView(title) : selectData());
   }
@@ -116,13 +120,17 @@ class _DamageReportState extends State<DamageReport> {
                       statement + ' Date: From ' + fromDate + ' To ' + toDate,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     )),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -133,8 +141,8 @@ class _DamageReportState extends State<DamageReport> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   col[i],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -234,44 +242,91 @@ class _DamageReportState extends State<DamageReport> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
-              Card(
-                elevation: 0.5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    const Text(
-                      'From : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    InkWell(
-                      child: Text(
-                        fromDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
+              Row(
+                children: [
+                  const Text(
+                    'From ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            fromDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
-                      onTap: () => _selectDate('f'),
                     ),
-                    const Text(
-                      'To : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    InkWell(
-                      child: Text(
-                        toDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
+                    onTap: () => _selectDate('f'),
+                  ),
+                  const SizedBox(
+                    width: 16,
+                  ),
+                  const Text(
+                    'To ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            toDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
-                      onTap: () => _selectDate('t'),
                     ),
-                  ],
-                ),
+                    onTap: () => _selectDate('t'),
+                  ),
+                ],
               ),
-              const Divider(),
+              const SizedBox(
+                height: 10,
+              ),
               Card(
                 elevation: 2,
                 child: DropDownSettingsTile<int>(
@@ -289,79 +344,107 @@ class _DamageReportState extends State<DamageReport> {
                   },
                 ),
               ),
-              // Divider(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text('Type : '),
-                  DropdownButton(
-                    value: valueType,
-                    items: dropdownItemsType.map((TypeItem item) {
-                      return DropdownMenuItem<int>(
-                        child: Text(item.name),
-                        value: item.id,
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        valueType = value!;
-                      });
-                    },
-                  ),
-                ],
+              const SizedBox(
+                height: 10,
               ),
-              // Divider(),
+              ContainerFieldWidget(
+                  widget: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    width: MediaQuery.sizeOf(context).width,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        isExpanded: true,
+                        value: valueType,
+                        items: dropdownItemsType.map((TypeItem item) {
+                          return DropdownMenuItem<int>(
+                            child: Text(item.name),
+                            value: item.id,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            valueType = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  headTxt: 'Type'),
+              const SizedBox(
+                height: 10,
+              ),
               TextButton(
                 onPressed: () {
                   setState(() {
                     loadReport = true;
                   });
                 },
-                child: const Text('Show'),
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5))),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                 ),
-              ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/ItemCode'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Select Item Code')),
+                child: const Text(
+                  'Show',
+                  style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
                 ),
-                onChanged: (dynamic data) {
-                  itemId = data;
-                },
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/itemName'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Select Item Name')),
-                ),
-                onChanged: (dynamic data) {
-                  itemName = data;
-                },
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/ItemCode'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      itemId = data;
+                    },
+                  ),
+                  headTxt: 'Select Item Code'),
+              const SizedBox(
+                height: 10,
+              ),
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/itemName'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      itemName = data;
+                    },
+                  ),
+                  headTxt: 'Select Item Name'),
+              const SizedBox(
+                height: 10,
+              ),
             ],
           ),
         ),

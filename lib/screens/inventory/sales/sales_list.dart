@@ -1106,10 +1106,10 @@ class _SalesListState extends State<SalesList> {
           child: Column(
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                // mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   const Text(
-                    ' From',
+                    ' From ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
@@ -1117,47 +1117,70 @@ class _SalesListState extends State<SalesList> {
                   ),
                   InkWell(
                     child: Container(
-                      padding:
-                          const EdgeInsetsDirectional.symmetric(horizontal: 5),
+                      padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: 8, vertical: 5),
                       height: 30,
                       decoration: BoxDecoration(
                           border: Border.all(color: grey),
                           borderRadius: BorderRadius.circular(3)),
-                      child: Center(
-                        child: Text(
-                          fromDate!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13,
-                              fontFamily: 'poppins'),
-                        ),
+                      child: Row(
+                        children: [
+                          Text(
+                            fromDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 6,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
                     ),
                     onTap: () => _selectDate('f'),
                   ),
+                  const SizedBox(
+                    width: 13,
+                  ),
                   const Text(
-                    ' To',
+                    ' To ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: 16,
                         fontFamily: 'poppins'),
                   ),
                   InkWell(
                     child: Container(
-                      padding:
-                          const EdgeInsetsDirectional.symmetric(horizontal: 5),
+                      padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: 8, vertical: 5),
                       height: 30,
                       decoration: BoxDecoration(
                           border: Border.all(color: grey),
                           borderRadius: BorderRadius.circular(3)),
-                      child: Center(
-                        child: Text(
-                          toDate!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13,
-                              fontFamily: 'poppins'),
-                        ),
+                      child: Row(
+                        children: [
+                          Text(
+                            toDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 6,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
                     ),
                     onTap: () => _selectDate('t'),

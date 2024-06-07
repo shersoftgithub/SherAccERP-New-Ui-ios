@@ -2491,13 +2491,89 @@ class DioService {
       } else {
         debugPrint('Failed to load data');
       }
-    } catch (e) {
-      final errorMessage =
-          DioExceptions.fromDioError('$e' as DioError).toString();
+    } on DioError catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e).toString();
       debugPrint(errorMessage.toString());
     }
     return _item;
   }
+
+  // search customers 
+
+  Future<List<CustomerModel>> searchCustomers(String query) async {
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  String dataBase = 'cSharp';
+  dataBase = isEstimateDataBase
+      ? (pref.getString('DBName') ?? "cSharp")
+      : (pref.getString('DBNameT') ?? "cSharp");
+
+  try {
+    final response = await dio.get(
+        '${pref.getString('api')}${apiV}Ledger/search/$dataBase',
+        queryParameters: {'query': query});
+
+    if (response.statusCode == 200) {
+      List<dynamic> data = response.data;
+      return data.map((item) => CustomerModel.fromJson(item)).toList();
+    } else {
+      debugPrint('Failed to load data');
+      return [];
+    }
+  } on DioError catch (e) {
+    final errorMessage = DioExceptions.fromDioError(e).toString();
+    debugPrint(errorMessage);
+    return [];
+  }
+}
+
+
+//   Stream<CustomerModel> getCustomerDetailStream(int id) async* {
+//   SharedPreferences pref = await SharedPreferences.getInstance();
+//   String dataBase = 'cSharp';
+//   dataBase = isEstimateDataBase
+//       ? (pref.getString('DBName') ?? "cSharp")
+//       : (pref.getString('DBNameT') ?? "cSharp");
+//   CustomerModel _item = CustomerModel();
+//   try {
+//     final response = await dio
+//         .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
+//     if (response.statusCode == 200) {
+//       List<dynamic> _data = response.data;
+//       _item = CustomerModel.fromJson(_data[0]);
+//       yield _item;
+//     } else {
+//       debugPrint('Failed to load data');
+//     }
+//   } catch (e) {
+//     final errorMessage =
+//         DioExceptions.fromDioError('$e' as DioError).toString();
+//     debugPrint(errorMessage.toString());
+//   }
+// }
+
+//   Stream<CustomerModel> getCustomerDetailStockStream(int id) async* {
+//   SharedPreferences pref = await SharedPreferences.getInstance();
+//   String dataBase = 'cSharp';
+//   dataBase = isEstimateDataBase
+//       ? (pref.getString('DBName') ?? "cSharp")
+//       : (pref.getString('DBNameT') ?? "cSharp");
+//   CustomerModel _item = CustomerModel();
+//   try {
+//     final response = await dio.get(
+//         '${pref.getString('api')}${apiV}Ledger/getDetailWithStock/$dataBase/$id');
+//     if (response.statusCode == 200) {
+//       List<dynamic> _data = response.data;
+//       _item = CustomerModel.fromJson(_data[0]);
+//       yield _item;
+//     } else {
+//       debugPrint('Failed to load data');
+//     }
+//   } catch (e) {
+//     final errorMessage =
+//         DioExceptions.fromDioError('$e' as DioError).toString();
+//     debugPrint(errorMessage.toString());
+//   }
+// }
 
   Future<CustomerModel> getCustomerDetailStock(int id) async {
     SharedPreferences pref = await SharedPreferences.getInstance();

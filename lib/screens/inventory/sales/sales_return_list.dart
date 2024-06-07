@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 
 class SalesReturnList extends StatefulWidget {
   const SalesReturnList({Key? key}) : super(key: key);
@@ -70,6 +71,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                 }),
           ],
           title: const Text('SalesReturn Report'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: loadReport ? reportView() : selectData());
   }
@@ -121,13 +123,17 @@ class _SalesReturnListState extends State<SalesReturnList> {
                       statement + ' Date: From ' + fromDate! + ' To ' + toDate!,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     )),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
-                        border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -138,8 +144,8 @@ class _SalesReturnListState extends State<SalesReturnList> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   col[i],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  // style: const TextStyle(
+                                  //     fontWeight: FontWeight.w500),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -240,44 +246,91 @@ class _SalesReturnListState extends State<SalesReturnList> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
-              Card(
-                elevation: 0.5,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    const Text(
-                      'From : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    InkWell(
-                      child: Text(
-                        fromDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
+              Row(
+                children: [
+                  const Text(
+                    'From ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            fromDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
-                      onTap: () => _selectDate('f'),
                     ),
-                    const Text(
-                      'To : ',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                    InkWell(
-                      child: Text(
-                        toDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
+                    onTap: () => _selectDate('f'),
+                  ),
+                  const SizedBox(
+                    width: 16,
+                  ),
+                  const Text(
+                    'To ',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontFamily: 'poppins'),
+                  ),
+                  InkWell(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Row(
+                        children: [
+                          Text(
+                            toDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15,
+                                fontFamily: 'poppins'),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          const Icon(
+                            Icons.calendar_month_outlined,
+                            color: grey,
+                            size: 20,
+                          )
+                        ],
                       ),
-                      onTap: () => _selectDate('t'),
                     ),
-                  ],
-                ),
+                    onTap: () => _selectDate('t'),
+                  ),
+                ],
               ),
-              const Divider(),
+              const SizedBox(
+                height: 10,
+              ),
               Card(
                 elevation: 2,
                 child: DropDownSettingsTile<int>(
@@ -295,203 +348,258 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   },
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text('Type : '),
-                  DropdownButton(
-                    value: valueType,
-                    items: dropdownItemsType.map((TypeItem item) {
-                      return DropdownMenuItem<int>(
-                        child: Text(item.name),
-                        value: item.id,
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        valueType = value!;
-                      });
-                    },
-                  ),
-                ],
+              const SizedBox(
+                height: 10,
               ),
-              // Divider(),
+              ContainerFieldWidget(
+                  widget: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    width: MediaQuery.sizeOf(context).width,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        isExpanded: true,
+                        value: valueType,
+                        items: dropdownItemsType.map((TypeItem item) {
+                          return DropdownMenuItem<int>(
+                            value: item.id,
+                            child: Text(item.name),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            valueType = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  headTxt: 'Type'),
+              const SizedBox(
+                height: 10,
+              ),
               TextButton(
                 onPressed: () {
                   setState(() {
                     loadReport = true;
                   });
                 },
-                child: const Text('Show'),
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5))),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                 ),
-              ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/ItemCode'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Item Code"),
+                child: const Text(
+                  'Show',
+                  style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
                 ),
-                onChanged: (dynamic data) {
-                  itemId = data;
-                },
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/itemName'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Item Name"),
-                ),
-                onChanged: (dynamic data) {
-                  itemName = data;
-                },
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/customer'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Customer"),
-                ),
-                onChanged: (dynamic data) {
-                  customer = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/ItemCode'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      itemId = data;
+                    },
+                  ),
+                  headTxt: 'Select Item Code'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/manufacture'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Item MFR"),
-                ),
-                onChanged: (dynamic data) {
-                  mfr = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/itemName'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      itemName = data;
+                    },
+                  ),
+                  headTxt: 'Select Item Name'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/category'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Category"),
-                ),
-                onChanged: (dynamic data) {
-                  category = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/customer'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      customer = data;
+                    },
+                  ),
+                  headTxt: 'Select Customer'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/subCategory'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select SubCategory"),
-                ),
-                onChanged: (dynamic data) {
-                  subCategory = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/manufacture'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      mfr = data;
+                    },
+                  ),
+                  headTxt: 'Select Item MFR'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/salesMan'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select SalesMan"),
-                ),
-                onChanged: (dynamic data) {
-                  salesMan = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/category'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      category = data;
+                    },
+                  ),
+                  headTxt: 'Select Category'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/project'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select Project"),
-                ),
-                onChanged: (dynamic data) {
-                  project = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/subCategory'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      subCategory = data;
+                    },
+                  ),
+                  headTxt: 'Select SubCategory'),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                    showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/taxGroup'),
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Select TaxGroup"),
-                ),
-                onChanged: (dynamic data) {
-                  taxGroup = data;
-                },
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/salesMan'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      salesMan = data;
+                    },
+                  ),
+                  headTxt: 'Select Salesman'),
+              const SizedBox(
+                height: 10,
               ),
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/project'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      project = data;
+                    },
+                  ),
+                  headTxt: 'Select Project'),
+              const SizedBox(
+                height: 10,
+              ),
+              ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/taxGroup'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (dynamic data) {
+                      taxGroup = data;
+                    },
+                  ),
+                  headTxt: 'Select TaxGroup')
             ],
           ),
         ),
@@ -506,7 +614,8 @@ class _SalesReturnListState extends State<SalesReturnList> {
         firstDate: DateTime(2000),
         lastDate: DateTime(2100));
     if (picked != null) {
-      setState(() => {
+      setState(() => 
+      {
             if (type == 'f')
               {fromDate = DateFormat('dd-MM-yyyy').format(picked)}
             else
