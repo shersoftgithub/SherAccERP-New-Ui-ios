@@ -21,6 +21,31 @@ class DateUtil {
     var dateTime = DateFormat("dd-MM-yyyy").parse(value.toString());
     return DateFormat("yyyy-MM-dd").format(dateTime);
   }
+  
+  static String dateDMY2YMDA(String date) {
+    if (date.isEmpty) {
+      // Handle empty date, return current date in YMD format as a default
+      final now = DateTime.now();
+      return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    }
+    
+    // Debugging: print the input date
+    print("Input Date: $date");
+
+    try {
+      // Assuming date is in dd-MM-yyyy format
+      final parsedDate = DateFormat("dd-MM-yyyy").parse(date);
+      final formattedDate = DateFormat("yyyy-MM-dd").format(parsedDate);
+
+      // Debugging: print the formatted date
+      print("Formatted Date: $formattedDate");
+
+      return formattedDate;
+    } catch (e) {
+      print("Date parsing failed: $e");
+      throw FormatException("Invalid date format: $date");
+    }
+  }
 
   static String datePickerYMD(picker) {
     return DateFormat('yyyy-MM-dd').format(picker);

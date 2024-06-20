@@ -14,6 +14,8 @@ import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 
+
+
 class SalesProvider with ChangeNotifier {
   final scaffoldKey = GlobalKey();
   List<SalesType> _salesTypeDisplay = [];
@@ -88,6 +90,8 @@ class SalesProvider with ChangeNotifier {
   set setProductScanner(bool value) {
     _productScanner = value;
   }
+
+  
 
   SalesProvider() {
     taxable = salesTypeData!.tax;

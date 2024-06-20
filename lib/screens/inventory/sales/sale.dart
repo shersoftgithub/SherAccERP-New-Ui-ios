@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_async_autocomplete/flutter_async_autocomplete.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -23,6 +26,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
+import 'package:sheraccerp/provider/product_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
@@ -41,7 +45,7 @@ import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
-class Sale extends StatefulWidget {
+class Sale extends ConsumerStatefulWidget {
   final bool thisSale;
   final bool oldSale;
   const Sale({
@@ -50,10 +54,10 @@ class Sale extends StatefulWidget {
     required this.oldSale,
   }) : super(key: key);
   @override
-  State<Sale> createState() => _SaleState();
+  ConsumerState<Sale> createState() => _SaleState();
 }
 
-class _SaleState extends State<Sale> {
+class _SaleState extends ConsumerState<Sale> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<SalesType> salesTypeDisplay = [];
   dynamic salesData;
@@ -125,6 +129,7 @@ class _SaleState extends State<Sale> {
   final taxNoControl = TextEditingController();
   final mobileNoControl = TextEditingController();
   final nameControl = TextEditingController();
+  final itemNameControl = TextEditingController();
   final FocusNode _focusNodeCashReceived = FocusNode();
 
   GlobalKey<AutoCompleteTextFieldState<String>> keyName = GlobalKey();
@@ -139,13 +144,19 @@ class _SaleState extends State<Sale> {
   List<LedgerModel> cashBankACList = [];
   List<SerialNOModel> serialNoData = [];
   List<String> vehicleNameListDisplay = [];
-  late List<CustomerModel> customerList = [];
+  late List<LedgerModel> customerList = [];
   List<String> nameListDisplay = [];
+  late List<StockItem> productList = [];
+  List<String> itemNameListDisplay = [];
   int lId = 0, groupId = 0, areaId = 0, routeId = 0;
+  String date = '', like = '';
   var salesManId = 0;
   String labelSerialNo = 'SerialNo';
   String labelSpRate = 'SpRetail';
   bool ledgerScanner = false, productScanner = false, loadScanner = false;
+  List<String> suggestions = [];
+  Map<String, String> nameToIdMap = {};
+  bool isLoading = false;
 
   Barcode? result;
   QRViewController? controller;
@@ -168,15 +179,43 @@ class _SaleState extends State<Sale> {
       salesTypeDisplay =
           ComSettings.salesFormList('key-item-sale-form-', false);
     }
-
-    api.getCustomerNameList().then((value) {
-      customerList.addAll(value as Iterable<CustomerModel>);
-      nameListDisplay.addAll(List<String>.from(customerList
-          .map((item) => (item.name))
-          .toList()
-          .map((s) => s)
-          .toList()));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(productsProvider.notifier).fetchStockProducts("", date);
     });
+    // fetchCustomerNames();
+    // fetchStockProducts();
+    // api
+    //     .getCustomerNameListByParent(
+    //   groupId,
+    //   areaId,
+    //   routeId,
+    //   salesManId,
+    // )
+    //     .then((value) {
+    //   print('API Call Successful: $value');
+    //   setState(() {
+    //     customerList = value;
+    //     nameListDisplay = customerList.map((item) => item.name).toList();
+    //   });
+    // }).catchError((error) {
+    //   print('API Call Failed: $error');
+    // });
+
+    // api
+    //     .fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemLike)
+    //     .then((value) {
+    //   print('API Call Successful: $value');
+    //   setState(() {
+    //     productList = value;
+    //     itemNameListDisplay = productList
+    //         .map((item) => item.name)
+    //         .where((name) => name != null)
+    //         .cast<String>()
+    //         .toList();
+    //   });
+    // }).catchError((error) {
+    //   print('API Call Failed: $error');
+    // });
 
     loadSettings();
     api.fetchDetailAmount().then((value) {
@@ -356,6 +395,71 @@ class _SaleState extends State<Sale> {
           daysBefore = true;
         }
       }
+    }
+  }
+
+  Future<List<LedgerModel>> fetchCustomerNames(String query) async {
+    try {
+      var value = await api.getCustomerNameListByParent(
+        groupId,
+        areaId,
+        routeId,
+        salesManId,
+      );
+      print('API Call Successful: $value');
+      return value;
+    } catch (error) {
+      print('API Call Failed: $error');
+      return [];
+    }
+  }
+
+  Future<void> fetchSuggestions(String query) async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      var value = await api.getCustomerNameListByParent(
+        groupId,
+        areaId,
+        routeId,
+        salesManId,
+      ); // Ensure query is passed
+      print('API Call Successful: $value');
+      setState(() {
+        suggestions = value.map((item) => item.name).toList();
+        nameToIdMap = {
+          for (var item in value) item.name: item.id.toString()
+        }; // Update mapping
+        isLoading = false;
+      });
+    } catch (error) {
+      print('API Call Failed: $error');
+      setState(() {
+        suggestions = [];
+        nameToIdMap = {};
+        isLoading = false;
+      });
+    }
+  }
+
+  String selectedCustomerId = '';
+  void fetchCustomerDetails(String selectedCustomer) {
+    setState(() {
+      selectedCustomerId =
+          nameToIdMap[selectedCustomer] ?? ''; // Get customer ID from mapping
+    });
+  }
+
+  Future<List<StockItem>> fetchStockProducts(String itemLike) async {
+    try {
+      var value = await api.fetchStockProductLike(
+          DateUtil.dateDMY2YMD(formattedDate), itemLike);
+      print('API Call Successful: $value');
+      return value;
+    } catch (error) {
+      print('API Call Failed: $error');
+      throw error;
     }
   }
 
@@ -733,6 +837,7 @@ class _SaleState extends State<Sale> {
     if (controller != null) {
       controller!.dispose();
     }
+
     invoiceNoController.dispose();
     controllerCashReceived.dispose();
     controllerNarration.dispose();
@@ -750,6 +855,8 @@ class _SaleState extends State<Sale> {
     siteNameControl.dispose();
     taxNoControl.dispose();
     mobileNoControl.dispose();
+    itemNameControl.dispose();
+    customerNameControl.dispose();
 
     super.dispose();
   }
@@ -1647,7 +1754,8 @@ class _SaleState extends State<Sale> {
             ? selectLedgerWidget()
             //  selectLedgerDetailWidget()
             : nextWidget == 2
-                ? selectProductWidget()
+                ? addItemWidget()
+                // selectProductWidget()
                 : nextWidget == 3
                     ? itemDetailWidget()
                     : nextWidget == 4
@@ -1925,7 +2033,7 @@ class _SaleState extends State<Sale> {
   // }
 
   final expandedHeight = 455.0;
-  final collapsedHeight = 200.0;
+  final collapsedHeight = 220.0;
   final animationDuration = const Duration(milliseconds: 400);
   bool isExpanded = false;
   final namesLike = 'a';
@@ -1938,6 +2046,8 @@ class _SaleState extends State<Sale> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: bagroundColor,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           toolbarHeight: 60,
           title: const Text(
@@ -1994,175 +2104,163 @@ class _SaleState extends State<Sale> {
           GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             child: SingleChildScrollView(
-              child: Container(
-                width: MediaQuery.sizeOf(context).width,
-                height: MediaQuery.sizeOf(context).height,
-                color: bagroundColor,
-                child: Column(
-                  children: [
-                    Container(
-                      width: MediaQuery.sizeOf(context).width,
-                      color: white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                              child: ContainerFieldWidget(
-                                  widget: SizedBox(
-                                    height: 50,
-                                    child: TextField(
-                                      controller: invoiceNoController,
-                                      decoration: const InputDecoration(
-                                          border: OutlineInputBorder()),
+              child: Column(
+                children: [
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: TextField(
+                                  controller: invoiceNoController,
+                                  decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical: 5, horizontal: 5),
+                                      border: OutlineInputBorder()),
+                                ),
+                                headTxt: 'Invoice No')),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: InkWell(
+                                  onTap: () {
+                                    _selectDate();
+                                  },
+                                  child: Container(
+                                    height: 30,
+                                    margin: const EdgeInsets.only(
+                                      bottom: 7,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(3),
+                                        border: Border.all(color: grey)),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          formattedDate!,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        const Icon(
+                                          Icons.calendar_month_outlined,
+                                          color: grey,
+                                          size: 25,
+                                        )
+                                      ],
                                     ),
                                   ),
-                                  headTxt: 'Invoice No')),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                              child: ContainerFieldWidget(
-                                  widget: InkWell(
-                                    onTap: () {
-                                      _selectDate();
-                                    },
-                                    child: Container(
-                                      height: 50,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8),
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(3),
-                                          border: Border.all(color: grey)),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            formattedDate!,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 16,
-                                                fontFamily: 'poppins'),
-                                          ),
-                                          const SizedBox(
-                                            width: 8,
-                                          ),
-                                          const Icon(
-                                            Icons.calendar_month_outlined,
-                                            color: grey,
-                                            size: 25,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  headTxt: 'Date')),
-                        ],
-                      ),
+                                ),
+                                headTxt: 'Date')),
+                      ],
                     ),
-                    const SizedBox(height: 15),
-                    Container(
-                      width: MediaQuery.sizeOf(context).width,
-                      color: white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      child: ContainerFieldWidget(
-                          widget: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: widgetRateType(),
+                  ),
+                  const SizedBox(height: 15),
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: ContainerFieldWidget(
+                        widget: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child: widgetRateType(),
+                        ),
+                        headTxt: 'Sales Rate'),
+                  ),
+                  const SizedBox(height: 15),
+                  AnimatedContainer(
+                    duration: animationDuration,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.white,
+                    height: isExpanded ? expandedHeight : collapsedHeight,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        const Text(
+                          ' Customer',
+                          style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
-                          headTxt: 'Sales Rate'),
-                    ),
-                    const SizedBox(height: 15),
-                    AnimatedContainer(
-                      duration: animationDuration,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      width: MediaQuery.of(context).size.width,
-                      color: Colors.white,
-                      height: isExpanded ? expandedHeight : collapsedHeight,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 10),
-                          const Text(
-                            '  Customer',
-                            style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          // SizedBox(
-                          //   width: MediaQuery.of(context).size.width,
-                          //   height: 55,
-                          //   child: InkWell(
-                          //     onTap: () {
-                          //       setState(() {
-                          //         nextWidget = 1;
-                          //       });
-                          //     },
-                          //     child: Card(
-                          //       elevation: .9,
-                          //       color: white,
-                          //       shape: const RoundedRectangleBorder(
-                          //           borderRadius:
-                          //               BorderRadius.all(Radius.circular(5))),
-                          //       child: ledgerDataModel != null
-                          //           ? Center(
-                          //               child: Text(
-                          //                 ledgerDataModel!.name,
-                          //                 style: const TextStyle(
-                          //                     fontFamily: 'poppins',
-                          //                     fontSize: 15,
-                          //                     fontWeight: FontWeight.w500),
-                          //               ),
-                          //             )
-                          //           : const Row(
-                          //               mainAxisAlignment:
-                          //                   MainAxisAlignment.center,
-                          //               children: [
-                          //                 Icon(
-                          //                   Icons.add,
-                          //                   color: black,
-                          //                 ),
-                          //                 SizedBox(
-                          //                   width: 10,
-                          //                 ),
-                          //                 Text(
-                          //                   'Add Customer',
-                          //                   style: TextStyle(
-                          //                       fontFamily: 'poppins',
-                          //                       fontSize: 15,
-                          //                       fontWeight: FontWeight.w500),
-                          //                 )
-                          //               ],
-                          //             ),
-                          //     ),
-                          //   ),
-                          // ),
-                          SizedBox(
-                              height: 50,
-                              child: EasyAutocomplete(
-                                
-                                  suggestions: nameListDisplay,
-                                  onChanged: (value) =>
-                                      print('onChanged value: $value'),
-                                  onSubmitted: (value) =>
-                                      print('onSubmitted value: $value'))),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Theme(
-                                    data: ThemeData(
-                                        dividerColor: Colors.transparent),
+                        ),
+                        const SizedBox(height: 4),
+                        // SizedBox(
+                        //   width: MediaQuery.of(context).size.width,
+                        //   height: 55,
+                        //   child: InkWell(
+                        //     onTap: () {
+                        //       setState(() {
+                        //         nextWidget = 1;
+                        //       });
+                        //     },
+                        // )),
+                        EasyAutocomplete(
+                          autofocus: false,
+                          progressIndicatorBuilder: isLoading
+                              ? const CircularProgressIndicator()
+                              : null,
+                          controller: nameControl,
+                          inputTextStyle: const TextStyle(
+                              fontFamily: 'poppins', fontSize: 14),
+                          suggestionTextStyle:
+                              const TextStyle(fontFamily: 'poppins'),
+                          decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              border: OutlineInputBorder()),
+                          suggestions: suggestions,
+                          onChanged: (value) {
+                            fetchSuggestions(value);
+                          },
+                          onSubmitted: (value) {
+                            final selectedCustomerId = nameToIdMap[value];
+
+                            if (selectedCustomerId != null) {
+                              print(
+                                  'Selected customer ID: $selectedCustomerId');
+                            } else {
+                              print(
+                                  'No matching customer found for the selected value.');
+                            }
+                          },
+                        ),
+                        const SizedBox(
+                          height: 12,
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Theme(
+                                  data: ThemeData(
+                                      dividerColor: Colors.transparent),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
                                     child: ExpansionTile(
                                       enableFeedback: false,
                                       controlAffinity:
@@ -2175,30 +2273,70 @@ class _SaleState extends State<Sale> {
                                           fontSize: 15,
                                         ),
                                       ),
-                                      children: const [
-                                        SizedBox(
-                                          height: 50,
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                                border: OutlineInputBorder()),
-                                          ),
-                                        ),
-                                        SizedBox(height: 10),
-                                        SizedBox(
-                                          height: 50,
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                                border: OutlineInputBorder()),
-                                          ),
-                                        ),
-                                        SizedBox(height: 10),
-                                        SizedBox(
-                                          height: 50,
-                                          child: TextField(
-                                            decoration: InputDecoration(
-                                                border: OutlineInputBorder()),
-                                          ),
-                                        ),
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 2, horizontal: 8),
+                                          child: FutureBuilder(
+                                              future: api.getCustomerDetail(
+                                                  selectedCustomerId as int),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.data == null) {
+                                                  return SizedBox();
+                                                }
+                                                return Column(
+                                                  children: [
+                                                    ContainerFieldWidget(
+                                                        widget: TextField(
+                                                          controller:
+                                                              addressControl,
+                                                          decoration: const InputDecoration(
+                                                              contentPadding:
+                                                                  EdgeInsets.symmetric(
+                                                                      vertical:
+                                                                          10,
+                                                                      horizontal:
+                                                                          5),
+                                                              border:
+                                                                  OutlineInputBorder()),
+                                                        ),
+                                                        headTxt: 'Address'),
+                                                    const SizedBox(height: 6),
+                                                    ContainerFieldWidget(
+                                                        widget: TextField(
+                                                          controller:
+                                                              TextEditingController(
+                                                                  text: snapshot
+                                                                      .data!
+                                                                      .phone),
+                                                          decoration: InputDecoration(
+                                                              contentPadding:
+                                                                  EdgeInsets.symmetric(
+                                                                      vertical:
+                                                                          10,
+                                                                      horizontal:
+                                                                          5),
+                                                              border:
+                                                                  OutlineInputBorder()),
+                                                        ),
+                                                        headTxt: 'Phone'),
+                                                    const SizedBox(height: 6),
+                                                    // const SizedBox(
+                                                    //   height: 50,
+                                                    //   child: TextField(
+                                                    //     decoration: InputDecoration(
+                                                    //         contentPadding:
+                                                    //             EdgeInsets.symmetric(
+                                                    //                 vertical: 10,
+                                                    //                 horizontal: 5),
+                                                    //         border:
+                                                    //             OutlineInputBorder()),
+                                                    //   ),
+                                                    // ),
+                                                  ],
+                                                );
+                                              }),
+                                        )
                                       ],
                                       onExpansionChanged: (newIsExpanded) {
                                         setState(() {
@@ -2207,58 +2345,306 @@ class _SaleState extends State<Sale> {
                                       },
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                nextWidget = 2;
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              backgroundColor: const Color(0xff0008B3),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              nextWidget = 2;
+                            });
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //       builder: (context) => addItemWidget(),
+                            //     ));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
                             ),
-                            // onPressed: () => context.push(AddItemToSalePage.routePath),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            backgroundColor: const Color(0xff0008B3),
+                          ),
+                          // onPressed: () => context.push(AddItemToSalePage.routePath),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Image(
+                              //     image: AssetImage(
+                              //         'assets/icons/add_item_icon.png')),
+                              SizedBox(width: 10),
+                              Text(
+                                'Add Item',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'poppins',
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: SizedBox(
+                                  height: 50,
+                                  child: TextField(
+                                    controller: invoiceNoController,
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                  ),
+                                ),
+                                headTxt: 'Invoice No')),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Expanded(
+                            child: ContainerFieldWidget(
+                                widget: InkWell(
+                                  onTap: () {
+                                    _selectDate();
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 7),
+                                    height: 50,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(3),
+                                        border: Border.all(color: grey)),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          formattedDate!,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        const SizedBox(
+                                          width: 8,
+                                        ),
+                                        const Icon(
+                                          Icons.calendar_month_outlined,
+                                          color: grey,
+                                          size: 25,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                headTxt: 'Date')),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: ContainerFieldWidget(
+                        widget: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child: widgetRateType(),
+                        ),
+                        headTxt: 'Sales Rate'),
+                  ),
+                  const SizedBox(height: 15),
+                  AnimatedContainer(
+                    duration: animationDuration,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.white,
+                    height: isExpanded ? expandedHeight : collapsedHeight,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        const Text(
+                          ' Biiling Name',
+                          style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const TextField(
+                          decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 5),
+                              border: OutlineInputBorder()),
+                        ),
+                        // EasyAutocomplete(
+                        //     autofocus: false,
+                        //     progressIndicatorBuilder:
+                        //         const CircularProgressIndicator(),
+                        //     controller: nameControl,
+                        //     inputTextStyle:
+                        //         const TextStyle(fontFamily: 'poppins'),
+                        //     suggestionTextStyle:
+                        //         const TextStyle(fontFamily: 'poppins'),
+                        //     decoration: const InputDecoration(
+                        //         border: OutlineInputBorder()),
+                        //     suggestions: nameListDisplay,
+                        //     onChanged: (value) =>
+                        //         print('onChanged value: $value'),
+                        //     onSubmitted: (value) =>
+                        //         print('onSubmitted value: $value')),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
                               children: [
-                                // Image(
-                                //     image: AssetImage(
-                                //         'assets/icons/add_item_icon.png')),
-                                SizedBox(width: 10),
-                                Text(
-                                  'Add Item',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'poppins',
-                                    fontSize: 13,
+                                Theme(
+                                  data: ThemeData(
+                                      dividerColor: Colors.transparent),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
+                                    child: ExpansionTile(
+                                      enableFeedback: false,
+                                      controlAffinity:
+                                          ListTileControlAffinity.platform,
+                                      title: const Text(
+                                        'Other',
+                                        style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 8),
+                                          child: Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 50,
+                                                child: TextField(
+                                                  controller: addressControl,
+                                                  decoration: const InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              const SizedBox(
+                                                height: 50,
+                                                child: TextField(
+                                                  decoration: InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              const SizedBox(
+                                                height: 50,
+                                                child: TextField(
+                                                  decoration: InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      ],
+                                      onExpansionChanged: (newIsExpanded) {
+                                        setState(() {
+                                          isExpanded = newIsExpanded;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              nextWidget = 2;
+                            });
+                            // Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //       builder: (context) => addItemWidget(),
+                            //     ));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            backgroundColor: const Color(0xff0008B3),
+                          ),
+                          // onPressed: () => context.push(AddItemToSalePage.routePath),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Image(
+                              //     image: AssetImage(
+                              //         'assets/icons/add_item_icon.png')),
+                              SizedBox(width: 10),
+                              Text(
+                                'Add Item',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'poppins',
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+                  )
+                ],
               ),
             ),
           ),
-          Container(
-            width: MediaQuery.sizeOf(context).width,
-            height: MediaQuery.sizeOf(context).height,
-            color: amber,
-          ),
         ]),
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Container(
@@ -2325,6 +2711,1138 @@ class _SaleState extends State<Sale> {
         ),
         extendBody: true,
       ),
+    );
+  }
+
+  String selectedQuantity = '';
+  List<String> selectedUnits = [];
+  int? selectedItemId;
+  String? selectedTaxOption = 'With Tax';
+  addItemWidget() {
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+          backgroundColor: bagroundColor,
+          appBar: AppBar(
+            centerTitle: true,
+            title: const Text('Add Item to Sales'),
+            titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+            leading: IconButton(
+                onPressed: () {
+                  setState(() {
+                    nextWidget = 0;
+                    itemNameControl.clear();
+                    selectedQuantity = '';
+                    _quantityController.clear();
+                    clearValue();
+                  });
+                },
+                icon: const Icon(Icons.arrow_back)),
+            actions: [
+              IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.settings, color: white))
+            ],
+          ),
+          body: ref.watch(productsProvider).when(
+                data: (data) {
+                  List<String> itemNames =
+                      data.map((item) => item.name!).toList();
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          width: MediaQuery.sizeOf(context).width,
+                          color: white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '  Item Name',
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(
+                                height: 6,
+                              ),
+                              EasyAutocomplete(
+                                  autofocus: false,
+                                  progressIndicatorBuilder:
+                                      const CircularProgressIndicator(),
+                                  controller: itemNameControl,
+                                  inputTextStyle: const TextStyle(
+                                      fontFamily: 'poppins', fontSize: 14),
+                                  suggestionTextStyle:
+                                      const TextStyle(fontFamily: 'poppins'),
+                                  decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 5),
+                                      border: OutlineInputBorder()),
+                                  suggestions: itemNames,
+                                  onChanged: (value) {
+                                    print('onChanged value: $value');
+                                  },
+                                  onSubmitted: (value) {
+                                    setState(() {
+                                      final selectedItem = data.firstWhere(
+                                        (element) => element.name == value,
+                                      );
+                                      selectedQuantity =
+                                          selectedItem.quantity.toString();
+
+                                      selectedItemId = selectedItem.id!;
+                                    });
+                                    print('onSubmitted value: $selectedItemId');
+                                  }),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              FutureBuilder(
+                                future: selectedItemId != null
+                                    ? api.fetchStockVariant(selectedItemId!)
+                                    : api.fetchStockVariant(0),
+                                builder: (context, snapshot) {
+                                  // if (snapshot.connectionState ==
+                                  //     ConnectionState.waiting) {
+                                  //   return const Center(
+                                  //       child: CircularProgressIndicator());
+                                  // }
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Center(
+                                        child: Text('Select a Item'));
+                                  }
+                                  final fetchedData = snapshot.data!;
+                                  final selectedVariant =
+                                      fetchedData.firstWhere(
+                                    (element) =>
+                                        element.itemId == selectedItemId,
+                                    orElse: () => StockProduct.empty(),
+                                  );
+                                  List<UnitModel> unitListData = [];
+                                  for (var i = 0;
+                                      i < unitListData.length;
+                                      i++) {
+                                    UnitModel _unit = unitListData[i];
+                                    double? _rate = _unit.rate == 'MRP'
+                                        ? selectedVariant.sellingPrice
+                                        : _unit.rate == 'WHOLESALE'
+                                            ? selectedVariant.wholeSalePrice
+                                            : _unit.rate == 'RETAIL'
+                                                ? selectedVariant.retailPrice
+                                                : _unit.rate == 'SPRETAIL'
+                                                    ? selectedVariant
+                                                        .spRetailPrice
+                                                    : rateType == '1'
+                                                        ? selectedVariant
+                                                            .sellingPrice
+                                                        : rateType == '2'
+                                                            ? selectedVariant
+                                                                .retailPrice
+                                                            : rateType == '3'
+                                                                ? selectedVariant
+                                                                    .wholeSalePrice
+                                                                : null;
+                                    setState(() {
+                                      if (_rate != null) {
+                                        _rateController.text =
+                                            _rate.toStringAsFixed(2);
+                                        _conversion = _unit.conversion!;
+                                      }
+                                    });
+                                  }
+                                  // final unitId = data!.map((e) => e.unitId);
+                                  return Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                              child: ContainerFieldWidget(
+                                                  widget: TextFormField(
+                                                    controller:
+                                                        _quantityController,
+                                                    focusNode:
+                                                        _focusNodeQuantity,
+                                                    autofocus: true,
+                                                    validator: (value) {
+                                                      if (outOfStock) {
+                                                        return 'No Stock';
+                                                      }
+                                                      return null;
+                                                    },
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    decoration: InputDecoration(
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 4,
+                                                                vertical: 10),
+                                                        hintStyle:
+                                                            const TextStyle(
+                                                                color: grey,
+                                                                fontFamily:
+                                                                    'poppins',
+                                                                fontSize: 12),
+                                                        hintText: selectedQuantity
+                                                                .isEmpty
+                                                            ? ''
+                                                            : 'Available quantity $selectedQuantity',
+                                                        border:
+                                                            const OutlineInputBorder()),
+                                                    onChanged: (value) {
+                                                      if (value.isNotEmpty) {
+                                                        bool cartQ = false;
+                                                        setState(() {
+                                                          if (totalItem > 0) {
+                                                            double cartS = 0,
+                                                                cartQt = 0;
+                                                            for (var element
+                                                                in cartItem) {
+                                                              if (element
+                                                                      .uniqueCode ==
+                                                                  selectedVariant
+                                                                      .productId) {
+                                                                cartQt += element
+                                                                        .quantity! +
+                                                                    element
+                                                                        .free!;
+                                                                cartS = element
+                                                                    .stock!;
+                                                              }
+                                                            }
+                                                            if (cartS > 0) {
+                                                              if (cartS <
+                                                                  cartQt +
+                                                                      double.tryParse(
+                                                                          value)!) {
+                                                                cartQ = true;
+                                                              }
+                                                            }
+                                                          }
+
+                                                          outOfStock = isLockQtyOnlyInSales
+                                                              ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                  ? true
+                                                                  : cartQ
+                                                                      ? true
+                                                                      : false
+                                                              : negativeStock
+                                                                  ? false
+                                                                  : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                                                      ? isStockProductOnlyInSalesQO
+                                                                          ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                              ? true
+                                                                              : cartQ
+                                                                                  ? true
+                                                                                  : false
+                                                                          : false
+                                                                      : ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                          ? true
+                                                                          : cartQ
+                                                                              ? true
+                                                                              : false;
+                                                          calculate(
+                                                              selectedVariant);
+                                                        });
+                                                      }
+                                                    },
+                                                  ),
+                                                  headTxt: 'Quantity')),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                          Expanded(
+                                              child: ContainerFieldWidget(
+                                                  widget: Visibility(
+                                                    visible: enableMULTIUNIT,
+                                                    child: Container(
+                                                        margin: const EdgeInsets
+                                                            .only(bottom: 7),
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                                left: 5),
+                                                        width: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .width,
+                                                        decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                                color: grey),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        3)),
+                                                        child: FutureBuilder(
+                                                          future: api.fetchUnitOf(
+                                                              selectedItemId!),
+                                                          builder: (BuildContext
+                                                                  context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                            List<UnitModel>
+                                                                unitListData =
+                                                                [];
+                                                            if (snapshot
+                                                                .hasData) {
+                                                              unitListData
+                                                                  .clear();
+                                                              for (var i = 0;
+                                                                  i <
+                                                                      snapshot
+                                                                          .data
+                                                                          .length;
+                                                                  i++) {
+                                                                if (defaultUnitID
+                                                                    .toString()
+                                                                    .isNotEmpty) {
+                                                                  if (snapshot
+                                                                          .data[
+                                                                              i]
+                                                                          .id ==
+                                                                      defaultUnitID! -
+                                                                          1) {
+                                                                    _dropDownUnit =
+                                                                        snapshot
+                                                                            .data[i]
+                                                                            .id;
+                                                                    _conversion =
+                                                                        snapshot
+                                                                            .data[i]
+                                                                            .conversion;
+                                                                  }
+                                                                }
+                                                                unitListData.add(UnitModel(
+                                                                    id: snapshot
+                                                                        .data[i]
+                                                                        .id,
+                                                                    itemId: snapshot
+                                                                        .data[i]
+                                                                        .itemId,
+                                                                    conversion: snapshot
+                                                                        .data[i]
+                                                                        .conversion,
+                                                                    name: snapshot
+                                                                        .data[i]
+                                                                        .name,
+                                                                    pUnit: snapshot
+                                                                        .data[i]
+                                                                        .pUnit,
+                                                                    sUnit: snapshot
+                                                                        .data[i]
+                                                                        .sUnit,
+                                                                    unit: snapshot
+                                                                        .data[i]
+                                                                        .unit,
+                                                                    rate: snapshot
+                                                                        .data[i]
+                                                                        .rate));
+                                                              }
+                                                            }
+                                                            return snapshot.data !=
+                                                                        null &&
+                                                                    snapshot.data!
+                                                                            .length >
+                                                                        0
+                                                                ? DropdownButtonHideUnderline(
+                                                                    child: DropdownButton<
+                                                                        String>(
+                                                                      isExpanded:
+                                                                          true,
+                                                                      style: const TextStyle(
+                                                                          fontFamily:
+                                                                              'poppins',
+                                                                          color:
+                                                                              black),
+                                                                      hint: Text(_dropDownUnit >
+                                                                              0
+                                                                          ? UnitSettings.getUnitName(
+                                                                              _dropDownUnit)
+                                                                          : 'Unit'),
+                                                                      items: snapshot
+                                                                          .data!
+                                                                          .map<DropdownMenuItem<String>>(
+                                                                              (item) {
+                                                                        return DropdownMenuItem<
+                                                                            String>(
+                                                                          value: item
+                                                                              .id
+                                                                              .toString(),
+                                                                          child: Text(
+                                                                              item.name!,
+                                                                              style: const TextStyle(color: black)),
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        setState(
+                                                                            () {
+                                                                          bool
+                                                                              cartQ =
+                                                                              false;
+                                                                          _dropDownUnit =
+                                                                              int.tryParse(value!)!;
+                                                                          for (var i = 0;
+                                                                              i < unitListData.length;
+                                                                              i++) {
+                                                                            UnitModel
+                                                                                _unit =
+                                                                                unitListData[i];
+                                                                            if (_unit.unit ==
+                                                                                int.tryParse(value)) {
+                                                                              double? _rate = _unit.rate == 'MRP'
+                                                                                  ? selectedVariant.sellingPrice
+                                                                                  : _unit.rate == 'WHOLESALE'
+                                                                                      ? selectedVariant.wholeSalePrice
+                                                                                      : _unit.rate == 'RETAIL'
+                                                                                          ? selectedVariant.retailPrice
+                                                                                          : _unit.rate == 'SPRETAIL'
+                                                                                              ? selectedVariant.spRetailPrice
+                                                                                              : rateType == '1'
+                                                                                                  ? selectedVariant.sellingPrice
+                                                                                                  : rateType == '2'
+                                                                                                      ? selectedVariant.retailPrice
+                                                                                                      : rateType == '3'
+                                                                                                          ? selectedVariant.wholeSalePrice
+                                                                                                          : rate;
+                                                                              if (_unit.rate!.isNotEmpty) {
+                                                                                rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
+                                                                              }
+                                                                              rate = _rate!;
+                                                                              saleRate = _rate;
+                                                                              _rateController.text = saleRate > 0 ? saleRate.toStringAsFixed(2) : '';
+                                                                              _conversion = _unit.conversion!;
+                                                                              if (quantity > 0 || freeQty > 0) {
+                                                                                if (totalItem > 0) {
+                                                                                  double cartS = 0, cartQt = 0;
+                                                                                  for (var element in cartItem) {
+                                                                                    if (element.uniqueCode == selectedVariant.productId) {
+                                                                                      cartQt += element.quantity! + element.free!;
+                                                                                      cartS = element.stock!;
+                                                                                    }
+                                                                                  }
+                                                                                  if (cartS > 0) {
+                                                                                    if (cartS < cartQt + quantity + freeQty) {
+                                                                                      cartQ = true;
+                                                                                    }
+                                                                                  }
+                                                                                } else {
+                                                                                  cartQ = false;
+                                                                                }
+                                                                                outOfStock = isLockQtyOnlyInSales
+                                                                                    ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                        ? true
+                                                                                        : cartQ
+                                                                                            ? true
+                                                                                            : false
+                                                                                    : negativeStock
+                                                                                        ? false
+                                                                                        : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                                                                            ? isStockProductOnlyInSalesQO
+                                                                                                ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                    ? true
+                                                                                                    : cartQ
+                                                                                                        ? true
+                                                                                                        : false
+                                                                                                : false
+                                                                                            : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                ? true
+                                                                                                : cartQ
+                                                                                                    ? true
+                                                                                                    : false;
+                                                                              }
+                                                                              break;
+                                                                            }
+                                                                          }
+                                                                          calculate(
+                                                                              selectedVariant);
+                                                                        });
+                                                                      },
+                                                                    ),
+                                                                  )
+                                                                : DropdownButtonHideUnderline(
+                                                                    child: DropdownButton<
+                                                                        String>(
+                                                                      isExpanded:
+                                                                          true,
+                                                                      style: const TextStyle(
+                                                                          fontFamily:
+                                                                              'poppins',
+                                                                          color:
+                                                                              black),
+                                                                      hint: Text(_dropDownUnit >
+                                                                              0
+                                                                          ? UnitSettings.getUnitName(
+                                                                              _dropDownUnit)
+                                                                          : 'Unit'),
+                                                                      items: unitList
+                                                                          .map<DropdownMenuItem<String>>(
+                                                                              (item) {
+                                                                        return DropdownMenuItem<
+                                                                            String>(
+                                                                          value: item
+                                                                              .key
+                                                                              .toString(),
+                                                                          child:
+                                                                              Text(
+                                                                            item.value,
+                                                                            style:
+                                                                                const TextStyle(fontFamily: 'poppins', color: black),
+                                                                          ),
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged:
+                                                                          (value) {
+                                                                        setState(
+                                                                            () {
+                                                                          _dropDownUnit =
+                                                                              int.tryParse(value!)!;
+                                                                          // for (var i = 0;
+                                                                          //     i < unitListData.length;
+                                                                          //     i++) {
+                                                                          //   UnitModel
+                                                                          //       _unit =
+                                                                          //       unitListData[i];
+                                                                          //   if (_unit.unit ==
+                                                                          //       int.tryParse(value)) {
+                                                                          //     _conversion = _unit.conversion!;
+                                                                          //     break;
+                                                                          //   }
+                                                                          // }
+                                                                          // calculate(
+                                                                          //     selectedVariant);
+                                                                        });
+                                                                      },
+                                                                    ),
+                                                                  );
+                                                          },
+                                                        )),
+                                                  ),
+                                                  headTxt: 'Unit')),
+                                        ],
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                              child: ContainerFieldWidget(
+                                                  widget: TextField(
+                                                    controller: _rateController,
+                                                    focusNode: _focusNodeRate,
+                                                    readOnly:
+                                                        isItemRateEditLocked,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    decoration: const InputDecoration(
+                                                        contentPadding:
+                                                            EdgeInsets
+                                                                .symmetric(
+                                                                    vertical:
+                                                                        10,
+                                                                    horizontal:
+                                                                        5),
+                                                        border:
+                                                            OutlineInputBorder()),
+                                                    onChanged: (value) {
+                                                      if (value.isNotEmpty) {
+                                                        if (isMinimumRate) {
+                                                          double minRate =
+                                                              selectedVariant
+                                                                      .minimumRate ??
+                                                                  0;
+                                                          if (double.tryParse(
+                                                                  _rateController
+                                                                      .text)! >=
+                                                              minRate) {
+                                                            setState(() {
+                                                              isMinimumRatedLock =
+                                                                  false;
+                                                              calculate(
+                                                                  selectedVariant);
+                                                            });
+                                                          } else {
+                                                            setState(() {
+                                                              isMinimumRatedLock =
+                                                                  true;
+                                                            });
+                                                          }
+                                                        } else {
+                                                          setState(() {
+                                                            calculate(
+                                                                selectedVariant);
+                                                          });
+                                                        }
+                                                      }
+                                                    },
+                                                  ),
+                                                  headTxt: 'Rate(Price/Unit)')),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                          Expanded(
+                                              child: ContainerFieldWidget(
+                                                  widget: Container(
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            bottom: 7),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 5),
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3),
+                                                    ),
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                      child: DropdownButton<
+                                                          String>(
+                                                        style: const TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: black),
+                                                        value:
+                                                            selectedTaxOption,
+                                                        items: [
+                                                          const DropdownMenuItem(
+                                                            value: 'With Tax',
+                                                            child: Text(
+                                                                'With Tax'),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            enabled: salesTypeData!
+                                                                            .id !=
+                                                                        1 ||
+                                                                    salesTypeData!
+                                                                            .id !=
+                                                                        2
+                                                                ? false
+                                                                : true,
+                                                            value:
+                                                                'Without Tax',
+                                                            child: const Text(
+                                                                'Without Tax'),
+                                                          ),
+                                                        ],
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            selectedTaxOption =
+                                                                value!;
+                                                          });
+                                                        },
+                                                        isExpanded: true,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  headTxt: 'Tax')),
+                                        ],
+                                      )
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        selectedItemId == null
+                            ? const SizedBox()
+                            : FutureBuilder(
+                                future: selectedItemId != null
+                                    ? api.fetchStockVariant(selectedItemId!)
+                                    : api.fetchStockVariant(0),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const SizedBox();
+                                  }
+                                  final fetchedData = snapshot.data!;
+                                  final selectedVariant =
+                                      fetchedData.firstWhere(
+                                    (element) =>
+                                        element.itemId == selectedItemId,
+                                    orElse: () => StockProduct.empty(),
+                                  );
+                                  return Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    color: white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    child: Column(
+                                      children: [
+                                        const Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'Totals & Taxes',
+                                            style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 2,
+                                        ),
+                                        const Divider(),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Subtotal (Rate x Qty)',
+                                              style: TextStyle(
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            Text(
+                                              '\u20B9 ${subTotal.toStringAsFixed(decimal)}',
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                'Discount',
+                                                style: TextStyle(
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              const Spacer(),
+                                              Flexible(
+                                                flex: 2,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.orange),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  height: 35,
+                                                  child: TextField(
+                                                    controller:
+                                                        _discountPercentController,
+                                                    focusNode:
+                                                        _focusNodeDiscountPer,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        calculate(
+                                                            selectedVariant);
+                                                      });
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      suffixIcon: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: Colors
+                                                                .orange[100],
+                                                            border: const Border(
+                                                                left: BorderSide(
+                                                                    color: Colors
+                                                                        .orange)),
+                                                            borderRadius: const BorderRadius
+                                                                .only(
+                                                                bottomRight:
+                                                                    Radius
+                                                                        .circular(
+                                                                            3),
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        3))),
+                                                        width: 25,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                            Icons.percent_sharp,
+                                                            color:
+                                                                Colors.orange,
+                                                            size: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              vertical: 6,
+                                                              horizontal: 3),
+                                                      border:
+                                                          const OutlineInputBorder(
+                                                              borderSide:
+                                                                  BorderSide
+                                                                      .none),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                flex: 2,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  height: 35,
+                                                  child: TextField(
+                                                    focusNode:
+                                                        _focusNodeDiscount,
+                                                    controller:
+                                                        _discountController,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    textAlign: TextAlign.right,
+                                                    decoration: InputDecoration(
+                                                      prefixIcon: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.grey[100],
+                                                          border: const Border(
+                                                              right: BorderSide(
+                                                                  color: grey)),
+                                                        ),
+                                                        width: 25,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                            Icons
+                                                                .currency_rupee_outlined,
+                                                            color: Colors.grey,
+                                                            size: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              vertical: 6,
+                                                              horizontal: 3),
+                                                      border:
+                                                          const OutlineInputBorder(
+                                                              borderSide:
+                                                                  BorderSide
+                                                                      .none),
+                                                    ),
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        calculate(
+                                                            selectedVariant);
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Row(children: [
+                                            const Text(
+                                              'Tax %      ',
+                                              style: TextStyle(
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            const Spacer(),
+                                            Flexible(
+                                              flex: 2,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.orange),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                height: 35,
+                                                child: TextField(
+                                                  controller:
+                                                      TextEditingController(
+                                                          text:
+                                                              taxP.toString()),
+                                                  readOnly: true,
+                                                  decoration: InputDecoration(
+                                                    suffixIcon: Container(
+                                                      decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .orange[100],
+                                                          border: const Border(
+                                                              left: BorderSide(
+                                                                  color: Colors
+                                                                      .orange)),
+                                                          borderRadius:
+                                                              const BorderRadius
+                                                                  .only(
+                                                                  bottomRight: Radius
+                                                                      .circular(
+                                                                          3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                      width: 25,
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          Icons.percent_sharp,
+                                                          color: Colors.orange,
+                                                          size: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 6,
+                                                            horizontal: 3),
+                                                    border:
+                                                        const OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide
+                                                                    .none),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              flex: 2,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border:
+                                                        Border.all(color: grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                height: 35,
+                                                child: TextField(
+                                                  controller:
+                                                      TextEditingController(
+                                                          text: tax
+                                                              .toStringAsFixed(
+                                                                  decimal)),
+                                                  textAlign: TextAlign.right,
+                                                  readOnly: true,
+                                                  decoration: InputDecoration(
+                                                    prefixIcon: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey[100],
+                                                        border: const Border(
+                                                            right: BorderSide(
+                                                                color: grey)),
+                                                      ),
+                                                      width: 25,
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          Icons
+                                                              .currency_rupee_outlined,
+                                                          color: Colors.grey,
+                                                          size: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 6,
+                                                            horizontal: 3),
+                                                    border:
+                                                        const OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide
+                                                                    .none),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ]),
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(
+                                              children: [
+                                                const Text(
+                                                  'Total Amount',
+                                                  style: TextStyle(
+                                                      fontFamily: 'poppins',
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Container(
+                                                    decoration:
+                                                        const BoxDecoration(),
+                                                    child: Text(
+                                                      "\u20B9  ${total.toStringAsFixed(decimal)}",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ))
+                                              ],
+                                            ))
+                                      ],
+                                    ),
+                                  );
+                                },
+                              )
+                      ],
+                    ),
+                  );
+                },
+                error: (error, stackTrace) => Center(
+                  child: Text(error.toString()),
+                ),
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          //  FutureBuilder<List<StockItem>>(
+          //   future: fetchStockProducts(itemNameControl.text),
+          //   builder: (context, snapshot) {
+          //     if (snapshot.connectionState == ConnectionState.waiting) {
+          //       return const Center(child: CircularProgressIndicator());
+          //     } else if (snapshot.hasError) {
+          //       return Center(child: Text('Error: ${snapshot.error}'));
+          //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          //       return const Center(child: Text('No items found'));
+          //     } else {
+          //       final itemNameListDisplay = snapshot.data!
+          //           .map((item) => item.name)
+          //           .where((name) => name != null)
+          //           .cast<String>()
+          //           .toList();
+
+          //       return
+          //     }
+          //   },
+          // ),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(color: grey, blurRadius: .8, spreadRadius: 100),
+                  ],
+                ),
+                height: 60,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: Colors.grey,
+                          onTap: () {},
+                          child: Container(
+                            height: 60,
+                            color: Colors.white,
+                            child: const Center(
+                              child: Text(
+                                'Save & New',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: Colors.white,
+                          onTap: () {},
+                          child: Container(
+                            height: 60,
+                            color: kPrimaryColor,
+                            child: const Center(
+                              child: Text(
+                                'Save',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )),
     );
   }
 
@@ -3141,6 +4659,8 @@ class _SaleState extends State<Sale> {
     return DropdownButtonHideUnderline(
       child: DropdownButton<OptionRateType>(
         hint: const Text('select rate type'),
+        style:
+            const TextStyle(fontFamily: 'poppins', color: black, fontSize: 15),
         items: rateTypeList.map((item) {
           return DropdownMenuItem<OptionRateType>(
             value: item,
@@ -3905,6 +5425,7 @@ class _SaleState extends State<Sale> {
   clearValue() {
     _quantityController.text = '';
     _freeQuantityController.text = '';
+    itemNameControl.text = '';
     _rateController.text = '';
     _discountController.text = '';
     _discountPercentController.text = '';
@@ -7846,10 +9367,10 @@ class _SaleState extends State<Sale> {
           elevation: 0,
           disabledForegroundColor: grey.withOpacity(0.38),
           disabledBackgroundColor: grey.withOpacity(0.12)),
-      child: Center(
+      child: const Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
+          children: <Widget>[
             Icon(
               Icons.shopping_bag,
               color: white,

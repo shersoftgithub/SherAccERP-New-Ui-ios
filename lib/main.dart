@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/cache_provider.dart';
 import 'package:sheraccerp/firebase_options.dart';
@@ -76,6 +77,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/add_user_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 ValueNotifier<Color> accentColor = ValueNotifier(kPrimaryColor);
 
@@ -85,18 +87,20 @@ void main() async {
 
   runZonedGuarded(() {
     initSettings().then((_) {
-      runApp(MultiProvider(
-          providers: [
-            ChangeNotifierProvider(create: (context) => AppProvider()),
-            // ChangeNotifierProvider(create: (context) => LedgerProvider()),
-            // ChangeNotifierProvider(create: (context) => ProductProvider()),
-            // ChangeNotifierProvider(create: (context) => StockProvider()),
-            // ChangeNotifierProvider(create: (context) => SalesProvider()),
-            // ChangeNotifierProvider(create: (context) => PurchaseProvider()),
-          ],
-          child: MyApp(
-            model: MainModel(),
-          )));
+      runApp(ProviderScope(
+        child:provider.MultiProvider(
+            providers: [
+             provider.ChangeNotifierProvider(create: (context) => AppProvider()),
+              // ChangeNotifierProvider(create: (context) => LedgerProvider()),
+              // ChangeNotifierProvider(create: (context) => ProductProvider()),
+              // ChangeNotifierProvider(create: (context) => StockProvider()),
+              // ChangeNotifierProvider(create: (context) => SalesProvider()),
+              // ChangeNotifierProvider(create: (context) => PurchaseProvider()),
+            ],
+            child: MyApp(
+              model: MainModel(),
+            )),
+      ));
     });
   }, (error, stackTrace) {
     FirebaseCrashlytics.instance.recordError(error, stackTrace);
