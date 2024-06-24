@@ -25,6 +25,10 @@ import 'package:sheraccerp/screens/html_previews/purchase_return_preview.dart';
 import 'package:sheraccerp/screens/html_previews/sales_return_preview.dart';
 import 'package:sheraccerp/screens/inventory/delivery_note.dart';
 import 'package:sheraccerp/screens/inventory/invoice_design.dart';
+import 'package:sheraccerp/screens/inventory/jobcard/Replacement/jobcardreplacement.dart';
+import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/Job_card_home.dart';
+import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/job_card_entry.dart';
+import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/jobcardmenu.dart';
 import 'package:sheraccerp/screens/inventory/serial_no_list.dart';
 import 'package:sheraccerp/screens/other_registration.dart';
 import 'package:sheraccerp/screens/settings/software_settings.dart';
@@ -88,9 +92,10 @@ void main() async {
   runZonedGuarded(() {
     initSettings().then((_) {
       runApp(ProviderScope(
-        child:provider.MultiProvider(
+        child: provider.MultiProvider(
             providers: [
-             provider.ChangeNotifierProvider(create: (context) => AppProvider()),
+              provider.ChangeNotifierProvider(
+                  create: (context) => AppProvider()),
               // ChangeNotifierProvider(create: (context) => LedgerProvider()),
               // ChangeNotifierProvider(create: (context) => ProductProvider()),
               // ChangeNotifierProvider(create: (context) => StockProvider()),
@@ -213,6 +218,10 @@ class MyApp extends StatelessWidget {
               '/InvoiceDesign': (context) => const InvoiceDesign(),
               '/OtherRegistration': (context) => const OtherRegistration(),
               '/DeliveryNote': (context) => const DeliveryNote(),
+              '/jobcardmenu': (context) => const Jobcardmenu(),
+              '/jobcardhome': (context) => const JobCardHome(),
+              '/jobcardentry': (context) => const Jobcardentry(),
+              '/jobcardreplacement': (context) => const JobCardReplacement(),
               '/TaxReport': (context) => const TaxReport(),
               '/BankVoucher': (context) => const BankVoucher(),
               '/serialNoList': (context) => const SerialNoList(),

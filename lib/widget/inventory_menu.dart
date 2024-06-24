@@ -243,6 +243,39 @@ class InventoryMenu extends StatelessWidget {
                       // child: Image.asset(iconsUrl),
                     ),
                     const Text(
+                      'Job Card',
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.pushNamed(context, '/jobcardmenu');
+            },
+          ),
+          GestureDetector(
+            child: Card(
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          color: kPrimaryColor),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
                       'Damage',
                       style: TextStyle(
                         fontFamily: 'poppins',

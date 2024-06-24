@@ -657,3 +657,33 @@ class CartItemST {
     return map;
   }
 }
+
+class CartJobCartItem {
+  int id;
+  int itemid;
+  String itemName;
+  double qty;
+  String model;
+  String date;
+  String uniqueCode;
+  CartJobCartItem(
+      {required this.id,
+      required this.itemid,
+      required this.itemName,
+      required this.qty,
+      required this.model,
+      required this.date,
+      required this.uniqueCode});
+
+  Map<String, dynamic> tomap() {
+    return {
+      'id': id,
+      'itemId': itemid,
+      'ItemName': itemName,
+      'qty': qty,
+      'model': model,
+      'date': date,
+      'uniqueCode': uniqueCode
+    };
+  }
+}

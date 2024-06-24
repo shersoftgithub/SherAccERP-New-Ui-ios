@@ -190,7 +190,7 @@ class _LandingState extends State<Landing> {
                     children: [
                       const Text(
                         'Network is to slow!',
-                        style: TextStyle(color: white, fontSize: 20),
+                        style: TextStyle(fontSize: 20),
                       ),
                       InkWell(
                         child: Card(

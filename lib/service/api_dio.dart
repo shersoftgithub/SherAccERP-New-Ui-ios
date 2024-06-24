@@ -2487,7 +2487,7 @@ class DioService {
           .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
       if (response.statusCode == 200) {
         List<dynamic> _data = response.data;
-        _item = CustomerModel.fromJson(_data[0]);
+         _item =  CustomerModel.fromJson(_data[0]);
       } else {
         debugPrint('Failed to load data');
       }

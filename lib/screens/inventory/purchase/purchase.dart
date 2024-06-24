@@ -449,9 +449,13 @@ class _PurchaseState extends State<Purchase> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          centerTitle: true,
+          titleTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 16),
           actions: [
             TextButton(
                 style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3)),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -616,7 +620,10 @@ class _PurchaseState extends State<Purchase> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Purchase"),
+              const Text(
+                "No items in Purchase",
+                style: TextStyle(fontFamily: 'poppins'),
+              ),
               IconButton(
                   onPressed: () {
                     searchBill(context);
@@ -624,6 +631,8 @@ class _PurchaseState extends State<Purchase> {
                   icon: const Icon(Icons.search)),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5))),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:

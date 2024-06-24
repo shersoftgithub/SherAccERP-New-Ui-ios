@@ -26,6 +26,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
+import 'package:sheraccerp/provider/customer_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
@@ -424,13 +425,11 @@ class _SaleState extends ConsumerState<Sale> {
         areaId,
         routeId,
         salesManId,
-      ); // Ensure query is passed
+      );
       print('API Call Successful: $value');
       setState(() {
         suggestions = value.map((item) => item.name).toList();
-        nameToIdMap = {
-          for (var item in value) item.name: item.id.toString()
-        }; // Update mapping
+        nameToIdMap = {for (var item in value) item.name: item.id.toString()};
         isLoading = false;
       });
     } catch (error) {
@@ -443,11 +442,10 @@ class _SaleState extends ConsumerState<Sale> {
     }
   }
 
-  String selectedCustomerId = '';
+  int? selectedCustomerId;
   void fetchCustomerDetails(String selectedCustomer) {
     setState(() {
-      selectedCustomerId =
-          nameToIdMap[selectedCustomer] ?? ''; // Get customer ID from mapping
+      selectedCustomerId = (nameToIdMap[selectedCustomer] ?? '') as int?;
     });
   }
 
@@ -2217,36 +2215,57 @@ class _SaleState extends ConsumerState<Sale> {
                         //       });
                         //     },
                         // )),
-                        EasyAutocomplete(
-                          autofocus: false,
-                          progressIndicatorBuilder: isLoading
-                              ? const CircularProgressIndicator()
-                              : null,
-                          controller: nameControl,
-                          inputTextStyle: const TextStyle(
-                              fontFamily: 'poppins', fontSize: 14),
-                          suggestionTextStyle:
-                              const TextStyle(fontFamily: 'poppins'),
-                          decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 5),
-                              border: OutlineInputBorder()),
-                          suggestions: suggestions,
-                          onChanged: (value) {
-                            fetchSuggestions(value);
-                          },
-                          onSubmitted: (value) {
-                            final selectedCustomerId = nameToIdMap[value];
 
-                            if (selectedCustomerId != null) {
-                              print(
-                                  'Selected customer ID: $selectedCustomerId');
-                            } else {
-                              print(
-                                  'No matching customer found for the selected value.');
-                            }
-                          },
-                        ),
+                        ref.watch(customersProvider).when(
+                              data: (data) {
+                                List<String> names =
+                                    data.map((e) => e.name).toList();
+                                return EasyAutocomplete(
+                                  autofocus: false,
+                                  progressIndicatorBuilder: isLoading
+                                      ? const CircularProgressIndicator()
+                                      : null,
+                                  controller: nameControl,
+                                  inputTextStyle: const TextStyle(
+                                      fontFamily: 'poppins', fontSize: 14),
+                                  suggestionTextStyle:
+                                      const TextStyle(fontFamily: 'poppins'),
+                                  decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical: 10, horizontal: 5),
+                                      border: OutlineInputBorder()),
+                                  suggestions: names,
+                                  onChanged: (value) {
+                                    // fetchSuggestions(value);
+                                  },
+                                  onSubmitted: (value) {
+                                    setState(() {
+                                      final selectedItem = data.firstWhere(
+                                        (element) => element.name == value,
+                                      );
+
+                                      selectedCustomerId = selectedItem.id;
+                                    });
+                                    // final selectedCustomerId =
+                                    //     nameToIdMap[value];
+
+                                    // if (selectedCustomerId != null) {
+                                    //   print(
+                                    //       'Selected customer ID: $selectedCustomerId');
+                                    // } else {
+                                    //   print(
+                                    //       'No matching customer found for the selected value.');
+                                    // }
+                                  },
+                                );
+                              },
+                              error: (error, stackTrace) {
+                                return Text(error.toString());
+                              },
+                              loading: () =>
+                                  Center(child: CircularProgressIndicator()),
+                            ),
+
                         const SizedBox(
                           height: 12,
                         ),
@@ -2277,65 +2296,92 @@ class _SaleState extends ConsumerState<Sale> {
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 2, horizontal: 8),
-                                          child: FutureBuilder(
-                                              future: api.getCustomerDetail(
-                                                  selectedCustomerId as int),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.data == null) {
-                                                  return SizedBox();
-                                                }
-                                                return Column(
-                                                  children: [
-                                                    ContainerFieldWidget(
-                                                        widget: TextField(
-                                                          controller:
-                                                              addressControl,
-                                                          decoration: const InputDecoration(
-                                                              contentPadding:
-                                                                  EdgeInsets.symmetric(
-                                                                      vertical:
-                                                                          10,
-                                                                      horizontal:
-                                                                          5),
-                                                              border:
-                                                                  OutlineInputBorder()),
-                                                        ),
-                                                        headTxt: 'Address'),
-                                                    const SizedBox(height: 6),
-                                                    ContainerFieldWidget(
-                                                        widget: TextField(
-                                                          controller:
-                                                              TextEditingController(
-                                                                  text: snapshot
-                                                                      .data!
-                                                                      .phone),
-                                                          decoration: InputDecoration(
-                                                              contentPadding:
-                                                                  EdgeInsets.symmetric(
-                                                                      vertical:
-                                                                          10,
-                                                                      horizontal:
-                                                                          5),
-                                                              border:
-                                                                  OutlineInputBorder()),
-                                                        ),
-                                                        headTxt: 'Phone'),
-                                                    const SizedBox(height: 6),
-                                                    // const SizedBox(
-                                                    //   height: 50,
-                                                    //   child: TextField(
-                                                    //     decoration: InputDecoration(
-                                                    //         contentPadding:
-                                                    //             EdgeInsets.symmetric(
-                                                    //                 vertical: 10,
-                                                    //                 horizontal: 5),
-                                                    //         border:
-                                                    //             OutlineInputBorder()),
-                                                    //   ),
-                                                    // ),
-                                                  ],
-                                                );
-                                              }),
+                                          child: selectedCustomerId == null
+                                              ? const SizedBox()
+                                              : FutureBuilder(
+                                                  future: selectedCustomerId !=
+                                                          null
+                                                      ? api.getCustomerDetail(
+                                                          selectedCustomerId!)
+                                                      : api
+                                                          .getCustomerDetail(0),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.data == null) {
+                                                      return SizedBox();
+                                                    }
+                                                    if (snapshot
+                                                            .connectionState ==
+                                                        ConnectionState
+                                                            .waiting) {
+                                                      return CircularProgressIndicator();
+                                                    } else if (snapshot
+                                                        .hasError) {
+                                                      return Text(
+                                                          'Error: ${snapshot.error}');
+                                                    } else if (!snapshot
+                                                        .hasData) {
+                                                      return Text(
+                                                          'No data found');
+                                                    }
+                                                    final data = snapshot.data;
+                                                    addressControl.text =
+                                                        "${data!.address1} ${data.address2} ${data.address3}";
+                                                    return Column(
+                                                      children: [
+                                                        ContainerFieldWidget(
+                                                            widget: TextField(
+                                                              maxLines: null,
+                                                              controller:
+                                                                  addressControl,
+                                                              readOnly: true,
+                                                              decoration: const InputDecoration(
+                                                                  contentPadding:
+                                                                      EdgeInsets.symmetric(
+                                                                          vertical:
+                                                                              10,
+                                                                          horizontal:
+                                                                              5),
+                                                                  border:
+                                                                      OutlineInputBorder()),
+                                                            ),
+                                                            headTxt: 'Address'),
+                                                        const SizedBox(
+                                                            height: 6),
+                                                        ContainerFieldWidget(
+                                                            widget: TextField(
+                                                              controller:
+                                                                  TextEditingController(
+                                                                      text: snapshot
+                                                                          .data!
+                                                                          .phone),
+                                                              decoration: InputDecoration(
+                                                                  contentPadding:
+                                                                      EdgeInsets.symmetric(
+                                                                          vertical:
+                                                                              10,
+                                                                          horizontal:
+                                                                              5),
+                                                                  border:
+                                                                      OutlineInputBorder()),
+                                                            ),
+                                                            headTxt: 'Phone'),
+                                                        const SizedBox(
+                                                            height: 6),
+                                                        // const SizedBox(
+                                                        //   height: 50,
+                                                        //   child: TextField(
+                                                        //     decoration: InputDecoration(
+                                                        //         contentPadding:
+                                                        //             EdgeInsets.symmetric(
+                                                        //                 vertical: 10,
+                                                        //                 horizontal: 5),
+                                                        //         border:
+                                                        //             OutlineInputBorder()),
+                                                        //   ),
+                                                        // ),
+                                                      ],
+                                                    );
+                                                  }),
                                         )
                                       ],
                                       onExpansionChanged: (newIsExpanded) {
@@ -2354,6 +2400,7 @@ class _SaleState extends ConsumerState<Sale> {
                           onPressed: () {
                             setState(() {
                               nextWidget = 2;
+                              editItem = false;
                             });
                             // Navigator.push(
                             //     context,
@@ -2389,7 +2436,708 @@ class _SaleState extends ConsumerState<Sale> {
                         const SizedBox(height: 10),
                       ],
                     ),
-                  )
+                  ),
+                  const SizedBox(height: 10),
+                  cartItem.isNotEmpty
+                      ? Container(
+                          width: MediaQuery.sizeOf(context).width,
+                          color: white,
+                          child: ListView.separated(
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 10),
+                            shrinkWrap: true,
+                            itemCount: cartItem.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      editItem = true;
+                                      position = index;
+                                      cartModel = cartItem.elementAt(position!);
+                                      itemNameControl.text =
+                                          cartModel!.itemName.toString();
+                                      _rateController.text =
+                                          cartModel!.rate!.toString();
+                                      _quantityController.text =
+                                          cartModel!.quantity!.toString();
+                                      _freeQuantityController.text =
+                                          cartModel!.free.toString();
+                                      _discountController.text =
+                                          cartModel!.discount.toString();
+                                      _discountPercentController.text =
+                                          cartModel!.discountPercent.toString();
+                                      _serialNoController.text =
+                                          cartModel!.serialNo!;
+                                      _dropDownUnit = cartModel!.unitId!;
+                                      taxP = cartModel!.taxP!;
+                                      tax = cartModel!.tax!;
+                                      subTotal = cartModel!.net!;
+                                      total = cartModel!.total!;
+                                      nextWidget = 2;
+                                    });
+                                  },
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    decoration: BoxDecoration(
+                                        // boxShadow: [
+                                        //   BoxShadow(
+                                        //     color: Colors.grey.shade400,
+                                        //     blurRadius: 5,
+                                        //     spreadRadius: .8,
+                                        //   )
+                                        // ],
+                                        border:
+                                            Border.all(color: grey, width: .5),
+                                        borderRadius: BorderRadius.circular(3),
+                                        color: Colors.grey.withOpacity(.2)),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(6.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(children: [
+                                              Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(horizontal: 5),
+                                                  decoration: BoxDecoration(
+                                                      color: white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3),
+                                                      border: Border.all(
+                                                        width: .3,
+                                                        color: grey,
+                                                      )),
+                                                  child: Text(
+                                                    '# ${cartItem[index].id}',
+                                                    style: const TextStyle(
+                                                        fontSize: 12),
+                                                  )),
+                                              Text(
+                                                  ' ${cartItem[index].itemName}',
+                                                  style: const TextStyle(
+                                                      color: black,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontFamily: 'poppins')),
+                                              const Spacer(),
+                                              PopUpMenuAction(
+                                                onDelete: () {
+                                                  setState(() {
+                                                    removeProduct(index);
+                                                  });
+                                                },
+                                                onEdit: () {
+                                                  setState(() {
+                                                    editItem = true;
+                                                    position = index;
+                                                    cartModel = cartItem
+                                                        .elementAt(position!);
+                                                    _rateController.text =
+                                                        cartModel!.rate!
+                                                            .toString();
+                                                    _quantityController.text =
+                                                        cartModel!.quantity!
+                                                            .toString();
+                                                    _freeQuantityController
+                                                            .text =
+                                                        cartModel!.free
+                                                            .toString();
+                                                    _discountController.text =
+                                                        cartModel!.discount
+                                                            .toString();
+                                                    _discountPercentController
+                                                            .text =
+                                                        cartModel!
+                                                            .discountPercent
+                                                            .toString();
+                                                    _serialNoController.text =
+                                                        cartModel!.serialNo!;
+                                                    _dropDownUnit =
+                                                        cartModel!.unitId!;
+                                                    nextWidget = 3;
+                                                  });
+                                                },
+                                              ),
+                                              // RichText(
+                                              //   overflow: TextOverflow.ellipsis,
+                                              //   maxLines: 1,
+                                              //   text: TextSpan(
+                                              //       text:
+                                              //           ' ${cartItem[index].itemName}\n',
+                                              //       style: const TextStyle(
+                                              //           color: black,
+                                              //           fontWeight:
+                                              //               FontWeight.w500,
+                                              //           fontFamily: 'poppins')),
+                                              // ),
+                                            ]),
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(
+                                              children: [
+                                                const Text(
+                                                  'Item Subtotal',
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'Discount (%): ',
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        color:
+                                                            Colors.orange[700],
+                                                        fontFamily: 'poppins'),
+                                                  ),
+                                                  Text(
+                                                    cartItem[index]
+                                                        .discountPercent!
+                                                        .toStringAsFixed(0),
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        color:
+                                                            Colors.orange[700],
+                                                        fontFamily: 'poppins'),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '₹ ${cartItem[index].discount}',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.orange[700],
+                                                    ),
+                                                  )
+                                                ],
+                                              )),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(children: [
+                                              Text(
+                                                'Tax (%): ${cartItem[index].taxP}',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ]),
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(children: [
+                                              const Text(
+                                                'Total',
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                    fontSize: 13,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              ),
+                                            ]),
+                                          ),
+                                          // Row(
+                                          //   mainAxisAlignment:
+                                          //       MainAxisAlignment.spaceEvenly,
+                                          //   mainAxisSize: MainAxisSize.max,
+                                          //   children: [
+                                          //     SizedBox(
+                                          //       width: 100,
+                                          //       child: Column(
+                                          //         crossAxisAlignment:
+                                          //             CrossAxisAlignment.start,
+                                          //         children: [
+                                          //           // const SizedBox(
+                                          //           //   height: 1.0,
+                                          //           // ),
+                                          //           RichText(
+                                          //             maxLines: 1,
+                                          //             text: TextSpan(
+                                          //                 text:
+                                          //                     '${cartItem[index].id}/',
+                                          //                 style: TextStyle(
+                                          //                     color: Colors
+                                          //                         .blueGrey
+                                          //                         .shade800,
+                                          //                     fontSize: 10.0),
+                                          //                 children: [
+                                          //                   TextSpan(
+                                          //                       text:
+                                          //                           '${cartItem[index].uniqueCode}/${cartItem[index].itemId}',
+                                          //                       style: const TextStyle(
+                                          //                           fontSize:
+                                          //                               10.0,
+                                          //                           fontWeight:
+                                          //                               FontWeight
+                                          //                                   .bold)),
+                                          //                 ]),
+                                          //           ),
+                                          //           RichText(
+                                          //             maxLines: 1,
+                                          //             text: TextSpan(
+                                          //                 text: 'Unit: ',
+                                          //                 style: TextStyle(
+                                          //                     color: Colors
+                                          //                         .blueGrey
+                                          //                         .shade800,
+                                          //                     fontSize: 12.0),
+                                          //                 children: [
+                                          //                   TextSpan(
+                                          //                       text:
+                                          //                           '${UnitSettings.getUnitName(cartItem[index].unitId!)}\n',
+                                          //                       style: const TextStyle(
+                                          //                           fontSize:
+                                          //                               12.0,
+                                          //                           fontWeight:
+                                          //                               FontWeight
+                                          //                                   .bold)),
+                                          //                 ]),
+                                          //           ),
+                                          //         ],
+                                          //       ),
+                                          //     ),
+                                          //     // PlusMinusButtons(
+                                          //     //   addQuantity: () {
+                                          //     //     if (oldBill) {
+                                          //     //       api
+                                          //     //           .getStockOf(
+                                          //     //               cartItem[index]
+                                          //     //                   .itemId!)
+                                          //     //           .then((value) {
+                                          //     //         cartItem[index].stock =
+                                          //     //             value;
+                                          //     //         setState(() {
+                                          //     //           bool cartQ = false;
+                                          //     //           if (totalItem > 0) {
+                                          //     //             double cartS = 0,
+                                          //     //                 cartQt = 0;
+                                          //     //             for (var element
+                                          //     //                 in cartItem) {
+                                          //     //               if (element
+                                          //     //                       .itemId ==
+                                          //     //                   cartItem[index]
+                                          //     //                       .itemId) {
+                                          //     //                 cartQt += element
+                                          //     //                     .quantity!;
+                                          //     //                 cartS = element
+                                          //     //                     .stock!;
+                                          //     //               }
+                                          //     //             }
+                                          //     //             cartS = oldBill
+                                          //     //                 ? value
+                                          //     //                 : cartS;
+                                          //     //             if (cartS > 0) {
+                                          //     //               if (cartS <
+                                          //     //                   cartQt + 1) {
+                                          //     //                 cartQ = true;
+                                          //     //               }
+                                          //     //             }
+                                          //     //           }
+                                          //     //           outOfStock = isLockQtyOnlyInSales
+                                          //     //               ? cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                          //     //                   ? true
+                                          //     //                   : cartQ
+                                          //     //                       ? true
+                                          //     //                       : false
+                                          //     //               : negativeStock
+                                          //     //                   ? false
+                                          //     //                   : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                          //     //                       ? isStockProductOnlyInSalesQO
+                                          //     //                           ? cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                          //     //                               ? true
+                                          //     //                               : cartQ
+                                          //     //                                   ? true
+                                          //     //                                   : false
+                                          //     //                           : false
+                                          //     //                       : cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                          //     //                           ? true
+                                          //     //                           : cartQ
+                                          //     //                               ? true
+                                          //     //                               : false;
+                                          //     //           if (outOfStock) {
+                                          //     //             ScaffoldMessenger.of(
+                                          //     //                     context)
+                                          //     //                 .showSnackBar(
+                                          //     //                     SnackBar(
+                                          //     //               content: const Text(
+                                          //     //                   'Sorry stock not available.'),
+                                          //     //               duration:
+                                          //     //                   const Duration(
+                                          //     //                       seconds:
+                                          //     //                           10),
+                                          //     //               action:
+                                          //     //                   SnackBarAction(
+                                          //     //                 label: 'Click',
+                                          //     //                 onPressed: () {
+                                          //     //                   // print('Action is clicked');
+                                          //     //                 },
+                                          //     //                 textColor:
+                                          //     //                     Colors.white,
+                                          //     //                 disabledTextColor:
+                                          //     //                     Colors.grey,
+                                          //     //               ),
+                                          //     //               backgroundColor:
+                                          //     //                   Colors.red,
+                                          //     //             ));
+                                          //     //           } else {
+                                          //     //             updateProduct(
+                                          //     //                 cartItem[index],
+                                          //     //                 cartItem[index]
+                                          //     //                         .quantity! +
+                                          //     //                     1,
+                                          //     //                 index);
+                                          //     //           }
+                                          //     //         });
+                                          //     //       });
+                                          //     //     } else {
+                                          //     //       setState(() {
+                                          //     //         bool cartQ = false;
+                                          //     //         if (totalItem > 0) {
+                                          //     //           double cartS = 0,
+                                          //     //               cartQt = 0;
+                                          //     //           for (var element
+                                          //     //               in cartItem) {
+                                          //     //             if (element.itemId ==
+                                          //     //                 cartItem[index]
+                                          //     //                     .itemId) {
+                                          //     //               cartQt += element
+                                          //     //                   .quantity!;
+                                          //     //               cartS =
+                                          //     //                   element.stock!;
+                                          //     //             }
+                                          //     //           }
+                                          //     //           // cartS = oldBill?:cartS;
+                                          //     //           if (cartS > 0) {
+                                          //     //             if (cartS <
+                                          //     //                 cartQt + 1) {
+                                          //     //               cartQ = true;
+                                          //     //             }
+                                          //     //           }
+                                          //     //         }
+                                          //     //         outOfStock = isLockQtyOnlyInSales
+                                          //     //             ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
+                                          //     //                 ? true
+                                          //     //                 : cartQ
+                                          //     //                     ? true
+                                          //     //                     : false
+                                          //     //             : negativeStock
+                                          //     //                 ? false
+                                          //     //                 : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                          //     //                     ? isStockProductOnlyInSalesQO
+                                          //     //                         ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
+                                          //     //                             ? true
+                                          //     //                             : cartQ
+                                          //     //                                 ? true
+                                          //     //                                 : false
+                                          //     //                         : false
+                                          //     //                     : cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                          //     //                         ? true
+                                          //     //                         : cartQ
+                                          //     //                             ? true
+                                          //     //                             : false;
+                                          //     //         if (outOfStock) {
+                                          //     //           ScaffoldMessenger.of(
+                                          //     //                   context)
+                                          //     //               .showSnackBar(
+                                          //     //                   SnackBar(
+                                          //     //             content: const Text(
+                                          //     //                 'Sorry stock not available.'),
+                                          //     //             duration:
+                                          //     //                 const Duration(
+                                          //     //                     seconds: 10),
+                                          //     //             action:
+                                          //     //                 SnackBarAction(
+                                          //     //               label: 'Click',
+                                          //     //               onPressed: () {
+                                          //     //                 // print('Action is clicked');
+                                          //     //               },
+                                          //     //               textColor:
+                                          //     //                   Colors.white,
+                                          //     //               disabledTextColor:
+                                          //     //                   Colors.grey,
+                                          //     //             ),
+                                          //     //             backgroundColor:
+                                          //     //                 Colors.red,
+                                          //     //           ));
+                                          //     //         } else {
+                                          //     //           updateProduct(
+                                          //     //               cartItem[index],
+                                          //     //               cartItem[index]
+                                          //     //                       .quantity! +
+                                          //     //                   1,
+                                          //     //               index);
+                                          //     //         }
+                                          //     //       });
+                                          //     //     }
+
+                                          //     //     //  cart.addQuantity(
+                                          //     //     //      cartItem[index].id!);
+                                          //     //     //  dbHelper!
+                                          //     //     //      .updateQuantity(Cart(
+                                          //     //     //          id: index,
+                                          //     //     //          productId: index.toString(),
+                                          //     //     //          productName: provider
+                                          //     //     //              .cart[index].productName,
+                                          //     //     //          initialPrice: provider
+                                          //     //     //              .cart[index].initialPrice,
+                                          //     //     //          productPrice: provider
+                                          //     //     //              .cart[index].productPrice,
+                                          //     //     //          quantity: ValueNotifier(
+                                          //     //     //              cartItem[index]
+                                          //     //     //                  .quantity!.value),
+                                          //     //     //          unitTag: provider
+                                          //     //     //              .cart[index].unitTag,
+                                          //     //     //          image: provider
+                                          //     //     //              .cart[index].image))
+                                          //     //     //      .then((value) {
+                                          //     //     //    setState(() {
+                                          //     //     //      cart.addTotalPrice(double.parse(
+                                          //     //     //          provider
+                                          //     //     //              .cart[index].productPrice
+                                          //     //     //              .toString()));
+                                          //     //     //    });
+                                          //     //     //  });
+                                          //     //   },
+                                          //     //   deleteQuantity: () {
+                                          //     //     setState(() {
+                                          //     //       updateProduct(
+                                          //     //           cartItem[index],
+                                          //     //           cartItem[index]
+                                          //     //                   .quantity! -
+                                          //     //               1,
+                                          //     //           index);
+                                          //     //     });
+
+                                          //     //     //  cart.deleteQuantity(
+                                          //     //     //      cartItem[index].id!);
+                                          //     //     //  cart.removeTotalPrice(double.parse(
+                                          //     //     //      cartItem[index].productPrice
+                                          //     //     //          .toString()));
+                                          //     //   },
+                                          //     //   text: cartItem[index]
+                                          //     //       .quantity
+                                          //     //       .toString(),
+                                          //     // ),
+                                          //     RichText(
+                                          //       maxLines: 1,
+                                          //       text: TextSpan(
+                                          //           text: 'Rate: ',
+                                          //           style: TextStyle(
+                                          //               color: Colors
+                                          //                   .blueGrey.shade800,
+                                          //               fontSize: 13.0),
+                                          //           children: [
+                                          //             TextSpan(
+                                          //                 text:
+                                          //                     '${cartItem[index].rate}\n',
+                                          //                 style:
+                                          //                     const TextStyle(
+                                          //                         fontWeight:
+                                          //                             FontWeight
+                                          //                                 .bold,
+                                          //                         fontSize:
+                                          //                             12.0)),
+                                          //           ]),
+                                          //     ),
+                                          //     // IconButton(
+                                          //     // onPressed: () {
+                                          //     //  dbHelper!.deleteCartItem(
+                                          //     //      cartItem[index].id!);
+                                          //     //  provider
+                                          //     //      .removeItem(cartItem[index].id!);
+                                          //     //  provider.removeCounter();
+                                          //     // },
+                                          //     // icon: Icon(
+                                          //     // Icons.edit,
+                                          //     // color: Colors.blue.shade800,
+                                          //     // )),
+                                          //     PopUpMenuAction(
+                                          //       onDelete: () {
+                                          //         setState(() {
+                                          //           removeProduct(index);
+                                          //         });
+                                          //       },
+                                          //       onEdit: () {
+                                          //         setState(() {
+                                          //           editItem = true;
+                                          //           position = index;
+                                          //           cartModel = cartItem
+                                          //               .elementAt(position!);
+                                          //           _rateController.text =
+                                          //               cartModel!.rate!
+                                          //                   .toString();
+                                          //           _quantityController.text =
+                                          //               cartModel!.quantity!
+                                          //                   .toString();
+                                          //           _freeQuantityController
+                                          //                   .text =
+                                          //               cartModel!.free
+                                          //                   .toString();
+                                          //           _discountController.text =
+                                          //               cartModel!.discount
+                                          //                   .toString();
+                                          //           _discountPercentController
+                                          //                   .text =
+                                          //               cartModel!
+                                          //                   .discountPercent
+                                          //                   .toString();
+                                          //           _serialNoController.text =
+                                          //               cartModel!.serialNo!;
+                                          //           _dropDownUnit =
+                                          //               cartModel!.unitId!;
+                                          //           nextWidget = 3;
+                                          //         });
+                                          //       },
+                                          //     ),
+                                          //   ],
+                                          // ),
+                                          // RichText(
+                                          //   text: TextSpan(
+                                          //       text: 'Gross:',
+                                          //       style: TextStyle(
+                                          //           color: Colors
+                                          //               .blueGrey.shade800,
+                                          //           fontSize: 12.0),
+                                          //       children: [
+                                          //         TextSpan(
+                                          //             text:
+                                          //                 '${cartItem[index].gross}    ',
+                                          //             style: const TextStyle(
+                                          //                 fontWeight:
+                                          //                     FontWeight.bold,
+                                          //                 fontSize: 12.0)),
+                                          //         TextSpan(
+                                          //             text: 'Disc:',
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 12.0),
+                                          //             children: [
+                                          //               TextSpan(
+                                          //                   text:
+                                          //                       '${cartItem[index].discountPercent}% ${cartItem[index].discount}    ',
+                                          //                   style: const TextStyle(
+                                          //                       fontWeight:
+                                          //                           FontWeight
+                                          //                               .bold,
+                                          //                       fontSize:
+                                          //                           12.0)),
+                                          //             ]),
+                                          //         TextSpan(
+                                          //             text: 'Net:',
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 12.0),
+                                          //             children: [
+                                          //               TextSpan(
+                                          //                   text:
+                                          //                       '${cartItem[index].net}    ',
+                                          //                   style: const TextStyle(
+                                          //                       fontWeight:
+                                          //                           FontWeight
+                                          //                               .bold,
+                                          //                       fontSize:
+                                          //                           12.0)),
+                                          //             ]),
+                                          //         isTax
+                                          //             ? TextSpan(
+                                          //                 text:
+                                          //                     'Tax:${cartItem[index].taxP}% ',
+                                          //                 style:
+                                          //                     const TextStyle(
+                                          //                         fontSize:
+                                          //                             12.0),
+                                          //                 children: [
+                                          //                     TextSpan(
+                                          //                         text:
+                                          //                             '${cartItem[index].tax}    ',
+                                          //                         style: const TextStyle(
+                                          //                             fontWeight:
+                                          //                                 FontWeight
+                                          //                                     .bold,
+                                          //                             fontSize:
+                                          //                                 12.0)),
+                                          //                   ])
+                                          //             : const TextSpan(
+                                          //                 text: ''),
+                                          //         TextSpan(
+                                          //             text: 'Total:',
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 12.0),
+                                          //             children: [
+                                          //               TextSpan(
+                                          //                   text:
+                                          //                       '${cartItem[index].total}',
+                                          //                   style: const TextStyle(
+                                          //                       fontWeight:
+                                          //                           FontWeight
+                                          //                               .bold,
+                                          //                       fontSize:
+                                          //                           12.0)),
+                                          //             ]),
+                                          //       ]),
+                                          // ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : const Center(
+                          child: Text("No items in Cart"),
+                        ),
                 ],
               ),
             ),
@@ -2637,7 +3385,7 @@ class _SaleState extends ConsumerState<Sale> {
                         const SizedBox(height: 10),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -2718,6 +3466,7 @@ class _SaleState extends ConsumerState<Sale> {
   List<String> selectedUnits = [];
   int? selectedItemId;
   String? selectedTaxOption = 'With Tax';
+  late StockProduct selectedVariant;
   addItemWidget() {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -2770,34 +3519,87 @@ class _SaleState extends ConsumerState<Sale> {
                                 height: 6,
                               ),
                               EasyAutocomplete(
-                                  autofocus: false,
-                                  progressIndicatorBuilder:
-                                      const CircularProgressIndicator(),
-                                  controller: itemNameControl,
-                                  inputTextStyle: const TextStyle(
-                                      fontFamily: 'poppins', fontSize: 14),
-                                  suggestionTextStyle:
-                                      const TextStyle(fontFamily: 'poppins'),
-                                  decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 5),
-                                      border: OutlineInputBorder()),
-                                  suggestions: itemNames,
-                                  onChanged: (value) {
-                                    print('onChanged value: $value');
-                                  },
-                                  onSubmitted: (value) {
-                                    setState(() {
-                                      final selectedItem = data.firstWhere(
-                                        (element) => element.name == value,
-                                      );
-                                      selectedQuantity =
-                                          selectedItem.quantity.toString();
+                                autofocus: false,
+                                progressIndicatorBuilder:
+                                    const CircularProgressIndicator(),
+                                controller: itemNameControl,
+                                inputTextStyle: const TextStyle(
+                                    fontFamily: 'poppins', fontSize: 14),
+                                suggestionTextStyle:
+                                    const TextStyle(fontFamily: 'poppins'),
+                                decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 5),
+                                  border: OutlineInputBorder(),
+                                ),
+                                suggestions: itemNames,
+                                onChanged: (value) {
+                                  print('onChanged value: $value');
+                                },
+                                onSubmitted: (value) {
+                                  setState(() {
+                                    final selectedItem = data.firstWhere(
+                                      (element) => element.name == value,
+                                    );
 
-                                      selectedItemId = selectedItem.id!;
-                                    });
-                                    print('onSubmitted value: $selectedItemId');
-                                  }),
+                                    selectedQuantity =
+                                        selectedItem.quantity.toString();
+                                    selectedItemId = selectedItem.id!;
+
+                                    var fetchedData = selectedItemId != null
+                                        ? api.fetchStockVariant(selectedItemId!)
+                                        : null;
+                                    if (fetchedData != null) {
+                                      fetchedData.then((variants) {
+                                        selectedVariant = variants.firstWhere(
+                                          (element) =>
+                                              element.itemId == selectedItemId,
+                                          orElse: () => StockProduct.empty(),
+                                        );
+
+                                        Future<double?> rateFuture;
+                                        if (salesTypeData!.rateType == 'MRP') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.sellingPrice);
+                                        } else if (salesTypeData!.rateType ==
+                                            'WHOLESALE') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.wholeSalePrice);
+                                        } else if (salesTypeData!.rateType ==
+                                            'RETAIL') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.retailPrice);
+                                        } else if (salesTypeData!.rateType ==
+                                            'SPRETAIL') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.spRetailPrice);
+                                        } else if (rateType == '1') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.sellingPrice);
+                                        } else if (rateType == '2') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.retailPrice);
+                                        } else if (rateType == '3') {
+                                          rateFuture = Future.value(
+                                              selectedVariant.wholeSalePrice);
+                                        } else {
+                                          rateFuture = Future.value(null);
+                                        }
+
+                                        rateFuture.then((rate) {
+                                          if (rate != null) {
+                                            _rateController.text =
+                                                rate.toStringAsFixed(2);
+                                          }
+                                        });
+
+                                        taxP = selectedVariant.tax! ?? 0;
+                                      });
+                                    }
+                                  });
+                                  print('onSubmitted value: $selectedItemId');
+                                },
+                              ),
                               const SizedBox(
                                 height: 10,
                               ),
@@ -2819,8 +3621,7 @@ class _SaleState extends ConsumerState<Sale> {
                                         child: Text('Select a Item'));
                                   }
                                   final fetchedData = snapshot.data!;
-                                  final selectedVariant =
-                                      fetchedData.firstWhere(
+                                  selectedVariant = fetchedData.firstWhere(
                                     (element) =>
                                         element.itemId == selectedItemId,
                                     orElse: () => StockProduct.empty(),
@@ -2830,33 +3631,39 @@ class _SaleState extends ConsumerState<Sale> {
                                       i < unitListData.length;
                                       i++) {
                                     UnitModel _unit = unitListData[i];
-                                    double? _rate = _unit.rate == 'MRP'
-                                        ? selectedVariant.sellingPrice
-                                        : _unit.rate == 'WHOLESALE'
-                                            ? selectedVariant.wholeSalePrice
-                                            : _unit.rate == 'RETAIL'
-                                                ? selectedVariant.retailPrice
-                                                : _unit.rate == 'SPRETAIL'
-                                                    ? selectedVariant
-                                                        .spRetailPrice
-                                                    : rateType == '1'
-                                                        ? selectedVariant
-                                                            .sellingPrice
-                                                        : rateType == '2'
-                                                            ? selectedVariant
-                                                                .retailPrice
-                                                            : rateType == '3'
-                                                                ? selectedVariant
-                                                                    .wholeSalePrice
-                                                                : null;
-                                    setState(() {
-                                      if (_rate != null) {
-                                        _rateController.text =
-                                            _rate.toStringAsFixed(2);
-                                        _conversion = _unit.conversion!;
-                                      }
-                                    });
                                   }
+                                  // double? _rate = salesTypeData!.rateType ==
+                                  //         'MRP'
+                                  //     ? selectedVariant.sellingPrice
+                                  //     : salesTypeData!.rateType == 'WHOLESALE'
+                                  //         ? selectedVariant.wholeSalePrice
+                                  //         : salesTypeData!.rateType == 'RETAIL'
+                                  //             ? selectedVariant.retailPrice
+                                  //             : salesTypeData!.rateType ==
+                                  //                     'SPRETAIL'
+                                  //                 ? selectedVariant
+                                  //                     .spRetailPrice
+                                  //                 : rateType == '1'
+                                  //                     ? selectedVariant
+                                  //                         .sellingPrice
+                                  //                     : rateType == '2'
+                                  //                         ? selectedVariant
+                                  //                             .retailPrice
+                                  //                         : rateType == '3'
+                                  //                             ? selectedVariant
+                                  //                                 .wholeSalePrice
+                                  //                             : rate;
+                                  // if (salesTypeData!.rateType.isNotEmpty) {
+                                  //   rateTypeItem = rateTypeList.firstWhere(
+                                  //       (element) =>
+                                  //           element.name ==
+                                  //           salesTypeData!.rateType);
+                                  // }
+                                  // rate = _rate!;
+                                  // saleRate = _rate;
+                                  // if (saleRate > 0) {
+                                  //   _rateController.text = _rate.toString();
+                                  // }
                                   // final unitId = data!.map((e) => e.unitId);
                                   return Column(
                                     children: [
@@ -2969,270 +3776,281 @@ class _SaleState extends ConsumerState<Sale> {
                                           ),
                                           Expanded(
                                               child: ContainerFieldWidget(
-                                                  widget: Visibility(
-                                                    visible: enableMULTIUNIT,
-                                                    child: Container(
-                                                        margin: const EdgeInsets
-                                                            .only(bottom: 7),
-                                                        padding:
-                                                            const EdgeInsets.only(
-                                                                left: 5),
-                                                        width: MediaQuery.of(
-                                                                context)
-                                                            .size
-                                                            .width,
-                                                        decoration: BoxDecoration(
-                                                            border: Border.all(
-                                                                color: grey),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        3)),
-                                                        child: FutureBuilder(
-                                                          future: api.fetchUnitOf(
-                                                              selectedItemId!),
-                                                          builder: (BuildContext
-                                                                  context,
-                                                              AsyncSnapshot
-                                                                  snapshot) {
-                                                            List<UnitModel>
-                                                                unitListData =
-                                                                [];
-                                                            if (snapshot
-                                                                .hasData) {
-                                                              unitListData
-                                                                  .clear();
-                                                              for (var i = 0;
-                                                                  i <
+                                                  widget: Container(
+                                                      margin:
+                                                          const EdgeInsets.only(
+                                                              bottom: 7),
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 5),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width,
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: grey),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(3)),
+                                                      child: FutureBuilder(
+                                                        future: api.fetchUnitOf(
+                                                            selectedItemId!),
+                                                        builder: (BuildContext
+                                                                context,
+                                                            AsyncSnapshot
+                                                                snapshot) {
+                                                          List<UnitModel>
+                                                              unitListData = [];
+                                                          if (snapshot
+                                                              .hasData) {
+                                                            // unitListData
+                                                            //     .clear();
+                                                            for (var i = 0;
+                                                                i <
+                                                                    snapshot
+                                                                        .data
+                                                                        .length;
+                                                                i++) {
+                                                              if (defaultUnitID
+                                                                  .toString()
+                                                                  .isNotEmpty) {
+                                                                if (snapshot
+                                                                        .data[i]
+                                                                        .id ==
+                                                                    defaultUnitID! -
+                                                                        1) {
+                                                                  _dropDownUnit =
                                                                       snapshot
-                                                                          .data
-                                                                          .length;
-                                                                  i++) {
-                                                                if (defaultUnitID
-                                                                    .toString()
-                                                                    .isNotEmpty) {
-                                                                  if (snapshot
                                                                           .data[
                                                                               i]
-                                                                          .id ==
-                                                                      defaultUnitID! -
-                                                                          1) {
-                                                                    _dropDownUnit =
-                                                                        snapshot
-                                                                            .data[i]
-                                                                            .id;
-                                                                    _conversion =
-                                                                        snapshot
-                                                                            .data[i]
-                                                                            .conversion;
-                                                                  }
+                                                                          .id;
+                                                                  _conversion =
+                                                                      snapshot
+                                                                          .data[
+                                                                              i]
+                                                                          .conversion;
                                                                 }
-                                                                unitListData.add(UnitModel(
-                                                                    id: snapshot
-                                                                        .data[i]
-                                                                        .id,
-                                                                    itemId: snapshot
-                                                                        .data[i]
-                                                                        .itemId,
-                                                                    conversion: snapshot
-                                                                        .data[i]
-                                                                        .conversion,
-                                                                    name: snapshot
-                                                                        .data[i]
-                                                                        .name,
-                                                                    pUnit: snapshot
-                                                                        .data[i]
-                                                                        .pUnit,
-                                                                    sUnit: snapshot
-                                                                        .data[i]
-                                                                        .sUnit,
-                                                                    unit: snapshot
-                                                                        .data[i]
-                                                                        .unit,
-                                                                    rate: snapshot
-                                                                        .data[i]
-                                                                        .rate));
                                                               }
+                                                              unitListData.add(UnitModel(
+                                                                  id: snapshot
+                                                                      .data[i]
+                                                                      .id,
+                                                                  itemId: snapshot
+                                                                      .data[i]
+                                                                      .itemId,
+                                                                  conversion:
+                                                                      snapshot
+                                                                          .data[
+                                                                              i]
+                                                                          .conversion,
+                                                                  name: snapshot
+                                                                      .data[i]
+                                                                      .name,
+                                                                  pUnit: snapshot
+                                                                      .data[i]
+                                                                      .pUnit,
+                                                                  sUnit: snapshot
+                                                                      .data[i]
+                                                                      .sUnit,
+                                                                  unit: snapshot
+                                                                      .data[i]
+                                                                      .unit,
+                                                                  rate: snapshot
+                                                                      .data[i]
+                                                                      .rate));
                                                             }
-                                                            return snapshot.data !=
-                                                                        null &&
-                                                                    snapshot.data!
-                                                                            .length >
-                                                                        0
-                                                                ? DropdownButtonHideUnderline(
-                                                                    child: DropdownButton<
-                                                                        String>(
-                                                                      isExpanded:
-                                                                          true,
-                                                                      style: const TextStyle(
-                                                                          fontFamily:
-                                                                              'poppins',
-                                                                          color:
-                                                                              black),
-                                                                      hint: Text(_dropDownUnit >
-                                                                              0
-                                                                          ? UnitSettings.getUnitName(
-                                                                              _dropDownUnit)
-                                                                          : 'Unit'),
-                                                                      items: snapshot
-                                                                          .data!
-                                                                          .map<DropdownMenuItem<String>>(
-                                                                              (item) {
-                                                                        return DropdownMenuItem<
-                                                                            String>(
-                                                                          value: item
-                                                                              .id
-                                                                              .toString(),
-                                                                          child: Text(
-                                                                              item.name!,
-                                                                              style: const TextStyle(color: black)),
-                                                                        );
-                                                                      }).toList(),
-                                                                      onChanged:
-                                                                          (value) {
-                                                                        setState(
-                                                                            () {
-                                                                          bool
-                                                                              cartQ =
-                                                                              false;
-                                                                          _dropDownUnit =
-                                                                              int.tryParse(value!)!;
-                                                                          for (var i = 0;
-                                                                              i < unitListData.length;
-                                                                              i++) {
-                                                                            UnitModel
-                                                                                _unit =
-                                                                                unitListData[i];
-                                                                            if (_unit.unit ==
-                                                                                int.tryParse(value)) {
-                                                                              double? _rate = _unit.rate == 'MRP'
-                                                                                  ? selectedVariant.sellingPrice
-                                                                                  : _unit.rate == 'WHOLESALE'
-                                                                                      ? selectedVariant.wholeSalePrice
-                                                                                      : _unit.rate == 'RETAIL'
-                                                                                          ? selectedVariant.retailPrice
-                                                                                          : _unit.rate == 'SPRETAIL'
-                                                                                              ? selectedVariant.spRetailPrice
-                                                                                              : rateType == '1'
-                                                                                                  ? selectedVariant.sellingPrice
-                                                                                                  : rateType == '2'
-                                                                                                      ? selectedVariant.retailPrice
-                                                                                                      : rateType == '3'
-                                                                                                          ? selectedVariant.wholeSalePrice
-                                                                                                          : rate;
-                                                                              if (_unit.rate!.isNotEmpty) {
-                                                                                rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
-                                                                              }
-                                                                              rate = _rate!;
-                                                                              saleRate = _rate;
-                                                                              _rateController.text = saleRate > 0 ? saleRate.toStringAsFixed(2) : '';
-                                                                              _conversion = _unit.conversion!;
-                                                                              if (quantity > 0 || freeQty > 0) {
-                                                                                if (totalItem > 0) {
-                                                                                  double cartS = 0, cartQt = 0;
-                                                                                  for (var element in cartItem) {
-                                                                                    if (element.uniqueCode == selectedVariant.productId) {
-                                                                                      cartQt += element.quantity! + element.free!;
-                                                                                      cartS = element.stock!;
-                                                                                    }
-                                                                                  }
-                                                                                  if (cartS > 0) {
-                                                                                    if (cartS < cartQt + quantity + freeQty) {
-                                                                                      cartQ = true;
-                                                                                    }
-                                                                                  }
-                                                                                } else {
-                                                                                  cartQ = false;
-                                                                                }
-                                                                                outOfStock = isLockQtyOnlyInSales
-                                                                                    ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                        ? true
-                                                                                        : cartQ
-                                                                                            ? true
-                                                                                            : false
-                                                                                    : negativeStock
-                                                                                        ? false
-                                                                                        : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
-                                                                                            ? isStockProductOnlyInSalesQO
-                                                                                                ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                                    ? true
-                                                                                                    : cartQ
-                                                                                                        ? true
-                                                                                                        : false
-                                                                                                : false
-                                                                                            : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                                ? true
-                                                                                                : cartQ
-                                                                                                    ? true
-                                                                                                    : false;
-                                                                              }
-                                                                              break;
-                                                                            }
-                                                                          }
-                                                                          calculate(
-                                                                              selectedVariant);
-                                                                        });
-                                                                      },
-                                                                    ),
-                                                                  )
-                                                                : DropdownButtonHideUnderline(
-                                                                    child: DropdownButton<
-                                                                        String>(
-                                                                      isExpanded:
-                                                                          true,
-                                                                      style: const TextStyle(
-                                                                          fontFamily:
-                                                                              'poppins',
-                                                                          color:
-                                                                              black),
-                                                                      hint: Text(_dropDownUnit >
-                                                                              0
-                                                                          ? UnitSettings.getUnitName(
-                                                                              _dropDownUnit)
-                                                                          : 'Unit'),
-                                                                      items: unitList
-                                                                          .map<DropdownMenuItem<String>>(
-                                                                              (item) {
-                                                                        return DropdownMenuItem<
-                                                                            String>(
-                                                                          value: item
-                                                                              .key
-                                                                              .toString(),
-                                                                          child:
-                                                                              Text(
-                                                                            item.value,
+                                                          }
+                                                          return snapshot.data !=
+                                                                      null &&
+                                                                  snapshot.data!
+                                                                          .length >
+                                                                      0
+                                                              ? DropdownButtonHideUnderline(
+                                                                  child:
+                                                                      DropdownButton<
+                                                                          String>(
+                                                                    isExpanded:
+                                                                        true,
+                                                                    style: const TextStyle(
+                                                                        fontFamily:
+                                                                            'poppins',
+                                                                        color:
+                                                                            black),
+                                                                    hint: Text(_dropDownUnit >
+                                                                            0
+                                                                        ? UnitSettings.getUnitName(
+                                                                            _dropDownUnit)
+                                                                        : 'Unit'),
+                                                                    items: snapshot
+                                                                        .data!
+                                                                        .map<DropdownMenuItem<String>>(
+                                                                            (item) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value: item
+                                                                            .id
+                                                                            .toString(),
+                                                                        child: Text(
+                                                                            item
+                                                                                .name!,
                                                                             style:
-                                                                                const TextStyle(fontFamily: 'poppins', color: black),
-                                                                          ),
-                                                                        );
-                                                                      }).toList(),
-                                                                      onChanged:
-                                                                          (value) {
-                                                                        setState(
-                                                                            () {
-                                                                          _dropDownUnit =
-                                                                              int.tryParse(value!)!;
-                                                                          // for (var i = 0;
-                                                                          //     i < unitListData.length;
-                                                                          //     i++) {
-                                                                          //   UnitModel
-                                                                          //       _unit =
-                                                                          //       unitListData[i];
-                                                                          //   if (_unit.unit ==
-                                                                          //       int.tryParse(value)) {
-                                                                          //     _conversion = _unit.conversion!;
-                                                                          //     break;
-                                                                          //   }
-                                                                          // }
-                                                                          // calculate(
-                                                                          //     selectedVariant);
-                                                                        });
-                                                                      },
-                                                                    ),
-                                                                  );
-                                                          },
-                                                        )),
-                                                  ),
+                                                                                const TextStyle(color: black)),
+                                                                      );
+                                                                    }).toList(),
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      setState(
+                                                                          () {
+                                                                        bool
+                                                                            cartQ =
+                                                                            false;
+                                                                        _dropDownUnit =
+                                                                            int.tryParse(value!)!;
+                                                                        for (var i =
+                                                                                0;
+                                                                            i < unitListData.length;
+                                                                            i++) {
+                                                                          UnitModel
+                                                                              _unit =
+                                                                              unitListData[i];
+                                                                          if (_unit.unit ==
+                                                                              int.tryParse(value)) {
+                                                                            double? _rate = _unit.rate == 'MRP'
+                                                                                ? selectedVariant.sellingPrice
+                                                                                : _unit.rate == 'WHOLESALE'
+                                                                                    ? selectedVariant.wholeSalePrice
+                                                                                    : _unit.rate == 'RETAIL'
+                                                                                        ? selectedVariant.retailPrice
+                                                                                        : _unit.rate == 'SPRETAIL'
+                                                                                            ? selectedVariant.spRetailPrice
+                                                                                            : rateType == '1'
+                                                                                                ? selectedVariant.sellingPrice
+                                                                                                : rateType == '2'
+                                                                                                    ? selectedVariant.retailPrice
+                                                                                                    : rateType == '3'
+                                                                                                        ? selectedVariant.wholeSalePrice
+                                                                                                        : rate;
+                                                                            if (_unit.rate!.isNotEmpty) {
+                                                                              rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
+                                                                            }
+                                                                            rate =
+                                                                                _rate!;
+                                                                            saleRate =
+                                                                                _rate;
+                                                                            _rateController.text = saleRate > 0
+                                                                                ? saleRate.toStringAsFixed(2)
+                                                                                : '';
+                                                                            _conversion =
+                                                                                _unit.conversion!;
+                                                                            if (quantity > 0 ||
+                                                                                freeQty > 0) {
+                                                                              if (totalItem > 0) {
+                                                                                double cartS = 0, cartQt = 0;
+                                                                                for (var element in cartItem) {
+                                                                                  if (element.uniqueCode == selectedVariant.productId) {
+                                                                                    cartQt += element.quantity! + element.free!;
+                                                                                    cartS = element.stock!;
+                                                                                  }
+                                                                                }
+                                                                                if (cartS > 0) {
+                                                                                  if (cartS < cartQt + quantity + freeQty) {
+                                                                                    cartQ = true;
+                                                                                  }
+                                                                                }
+                                                                              } else {
+                                                                                cartQ = false;
+                                                                              }
+                                                                              outOfStock = isLockQtyOnlyInSales
+                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                      ? true
+                                                                                      : cartQ
+                                                                                          ? true
+                                                                                          : false
+                                                                                  : negativeStock
+                                                                                      ? false
+                                                                                      : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                                                                          ? isStockProductOnlyInSalesQO
+                                                                                              ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                  ? true
+                                                                                                  : cartQ
+                                                                                                      ? true
+                                                                                                      : false
+                                                                                              : false
+                                                                                          : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                              ? true
+                                                                                              : cartQ
+                                                                                                  ? true
+                                                                                                  : false;
+                                                                            }
+                                                                            break;
+                                                                          }
+                                                                        }
+                                                                        calculate(
+                                                                            selectedVariant);
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                )
+                                                              : DropdownButtonHideUnderline(
+                                                                  child:
+                                                                      DropdownButton<
+                                                                          String>(
+                                                                    isExpanded:
+                                                                        true,
+                                                                    style: const TextStyle(
+                                                                        fontFamily:
+                                                                            'poppins',
+                                                                        color:
+                                                                            black),
+                                                                    hint: Text(_dropDownUnit >
+                                                                            0
+                                                                        ? UnitSettings.getUnitName(
+                                                                            _dropDownUnit)
+                                                                        : 'Unit'),
+                                                                    items: unitList
+                                                                        .map<DropdownMenuItem<String>>(
+                                                                            (item) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value: item
+                                                                            .key
+                                                                            .toString(),
+                                                                        child:
+                                                                            Text(
+                                                                          item.value,
+                                                                          style: const TextStyle(
+                                                                              fontFamily: 'poppins',
+                                                                              color: black),
+                                                                        ),
+                                                                      );
+                                                                    }).toList(),
+                                                                    onChanged:
+                                                                        (value) {
+                                                                      setState(
+                                                                          () {
+                                                                        _dropDownUnit =
+                                                                            int.tryParse(value!)!;
+                                                                        // for (var i = 0;
+                                                                        //     i < unitListData.length;
+                                                                        //     i++) {
+                                                                        //   UnitModel
+                                                                        //       _unit =
+                                                                        //       unitListData[i];
+                                                                        //   if (_unit.unit ==
+                                                                        //       int.tryParse(value)) {
+                                                                        //     _conversion = _unit.conversion!;
+                                                                        //     break;
+                                                                        //   }
+                                                                        // }
+                                                                        // calculate(
+                                                                        //     selectedVariant);
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                );
+                                                        },
+                                                      )),
                                                   headTxt: 'Unit')),
                                         ],
                                       ),
@@ -3339,10 +4157,10 @@ class _SaleState extends ConsumerState<Sale> {
                                                           ),
                                                           DropdownMenuItem(
                                                             enabled: salesTypeData!
-                                                                            .id !=
+                                                                            .id ==
                                                                         1 ||
                                                                     salesTypeData!
-                                                                            .id !=
+                                                                            .id ==
                                                                         2
                                                                 ? false
                                                                 : true,
@@ -3356,6 +4174,11 @@ class _SaleState extends ConsumerState<Sale> {
                                                           setState(() {
                                                             selectedTaxOption =
                                                                 value!;
+                                                            // value == 'With Tax'
+                                                            //     ? isTax = true
+                                                            //     : isTax = false;
+                                                            calculate(
+                                                                selectedVariant);
                                                           });
                                                         },
                                                         isExpanded: true,
@@ -3385,12 +4208,12 @@ class _SaleState extends ConsumerState<Sale> {
                                     return const SizedBox();
                                   }
                                   final fetchedData = snapshot.data!;
-                                  final selectedVariant =
-                                      fetchedData.firstWhere(
+                                  selectedVariant = fetchedData.firstWhere(
                                     (element) =>
                                         element.itemId == selectedItemId,
                                     orElse: () => StockProduct.empty(),
                                   );
+
                                   return Container(
                                     width: MediaQuery.of(context).size.width,
                                     color: white,
@@ -3425,7 +4248,7 @@ class _SaleState extends ConsumerState<Sale> {
                                                   fontFamily: 'poppins'),
                                             ),
                                             Text(
-                                              '\u20B9 ${subTotal.toStringAsFixed(decimal)}',
+                                              '\u20B9 ${gross.toStringAsFixed(3)}',
                                             ),
                                           ],
                                         ),
@@ -3674,7 +4497,7 @@ class _SaleState extends ConsumerState<Sale> {
                                                       TextEditingController(
                                                           text: tax
                                                               .toStringAsFixed(
-                                                                  decimal)),
+                                                                  3)),
                                                   textAlign: TextAlign.right,
                                                   readOnly: true,
                                                   decoration: InputDecoration(
@@ -3685,7 +4508,7 @@ class _SaleState extends ConsumerState<Sale> {
                                                             right: BorderSide(
                                                                 color: grey)),
                                                       ),
-                                                      width: 25,
+                                                      width: 20,
                                                       child: const Center(
                                                         child: Icon(
                                                           Icons
@@ -3733,7 +4556,7 @@ class _SaleState extends ConsumerState<Sale> {
                                                     decoration:
                                                         const BoxDecoration(),
                                                     child: Text(
-                                                      "\u20B9  ${total.toStringAsFixed(decimal)}",
+                                                      "\u20B9  ${total.toStringAsFixed(3)}",
                                                       style: const TextStyle(
                                                           fontSize: 16,
                                                           fontWeight:
@@ -3796,13 +4619,314 @@ class _SaleState extends ConsumerState<Sale> {
                         color: Colors.transparent,
                         child: InkWell(
                           splashColor: Colors.grey,
-                          onTap: () {},
+                          onTap: () {
+                            editItem
+                                ? setState(() {
+                                    //  position = index;
+                                    // cartModel = cartItem.elementAt(position!);
+
+                                    int index = cartModel!.id!;
+                                  int id =   cartItem.indexWhere((i) =>
+                                        i.itemId == selectedVariant.itemId);
+                                        index = id;
+                                        position = cartItem.indexWhere((i) =>
+                                        i.itemId == selectedVariant.itemId);
+                                        index = id;
+                                    removeProduct(position!);
+                                  })
+                                : setState(() {
+                                    List<UnitModel> unitListData = [];
+                                    print(selectedVariant.name);
+                                    calculateText(selectedVariant);
+
+                                    isVariantSelected = false;
+                                    if (quantity > 0 || isFreeItem) {
+                                      if (outOfStock) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content: const Text(
+                                              'Sorry stock not available.'),
+                                          duration: const Duration(seconds: 3),
+                                          action: SnackBarAction(
+                                            label: 'Click',
+                                            onPressed: () {
+                                              // print('Action is clicked');
+                                            },
+                                            textColor: Colors.white,
+                                            disabledTextColor: Colors.grey,
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ));
+                                      } else {
+                                        if (isMinimumRatedLock) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: const Text(
+                                                'Sorry rate is limited.'),
+                                            duration:
+                                                const Duration(seconds: 1),
+                                            action: SnackBarAction(
+                                              label: 'Click',
+                                              onPressed: () {
+                                                // print('Action is clicked');
+                                              },
+                                              textColor: Colors.white,
+                                              disabledTextColor: Colors.grey,
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ));
+                                        } else {
+                                          bool profitable = true;
+                                          // if (_autoVariantSelect) {
+                                          //   double qty = 0;
+                                          //   for (StockProduct product
+                                          //       in _autoStockVariant) {
+                                          //     if (qty == quantity) {
+                                          //       break;
+                                          //     }
+                                          //     qty += product.quantity;
+                                          //     addProduct(CartItem(
+                                          //         id: totalItem + 1,
+                                          //         itemId: product.itemId,
+                                          //         itemName: product.name,
+                                          //         quantity: product.quantity,
+                                          //         rate: rate,
+                                          //         rRate: rRate,
+                                          //         uniqueCode: product.productId,
+                                          //         gross: gross,
+                                          //         discount: discount,
+                                          //         discountPercent: discountPercent,
+                                          //         rDiscount: rDisc,
+                                          //         fCess: kfc,
+                                          //         serialNo: '',
+                                          //         tax: tax,
+                                          //         taxP: taxP,
+                                          //         unitId: _dropDownUnit,
+                                          //         unitValue: unitValue,
+                                          //         pRate: pRate,
+                                          //         rPRate: rPRate,
+                                          //         barcode: barcode,
+                                          //         expDate: expDate,
+                                          //         free: free,
+                                          //         fUnitId: fUnitId,
+                                          //         cdPer: cdPer,
+                                          //         cDisc: cDisc,
+                                          //         net: subTotal,
+                                          //         cess: cess,
+                                          //         total: total,
+                                          //         profitPer: profitPer,
+                                          //         fUnitValue: fUnitValue,
+                                          //         adCess: adCess,
+                                          //         iGST: iGST,
+                                          //         cGST: csGST,
+                                          //         sGST: csGST,
+                                          //         stock: product.quantity));
+                                          //   }
+                                          // } else {
+                                          if (isEnableProfitlessSalesWarning) {
+                                            if (profitPer > 0) {
+                                              profitable = true;
+                                            } else {
+                                              profitable = false;
+                                            }
+                                          }
+                                          if (profitable) {
+                                            bool isUnit = true;
+                                            if (enableMULTIUNIT) {
+                                              if (_dropDownUnit <= 0) {
+                                                int? united = unitListData !=
+                                                        null
+                                                    ? unitListData.isNotEmpty
+                                                        ? unitListData[0].sUnit
+                                                        : unitData.isNotEmpty
+                                                            ? unitData
+                                                                .firstWhere(
+                                                                    (element) =>
+                                                                        element
+                                                                            .name ==
+                                                                        'NOS')
+                                                                .id
+                                                            : 0
+                                                    : 0;
+                                                _dropDownUnit = united!;
+                                                double? unitedValue = unitListData !=
+                                                        null
+                                                    ? unitListData.isNotEmpty
+                                                        ? unitListData[0]
+                                                            .conversion
+                                                        : unitData.isNotEmpty
+                                                            ? unitData
+                                                                .firstWhere(
+                                                                    (element) =>
+                                                                        element
+                                                                            .name ==
+                                                                        'NOS')
+                                                                .conversion
+                                                            : 1
+                                                    : 0;
+                                                _conversion = unitedValue!;
+                                              }
+                                              isUnit = _dropDownUnit > 0
+                                                  ? true
+                                                  : false;
+                                              if (unitData.isEmpty && !isUnit) {
+                                                unitValue = 1;
+                                                _conversion = 0;
+                                                isUnit = true;
+                                              }
+                                            } else {
+                                              _conversion = 0;
+                                              unitValue = 1;
+                                            }
+                                            if (isUnit) {
+                                              // if (editItem) {
+                                              //   cartItem[position!].adCess = adCess;
+                                              //   cartItem[position!].quantity =
+                                              //       quantity;
+                                              //   cartItem[position!].rate = rate;
+                                              //   cartItem[position!].rRate = rRate;
+                                              //   cartItem[position!].uniqueCode =
+                                              //       uniqueCode;
+                                              //   cartItem[position!].gross = gross;
+                                              //   cartItem[position!].discount =
+                                              //       discount;
+                                              //   cartItem[position!].discountPercent =
+                                              //       discountPercent;
+                                              //   cartItem[position!].rDiscount = rDisc;
+                                              //   cartItem[position!].fCess = kfc;
+                                              //   cartItem[position!].serialNo =
+                                              //       _serialNoController.text;
+                                              //   cartItem[position!].tax = tax;
+                                              //   cartItem[position!].taxP = taxP;
+                                              //   cartItem[position!].unitId =
+                                              //       _dropDownUnit;
+                                              //   cartItem[position!].unitValue =
+                                              //       unitValue ?? 1;
+                                              //   cartItem[position!].pRate = pRate;
+                                              //   cartItem[position!].rPRate = rPRate;
+                                              //   cartItem[position!].barcode = barcode;
+                                              //   cartItem[position!].expDate = expDate;
+                                              //   cartItem[position!].free = freeQty;
+                                              //   cartItem[position!].fUnitId = fUnitId;
+                                              //   cartItem[position!].cdPer = cdPer;
+                                              //   cartItem[position!].cDisc = cDisc;
+                                              //   cartItem[position!].net = subTotal;
+                                              //   cartItem[position!].cess = cess;
+                                              //   cartItem[position!].total = total;
+                                              //   cartItem[position!].profitPer =
+                                              //       profitPer;
+                                              //   cartItem[position!].fUnitValue =
+                                              //       fUnitValue;
+                                              //   cartItem[position!].adCess = adCess;
+                                              //   cartItem[position!].iGST = iGST;
+                                              //   cartItem[position!].cGST = csGST;
+                                              //   cartItem[position!].sGST = csGST;
+                                              //   cartItem[position!].stock =
+                                              //       selectedVariant.quantity;
+                                              //   editItem = false;
+                                              // }
+                                              // if {
+                                              addProduct(
+                                                  CartItem(
+                                                      id: totalItem + 1,
+                                                      itemId: selectedVariant
+                                                          .itemId,
+                                                      itemName:
+                                                          selectedVariant.name,
+                                                      quantity: quantity,
+                                                      rate: rate,
+                                                      rRate: rRate,
+                                                      uniqueCode: uniqueCode,
+                                                      gross: gross,
+                                                      discount: discount,
+                                                      discountPercent:
+                                                          discountPercent,
+                                                      rDiscount: rDisc,
+                                                      fCess: kfc,
+                                                      serialNo:
+                                                          _serialNoController
+                                                              .text,
+                                                      tax: tax,
+                                                      taxP: taxP,
+                                                      unitId: _dropDownUnit,
+                                                      unitValue: unitValue ?? 1,
+                                                      pRate: pRate,
+                                                      rPRate: rPRate,
+                                                      barcode: barcode,
+                                                      expDate: expDate,
+                                                      free: freeQty,
+                                                      fUnitId: fUnitId,
+                                                      cdPer: cdPer,
+                                                      cDisc: cDisc,
+                                                      net: subTotal,
+                                                      cess: cess,
+                                                      total: total,
+                                                      profitPer: profitPer,
+                                                      fUnitValue: fUnitValue,
+                                                      adCess: adCess,
+                                                      iGST: iGST,
+                                                      cGST: csGST,
+                                                      sGST: csGST,
+                                                      stock: selectedVariant
+                                                          .quantity,
+                                                      minimumRate:
+                                                          selectedVariant
+                                                              .minimumRate),
+                                                  -1);
+                                              // }
+                                            } else {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                content: const Text(
+                                                    'Please select Unit'),
+                                                duration:
+                                                    const Duration(seconds: 1),
+                                                action: SnackBarAction(
+                                                  label: 'Click',
+                                                  onPressed: () {
+                                                    // print('Action is clicked');
+                                                  },
+                                                  textColor: Colors.white,
+                                                  disabledTextColor:
+                                                      Colors.grey,
+                                                ),
+                                                backgroundColor: Colors.red,
+                                              ));
+                                            }
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(SnackBar(
+                                              content: const Text(
+                                                  'Sorry Non Profitable Rate.'),
+                                              duration:
+                                                  const Duration(seconds: 1),
+                                              action: SnackBarAction(
+                                                label: 'Click',
+                                                onPressed: () {
+                                                  // print('Action is clicked');
+                                                },
+                                                textColor: Colors.white,
+                                                disabledTextColor: Colors.grey,
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ));
+                                          }
+                                          // }
+                                        }
+                                      }
+                                    }
+                                    if (totalItem > 0) {
+                                      clearValue();
+                                      // nextWidget = 0;
+                                    }
+                                  });
+                          },
                           child: Container(
                             height: 60,
                             color: Colors.white,
-                            child: const Center(
+                            child: Center(
                               child: Text(
-                                'Save & New',
+                                editItem ? 'Delete' : 'Save & New',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 16,
@@ -3819,7 +4943,283 @@ class _SaleState extends ConsumerState<Sale> {
                         color: Colors.transparent,
                         child: InkWell(
                           splashColor: Colors.white,
-                          onTap: () {},
+                          onTap: () {
+                            List<UnitModel> unitListData = [];
+                            print(selectedVariant.name);
+                            calculateText(selectedVariant);
+                            setState(() {
+                              isVariantSelected = false;
+                              if (quantity > 0 || isFreeItem) {
+                                if (outOfStock) {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text(
+                                        'Sorry stock not available.'),
+                                    duration: const Duration(seconds: 3),
+                                    action: SnackBarAction(
+                                      label: 'Click',
+                                      onPressed: () {
+                                        // print('Action is clicked');
+                                      },
+                                      textColor: Colors.white,
+                                      disabledTextColor: Colors.grey,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                } else {
+                                  if (isMinimumRatedLock) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content:
+                                          const Text('Sorry rate is limited.'),
+                                      duration: const Duration(seconds: 1),
+                                      action: SnackBarAction(
+                                        label: 'Click',
+                                        onPressed: () {
+                                          // print('Action is clicked');
+                                        },
+                                        textColor: Colors.white,
+                                        disabledTextColor: Colors.grey,
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ));
+                                  } else {
+                                    bool profitable = true;
+                                    // if (_autoVariantSelect) {
+                                    //   double qty = 0;
+                                    //   for (StockProduct product
+                                    //       in _autoStockVariant) {
+                                    //     if (qty == quantity) {
+                                    //       break;
+                                    //     }
+                                    //     qty += product.quantity;
+                                    //     addProduct(CartItem(
+                                    //         id: totalItem + 1,
+                                    //         itemId: product.itemId,
+                                    //         itemName: product.name,
+                                    //         quantity: product.quantity,
+                                    //         rate: rate,
+                                    //         rRate: rRate,
+                                    //         uniqueCode: product.productId,
+                                    //         gross: gross,
+                                    //         discount: discount,
+                                    //         discountPercent: discountPercent,
+                                    //         rDiscount: rDisc,
+                                    //         fCess: kfc,
+                                    //         serialNo: '',
+                                    //         tax: tax,
+                                    //         taxP: taxP,
+                                    //         unitId: _dropDownUnit,
+                                    //         unitValue: unitValue,
+                                    //         pRate: pRate,
+                                    //         rPRate: rPRate,
+                                    //         barcode: barcode,
+                                    //         expDate: expDate,
+                                    //         free: free,
+                                    //         fUnitId: fUnitId,
+                                    //         cdPer: cdPer,
+                                    //         cDisc: cDisc,
+                                    //         net: subTotal,
+                                    //         cess: cess,
+                                    //         total: total,
+                                    //         profitPer: profitPer,
+                                    //         fUnitValue: fUnitValue,
+                                    //         adCess: adCess,
+                                    //         iGST: iGST,
+                                    //         cGST: csGST,
+                                    //         sGST: csGST,
+                                    //         stock: product.quantity));
+                                    //   }
+                                    // } else {
+                                    if (isEnableProfitlessSalesWarning) {
+                                      if (profitPer > 0) {
+                                        profitable = true;
+                                      } else {
+                                        profitable = false;
+                                      }
+                                    }
+                                    if (profitable) {
+                                      bool isUnit = true;
+                                      if (enableMULTIUNIT) {
+                                        if (_dropDownUnit <= 0) {
+                                          int? united = unitListData != null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].sUnit
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .id
+                                                      : 0
+                                              : 0;
+                                          _dropDownUnit = united!;
+                                          double? unitedValue = unitListData !=
+                                                  null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].conversion
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .conversion
+                                                      : 1
+                                              : 0;
+                                          _conversion = unitedValue!;
+                                        }
+                                        isUnit =
+                                            _dropDownUnit > 0 ? true : false;
+                                        if (unitData.isEmpty && !isUnit) {
+                                          unitValue = 1;
+                                          _conversion = 0;
+                                          isUnit = true;
+                                        }
+                                      } else {
+                                        _conversion = 0;
+                                        unitValue = 1;
+                                      }
+                                      if (isUnit) {
+                                        if (editItem) {
+                                          cartItem[position!].adCess = adCess;
+                                          cartItem[position!].quantity =
+                                              quantity;
+                                          cartItem[position!].rate = rate;
+                                          cartItem[position!].rRate = rRate;
+                                          cartItem[position!].uniqueCode =
+                                              uniqueCode;
+                                          cartItem[position!].gross = gross;
+                                          cartItem[position!].discount =
+                                              discount;
+                                          cartItem[position!].discountPercent =
+                                              discountPercent;
+                                          cartItem[position!].rDiscount = rDisc;
+                                          cartItem[position!].fCess = kfc;
+                                          cartItem[position!].serialNo =
+                                              _serialNoController.text;
+                                          cartItem[position!].tax = tax;
+                                          cartItem[position!].taxP = taxP;
+                                          cartItem[position!].unitId =
+                                              _dropDownUnit;
+                                          cartItem[position!].unitValue =
+                                              unitValue ?? 1;
+                                          cartItem[position!].pRate = pRate;
+                                          cartItem[position!].rPRate = rPRate;
+                                          cartItem[position!].barcode = barcode;
+                                          cartItem[position!].expDate = expDate;
+                                          cartItem[position!].free = freeQty;
+                                          cartItem[position!].fUnitId = fUnitId;
+                                          cartItem[position!].cdPer = cdPer;
+                                          cartItem[position!].cDisc = cDisc;
+                                          cartItem[position!].net = subTotal;
+                                          cartItem[position!].cess = cess;
+                                          cartItem[position!].total = total;
+                                          cartItem[position!].profitPer =
+                                              profitPer;
+                                          cartItem[position!].fUnitValue =
+                                              fUnitValue;
+                                          cartItem[position!].adCess = adCess;
+                                          cartItem[position!].iGST = iGST;
+                                          cartItem[position!].cGST = csGST;
+                                          cartItem[position!].sGST = csGST;
+                                          cartItem[position!].stock =
+                                              selectedVariant.quantity;
+                                          editItem = false;
+                                        } else {
+                                          addProduct(
+                                              CartItem(
+                                                  id: totalItem + 1,
+                                                  itemId:
+                                                      selectedVariant.itemId,
+                                                  itemName:
+                                                      selectedVariant.name,
+                                                  quantity: quantity,
+                                                  rate: rate,
+                                                  rRate: rRate,
+                                                  uniqueCode: uniqueCode,
+                                                  gross: gross,
+                                                  discount: discount,
+                                                  discountPercent:
+                                                      discountPercent,
+                                                  rDiscount: rDisc,
+                                                  fCess: kfc,
+                                                  serialNo:
+                                                      _serialNoController.text,
+                                                  tax: tax,
+                                                  taxP: taxP,
+                                                  unitId: _dropDownUnit,
+                                                  unitValue: unitValue ?? 1,
+                                                  pRate: pRate,
+                                                  rPRate: rPRate,
+                                                  barcode: barcode,
+                                                  expDate: expDate,
+                                                  free: freeQty,
+                                                  fUnitId: fUnitId,
+                                                  cdPer: cdPer,
+                                                  cDisc: cDisc,
+                                                  net: subTotal,
+                                                  cess: cess,
+                                                  total: total,
+                                                  profitPer: profitPer,
+                                                  fUnitValue: fUnitValue,
+                                                  adCess: adCess,
+                                                  iGST: iGST,
+                                                  cGST: csGST,
+                                                  sGST: csGST,
+                                                  stock:
+                                                      selectedVariant.quantity,
+                                                  minimumRate: selectedVariant
+                                                      .minimumRate),
+                                              -1);
+                                        }
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                          content:
+                                              const Text('Please select Unit'),
+                                          duration: const Duration(seconds: 1),
+                                          action: SnackBarAction(
+                                            label: 'Click',
+                                            onPressed: () {
+                                              // print('Action is clicked');
+                                            },
+                                            textColor: Colors.white,
+                                            disabledTextColor: Colors.grey,
+                                          ),
+                                          backgroundColor: Colors.red,
+                                        ));
+                                      }
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: const Text(
+                                            'Sorry Non Profitable Rate.'),
+                                        duration: const Duration(seconds: 1),
+                                        action: SnackBarAction(
+                                          label: 'Click',
+                                          onPressed: () {
+                                            // print('Action is clicked');
+                                          },
+                                          textColor: Colors.white,
+                                          disabledTextColor: Colors.grey,
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ));
+                                    }
+                                    // }
+                                  }
+                                }
+                              }
+                              if (totalItem > 0) {
+                                clearValue();
+                                nextWidget = 0;
+                              }
+                            });
+                          },
                           child: Container(
                             height: 60,
                             color: kPrimaryColor,
@@ -5424,6 +6824,7 @@ class _SaleState extends ConsumerState<Sale> {
 
   clearValue() {
     _quantityController.text = '';
+    selectedQuantity = '';
     _freeQuantityController.text = '';
     itemNameControl.text = '';
     _rateController.text = '';
@@ -5525,8 +6926,8 @@ class _SaleState extends ConsumerState<Sale> {
             // rate = double.tryParse(_rateController.text) * _conversion;
             lastRateStatus = false;
           } else {
-            //r = (saleRate * _conversion);
-            rate = saleRate; // * _conversion;
+            rate = editItem ? saleRate : (saleRate * _conversion);
+            // rate = saleRate; // * _conversion;
             _rateController.text = rate.toStringAsFixed(decimal);
           }
           //rate = r;
@@ -5590,19 +6991,21 @@ class _SaleState extends ConsumerState<Sale> {
         ? double.tryParse(_rateController.text)
         : 0;
     if (_focusNodeDiscountPer.hasFocus) {
-      _discountController.text = _discountPercentController.text.isNotEmpty
-          ? (((qt! * sRate!) * discP!) / 100).toStringAsFixed(2)
-          : '';
+      _discountController.text = _discountPercentController.text.isNotEmpty &&
+              selectedTaxOption == 'With Tax'
+          ? (((qt! * rRate!) * discP!) / 100).toStringAsFixed(2)
+          : (((qt! * rate!) * discP!) / 100).toStringAsFixed(2);
       discount = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountController.text)
           : 0)!;
-      discountPercent = double.tryParse(_discountPercentController.text)!;
+      discountPercent = double.tryParse(_discountPercentController.text) ?? 0;
     }
 
     if (_focusNodeDiscount.hasFocus) {
-      _discountPercentController.text = _discountController.text.isNotEmpty
-          ? ((disc! * 100) / (qt! * sRate!)).toStringAsFixed(2)
-          : '';
+      _discountPercentController.text =
+          _discountController.text.isNotEmpty && selectedTaxOption == 'With Tax'
+              ? ((disc! * 100) / (qt! * rRate!)).toStringAsFixed(2)
+              : ((disc! * 100) / (qt! * rate!)).toStringAsFixed(2);
       discountPercent = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountPercentController.text)
           : 0)!;
@@ -5619,7 +7022,9 @@ class _SaleState extends ConsumerState<Sale> {
                     ? (taxP + 100 + cessPer + kfcP)
                     : (taxP + 100 + kfcP))))
         : discount;
-    gross = CommonService.getRound(decimal, ((rRate * quantity)));
+    gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));
     subTotal = CommonService.getRound(decimal, (gross - rDisc));
     if (taxP > 0) {
       tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
@@ -5704,13 +7109,15 @@ class _SaleState extends ConsumerState<Sale> {
     discount = disc;
     discountPercent = discP;
     if (discP > 0) {
-      discount =
-          double.parse((((qt * sRate) * discP) / 100).toStringAsFixed(2));
+      discount = selectedTaxOption == 'With Tax'
+          ? double.parse((((qt * rRate) * discP) / 100).toStringAsFixed(2))
+          : double.parse((((qt * rate) * discP) / 100).toStringAsFixed(2));
       _discountController.text = discount.toStringAsFixed(2);
       discountPercent = discP;
     } else if (disc > 0) {
-      discountPercent =
-          double.parse(((disc * 100) / (qt * sRate)).toStringAsFixed(2));
+      discountPercent = selectedTaxOption == 'With Tax'
+          ? double.parse(((disc * 100) / (qt * sRate)).toStringAsFixed(2))
+          : double.parse(((disc * 100) / (qt * rate)).toStringAsFixed(2));
       _discountPercentController.text = discountPercent.toStringAsFixed(2);
       discount = disc;
     }
@@ -5723,7 +7130,9 @@ class _SaleState extends ConsumerState<Sale> {
                     ? (taxP + 100 + cessPer + kfcP)
                     : (taxP + 100 + kfcP))))
         : discount;
-    gross = CommonService.getRound(decimal, ((rRate * quantity)));
+    gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));
     subTotal = CommonService.getRound(decimal, (gross - rDisc));
     if (taxP > 0) {
       tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
