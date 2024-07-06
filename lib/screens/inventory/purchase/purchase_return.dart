@@ -2601,7 +2601,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find').then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find',10).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -2717,7 +2717,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
   }
 
   deleteData() {
-    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'Pr_Delete').then((value) {
+    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'Pr_Delete',10).then((value) {
       setState(() {
         _isLoading = false;
       });

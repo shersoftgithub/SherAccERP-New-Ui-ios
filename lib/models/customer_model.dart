@@ -1,6 +1,6 @@
 class CustomerModel {
   int? id;
-  String? name;
+  String? name; 
   String? address1;
   String? address2;
   String? address3;

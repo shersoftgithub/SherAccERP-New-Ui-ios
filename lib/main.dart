@@ -81,7 +81,6 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/add_user_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 ValueNotifier<Color> accentColor = ValueNotifier(kPrimaryColor);
 

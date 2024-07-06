@@ -1757,7 +1757,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'PO_Find').then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'PO_Find',9).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -1873,7 +1873,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
   }
 
   deleteData() {
-    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'PO_Delete').then((value) {
+    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'PO_Delete',9).then((value) {
       setState(() {
         _isLoading = false;
       });

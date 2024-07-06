@@ -28,6 +28,7 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/provider/customer_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
+import 'package:sheraccerp/scoped-models/cart_scope_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
@@ -76,6 +77,7 @@ class _SaleState extends ConsumerState<Sale> {
   LedgerModel? ledgerDataModel;
   CartItem? cartModel;
   String vehicleName = '', invoiceNo = '';
+  
   StockItem? productModel;
   List<CartItem> cartItem = [];
   List<String> unregisteredNameList = [];
@@ -130,6 +132,7 @@ class _SaleState extends ConsumerState<Sale> {
   final taxNoControl = TextEditingController();
   final mobileNoControl = TextEditingController();
   final nameControl = TextEditingController();
+  final billingNameController = TextEditingController();
   final itemNameControl = TextEditingController();
   final FocusNode _focusNodeCashReceived = FocusNode();
 
@@ -138,6 +141,8 @@ class _SaleState extends ConsumerState<Sale> {
 
   int page = 1, pageTotal = 0, totalRecords = 0, valueDaysBefore = 0;
   int saleAccount = 0, acId = 0, decimal = 2;
+  String cashAc = '';
+  int cashId = 0;
   List<LedgerModel> ledgerDisplay = [];
   List<LedgerModel> _ledger = [];
   List<dynamic> itemDisplay = [];
@@ -299,14 +304,14 @@ class _SaleState extends ConsumerState<Sale> {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
 
-    String cashAc =
+     cashAc =
         ComSettings.getValue('CASH A/C', settings!).toString().trim() ?? 'CASH';
-    int cashId =
+     cashId =
         ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
-    acId = cashId > 0
-        ? mainAccount.firstWhere((element) => element['LedCode'] == cashId,
+    acId = 
+         mainAccount.firstWhere((element) => element['LedName'] == cashAc,
             orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
-        : acId;
+        ;
     taxMethod = companySettings!.taxCalculation!;
     enableMULTIUNIT = ComSettings.getStatus('ENABLE MULTI-UNIT', settings!);
     if (!enableMULTIUNIT) {
@@ -383,6 +388,7 @@ class _SaleState extends ConsumerState<Sale> {
       vehicleNameListDisplay.addAll(value);
     });
   }
+  
 
   userDateCheck(String date) {
     if (keyEditAndDeleteAdminOnlyDaysBefore) {
@@ -498,27 +504,30 @@ class _SaleState extends ConsumerState<Sale> {
   }
 
   _onWillPop() async {
-    if (nextWidget == 3) {
-      return (await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Back'),
-              content: const Text('Select Item Again?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      nextWidget = 2;
-                      clearValue();
-                    });
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('Select'),
-                ),
-              ],
-            ),
-          )) ??
-          false;
+    if (nextWidget == 2) {
+      return setState(() {
+        nextWidget = 0;
+      },);
+      // (await showDialog(
+      //       context: context,
+      //       builder: (context) => AlertDialog(
+      //         title: const Text('Back'),
+      //         content: const Text('Select Item Again?'),
+      //         actions: [
+      //           TextButton(
+      //             onPressed: () {
+      //               setState(() {
+      //                 nextWidget = 2;
+      //                 clearValue();
+      //               });
+      //               Navigator.of(context).pop(false);
+      //             },
+      //             child: const Text('Select'),
+      //           ),
+      //         ],
+      //       ),
+      //     )) ??
+      //     false;
     } else if (loadReturnForm) {
       setState(() {
         loadReturnForm = false;
@@ -756,15 +765,18 @@ class _SaleState extends ConsumerState<Sale> {
         ),
         body: thisSale
             ? Container(
+              color: bagroundColor,
                 child: previousBill(),
               )
             : _defaultSale
                 ? Container(
+                  color: bagroundColor,
                     child: previousBill(),
                   )
                 : previewData
                     ? Container(
-                        child: previousBill(),
+                      color: bagroundColor,
+                        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),child: previousBill(),),
                       )
                     : Container(
                         color: bagroundColor,
@@ -888,7 +900,7 @@ class _SaleState extends ConsumerState<Sale> {
                     height: 80,
                     decoration: BoxDecoration(
                       color: white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(3),
                       boxShadow: [
                         BoxShadow(
                           offset: const Offset(0, 5),
@@ -1056,12 +1068,13 @@ class _SaleState extends ConsumerState<Sale> {
   }
 
   saveSale() async {
+    
     List<CustomerModel> ledger = [];
     ledger.add(CustomerModel(
         address1: addressControl.text,
         address2: siteNameControl.text,
         address3: '',
-        address4: ledgerModel!.taxNumber,
+        address4: ledgerModel!.address4 ?? '',
         balance: ledgerModel!.balance,
         city: ledgerModel!.city,
         email: ledgerModel!.email,
@@ -1258,7 +1271,6 @@ class _SaleState extends ConsumerState<Sale> {
                 postSale(body, otherAmount, order, saleFormType, saleFormId);
               } else {
                 showErrorDialog(context, 'Duplicate Invoice No');
-
                 setState(() {
                   _isLoading = false;
                   buttonEvent = false;
@@ -1438,7 +1450,6 @@ class _SaleState extends ConsumerState<Sale> {
         state: ledgerModel!.state,
         stateCode: ledgerModel!.stateCode,
         taxNumber: ledgerModel!.taxNumber));
-
     var locationId =
         lId.toString().trim().isNotEmpty ? lId : salesTypeData!.location;
     invoiceNo =
@@ -2031,10 +2042,102 @@ class _SaleState extends ConsumerState<Sale> {
   // }
 
   final expandedHeight = 455.0;
-  final collapsedHeight = 220.0;
+  final collapsedHeight =   220.0;
+  final collaps = 290.0;
   final animationDuration = const Duration(milliseconds: 400);
   bool isExpanded = false;
   final namesLike = 'a';
+  var selectedItem;
+  int selectedTabIndex = 0;
+  var filterCashAccount;
+  var filteredName;
+  
+void _onTabTapped(int index) {
+  setState(() {
+    selectedTabIndex = index;
+  });
+
+  if (index == 1) {
+    setState(() {
+      selectedCustomerId = acId;
+      
+      final csDetails = api.getCustomerDetail(acId);
+      
+      csDetails.then((value) { 
+        setState(() {
+          ledgerModel = value;
+
+          filterCashAccount = cashAccount.where((element) {
+            return element.key == selectedCustomerId;
+          }).toList();
+
+          filteredName = filterCashAccount.map((element) {
+            return element.value; 
+          }).join(', ');
+
+          ledgerModel!.name = filteredName.toString(); 
+
+          print(filteredName);
+        });
+      });
+    });
+  }
+}
+
+
+  // void _onTabTapped(int index) {
+  // setState(() {
+  //   selectedTabIndex = index;
+  // });
+  // if (index == 1) {
+
+  //   setState(() {
+  //    selectedCustomerId =  acId;
+  //     final csDetails = api.getCustomerDetail(acId);
+      
+  //     csDetails.then((value)  { 
+  //       ledgerModel = value;
+  //       ledgerModel!.name = filteredName.toString(); 
+  //     });
+  //     filterCashAccount = cashAccount.firstWhere((element) {
+  //           return element.key == selectedCustomerId;
+  //         }).toList();
+  //         print(filterCashAccount);
+          
+  //          filteredName = filterCashAccount.map((element) {
+  //       return element.key.toString(); 
+        
+  //     });
+  //     print(filteredName);
+
+  //   });
+    
+       
+  //   // ref.watch(customersProvider).whenData((data) {
+  //   //   LedgerModel? cashCustomer;
+  //   //   try {
+
+  //   //     cashCustomer = data.firstWhere((customer) => customer.name == 'CASH');
+  //   //   } catch (e) {
+  //   //     cashCustomer = null;
+  //   //   }
+
+  //   //   setState(() {
+  //   //     if (cashCustomer != null) {
+  //   //       selectedCustomerId = cashCustomer.id;
+  //   //       final csDetails = api.getCustomerDetail(cashCustomer.id);
+  //   //       csDetails.then((value) => ledgerModel = value,);
+
+  //   //       print(acId);
+  //   //       print("Selected Customer ID: $selectedCustomerId, Name: ${cashCustomer.name}");
+  //   //     } else {
+  //   //       selectedCustomerId = null;
+  //   //     }
+  //   //   });
+  //   //  });
+  //   }
+  // }
+  TabController? tabController;
   newSaleWidget(newSale) {
     if (newSale) {
       setState(() {
@@ -2042,48 +2145,52 @@ class _SaleState extends ConsumerState<Sale> {
       });
     }
     return DefaultTabController(
+      initialIndex: selectedTabIndex,
+      animationDuration: const Duration(milliseconds: 1),
       length: 2,
       child: Scaffold(
         backgroundColor: bagroundColor,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           toolbarHeight: 60,
-          title: const Text(
-            'Sale',
-            style: TextStyle(fontFamily: 'poppins'),
+          title:  Text(
+            salesTypeData!.type,
+            style: const TextStyle(fontFamily: 'poppins'),
           ),
           actions: [
-            Container(
+           !oldBill? Container(
               height: 30,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 color: white,
               ),
-              width: 145,
+              width: 130,
               child: TabBar(
+                onTap: _onTabTapped,
                   indicatorSize: TabBarIndicatorSize.tab,
                   indicatorColor: green,
                   unselectedLabelColor: black,
                   dividerHeight: 0,
-                  labelStyle:
-                      const TextStyle(fontFamily: 'poppins', fontSize: 13),
+                  labelStyle: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 10,
+                  ),
+                  padding: const EdgeInsets.all(1),
                   indicator: BoxDecoration(
                       color: green, borderRadius: BorderRadius.circular(30)),
                   tabs: const [
                     Tab(
-                      child: SizedBox(
-                        width: 65,
-                        child: Text('Credit'),
-                      ),
+                      text: 'Credit',
+                      // child: SizedBox(
+                      //   // width: 65,
+                      //   child: Text('Credit'),
+                      // ),
                     ),
                     Tab(
-                      child: SizedBox(
-                        width: 60,
-                        child: Text('Cash'),
-                      ),
+                      text: 'Cash',
                     )
                   ]),
-            ),
+            ):const SizedBox(),
             const SizedBox(
               width: 10,
             ),
@@ -2098,1366 +2205,2287 @@ class _SaleState extends ConsumerState<Sale> {
             )
           ],
         ),
-        body: TabBarView(children: [
+        body: TabBarView(
+           physics: const NeverScrollableScrollPhysics(),
+          children: [
           GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    color: white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            child: ContainerFieldWidget(
-                                widget: TextField(
-                                  controller: invoiceNoController,
-                                  decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 5, horizontal: 5),
-                                      border: OutlineInputBorder()),
-                                ),
-                                headTxt: 'Invoice No')),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        Expanded(
-                            child: ContainerFieldWidget(
-                                widget: InkWell(
-                                  onTap: () {
-                                    _selectDate();
-                                  },
-                                  child: Container(
-                                    height: 30,
-                                    margin: const EdgeInsets.only(
-                                      bottom: 7,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        border: Border.all(color: grey)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          formattedDate!,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
-                                              fontFamily: 'poppins'),
+            child: Scaffold(
+              backgroundColor: bagroundColor,
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 4),
+                    Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: InkWell(
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            Padding(
+                                          padding: EdgeInsets.only(
+                                              bottom: MediaQuery.of(context).viewInsets.bottom),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              children: [
+                                                const SizedBox(height: 16),
+                                                TextField(
+                                                  decoration: const  InputDecoration(
+                                                          border: OutlineInputBorder(),
+                                                          // hintText:
+                                                          //     'Invoice No',
+                                                          labelText:'Enter invoice no'),
+                                                  controller: invoiceNoController,
+                                                  autofocus: true,
+                                                ),
+                                                const SizedBox(height: 10),
+                                                ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                      backgroundColor: kPrimaryColor,
+                                                      shape: RoundedRectangleBorder(
+                                                      borderRadius:BorderRadius.circular(3))),
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                    setState(() {});
+                                                  },
+                                                  child: const Text("Done",
+                                                      style: TextStyle(
+                                                          fontFamily: 'poppins',
+                                                          color: white)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        const Icon(
-                                          Icons.calendar_month_outlined,
-                                          color: grey,
-                                          size: 25,
-                                        )
-                                      ],
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(
+                                        bottom: 15,
+                                      ),
+                                      width: MediaQuery.of(context).size.width,
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius: BorderRadius.circular(3)),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(invoiceNoController.text,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 16,
+                                                  fontFamily: 'poppins')),
+                                          const Icon(
+                                              Icons.arrow_drop_down_sharp,
+                                              color: black)
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                                headTxt: 'Date')),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    color: white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: ContainerFieldWidget(
-                        widget: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: grey),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: widgetRateType(),
-                        ),
-                        headTxt: 'Sales Rate'),
-                  ),
-                  const SizedBox(height: 15),
-                  AnimatedContainer(
-                    duration: animationDuration,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    width: MediaQuery.of(context).size.width,
-                    color: Colors.white,
-                    height: isExpanded ? expandedHeight : collapsedHeight,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        const Text(
-                          ' Customer',
-                          style: TextStyle(
-                            fontFamily: 'poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
+                                  // TextField(
+                                  //   controller: invoiceNoController,
+                                  //   decoration: const InputDecoration(
+                                  //       contentPadding: EdgeInsets.symmetric(
+                                  //           vertical: 5, horizontal: 5),
+                                  //       border: OutlineInputBorder()),
+                                  // ),
+                                  headTxt: 'Invoice No')),
+                          const SizedBox(
+                            width: 8,
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        // SizedBox(
-                        //   width: MediaQuery.of(context).size.width,
-                        //   height: 55,
-                        //   child: InkWell(
-                        //     onTap: () {
-                        //       setState(() {
-                        //         nextWidget = 1;
-                        //       });
-                        //     },
-                        // )),
-
-                        ref.watch(customersProvider).when(
-                              data: (data) {
-                                List<String> names =
-                                    data.map((e) => e.name).toList();
-                                return EasyAutocomplete(
-                                  autofocus: false,
-                                  progressIndicatorBuilder: isLoading
-                                      ? const CircularProgressIndicator()
-                                      : null,
-                                  controller: nameControl,
-                                  inputTextStyle: const TextStyle(
-                                      fontFamily: 'poppins', fontSize: 14),
-                                  suggestionTextStyle:
-                                      const TextStyle(fontFamily: 'poppins'),
-                                  decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 5),
-                                      border: OutlineInputBorder()),
-                                  suggestions: names,
-                                  onChanged: (value) {
-                                    // fetchSuggestions(value);
-                                  },
-                                  onSubmitted: (value) {
-                                    setState(() {
-                                      final selectedItem = data.firstWhere(
-                                        (element) => element.name == value,
-                                      );
-
-                                      selectedCustomerId = selectedItem.id;
-                                    });
-                                    // final selectedCustomerId =
-                                    //     nameToIdMap[value];
-
-                                    // if (selectedCustomerId != null) {
-                                    //   print(
-                                    //       'Selected customer ID: $selectedCustomerId');
-                                    // } else {
-                                    //   print(
-                                    //       'No matching customer found for the selected value.');
-                                    // }
-                                  },
-                                );
-                              },
-                              error: (error, stackTrace) {
-                                return Text(error.toString());
-                              },
-                              loading: () =>
-                                  Center(child: CircularProgressIndicator()),
-                            ),
-
-                        const SizedBox(
-                          height: 12,
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Theme(
-                                  data: ThemeData(
-                                      dividerColor: Colors.transparent),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: grey),
-                                        borderRadius: BorderRadius.circular(3)),
-                                    child: ExpansionTile(
-                                      enableFeedback: false,
-                                      controlAffinity:
-                                          ListTileControlAffinity.platform,
-                                      title: const Text(
-                                        'Other',
-                                        style: TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                        ),
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: InkWell(
+                                    onTap: () {
+                                      _selectDate();
+                                    },
+                                    child: Container(
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                        bottom: 15,
                                       ),
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2, horizontal: 8),
-                                          child: selectedCustomerId == null
-                                              ? const SizedBox()
-                                              : FutureBuilder(
-                                                  future: selectedCustomerId !=
-                                                          null
-                                                      ? api.getCustomerDetail(
-                                                          selectedCustomerId!)
-                                                      : api
-                                                          .getCustomerDetail(0),
-                                                  builder: (context, snapshot) {
-                                                    if (snapshot.data == null) {
-                                                      return SizedBox();
-                                                    }
-                                                    if (snapshot
-                                                            .connectionState ==
-                                                        ConnectionState
-                                                            .waiting) {
-                                                      return CircularProgressIndicator();
-                                                    } else if (snapshot
-                                                        .hasError) {
-                                                      return Text(
-                                                          'Error: ${snapshot.error}');
-                                                    } else if (!snapshot
-                                                        .hasData) {
-                                                      return Text(
-                                                          'No data found');
-                                                    }
-                                                    final data = snapshot.data;
-                                                    addressControl.text =
-                                                        "${data!.address1} ${data.address2} ${data.address3}";
-                                                    return Column(
-                                                      children: [
-                                                        ContainerFieldWidget(
-                                                            widget: TextField(
-                                                              maxLines: null,
-                                                              controller:
-                                                                  addressControl,
-                                                              readOnly: true,
-                                                              decoration: const InputDecoration(
-                                                                  contentPadding:
-                                                                      EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              10,
-                                                                          horizontal:
-                                                                              5),
-                                                                  border:
-                                                                      OutlineInputBorder()),
-                                                            ),
-                                                            headTxt: 'Address'),
-                                                        const SizedBox(
-                                                            height: 6),
-                                                        ContainerFieldWidget(
-                                                            widget: TextField(
-                                                              controller:
-                                                                  TextEditingController(
-                                                                      text: snapshot
-                                                                          .data!
-                                                                          .phone),
-                                                              decoration: InputDecoration(
-                                                                  contentPadding:
-                                                                      EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              10,
-                                                                          horizontal:
-                                                                              5),
-                                                                  border:
-                                                                      OutlineInputBorder()),
-                                                            ),
-                                                            headTxt: 'Phone'),
-                                                        const SizedBox(
-                                                            height: 6),
-                                                        // const SizedBox(
-                                                        //   height: 50,
-                                                        //   child: TextField(
-                                                        //     decoration: InputDecoration(
-                                                        //         contentPadding:
-                                                        //             EdgeInsets.symmetric(
-                                                        //                 vertical: 10,
-                                                        //                 horizontal: 5),
-                                                        //         border:
-                                                        //             OutlineInputBorder()),
-                                                        //   ),
-                                                        // ),
-                                                      ],
-                                                    );
-                                                  }),
-                                        )
-                                      ],
-                                      onExpansionChanged: (newIsExpanded) {
-                                        setState(() {
-                                          isExpanded = newIsExpanded;
-                                        });
-                                      },
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          border: Border.all(color: grey)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            formattedDate!,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontFamily: 'poppins'),
+                                          ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: grey,
+                                            size: 25,
+                                          )
+                                        ],
+                                      ),
                                     ),
+                                  ),
+                                  headTxt: 'Date')),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: ContainerFieldWidget(
+                          widget: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: widgetRateType(),
+                          ),
+                          headTxt: 'Sales Rate'),
+                    ),
+                    const SizedBox(height: 15),
+                    AnimatedContainer(
+                      duration: animationDuration,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      width: MediaQuery.of(context).size.width,
+                      color: Colors.white,
+                      height: isExpanded 
+                      ? expandedHeight
+                      : oldBill 
+                      ? selectedCustomerId == acId 
+                      ? collaps 
+                      :collapsedHeight 
+                      : collapsedHeight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          const Text(
+                            ' Customer',
+                            style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // SizedBox(
+                          //   width: MediaQuery.of(context).size.width,
+                          //   height: 55,
+                          //   child: InkWell(
+                          //     onTap: () {
+                          //       setState(() {
+                          //         nextWidget = 1;
+                          //       });
+                          //     },
+                          // )),
+                          ref.watch(customersProvider).when(
+                                data: (data) {
+                                  // ledgerModel = data;
+                                  List<String> names =
+                                      data.map((e) => e.name).toList();
+                                  return EasyAutocomplete(
+                                    autofocus: false,
+                                    progressIndicatorBuilder: isLoading
+                                        ? const CircularProgressIndicator()
+                                        : null,
+                                    controller: nameControl,
+                                    inputTextStyle: const TextStyle(
+                                        fontFamily: 'poppins', fontSize: 14),
+                                    suggestionTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                    suggestions:  names,
+                                    onChanged: (value) {
+                                      // fetchSuggestions(value);
+                                    },
+                                    onSubmitted: (value) {
+                                      setState(() {
+                                         selectedItem = data.firstWhere(
+                                          (element) => element.name == value,
+                                        );
+                                        selectedCustomerId = selectedItem.id;
+                                        final details = api.getCustomerDetail(selectedCustomerId!); 
+                                        details.then((value) => ledgerModel = value);
+                                        print('Customer id : $selectedCustomerId');
+                                      });
+                                      ledgerDataModel= selectedItem;
+                                 
+                                      // final selectedCustomerId =
+                                      //     nameToIdMap[value];
+
+                                      // if (selectedCustomerId != null) {
+                                      //   print(
+                                      //       'Selected customer ID: $selectedCustomerId');
+                                      // } else {
+                                      //   print(
+                                      //       'No matching customer found for the selected value.');
+                                      // }
+                                    },
+                                  );
+                                },
+                                error: (error, stackTrace) {
+                                  return Text(error.toString());
+                                },
+                                loading: () =>
+                                    const Center(child: CircularProgressIndicator()),
+                              ),
+                          const SizedBox(
+                            height: 6,
+                          ),
+                     oldBill ? selectedCustomerId == acId?  ContainerFieldWidget(widget: TextField(
+                      controller: TextEditingController(text: ledgerModel!.name),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+                        border: OutlineInputBorder()
+                      ),
+                     ), headTxt: 'Billing Name'): const SizedBox() : const SizedBox(),
+                    //  const SizedBox(
+                    //   height: 4,
+                    //  ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Theme(
+                                    data: ThemeData(
+                                        dividerColor: Colors.transparent),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius:
+                                              BorderRadius.circular(3)),
+                                      child: ExpansionTile(
+                                        // enableFeedback: false,
+                                        controlAffinity:
+                                            ListTileControlAffinity.platform,
+                                        title: const Text(
+                                          'Other',
+                                          style: TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2, horizontal: 8),
+                                            child:
+                                             selectedCustomerId != null
+                                                ? 
+                                                 FutureBuilder(
+                                                    future: selectedCustomerId !=
+                                                            null
+                                                        ? api.getCustomerDetail(
+                                                            selectedCustomerId!)
+                                                        : api.getCustomerDetail(
+                                                            0),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      // if (snapshot.data ==
+                                                      //     null) {
+                                                      //   return const SizedBox();
+                                                      // }
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return const CircularProgressIndicator();
+                                                      } else if (snapshot
+                                                          .hasError) {
+                                                        return Text(
+                                                            'Error: ${snapshot.error}');
+                                                      } else if (!snapshot
+                                                          .hasData) {
+                                                        return const Text(
+                                                            'No data found');
+                                                      }
+                                                      ledgerModel = snapshot.data!;
+                                  ledgerModel!.name = ledgerModel!.name;
+                                  ledgerModel!.address1 = ledgerModel!.address1;
+                                  ledgerModel!.address2 = ledgerModel!.address2;
+                                  ledgerModel!.address3 = ledgerModel!.address3;
+                                  ledgerModel!.address4 = ledgerModel!.taxNumber ;
+                                                      final data =
+                                                          snapshot.data;
+                                                      addressControl.text =
+                                                          "${ledgerModel!.address1} ${data!.address2} ${data.address3}";
+                                                      return Column(
+                                                        children: [
+                                                          ContainerFieldWidget(
+                                                              widget: TextField(
+                                                                maxLines: null,
+                                                                controller:
+                                                                    addressControl,
+                                                                readOnly: true,
+                                                                decoration: const InputDecoration(
+                                                                    contentPadding: EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            5),
+                                                                    border:
+                                                                        OutlineInputBorder()),
+                                                              ),
+                                                              headTxt:
+                                                                  'Address'),
+                                                          const SizedBox(
+                                                              height: 6),
+                                                          ContainerFieldWidget(
+                                                              widget: TextField(
+                                                                controller: TextEditingController(
+                                                                    text: snapshot
+                                                                        .data!
+                                                                        .phone),
+                                                                decoration: const InputDecoration(
+                                                                    contentPadding: EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            5),
+                                                                    border:
+                                                                        OutlineInputBorder()),
+                                                              ),
+                                                              headTxt: 'Phone'),
+                                                          const SizedBox(
+                                                              height: 6),
+                                                           ContainerFieldWidget(
+                                                              widget: Container(
+                                                                padding: const EdgeInsets.only(left: 5),
+                                                                alignment: Alignment.centerLeft,
+                                                                width: MediaQuery.of(context).size.width,
+                                                                height: 30,
+                                                                decoration: BoxDecoration(border: Border.all(color: grey),borderRadius: BorderRadius.circular(3)),
+                                                                child: Text(ledgerModel!.taxNumber!),
+                                                              ),
+                                                              headTxt: 'Tax Number'),
+                                                        ],
+                                                      );
+                                                    }):Column(
+                                                        children: [
+                                                          ContainerFieldWidget(
+                                                              widget: TextField(
+                                                                maxLines: null,
+                                                                controller:
+                                                                    addressControl,
+                                                                readOnly: true,
+                                                                decoration: const InputDecoration(
+                                                                    contentPadding: EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            5),
+                                                                    border:
+                                                                        OutlineInputBorder()),
+                                                              ),
+                                                              headTxt:
+                                                                  'Address'),
+                                                          const SizedBox(
+                                                              height: 6),
+                                                          ContainerFieldWidget(
+                                                              widget: TextField(
+                                                                controller: TextEditingController(
+                                                                    text: ''),
+                                                                decoration: const InputDecoration(
+                                                                    contentPadding: EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            5),
+                                                                    border:
+                                                                        OutlineInputBorder()),
+                                                              ),
+                                                              headTxt: 'Phone'),
+                                                          const SizedBox(
+                                                              height: 6),
+                                                           ContainerFieldWidget(
+                                                              widget:  TextField(
+                                                                controller: TextEditingController(
+                                                                    text: ''),
+                                                                decoration: const InputDecoration(
+                                                                    contentPadding: EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            5),
+                                                                    border:
+                                                                        OutlineInputBorder()),
+                                                              ),
+                                                              headTxt: 'Tax Number'),
+                                                        ],
+                                                      ),
+                                          )
+                                        ],
+                                        onExpansionChanged: (newIsExpanded) {
+                                          setState(() {
+
+                                            isExpanded = newIsExpanded;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              if (selectedCustomerId == null) {
+              Fluttertoast.showToast(
+                msg: 'Select Customer',
+                backgroundColor: Colors.red,
+              );
+            } else {
+              setState(() {
+                if (ledgerModel!.name!.toUpperCase() == 'CASH') {
+                  if (salesTypeData!.rateType.isNotEmpty) {
+                    rateType = salesTypeData!.id.toString();
+                  }
+                  nextWidget = 2;
+                } else {
+                  if (salesTypeData!.type == 'SALES-BB') {
+                    if (ledgerModel!.taxNumber!.isNotEmpty) {
+                      if (salesTypeData!.rateType.isNotEmpty) {
+                        rateType = salesTypeData!.id.toString();
+                      }
+                      nextWidget = 2;
+                    } else if (!blockTaxLedgerOnB2CorBOS) {
+                      if (salesTypeData!.rateType.isNotEmpty) {
+                        rateType = salesTypeData!.id.toString();
+                      }
+                      nextWidget = 2;
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('B2B Invoice not allowed without a TAX number'),
+                      ));
+                    }
+                  } else {
+                    if (blockTaxLedgerOnB2CorBOS) {
+                      if ((salesTypeData!.type == 'SALES-BC' || salesTypeData!.type == 'SALES-BOS') &&
+                          ledgerModel!.taxNumber!.isNotEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Tax Registered Ledger')),
+                        );
+                        return;
+                      }
+                    }
+                    if (salesTypeData!.rateType.isNotEmpty) {
+                      rateType = salesTypeData!.id.toString();
+                    }
+                    editItem = false;
+                    nextWidget = 2;
+                  }
+                }
+              });
+            }
+                              
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //       builder: (context) => addItemWidget(),
+                              //     ));
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              backgroundColor: const Color(0xff0008B3),
+                            ),
+                            // onPressed: () => context.push(AddItemToSalePage.routePath),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Image(
+                                //     image: AssetImage(
+                                //         'assets/icons/add_item_icon.png')),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Add Item',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'poppins',
+                                    fontSize: 13,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              nextWidget = 2;
-                              editItem = false;
-                            });
-                            // Navigator.push(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //       builder: (context) => addItemWidget(),
-                            //     ));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            backgroundColor: const Color(0xff0008B3),
-                          ),
-                          // onPressed: () => context.push(AddItemToSalePage.routePath),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Image(
-                              //     image: AssetImage(
-                              //         'assets/icons/add_item_icon.png')),
-                              SizedBox(width: 10),
-                              Text(
-                                'Add Item',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
+                          const SizedBox(height: 10),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  cartItem.isNotEmpty
-                      ? Container(
-                          width: MediaQuery.sizeOf(context).width,
-                          color: white,
-                          child: ListView.separated(
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 10),
-                            shrinkWrap: true,
-                            itemCount: cartItem.length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      editItem = true;
-                                      position = index;
-                                      cartModel = cartItem.elementAt(position!);
-                                      itemNameControl.text =
-                                          cartModel!.itemName.toString();
-                                      _rateController.text =
-                                          cartModel!.rate!.toString();
-                                      _quantityController.text =
-                                          cartModel!.quantity!.toString();
-                                      _freeQuantityController.text =
-                                          cartModel!.free.toString();
-                                      _discountController.text =
-                                          cartModel!.discount.toString();
-                                      _discountPercentController.text =
-                                          cartModel!.discountPercent.toString();
-                                      _serialNoController.text =
-                                          cartModel!.serialNo!;
-                                      _dropDownUnit = cartModel!.unitId!;
-                                      taxP = cartModel!.taxP!;
-                                      tax = cartModel!.tax!;
-                                      subTotal = cartModel!.net!;
-                                      total = cartModel!.total!;
-                                      nextWidget = 2;
-                                    });
-                                  },
-                                  child: Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    decoration: BoxDecoration(
-                                        // boxShadow: [
-                                        //   BoxShadow(
-                                        //     color: Colors.grey.shade400,
-                                        //     blurRadius: 5,
-                                        //     spreadRadius: .8,
-                                        //   )
-                                        // ],
-                                        border:
-                                            Border.all(color: grey, width: .5),
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: Colors.grey.withOpacity(.2)),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(6.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Row(children: [
-                                              Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(horizontal: 5),
-                                                  decoration: BoxDecoration(
-                                                      color: white,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3),
-                                                      border: Border.all(
-                                                        width: .3,
-                                                        color: grey,
-                                                      )),
-                                                  child: Text(
-                                                    '# ${cartItem[index].id}',
+                    const SizedBox(height: 10),
+                    cartItem.isNotEmpty
+                        ? Container(
+                             constraints: const BoxConstraints(maxHeight: 300),
+                          // height: 250,
+                            width: MediaQuery.sizeOf(context).width,
+                            color: white,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 4),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 4),
+                                shrinkWrap: true,
+                                // physics: ClampingScrollPhysics() ,
+                                itemCount: cartItem.length ,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        editItem = true;
+                                        position = index;
+                                        cartModel =
+                                            cartItem.elementAt(position!);
+                                            selectedItemId = cartModel!.itemId;
+                                        itemNameControl.text =
+                                            cartModel!.itemName.toString();
+                                        _rateController.text =
+                                            cartModel!.rate!.toString();
+                                        _quantityController.text =
+                                            cartModel!.quantity!.toString();
+                                        _freeQuantityController.text =
+                                            cartModel!.free.toString();
+                                        _discountController.text =
+                                            cartModel!.discount.toString();
+                                        _discountPercentController.text =
+                                            cartModel!.discountPercent
+                                                .toString();
+                                        _serialNoController.text =
+                                            cartModel!.serialNo!;
+                                        _dropDownUnit = cartModel!.unitId!;
+                                        taxP = cartModel!.taxP!;
+                                        tax = cartModel!.tax!;
+                                        gross = cartModel!.gross!;
+                                        total = cartModel!.total!;
+                                        nextWidget = 2;
+                                      });
+                                      
+                                    },
+                                    child: Container(
+                                      width:
+                                          MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                          // boxShadow: [
+                                          //   BoxShadow(
+                                          //     color: Colors.grey.shade400,
+                                          //     blurRadius: 5,
+                                          //     spreadRadius: .8,
+                                          //   )
+                                          // ],
+                                          border: Border.all(
+                                              color: grey, width: .5),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color:
+                                              Colors.grey.withOpacity(.1)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: MediaQuery.of(context).size.width,
+                                              child: Row(children: [
+                                                Container(
+                                                    padding:const EdgeInsets.symmetric(horizontal: 5),
+                                                    decoration:BoxDecoration(
+                                                            color: white,
+                                                            borderRadius:BorderRadius.circular(3),
+                                                            border: Border.all(
+                                                              width: .3,
+                                                              color: grey,
+                                                            )),
+                                                    child: Text('# ${index + 1}',
+                                                      style: const TextStyle( fontSize: 12),
+                                                    )),
+                                                Text(' ${cartItem[index].itemName}',
                                                     style: const TextStyle(
-                                                        fontSize: 12),
-                                                  )),
-                                              Text(
-                                                  ' ${cartItem[index].itemName}',
-                                                  style: const TextStyle(
-                                                      color: black,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontFamily: 'poppins')),
-                                              const Spacer(),
-                                              PopUpMenuAction(
-                                                onDelete: () {
-                                                  setState(() {
-                                                    removeProduct(index);
-                                                  });
-                                                },
-                                                onEdit: () {
-                                                  setState(() {
-                                                    editItem = true;
-                                                    position = index;
-                                                    cartModel = cartItem
-                                                        .elementAt(position!);
-                                                    _rateController.text =
-                                                        cartModel!.rate!
-                                                            .toString();
-                                                    _quantityController.text =
-                                                        cartModel!.quantity!
-                                                            .toString();
-                                                    _freeQuantityController
-                                                            .text =
-                                                        cartModel!.free
-                                                            .toString();
-                                                    _discountController.text =
-                                                        cartModel!.discount
-                                                            .toString();
-                                                    _discountPercentController
-                                                            .text =
-                                                        cartModel!
-                                                            .discountPercent
-                                                            .toString();
-                                                    _serialNoController.text =
-                                                        cartModel!.serialNo!;
-                                                    _dropDownUnit =
-                                                        cartModel!.unitId!;
-                                                    nextWidget = 3;
-                                                  });
-                                                },
-                                              ),
-                                              // RichText(
-                                              //   overflow: TextOverflow.ellipsis,
-                                              //   maxLines: 1,
-                                              //   text: TextSpan(
-                                              //       text:
-                                              //           ' ${cartItem[index].itemName}\n',
-                                              //       style: const TextStyle(
-                                              //           color: black,
-                                              //           fontWeight:
-                                              //               FontWeight.w500,
-                                              //           fontFamily: 'poppins')),
-                                              // ),
-                                            ]),
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Row(
-                                              children: [
-                                                const Text(
-                                                  'Item Subtotal',
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'poppins'),
-                                                ),
+                                                        color: black,
+                                                        fontWeight:FontWeight.w500,
+                                                        fontFamily:'poppins')),
                                                 const Spacer(),
-                                                Text(
-                                                  "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                // PopUpMenuAction(
+                                                //   onDelete: () {
+                                                //     setState(() {
+                                                //       removeProduct(index);
+                                                //     });
+                                                //   },
+                                                //   onEdit: () {
+                                                //     setState(() {
+                                                //       editItem = true;
+                                                //       position = index;
+                                                //       cartModel = cartItem
+                                                //           .elementAt(position!);
+                                                //       _rateController.text =
+                                                //           cartModel!.rate!
+                                                //               .toString();
+                                                //       _quantityController.text =
+                                                //           cartModel!.quantity!
+                                                //               .toString();
+                                                //       _freeQuantityController
+                                                //               .text =
+                                                //           cartModel!.free
+                                                //               .toString();
+                                                //       _discountController.text =
+                                                //           cartModel!.discount
+                                                //               .toString();
+                                                //       _discountPercentController
+                                                //               .text =
+                                                //           cartModel!
+                                                //               .discountPercent
+                                                //               .toString();
+                                                //       _serialNoController.text =
+                                                //           cartModel!.serialNo!;
+                                                //       _dropDownUnit =
+                                                //           cartModel!.unitId!;
+                                                //       nextWidget = 3;
+                                                //     });
+                                                //   },
+                                                // ),
+                                                // RichText(
+                                                //   overflow: TextOverflow.ellipsis,
+                                                //   maxLines: 1,
+                                                //   text: TextSpan(
+                                                //       text:
+                                                //           ' ${cartItem[index].itemName}\n',
+                                                //       style: const TextStyle(
+                                                //           color: black,
+                                                //           fontWeight:
+                                                //               FontWeight.w500,
+                                                //           fontFamily: 'poppins')),
+                                                // ),
+                                              ]),
+                                            ),
+                                            SizedBox(width: MediaQuery.of(context).size.width,
+                                              child: Row(
+                                                children: [
+                                                  const Text('Item Subtotal',
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontFamily:'poppins'),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                    MediaQuery.of(context).size.width,
+                                                child: Row(
+                                                  children: [
+                                                    Text('Discount (%): ',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.orange[700],
+                                                          fontFamily:'poppins'),
+                                                    ),
+                                                    Text(
+                                                      cartItem[index].discountPercent!.toStringAsFixed(2),
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.orange[700],
+                                                          fontFamily:'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.orange[700],
+                                                      ),
+                                                    )
+                                                  ],
+                                                )),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context).size.width,
+                                              child: Row(children: [
+                                                Text('Tax (%): ${cartItem[index].taxP}',
                                                   style: const TextStyle(
                                                     fontSize: 12,
                                                   ),
-                                                )
-                                              ],
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context).size.width,
+                                              child: Row(children: [
+                                                const Text(
+                                                  'Total',
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:FontWeight.w500),
+                                                ),
+                                              ]),
+                                            ),
+                                            // Row(
+                                            //   mainAxisAlignment:
+                                            //       MainAxisAlignment.spaceEvenly,
+                                            //   mainAxisSize: MainAxisSize.max,
+                                            //   children: [
+                                            //     SizedBox(
+                                            //       width: 100,
+                                            //       child: Column(
+                                            //         crossAxisAlignment:
+                                            //             CrossAxisAlignment.start,
+                                            //         children: [
+                                            //           // const SizedBox(
+                                            //           //   height: 1.0,
+                                            //           // ),
+                                            //           RichText(
+                                            //             maxLines: 1,
+                                            //             text: TextSpan(
+                                            //                 text:
+                                            //                     '${cartItem[index].id}/',
+                                            //                 style: TextStyle(
+                                            //                     color: Colors
+                                            //                         .blueGrey
+                                            //                         .shade800,
+                                            //                     fontSize: 10.0),
+                                            //                 children: [
+                                            //                   TextSpan(
+                                            //                       text:
+                                            //                           '${cartItem[index].uniqueCode}/${cartItem[index].itemId}',
+                                            //                       style: const TextStyle(
+                                            //                           fontSize:
+                                            //                               10.0,
+                                            //                           fontWeight:
+                                            //                               FontWeight
+                                            //                                   .bold)),
+                                            //                 ]),
+                                            //           ),
+                                            //           RichText(
+                                            //             maxLines: 1,
+                                            //             text: TextSpan(
+                                            //                 text: 'Unit: ',
+                                            //                 style: TextStyle(
+                                            //                     color: Colors
+                                            //                         .blueGrey
+                                            //                         .shade800,
+                                            //                     fontSize: 12.0),
+                                            //                 children: [
+                                            //                   TextSpan(
+                                            //                       text:
+                                            //                           '${UnitSettings.getUnitName(cartItem[index].unitId!)}\n',
+                                            //                       style: const TextStyle(
+                                            //                           fontSize:
+                                            //                               12.0,
+                                            //                           fontWeight:
+                                            //                               FontWeight
+                                            //                                   .bold)),
+                                            //                 ]),
+                                            //           ),
+                                            //         ],
+                                            //       ),
+                                            //     ),
+                                            //     // PlusMinusButtons(
+                                            //     //   addQuantity: () {
+                                            //     //     if (oldBill) {
+                                            //     //       api
+                                            //     //           .getStockOf(
+                                            //     //               cartItem[index]
+                                            //     //                   .itemId!)
+                                            //     //           .then((value) {
+                                            //     //         cartItem[index].stock =
+                                            //     //             value;
+                                            //     //         setState(() {
+                                            //     //           bool cartQ = false;
+                                            //     //           if (totalItem > 0) {
+                                            //     //             double cartS = 0,
+                                            //     //                 cartQt = 0;
+                                            //     //             for (var element
+                                            //     //                 in cartItem) {
+                                            //     //               if (element
+                                            //     //                       .itemId ==
+                                            //     //                   cartItem[index]
+                                            //     //                       .itemId) {
+                                            //     //                 cartQt += element
+                                            //     //                     .quantity!;
+                                            //     //                 cartS = element
+                                            //     //                     .stock!;
+                                            //     //               }
+                                            //     //             }
+                                            //     //             cartS = oldBill
+                                            //     //                 ? value
+                                            //     //                 : cartS;
+                                            //     //             if (cartS > 0) {
+                                            //     //               if (cartS <
+                                            //     //                   cartQt + 1) {
+                                            //     //                 cartQ = true;
+                                            //     //               }
+                                            //     //             }
+                                            //     //           }
+                                            //     //           outOfStock = isLockQtyOnlyInSales
+                                            //     //               ? cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                            //     //                   ? true
+                                            //     //                   : cartQ
+                                            //     //                       ? true
+                                            //     //                       : false
+                                            //     //               : negativeStock
+                                            //     //                   ? false
+                                            //     //                   : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                            //     //                       ? isStockProductOnlyInSalesQO
+                                            //     //                           ? cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                            //     //                               ? true
+                                            //     //                               : cartQ
+                                            //     //                                   ? true
+                                            //     //                                   : false
+                                            //     //                           : false
+                                            //     //                       : cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                            //     //                           ? true
+                                            //     //                           : cartQ
+                                            //     //                               ? true
+                                            //     //                               : false;
+                                            //     //           if (outOfStock) {
+                                            //     //             ScaffoldMessenger.of(
+                                            //     //                     context)
+                                            //     //                 .showSnackBar(
+                                            //     //                     SnackBar(
+                                            //     //               content: const Text(
+                                            //     //                   'Sorry stock not available.'),
+                                            //     //               duration:
+                                            //     //                   const Duration(
+                                            //     //                       seconds:
+                                            //     //                           10),
+                                            //     //               action:
+                                            //     //                   SnackBarAction(
+                                            //     //                 label: 'Click',
+                                            //     //                 onPressed: () {
+                                            //     //                   // print('Action is clicked');
+                                            //     //                 },
+                                            //     //                 textColor:
+                                            //     //                     Colors.white,
+                                            //     //                 disabledTextColor:
+                                            //     //                     Colors.grey,
+                                            //     //               ),
+                                            //     //               backgroundColor:
+                                            //     //                   Colors.red,
+                                            //     //             ));
+                                            //     //           } else {
+                                            //     //             updateProduct(
+                                            //     //                 cartItem[index],
+                                            //     //                 cartItem[index]
+                                            //     //                         .quantity! +
+                                            //     //                     1,
+                                            //     //                 index);
+                                            //     //           }
+                                            //     //         });
+                                            //     //       });
+                                            //     //     } else {
+                                            //     //       setState(() {
+                                            //     //         bool cartQ = false;
+                                            //     //         if (totalItem > 0) {
+                                            //     //           double cartS = 0,
+                                            //     //               cartQt = 0;
+                                            //     //           for (var element
+                                            //     //               in cartItem) {
+                                            //     //             if (element.itemId ==
+                                            //     //                 cartItem[index]
+                                            //     //                     .itemId) {
+                                            //     //               cartQt += element
+                                            //     //                   .quantity!;
+                                            //     //               cartS =
+                                            //     //                   element.stock!;
+                                            //     //             }
+                                            //     //           }
+                                            //     //           // cartS = oldBill?:cartS;
+                                            //     //           if (cartS > 0) {
+                                            //     //             if (cartS <
+                                            //     //                 cartQt + 1) {
+                                            //     //               cartQ = true;
+                                            //     //             }
+                                            //     //           }
+                                            //     //         }
+                                            //     //         outOfStock = isLockQtyOnlyInSales
+                                            //     //             ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
+                                            //     //                 ? true
+                                            //     //                 : cartQ
+                                            //     //                     ? true
+                                            //     //                     : false
+                                            //     //             : negativeStock
+                                            //     //                 ? false
+                                            //     //                 : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                            //     //                     ? isStockProductOnlyInSalesQO
+                                            //     //                         ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
+                                            //     //                             ? true
+                                            //     //                             : cartQ
+                                            //     //                                 ? true
+                                            //     //                                 : false
+                                            //     //                         : false
+                                            //     //                     : cartItem[index].quantity! + 1 > cartItem[index].stock!
+                                            //     //                         ? true
+                                            //     //                         : cartQ
+                                            //     //                             ? true
+                                            //     //                             : false;
+                                            //     //         if (outOfStock) {
+                                            //     //           ScaffoldMessenger.of(
+                                            //     //                   context)
+                                            //     //               .showSnackBar(
+                                            //     //                   SnackBar(
+                                            //     //             content: const Text(
+                                            //     //                 'Sorry stock not available.'),
+                                            //     //             duration:
+                                            //     //                 const Duration(
+                                            //     //                     seconds: 10),
+                                            //     //             action:
+                                            //     //                 SnackBarAction(
+                                            //     //               label: 'Click',
+                                            //     //               onPressed: () {
+                                            //     //                 // print('Action is clicked');
+                                            //     //               },
+                                            //     //               textColor:
+                                            //     //                   Colors.white,
+                                            //     //               disabledTextColor:
+                                            //     //                   Colors.grey,
+                                            //     //             ),
+                                            //     //             backgroundColor:
+                                            //     //                 Colors.red,
+                                            //     //           ));
+                                            //     //         } else {
+                                            //     //           updateProduct(
+                                            //     //               cartItem[index],
+                                            //     //               cartItem[index]
+                                            //     //                       .quantity! +
+                                            //     //                   1,
+                                            //     //               index);
+                                            //     //         }
+                                            //     //       });
+                                            //     //     }
+                              
+                                            //     //     //  cart.addQuantity(
+                                            //     //     //      cartItem[index].id!);
+                                            //     //     //  dbHelper!
+                                            //     //     //      .updateQuantity(Cart(
+                                            //     //     //          id: index,
+                                            //     //     //          productId: index.toString(),
+                                            //     //     //          productName: provider
+                                            //     //     //              .cart[index].productName,
+                                            //     //     //          initialPrice: provider
+                                            //     //     //              .cart[index].initialPrice,
+                                            //     //     //          productPrice: provider
+                                            //     //     //              .cart[index].productPrice,
+                                            //     //     //          quantity: ValueNotifier(
+                                            //     //     //              cartItem[index]
+                                            //     //     //                  .quantity!.value),
+                                            //     //     //          unitTag: provider
+                                            //     //     //              .cart[index].unitTag,
+                                            //     //     //          image: provider
+                                            //     //     //              .cart[index].image))
+                                            //     //     //      .then((value) {
+                                            //     //     //    setState(() {
+                                            //     //     //      cart.addTotalPrice(double.parse(
+                                            //     //     //          provider
+                                            //     //     //              .cart[index].productPrice
+                                            //     //     //              .toString()));
+                                            //     //     //    });
+                                            //     //     //  });
+                                            //     //   },
+                                            //     //   deleteQuantity: () {
+                                            //     //     setState(() {
+                                            //     //       updateProduct(
+                                            //     //           cartItem[index],
+                                            //     //           cartItem[index]
+                                            //     //                   .quantity! -
+                                            //     //               1,
+                                            //     //           index);
+                                            //     //     });
+                              
+                                            //     //     //  cart.deleteQuantity(
+                                            //     //     //      cartItem[index].id!);
+                                            //     //     //  cart.removeTotalPrice(double.parse(
+                                            //     //     //      cartItem[index].productPrice
+                                            //     //     //          .toString()));
+                                            //     //   },
+                                            //     //   text: cartItem[index]
+                                            //     //       .quantity
+                                            //     //       .toString(),
+                                            //     // ),
+                                            //     RichText(  
+                                            //       maxLines: 1,
+                                            //       text: TextSpan(
+                                            //           text: 'Rate: ',
+                                            //           style: TextStyle(
+                                            //               color: Colors
+                                            //                   .blueGrey.shade800,
+                                            //               fontSize: 13.0),
+                                            //           children: [
+                                            //             TextSpan(
+                                            //                 text:
+                                            //                     '${cartItem[index].rate}\n',
+                                            //                 style:
+                                            //                     const TextStyle(
+                                            //                         fontWeight:
+                                            //                             FontWeight
+                                            //                                 .bold,
+                                            //                         fontSize:
+                                            //                             12.0)),
+                                            //           ]),
+                                            //     ),
+                                            //     // IconButton(
+                                            //     // onPressed: () {
+                                            //     //  dbHelper!.deleteCartItem(
+                                            //     //      cartItem[index].id!);
+                                            //     //  provider
+                                            //     //      .removeItem(cartItem[index].id!);
+                                            //     //  provider.removeCounter();
+                                            //     // },
+                                            //     // icon: Icon(
+                                            //     // Icons.edit,
+                                            //     // color: Colors.blue.shade800,
+                                            //     // )),
+                                            //     PopUpMenuAction(
+                                            //       onDelete: () {
+                                            //         setState(() {
+                                            //           removeProduct(index);
+                                            //         });
+                                            //       },
+                                            //       onEdit: () {
+                                            //         setState(() {
+                                            //           editItem = true;
+                                            //           position = index;
+                                            //           cartModel = cartItem
+                                            //               .elementAt(position!);
+                                            //           _rateController.text =
+                                            //               cartModel!.rate!
+                                            //                   .toString();
+                                            //           _quantityController.text =
+                                            //               cartModel!.quantity!
+                                            //                   .toString();
+                                            //           _freeQuantityController
+                                            //                   .text =
+                                            //               cartModel!.free
+                                            //                   .toString();
+                                            //           _discountController.text =
+                                            //               cartModel!.discount
+                                            //                   .toString();
+                                            //           _discountPercentController
+                                            //                   .text =
+                                            //               cartModel!
+                                            //                   .discountPercent
+                                            //                   .toString();
+                                            //           _serialNoController.text =
+                                            //               cartModel!.serialNo!;
+                                            //           _dropDownUnit =
+                                            //               cartModel!.unitId!;
+                                            //           nextWidget = 3;
+                                            //         });
+                                            //       },
+                                            //     ),
+                                            //   ],
+                                            // ),
+                                            // RichText(
+                                            //   text: TextSpan(
+                                            //       text: 'Gross:',
+                                            //       style: TextStyle(
+                                            //           color: Colors
+                                            //               .blueGrey.shade800,
+                                            //           fontSize: 12.0),
+                                            //       children: [
+                                            //         TextSpan(
+                                            //             text:
+                                            //                 '${cartItem[index].gross}    ',
+                                            //             style: const TextStyle(
+                                            //                 fontWeight:
+                                            //                     FontWeight.bold,
+                                            //                 fontSize: 12.0)),
+                                            //         TextSpan(
+                                            //             text: 'Disc:',
+                                            //             style: const TextStyle(
+                                            //                 fontSize: 12.0),
+                                            //             children: [
+                                            //               TextSpan(
+                                            //                   text:
+                                            //                       '${cartItem[index].discountPercent}% ${cartItem[index].discount}    ',
+                                            //                   style: const TextStyle(
+                                            //                       fontWeight:
+                                            //                           FontWeight
+                                            //                               .bold,
+                                            //                       fontSize:
+                                            //                           12.0)),
+                                            //             ]),
+                                            //         TextSpan(
+                                            //             text: 'Net:',
+                                            //             style: const TextStyle(
+                                            //                 fontSize: 12.0),
+                                            //             children: [
+                                            //               TextSpan(
+                                            //                   text:
+                                            //                       '${cartItem[index].net}    ',
+                                            //                   style: const TextStyle(
+                                            //                       fontWeight:
+                                            //                           FontWeight
+                                            //                               .bold,
+                                            //                       fontSize:
+                                            //                           12.0)),
+                                            //             ]),
+                                            //         isTax
+                                            //             ? TextSpan(
+                                            //                 text:
+                                            //                     'Tax:${cartItem[index].taxP}% ',
+                                            //                 style:
+                                            //                     const TextStyle(
+                                            //                         fontSize:
+                                            //                             12.0),
+                                            //                 children: [
+                                            //                     TextSpan(
+                                            //                         text:
+                                            //                             '${cartItem[index].tax}    ',
+                                            //                         style: const TextStyle(
+                                            //                             fontWeight:
+                                            //                                 FontWeight
+                                            //                                     .bold,
+                                            //                             fontSize:
+                                            //                                 12.0)),
+                                            //                   ])
+                                            //             : const TextSpan(
+                                            //                 text: ''),
+                                            //         TextSpan(
+                                            //             text: 'Total:',
+                                            //             style: const TextStyle(
+                                            //                 fontSize: 12.0),
+                                            //             children: [
+                                            //               TextSpan(
+                                            //                   text:
+                                            //                       '${cartItem[index].total}',
+                                            //                   style: const TextStyle(
+                                            //                       fontWeight:
+                                            //                           FontWeight
+                                            //                               .bold,
+                                            //                       fontSize:
+                                            //                           12.0)),
+                                            //             ]),
+                                            //       ]),
+                                            // ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : const Center(
+                            child: Text("No items in Cart"),
+                          ),
+                          totalItem > 0 ?
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                               const SizedBox(
+                                    height: 5,
+                                  ),
+                             Row(
+                                    mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      Text('Total Tax Amt : ${CommonService.getRound(decimal, taxTotalCartValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Total Item : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                      Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  )
+                          ],),
+                          )
+                          : const SizedBox(),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                           Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 20),
+                         child: Column(
+                           children: [
+                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}',style:const 
+                                TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                                const SizedBox(
+                                        height: 8,
+                                  ),
+                             Row(
+                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Expanded(child: Text('Cash Received',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'),),),
+                                Expanded(
+                                  flex: 1,
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: TextField(
+                                                          controller: controllerCashReceived,
+                                                          focusNode: _focusNodeCashReceived,
+                                                          keyboardType:
+                                                              const TextInputType.numberWithOptions(decimal: true),
+                                                          inputFormatters: [
+                                                            FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                                                allow: true, replacementString: '.')
+                                                          ],
+                                                          decoration: const InputDecoration(
+                                                            contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                            border: OutlineInputBorder(
+                                                              gapPadding: 10,
+                                                              borderRadius: BorderRadius.all( Radius.circular(2))
+                                                            ),
+                                                          ),
+                                                          onChanged: (value) {
+                                                            setState(() {
+                                                              balanceCalculate();
+                                                            });
+                                                          },
+                                                        ),
+                                  ),
+                                ),
+                              ]
+                             ),
+                             const SizedBox(
+                              height: 8,
+                             ),
+                               Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Balance Due ',style:TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',style:const 
+                                TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                           ],
+                         ),
+                       ),
+                       const SizedBox(
+                        height: 20,
+                       ),
+                  ],
+                ),
+              ),
+              bottomNavigationBar: 
+              // Padding(
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                // child: 
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(8),
+                //   child:
+                   Container(
+                    width: MediaQuery.of(context).size.width,
+                    // decoration: const BoxDecoration(
+                    //   boxShadow: [
+                    //     BoxShadow(
+                    //         color: grey, blurRadius: .8, spreadRadius: 100),
+                    //   ],
+                    // ),
+                    height: 60,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: () {
+                               oldBill ? setState(() {
+                                   if (buttonEvent) {
+                            return;
+                          } else {
+                            if (companyUserData!.deleteData) {
+                              if (!daysBefore) {
+                                if (totalItem > 0) {
+                                  setState(() {
+                                    _isLoading = true;
+                                    buttonEvent = true;
+                                  });
+                                  
+                                  _insert(
+                                      'Delete DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${ledgerModel!.id} ${CartItem.encodeCartToJson(cartItem)}',
+                                      0);
+                                  deleteSale(context);
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg: 'Please select at least one bill');
+                                  setState(() {
+                                    buttonEvent = false;
+                                  });
+                                }
+                              } else {
+                                Fluttertoast.showToast(
+                                    msg:
+                                        'Invoice Date not equal\ncan`t delete');
+                                setState(() {
+                                  buttonEvent = false;
+                                });
+                              }
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg: 'Permission denied\ncan`t delete');
+                              setState(() {
+                                buttonEvent = false;
+                              });
+                            }
+                          }
+                                }) : null;
+                              },
+                              child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: 
+                                   Text(
+                                    oldBill? 'Delete': 'Save & New',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.white,
+                              onTap: () {
+                               oldBill ? setState(() {
+                                selectedCustomerId = ledgerModel!.id;
+                                  if (buttonEvent) {
+                                  return;
+                                } else {
+                                  if (companyUserData!.insertData) {
+                                    if (!daysBefore) {
+                                      if (totalItem > 0 && selectedCustomerId != null ) {
+                                        setState(() {
+                                          _isLoading = true;
+                                          buttonEvent = true;
+                                        }); 
+                                        _insert(
+                                            'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
+                                            0);
+                                        updateSale();
+                                      } else {
+                                        Fluttertoast.showToast(
+                                          backgroundColor: red,
+                                            msg: selectedCustomerId == null ? 'Select Customer':
+                                                'Please add at least one item');
+                                        setState(() {
+                                          buttonEvent = false;
+                                        });
+                                      }
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'Invoice Date not equal\ncan`t save');
+                                      setState(() {
+                                        buttonEvent = false;
+                                      });
+                                    }
+                                  } else {
+                                    Fluttertoast.showToast(
+                                        msg: 'Permission denied\ncan`t save');
+                                    setState(() {
+                                      buttonEvent = false;
+                                    });
+                                  }
+                                }
+                               },) : setState(() {
+                                  if (buttonEvent) {
+                                  return;
+                                } else {
+                                  if (companyUserData!.insertData) {
+                                    if (!daysBefore) {
+                                      if (totalItem > 0 && selectedCustomerId != null ) {
+                                        setState(() {
+                                          _isLoading = true;
+                                          buttonEvent = true;
+                                        }); 
+                                        _insert(
+                                            'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
+                                            0);
+                                        saveSale();
+                                      } else {
+                                        Fluttertoast.showToast(
+                                          backgroundColor: red,
+                                            msg: selectedCustomerId == null ? 'Select Customer':
+                                                'Please add at least one item');
+                                        setState(() {
+                                          buttonEvent = false;
+                                        });
+                                      }
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'Invoice Date not equal\ncan`t save');
+                                      setState(() {
+                                        buttonEvent = false;
+                                      });
+                                    }
+                                  } else {
+                                    Fluttertoast.showToast(
+                                        msg: 'Permission denied\ncan`t save');
+                                    setState(() {
+                                      buttonEvent = false;
+                                    });
+                                  }
+                                }
+                               },);
+                              },
+                              child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  const Center(
+                                  child: Text(
+                                    'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  // ),
+                // ),
+              ),
+              // extendBody: true,
+            ),
+          ),
+
+          GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Scaffold(
+              backgroundColor: bagroundColor,
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20,),
+                      child: Row(
+                        children: [
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                    widget: InkWell(
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              Padding(
+                                            padding: EdgeInsets.only(
+                                                bottom: MediaQuery.of(context)
+                                                    .viewInsets
+                                                    .bottom),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Column(
+                                                children: [
+                                                  const SizedBox(height: 10),
+                                                  TextField(
+                                                    decoration:
+                                                        const InputDecoration(
+                                                            border:
+                                                                OutlineInputBorder(),
+                                                            // hintText:
+                                                            //     'Invoice No',
+                                                            labelText:
+                                                                'Enter invoice no'),
+                                                    controller:
+                                                        invoiceNoController,
+                                                    autofocus: true,
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            kPrimaryColor,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            3))),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop();
+                                                      setState(() {});
+                                                    },
+                                                    child: const Text("Done",
+                                                        style: TextStyle(
+                                                            fontFamily: 'poppins',
+                                                            color: white)),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                          const SizedBox(
-                                            height: 5,
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 15,
+                                        ),
+                                        width: MediaQuery.of(context).size.width,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                            border: Border.all(color: grey),
+                                            borderRadius:
+                                                BorderRadius.circular(3)),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(invoiceNoController.text,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    fontFamily: 'poppins')),
+                                            const Icon(
+                                                Icons.arrow_drop_down_sharp,
+                                                color: black)
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    // TextField(
+                                    //   controller: invoiceNoController,
+                                    //   decoration: const InputDecoration(
+                                    //       contentPadding: EdgeInsets.symmetric(
+                                    //           vertical: 5, horizontal: 5),
+                                    //       border: OutlineInputBorder()),
+                                    // ),
+                                    headTxt: 'Invoice No')),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: InkWell(
+                                    onTap: () {
+                                      _selectDate();
+                                    },
+                                    child: Container(
+                                        margin: const EdgeInsets.only(
+                                          bottom: 15,
+                                        ),
+                                      height: 20,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(3),
+                                          border: Border.all(color: grey)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            formattedDate!,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontFamily: 'poppins'),
                                           ),
-                                          SizedBox(
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: grey,
+                                            size: 25,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  headTxt: 'Date')),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: ContainerFieldWidget(
+                          widget: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: widgetRateType(),
+                          ),
+                          headTxt: 'Sales Rate'),
+                    ),
+                    const SizedBox(height: 15),
+                    AnimatedContainer(
+                      duration: animationDuration,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      width: MediaQuery.of(context).size.width,
+                      color: Colors.white,
+                      height: isExpanded ? expandedHeight : collapsedHeight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 10),
+                          const Text(
+                            ' Biiling Name',
+                            style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                           TextField(
+                            controller: billingNameController,
+                            decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 5),
+                                border: OutlineInputBorder()),
+                          ),
+                          // EasyAutocomplete(
+                          //     autofocus: false,
+                          //     progressIndicatorBuilder:
+                          //         const CircularProgressIndicator(),
+                          //     controller: nameControl,
+                          //     inputTextStyle:
+                          //         const TextStyle(fontFamily: 'poppins'),
+                          //     suggestionTextStyle:
+                          //         const TextStyle(fontFamily: 'poppins'),
+                          //     decoration: const InputDecoration(
+                          //         border: OutlineInputBorder()),
+                          //     suggestions: nameListDisplay,
+                          //     onChanged: (value) =>
+                          //         print('onChanged value: $value'),
+                          //     onSubmitted: (value) =>
+                          //         print('onSubmitted value: $value')),
+                          const SizedBox(
+                            height: 6,
+                          ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Theme(
+                                    data: ThemeData(
+                                        dividerColor: Colors.transparent),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius: BorderRadius.circular(3)),
+                                      child: ExpansionTile(
+                                        // enableFeedback: false,
+                                        controlAffinity:
+                                            ListTileControlAffinity.platform,
+                                        title: const Text(
+                                          'Other',
+                                          style: TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 5, horizontal: 8),
+                                            child: Column(
+                                              children: [
+                                                ContainerFieldWidget(widget: TextField(
+                                                  // controller: addressControl,
+                                                  decoration: const InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ), headTxt: 'Phone Number'),
+                                                const SizedBox(height: 8),
+                                                ContainerFieldWidget(widget: TextField(
+                                                  controller: addressControl,
+                                                  decoration: InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ), headTxt: 'Address'),
+                                                const SizedBox(height: 8),
+                                               ContainerFieldWidget(widget:  TextField(
+                                                  decoration: InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                ), headTxt: 'Email')
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                        onExpansionChanged: (newIsExpanded) {
+                                          setState(() {
+                                            isExpanded = newIsExpanded;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                nextWidget = 2;
+                                editItem = false;
+                              });
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //       builder: (context) => addItemWidget(),
+                              //     ));
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              backgroundColor: const Color(0xff0008B3),
+                            ),
+                            // onPressed: () => context.push(AddItemToSalePage.routePath),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Image(
+                                //     image: AssetImage(
+                                //         'assets/icons/add_item_icon.png')),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Add Item',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'poppins',
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    cartItem.isNotEmpty
+                        ? Container(
+                             constraints: BoxConstraints(maxHeight: 300),
+                          // height: 250,
+                            width: MediaQuery.sizeOf(context).width,
+                            color: white,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 4),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 4),
+                                shrinkWrap: true,
+                                // physics: ClampingScrollPhysics() ,
+                                itemCount: cartItem.length ,
+                                // scrollDirection: Axis.vertical,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        editItem = true;
+                                        position = index;
+                                        cartModel =
+                                            cartItem.elementAt(position!);
+                                        itemNameControl.text =
+                                            cartModel!.itemName.toString();
+                                        _rateController.text =
+                                            cartModel!.rate!.toString();
+                                        _quantityController.text =
+                                            cartModel!.quantity!.toString();
+                                        _freeQuantityController.text =
+                                            cartModel!.free.toString();
+                                        _discountController.text =
+                                            cartModel!.discount.toString();
+                                        _discountPercentController.text =
+                                            cartModel!.discountPercent
+                                                .toString();
+                                        _serialNoController.text =
+                                            cartModel!.serialNo!;
+                                        _dropDownUnit = cartModel!.unitId!;
+                                        taxP = cartModel!.taxP!;
+                                        tax = cartModel!.tax!;
+                                        gross = cartModel!.gross!;
+                                        total = cartModel!.total!;
+                                        nextWidget = 2;
+                                      });
+                                    },
+                                    child: Container(
+                                      width:
+                                          MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                          // boxShadow: [
+                                          //   BoxShadow(
+                                          //     color: Colors.grey.shade400,
+                                          //     blurRadius: 5,
+                                          //     spreadRadius: .8,
+                                          //   )
+                                          // ],
+                                          border: Border.all(
+                                              color: grey, width: .5),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color:
+                                              Colors.grey.withOpacity(.1)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 5),
+                                                    decoration:
+                                                        BoxDecoration(
+                                                            color: white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        3),
+                                                            border:
+                                                                Border.all(
+                                                              width: .3,
+                                                              color: grey,
+                                                            )),
+                                                    child: Text(
+                                                      '# ${cartItem[index].id}',
+                                                      style:
+                                                          const TextStyle(
+                                                              fontSize: 12),
+                                                    )),
+                                                Text(
+                                                    ' ${cartItem[index].itemName}',
+                                                    style: const TextStyle(
+                                                        color: black,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontFamily:
+                                                            'poppins')),
+                                                const Spacer(),
+                                                
+                                              ]),
+                                            ),
+                                            SizedBox(
                                               width: MediaQuery.of(context)
                                                   .size
                                                   .width,
                                               child: Row(
                                                 children: [
-                                                  Text(
-                                                    'Discount (%): ',
+                                                  const Text(
+                                                    'Item Subtotal',
                                                     style: TextStyle(
                                                         fontSize: 12,
-                                                        color:
-                                                            Colors.orange[700],
-                                                        fontFamily: 'poppins'),
-                                                  ),
-                                                  Text(
-                                                    cartItem[index]
-                                                        .discountPercent!
-                                                        .toStringAsFixed(0),
-                                                    style: TextStyle(
-                                                        fontSize: 12,
-                                                        color:
-                                                            Colors.orange[700],
-                                                        fontFamily: 'poppins'),
+                                                        fontFamily:
+                                                            'poppins'),
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                    '₹ ${cartItem[index].discount}',
-                                                    style: TextStyle(
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    style: const TextStyle(
                                                       fontSize: 12,
-                                                      color: Colors.orange[700],
                                                     ),
                                                   )
                                                 ],
-                                              )),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Row(children: [
-                                              Text(
-                                                'Tax (%): ${cartItem[index].taxP}',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                    MediaQuery.of(context)
+                                                        .size
+                                                        .width,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      'Discount (%): ',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    Text(
+                                                      cartItem[index]
+                                                          .discountPercent!
+                                                          .toStringAsFixed(
+                                                              2),
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .orange[700],
+                                                      ),
+                                                    )
+                                                  ],
+                                                )),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Text(
+                                                  'Tax (%): ${cartItem[index].taxP}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
                                                 ),
-                                              ),
-                                              const Spacer(),
-                                              Text(
-                                                '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
                                                 ),
-                                              ),
-                                            ]),
-                                          ),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Row(children: [
-                                              const Text(
-                                                'Total',
-                                                style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                              ),
-                                              const Spacer(),
-                                              Text(
-                                                '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
-                                                style: const TextStyle(
-                                                    fontSize: 13,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                              ),
-                                            ]),
-                                          ),
-                                          // Row(
-                                          //   mainAxisAlignment:
-                                          //       MainAxisAlignment.spaceEvenly,
-                                          //   mainAxisSize: MainAxisSize.max,
-                                          //   children: [
-                                          //     SizedBox(
-                                          //       width: 100,
-                                          //       child: Column(
-                                          //         crossAxisAlignment:
-                                          //             CrossAxisAlignment.start,
-                                          //         children: [
-                                          //           // const SizedBox(
-                                          //           //   height: 1.0,
-                                          //           // ),
-                                          //           RichText(
-                                          //             maxLines: 1,
-                                          //             text: TextSpan(
-                                          //                 text:
-                                          //                     '${cartItem[index].id}/',
-                                          //                 style: TextStyle(
-                                          //                     color: Colors
-                                          //                         .blueGrey
-                                          //                         .shade800,
-                                          //                     fontSize: 10.0),
-                                          //                 children: [
-                                          //                   TextSpan(
-                                          //                       text:
-                                          //                           '${cartItem[index].uniqueCode}/${cartItem[index].itemId}',
-                                          //                       style: const TextStyle(
-                                          //                           fontSize:
-                                          //                               10.0,
-                                          //                           fontWeight:
-                                          //                               FontWeight
-                                          //                                   .bold)),
-                                          //                 ]),
-                                          //           ),
-                                          //           RichText(
-                                          //             maxLines: 1,
-                                          //             text: TextSpan(
-                                          //                 text: 'Unit: ',
-                                          //                 style: TextStyle(
-                                          //                     color: Colors
-                                          //                         .blueGrey
-                                          //                         .shade800,
-                                          //                     fontSize: 12.0),
-                                          //                 children: [
-                                          //                   TextSpan(
-                                          //                       text:
-                                          //                           '${UnitSettings.getUnitName(cartItem[index].unitId!)}\n',
-                                          //                       style: const TextStyle(
-                                          //                           fontSize:
-                                          //                               12.0,
-                                          //                           fontWeight:
-                                          //                               FontWeight
-                                          //                                   .bold)),
-                                          //                 ]),
-                                          //           ),
-                                          //         ],
-                                          //       ),
-                                          //     ),
-                                          //     // PlusMinusButtons(
-                                          //     //   addQuantity: () {
-                                          //     //     if (oldBill) {
-                                          //     //       api
-                                          //     //           .getStockOf(
-                                          //     //               cartItem[index]
-                                          //     //                   .itemId!)
-                                          //     //           .then((value) {
-                                          //     //         cartItem[index].stock =
-                                          //     //             value;
-                                          //     //         setState(() {
-                                          //     //           bool cartQ = false;
-                                          //     //           if (totalItem > 0) {
-                                          //     //             double cartS = 0,
-                                          //     //                 cartQt = 0;
-                                          //     //             for (var element
-                                          //     //                 in cartItem) {
-                                          //     //               if (element
-                                          //     //                       .itemId ==
-                                          //     //                   cartItem[index]
-                                          //     //                       .itemId) {
-                                          //     //                 cartQt += element
-                                          //     //                     .quantity!;
-                                          //     //                 cartS = element
-                                          //     //                     .stock!;
-                                          //     //               }
-                                          //     //             }
-                                          //     //             cartS = oldBill
-                                          //     //                 ? value
-                                          //     //                 : cartS;
-                                          //     //             if (cartS > 0) {
-                                          //     //               if (cartS <
-                                          //     //                   cartQt + 1) {
-                                          //     //                 cartQ = true;
-                                          //     //               }
-                                          //     //             }
-                                          //     //           }
-                                          //     //           outOfStock = isLockQtyOnlyInSales
-                                          //     //               ? cartItem[index].quantity! + 1 > cartItem[index].stock!
-                                          //     //                   ? true
-                                          //     //                   : cartQ
-                                          //     //                       ? true
-                                          //     //                       : false
-                                          //     //               : negativeStock
-                                          //     //                   ? false
-                                          //     //                   : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
-                                          //     //                       ? isStockProductOnlyInSalesQO
-                                          //     //                           ? cartItem[index].quantity! + 1 > cartItem[index].stock!
-                                          //     //                               ? true
-                                          //     //                               : cartQ
-                                          //     //                                   ? true
-                                          //     //                                   : false
-                                          //     //                           : false
-                                          //     //                       : cartItem[index].quantity! + 1 > cartItem[index].stock!
-                                          //     //                           ? true
-                                          //     //                           : cartQ
-                                          //     //                               ? true
-                                          //     //                               : false;
-                                          //     //           if (outOfStock) {
-                                          //     //             ScaffoldMessenger.of(
-                                          //     //                     context)
-                                          //     //                 .showSnackBar(
-                                          //     //                     SnackBar(
-                                          //     //               content: const Text(
-                                          //     //                   'Sorry stock not available.'),
-                                          //     //               duration:
-                                          //     //                   const Duration(
-                                          //     //                       seconds:
-                                          //     //                           10),
-                                          //     //               action:
-                                          //     //                   SnackBarAction(
-                                          //     //                 label: 'Click',
-                                          //     //                 onPressed: () {
-                                          //     //                   // print('Action is clicked');
-                                          //     //                 },
-                                          //     //                 textColor:
-                                          //     //                     Colors.white,
-                                          //     //                 disabledTextColor:
-                                          //     //                     Colors.grey,
-                                          //     //               ),
-                                          //     //               backgroundColor:
-                                          //     //                   Colors.red,
-                                          //     //             ));
-                                          //     //           } else {
-                                          //     //             updateProduct(
-                                          //     //                 cartItem[index],
-                                          //     //                 cartItem[index]
-                                          //     //                         .quantity! +
-                                          //     //                     1,
-                                          //     //                 index);
-                                          //     //           }
-                                          //     //         });
-                                          //     //       });
-                                          //     //     } else {
-                                          //     //       setState(() {
-                                          //     //         bool cartQ = false;
-                                          //     //         if (totalItem > 0) {
-                                          //     //           double cartS = 0,
-                                          //     //               cartQt = 0;
-                                          //     //           for (var element
-                                          //     //               in cartItem) {
-                                          //     //             if (element.itemId ==
-                                          //     //                 cartItem[index]
-                                          //     //                     .itemId) {
-                                          //     //               cartQt += element
-                                          //     //                   .quantity!;
-                                          //     //               cartS =
-                                          //     //                   element.stock!;
-                                          //     //             }
-                                          //     //           }
-                                          //     //           // cartS = oldBill?:cartS;
-                                          //     //           if (cartS > 0) {
-                                          //     //             if (cartS <
-                                          //     //                 cartQt + 1) {
-                                          //     //               cartQ = true;
-                                          //     //             }
-                                          //     //           }
-                                          //     //         }
-                                          //     //         outOfStock = isLockQtyOnlyInSales
-                                          //     //             ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
-                                          //     //                 ? true
-                                          //     //                 : cartQ
-                                          //     //                     ? true
-                                          //     //                     : false
-                                          //     //             : negativeStock
-                                          //     //                 ? false
-                                          //     //                 : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
-                                          //     //                     ? isStockProductOnlyInSalesQO
-                                          //     //                         ? ((cartItem[index].quantity! * cartItem[index].unitValue!) + cartItem[index].free!) + 1 > cartItem[index].stock!
-                                          //     //                             ? true
-                                          //     //                             : cartQ
-                                          //     //                                 ? true
-                                          //     //                                 : false
-                                          //     //                         : false
-                                          //     //                     : cartItem[index].quantity! + 1 > cartItem[index].stock!
-                                          //     //                         ? true
-                                          //     //                         : cartQ
-                                          //     //                             ? true
-                                          //     //                             : false;
-                                          //     //         if (outOfStock) {
-                                          //     //           ScaffoldMessenger.of(
-                                          //     //                   context)
-                                          //     //               .showSnackBar(
-                                          //     //                   SnackBar(
-                                          //     //             content: const Text(
-                                          //     //                 'Sorry stock not available.'),
-                                          //     //             duration:
-                                          //     //                 const Duration(
-                                          //     //                     seconds: 10),
-                                          //     //             action:
-                                          //     //                 SnackBarAction(
-                                          //     //               label: 'Click',
-                                          //     //               onPressed: () {
-                                          //     //                 // print('Action is clicked');
-                                          //     //               },
-                                          //     //               textColor:
-                                          //     //                   Colors.white,
-                                          //     //               disabledTextColor:
-                                          //     //                   Colors.grey,
-                                          //     //             ),
-                                          //     //             backgroundColor:
-                                          //     //                 Colors.red,
-                                          //     //           ));
-                                          //     //         } else {
-                                          //     //           updateProduct(
-                                          //     //               cartItem[index],
-                                          //     //               cartItem[index]
-                                          //     //                       .quantity! +
-                                          //     //                   1,
-                                          //     //               index);
-                                          //     //         }
-                                          //     //       });
-                                          //     //     }
-
-                                          //     //     //  cart.addQuantity(
-                                          //     //     //      cartItem[index].id!);
-                                          //     //     //  dbHelper!
-                                          //     //     //      .updateQuantity(Cart(
-                                          //     //     //          id: index,
-                                          //     //     //          productId: index.toString(),
-                                          //     //     //          productName: provider
-                                          //     //     //              .cart[index].productName,
-                                          //     //     //          initialPrice: provider
-                                          //     //     //              .cart[index].initialPrice,
-                                          //     //     //          productPrice: provider
-                                          //     //     //              .cart[index].productPrice,
-                                          //     //     //          quantity: ValueNotifier(
-                                          //     //     //              cartItem[index]
-                                          //     //     //                  .quantity!.value),
-                                          //     //     //          unitTag: provider
-                                          //     //     //              .cart[index].unitTag,
-                                          //     //     //          image: provider
-                                          //     //     //              .cart[index].image))
-                                          //     //     //      .then((value) {
-                                          //     //     //    setState(() {
-                                          //     //     //      cart.addTotalPrice(double.parse(
-                                          //     //     //          provider
-                                          //     //     //              .cart[index].productPrice
-                                          //     //     //              .toString()));
-                                          //     //     //    });
-                                          //     //     //  });
-                                          //     //   },
-                                          //     //   deleteQuantity: () {
-                                          //     //     setState(() {
-                                          //     //       updateProduct(
-                                          //     //           cartItem[index],
-                                          //     //           cartItem[index]
-                                          //     //                   .quantity! -
-                                          //     //               1,
-                                          //     //           index);
-                                          //     //     });
-
-                                          //     //     //  cart.deleteQuantity(
-                                          //     //     //      cartItem[index].id!);
-                                          //     //     //  cart.removeTotalPrice(double.parse(
-                                          //     //     //      cartItem[index].productPrice
-                                          //     //     //          .toString()));
-                                          //     //   },
-                                          //     //   text: cartItem[index]
-                                          //     //       .quantity
-                                          //     //       .toString(),
-                                          //     // ),
-                                          //     RichText(
-                                          //       maxLines: 1,
-                                          //       text: TextSpan(
-                                          //           text: 'Rate: ',
-                                          //           style: TextStyle(
-                                          //               color: Colors
-                                          //                   .blueGrey.shade800,
-                                          //               fontSize: 13.0),
-                                          //           children: [
-                                          //             TextSpan(
-                                          //                 text:
-                                          //                     '${cartItem[index].rate}\n',
-                                          //                 style:
-                                          //                     const TextStyle(
-                                          //                         fontWeight:
-                                          //                             FontWeight
-                                          //                                 .bold,
-                                          //                         fontSize:
-                                          //                             12.0)),
-                                          //           ]),
-                                          //     ),
-                                          //     // IconButton(
-                                          //     // onPressed: () {
-                                          //     //  dbHelper!.deleteCartItem(
-                                          //     //      cartItem[index].id!);
-                                          //     //  provider
-                                          //     //      .removeItem(cartItem[index].id!);
-                                          //     //  provider.removeCounter();
-                                          //     // },
-                                          //     // icon: Icon(
-                                          //     // Icons.edit,
-                                          //     // color: Colors.blue.shade800,
-                                          //     // )),
-                                          //     PopUpMenuAction(
-                                          //       onDelete: () {
-                                          //         setState(() {
-                                          //           removeProduct(index);
-                                          //         });
-                                          //       },
-                                          //       onEdit: () {
-                                          //         setState(() {
-                                          //           editItem = true;
-                                          //           position = index;
-                                          //           cartModel = cartItem
-                                          //               .elementAt(position!);
-                                          //           _rateController.text =
-                                          //               cartModel!.rate!
-                                          //                   .toString();
-                                          //           _quantityController.text =
-                                          //               cartModel!.quantity!
-                                          //                   .toString();
-                                          //           _freeQuantityController
-                                          //                   .text =
-                                          //               cartModel!.free
-                                          //                   .toString();
-                                          //           _discountController.text =
-                                          //               cartModel!.discount
-                                          //                   .toString();
-                                          //           _discountPercentController
-                                          //                   .text =
-                                          //               cartModel!
-                                          //                   .discountPercent
-                                          //                   .toString();
-                                          //           _serialNoController.text =
-                                          //               cartModel!.serialNo!;
-                                          //           _dropDownUnit =
-                                          //               cartModel!.unitId!;
-                                          //           nextWidget = 3;
-                                          //         });
-                                          //       },
-                                          //     ),
-                                          //   ],
-                                          // ),
-                                          // RichText(
-                                          //   text: TextSpan(
-                                          //       text: 'Gross:',
-                                          //       style: TextStyle(
-                                          //           color: Colors
-                                          //               .blueGrey.shade800,
-                                          //           fontSize: 12.0),
-                                          //       children: [
-                                          //         TextSpan(
-                                          //             text:
-                                          //                 '${cartItem[index].gross}    ',
-                                          //             style: const TextStyle(
-                                          //                 fontWeight:
-                                          //                     FontWeight.bold,
-                                          //                 fontSize: 12.0)),
-                                          //         TextSpan(
-                                          //             text: 'Disc:',
-                                          //             style: const TextStyle(
-                                          //                 fontSize: 12.0),
-                                          //             children: [
-                                          //               TextSpan(
-                                          //                   text:
-                                          //                       '${cartItem[index].discountPercent}% ${cartItem[index].discount}    ',
-                                          //                   style: const TextStyle(
-                                          //                       fontWeight:
-                                          //                           FontWeight
-                                          //                               .bold,
-                                          //                       fontSize:
-                                          //                           12.0)),
-                                          //             ]),
-                                          //         TextSpan(
-                                          //             text: 'Net:',
-                                          //             style: const TextStyle(
-                                          //                 fontSize: 12.0),
-                                          //             children: [
-                                          //               TextSpan(
-                                          //                   text:
-                                          //                       '${cartItem[index].net}    ',
-                                          //                   style: const TextStyle(
-                                          //                       fontWeight:
-                                          //                           FontWeight
-                                          //                               .bold,
-                                          //                       fontSize:
-                                          //                           12.0)),
-                                          //             ]),
-                                          //         isTax
-                                          //             ? TextSpan(
-                                          //                 text:
-                                          //                     'Tax:${cartItem[index].taxP}% ',
-                                          //                 style:
-                                          //                     const TextStyle(
-                                          //                         fontSize:
-                                          //                             12.0),
-                                          //                 children: [
-                                          //                     TextSpan(
-                                          //                         text:
-                                          //                             '${cartItem[index].tax}    ',
-                                          //                         style: const TextStyle(
-                                          //                             fontWeight:
-                                          //                                 FontWeight
-                                          //                                     .bold,
-                                          //                             fontSize:
-                                          //                                 12.0)),
-                                          //                   ])
-                                          //             : const TextSpan(
-                                          //                 text: ''),
-                                          //         TextSpan(
-                                          //             text: 'Total:',
-                                          //             style: const TextStyle(
-                                          //                 fontSize: 12.0),
-                                          //             children: [
-                                          //               TextSpan(
-                                          //                   text:
-                                          //                       '${cartItem[index].total}',
-                                          //                   style: const TextStyle(
-                                          //                       fontWeight:
-                                          //                           FontWeight
-                                          //                               .bold,
-                                          //                       fontSize:
-                                          //                           12.0)),
-                                          //             ]),
-                                          //       ]),
-                                          // ),
-                                        ],
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                const Text(
+                                                  'Total',
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                              ]),
+                                            ),
+                                           
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              );
-                            },
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : const Center(
+                            child: Text("No items in Cart"),
                           ),
-                        )
-                      : const Center(
-                          child: Text("No items in Cart"),
-                        ),
-                ],
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    color: white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                            child: ContainerFieldWidget(
-                                widget: SizedBox(
-                                  height: 50,
-                                  child: TextField(
-                                    controller: invoiceNoController,
-                                    decoration: const InputDecoration(
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: 5, horizontal: 5),
-                                        border: OutlineInputBorder()),
+                          
+                          cartItem.isNotEmpty ?
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                               const SizedBox(
+                                    height: 5,
                                   ),
-                                ),
-                                headTxt: 'Invoice No')),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        Expanded(
-                            child: ContainerFieldWidget(
-                                widget: InkWell(
-                                  onTap: () {
-                                    _selectDate();
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(bottom: 7),
-                                    height: 50,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        border: Border.all(color: grey)),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          formattedDate!,
+                             Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      Text('Total Tax Amt : ${CommonService.getRound(decimal, taxTotalCartValue).toStringAsFixed(decimal)}',
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
-                                              fontFamily: 'poppins'),
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        const Icon(
-                                          Icons.calendar_month_outlined,
-                                          color: grey,
-                                          size: 25,
-                                        )
-                                      ],
-                                    ),
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
                                   ),
-                                ),
-                                headTxt: 'Date')),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    color: white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: ContainerFieldWidget(
-                        widget: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: grey),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: widgetRateType(),
-                        ),
-                        headTxt: 'Sales Rate'),
-                  ),
-                  const SizedBox(height: 15),
-                  AnimatedContainer(
-                    duration: animationDuration,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    width: MediaQuery.of(context).size.width,
-                    color: Colors.white,
-                    height: isExpanded ? expandedHeight : collapsedHeight,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 10),
-                        const Text(
-                          ' Biiling Name',
-                          style: TextStyle(
-                            fontFamily: 'poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const TextField(
-                          decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 5),
-                              border: OutlineInputBorder()),
-                        ),
-                        // EasyAutocomplete(
-                        //     autofocus: false,
-                        //     progressIndicatorBuilder:
-                        //         const CircularProgressIndicator(),
-                        //     controller: nameControl,
-                        //     inputTextStyle:
-                        //         const TextStyle(fontFamily: 'poppins'),
-                        //     suggestionTextStyle:
-                        //         const TextStyle(fontFamily: 'poppins'),
-                        //     decoration: const InputDecoration(
-                        //         border: OutlineInputBorder()),
-                        //     suggestions: nameListDisplay,
-                        //     onChanged: (value) =>
-                        //         print('onChanged value: $value'),
-                        //     onSubmitted: (value) =>
-                        //         print('onSubmitted value: $value')),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Theme(
-                                  data: ThemeData(
-                                      dividerColor: Colors.transparent),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: grey),
-                                        borderRadius: BorderRadius.circular(3)),
-                                    child: ExpansionTile(
-                                      enableFeedback: false,
-                                      controlAffinity:
-                                          ListTileControlAffinity.platform,
-                                      title: const Text(
-                                        'Other',
-                                        style: TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 8),
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 50,
-                                                child: TextField(
-                                                  controller: addressControl,
-                                                  decoration: const InputDecoration(
-                                                      border:
-                                                          OutlineInputBorder()),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              const SizedBox(
-                                                height: 50,
-                                                child: TextField(
-                                                  decoration: InputDecoration(
-                                                      border:
-                                                          OutlineInputBorder()),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              const SizedBox(
-                                                height: 50,
-                                                child: TextField(
-                                                  decoration: InputDecoration(
-                                                      border:
-                                                          OutlineInputBorder()),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      ],
-                                      onExpansionChanged: (newIsExpanded) {
-                                        setState(() {
-                                          isExpanded = newIsExpanded;
-                                        });
-                                      },
-                                    ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Total Item : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                      Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
+                                  const SizedBox(
+                                    height: 5,
+                                  )
+                          ],),
+                          ): const SizedBox(),
+                          const SizedBox(
+                            height: 10,
                           ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              nextWidget = 2;
-                            });
-                            // Navigator.push(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //       builder: (context) => addItemWidget(),
-                            //     ));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            backgroundColor: const Color(0xff0008B3),
-                          ),
-                          // onPressed: () => context.push(AddItemToSalePage.routePath),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Image(
-                              //     image: AssetImage(
-                              //         'assets/icons/add_item_icon.png')),
-                              SizedBox(width: 10),
-                              Text(
-                                'Add Item',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
+                           Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 20),
+                         child: Column(
+                           children: [
+                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}',style:const 
+                                TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                           
+                           ],
+                         ),
+                       ),
+                       const SizedBox(
+                        height: 20,
+                       ),
+                  ],
+                ),
+              ),
+               bottomNavigationBar:
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  // decoration: const BoxDecoration(
+                  //   boxShadow: [
+                  //     BoxShadow(
+                  //         color: grey, blurRadius: .8, spreadRadius: 100),
+                  //   ],
+                  // ),
+                  height: 60,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            splashColor: Colors.grey,
+                            onTap: () {},
+                            child: Container(
+                              height: 60,
+                              color: Colors.white,
+                              child: const Center(
+                                child: Text(
+                                  'Save & New',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            splashColor: Colors.white,
+                            onTap: () {
+                             setState(() {
+                                // selectedCustomerId = acId;
+                              if (buttonEvent) {
+                                return;
+                              } else {
+                                if (companyUserData!.insertData) {
+                                  if (!daysBefore) {
+                                    if (totalItem > 0) {
+                                      setState(() {
+                                        _isLoading = true;
+                                        buttonEvent = true;
+                                        billingNameController.text.isNotEmpty ? 
+                                        ledgerModel!.name = billingNameController.text
+                                        :
+                                        ledgerModel!.name; 
+                                        
+                                      });
+                                      _insert(
+                                          'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
+                                          0);
+                                      saveSale();
+                                      
+                                      print('id ===== $selectedCustomerId');
+                                    } else {
+                                      Fluttertoast.showToast(
+                                          msg:
+                                              'Please add at least one item');
+                                      setState(() {
+                                        buttonEvent = false;
+                                      });
+                                    }
+                                  } else {
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            'Invoice Date not equal\ncan`t save');
+                                    setState(() {
+                                      buttonEvent = false;
+                                    });
+                                  }
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg: 'Permission denied\ncan`t save');
+                                  setState(() {
+                                    buttonEvent = false;
+                                  });
+                                }
+                              }
+                             });
+                            },
+                            child: Container(
+                              height: 60,
+                              color: kPrimaryColor,
+                              child:  Center(
+                                child: !buttonEvent? Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                                ):FittedBox(child: CircularProgressIndicator()),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              // extendBody: true,
             ),
           ),
         ]),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(
-                boxShadow: [
-                  BoxShadow(color: grey, blurRadius: .8, spreadRadius: 100),
-                ],
-              ),
-              height: 60,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        splashColor: Colors.grey,
-                        onTap: () {},
-                        child: Container(
-                          height: 60,
-                          color: Colors.white,
-                          child: const Center(
-                            child: Text(
-                              'Save & New',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        splashColor: Colors.white,
-                        onTap: () {},
-                        child: Container(
-                          height: 60,
-                          color: kPrimaryColor,
-                          child: const Center(
-                            child: Text(
-                              'Save',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        extendBody: true,
       ),
     );
   }
@@ -3541,11 +4569,9 @@ class _SaleState extends ConsumerState<Sale> {
                                     final selectedItem = data.firstWhere(
                                       (element) => element.name == value,
                                     );
-
                                     selectedQuantity =
                                         selectedItem.quantity.toString();
                                     selectedItemId = selectedItem.id!;
-
                                     var fetchedData = selectedItemId != null
                                         ? api.fetchStockVariant(selectedItemId!)
                                         : null;
@@ -3556,7 +4582,6 @@ class _SaleState extends ConsumerState<Sale> {
                                               element.itemId == selectedItemId,
                                           orElse: () => StockProduct.empty(),
                                         );
-
                                         Future<double?> rateFuture;
                                         if (salesTypeData!.rateType == 'MRP') {
                                           rateFuture = Future.value(
@@ -3592,7 +4617,6 @@ class _SaleState extends ConsumerState<Sale> {
                                                 rate.toStringAsFixed(2);
                                           }
                                         });
-
                                         taxP = selectedVariant.tax! ?? 0;
                                       });
                                     }
@@ -3630,7 +4654,7 @@ class _SaleState extends ConsumerState<Sale> {
                                   for (var i = 0;
                                       i < unitListData.length;
                                       i++) {
-                                    UnitModel _unit = unitListData[i];
+                                    // UnitModel _unit = unitListData[i];
                                   }
                                   // double? _rate = salesTypeData!.rateType ==
                                   //         'MRP'
@@ -3665,530 +4689,522 @@ class _SaleState extends ConsumerState<Sale> {
                                   //   _rateController.text = _rate.toString();
                                   // }
                                   // final unitId = data!.map((e) => e.unitId);
-                                  return Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                              child: ContainerFieldWidget(
-                                                  widget: TextFormField(
-                                                    controller:
-                                                        _quantityController,
-                                                    focusNode:
-                                                        _focusNodeQuantity,
-                                                    autofocus: true,
-                                                    validator: (value) {
-                                                      if (outOfStock) {
-                                                        return 'No Stock';
-                                                      }
-                                                      return null;
-                                                    },
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
-                                                    decoration: InputDecoration(
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 4,
-                                                                vertical: 10),
-                                                        hintStyle:
-                                                            const TextStyle(
-                                                                color: grey,
-                                                                fontFamily:
-                                                                    'poppins',
-                                                                fontSize: 12),
-                                                        hintText: selectedQuantity
-                                                                .isEmpty
-                                                            ? ''
-                                                            : 'Available quantity $selectedQuantity',
-                                                        border:
-                                                            const OutlineInputBorder()),
-                                                    onChanged: (value) {
-                                                      if (value.isNotEmpty) {
-                                                        bool cartQ = false;
-                                                        setState(() {
-                                                          if (totalItem > 0) {
-                                                            double cartS = 0,
-                                                                cartQt = 0;
-                                                            for (var element
-                                                                in cartItem) {
-                                                              if (element
-                                                                      .uniqueCode ==
-                                                                  selectedVariant
-                                                                      .productId) {
-                                                                cartQt += element
-                                                                        .quantity! +
-                                                                    element
-                                                                        .free!;
-                                                                cartS = element
-                                                                    .stock!;
+                                  return Form(
+                                    key: _resetKey,
+                                    autovalidateMode: AutovalidateMode.always,
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                                child: ContainerFieldWidget(
+                                                    widget: TextFormField(
+                                                      controller:
+                                                          _quantityController,
+                                                      focusNode:
+                                                          _focusNodeQuantity,
+                                                      autofocus: true,
+                                                      validator: (value) {
+                                                        if (outOfStock) {
+                                                          return 'No Stock';
+                                                        }
+                                                        return null;
+                                                      },
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      decoration: InputDecoration(
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 4,
+                                                                  vertical: 10),
+                                                          hintStyle:
+                                                              const TextStyle(
+                                                                  color: grey,
+                                                                  fontFamily:
+                                                                      'poppins',
+                                                                  fontSize: 12),
+                                                          hintText: selectedQuantity
+                                                                  .isEmpty
+                                                              ? ''
+                                                              : 'Available quantity $selectedQuantity',
+                                                          border:
+                                                              const OutlineInputBorder()),
+                                                      onChanged: (value) {
+                                                        if (value.isNotEmpty) {
+                                                          bool cartQ = false;
+                                                          setState(() {
+                                                            if (totalItem > 0) {
+                                                              double cartS = 0,
+                                                                  cartQt = 0;
+                                                              for (var element
+                                                                  in cartItem) {
+                                                                if (element.uniqueCode ==selectedVariant.productId) {
+                                                                  cartQt += element.quantity! +
+                                                                      element.free!;
+                                                                  cartS = element.stock!;
+                                                                }
+                                                              }
+                                                              if (cartS > 0) {
+                                                                if (cartS <cartQt +double.tryParse(value)!) {
+                                                                  cartQ = true;
+                                                                }
                                                               }
                                                             }
-                                                            if (cartS > 0) {
-                                                              if (cartS <
-                                                                  cartQt +
-                                                                      double.tryParse(
-                                                                          value)!) {
-                                                                cartQ = true;
+                                                            outOfStock = isLockQtyOnlyInSales
+                                                                ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                    ? true
+                                                                    : cartQ
+                                                                        ? true
+                                                                        : false
+                                                                : negativeStock
+                                                                    ? false
+                                                                    : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                                                        ? isStockProductOnlyInSalesQO
+                                                                            ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                                ? true
+                                                                                : cartQ
+                                                                                    ? true
+                                                                                    : false
+                                                                            : false
+                                                                        : ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
+                                                                            ? true
+                                                                            : cartQ
+                                                                                ? true
+                                                                                : false;
+                                                            calculate(
+                                                                selectedVariant);
+                                                          });
+                                                        }
+                                                      },
+                                                    ),
+                                                    headTxt: 'Quantity')),
+                                                     Visibility(
+                                                            visible: isFreeQty,
+                                                            child: Expanded(
+                                                                child: ContainerFieldWidget(widget: TextFormField(
+                                                                  controller: _freeQuantityController,
+                                                                  focusNode: _focusNodeFreeQuantity,
+                                                                  // autofocus: true,
+                                                                  validator: (value) {
+                                                                    if (outOfStock) {
+                                                                        return 'No Stock';
+                                                                    }
+                                                                    return null;
+                                                                  },
+                                                                  keyboardType: const TextInputType.numberWithOptions(
+                                    decimal: true),
+                                                                  inputFormatters: [
+                                                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                      allow: true, replacementString: '.')
+                                                                  ],
+                                                                  decoration: const InputDecoration(
+                                                                     contentPadding:
+                                                               EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 4,
+                                                                  vertical: 10),
+                                    border: OutlineInputBorder(
+                                    
+                                    ),
+                                    labelText: 'Free',
+                                    hintText: '0.0'),
+                                       onChanged: (value) {
+                                        if (value.isNotEmpty) {
+                                    bool cartQ = false;
+                                    setState(() {
+                                      if (totalItem > 0) {
+                                        double cartS = 0, cartQt = 0;
+                                        for (var element in cartItem) {
+                                          if (element.uniqueCode ==
+                                              selectedVariant.productId) {
+                                            cartQt +=
+                                                element.quantity! + element.free!;
+                                            cartS = element.stock!;
+                                          }
+                                        }
+                                        if (cartS > 0) {
+                                          if (cartS <
+                                              cartQt + double.tryParse(value)!) {
+                                            cartQ = true;
+                                          }
+                                        }
+                                      }
+                                                                
+                                      outOfStock = isLockQtyOnlyInSales
+                                          ? ((quantity * unitValue) +
+                                                      double.tryParse(value)!) >
+                                                  selectedVariant.quantity!
+                                              ? true
+                                              : cartQ
+                                                  ? true
+                                                  : false
+                                          : negativeStock
+                                              ? false
+                                              : salesTypeData!.type == 'SALES-O' ||
+                                                      salesTypeData!.type ==
+                                                          'SALES-Q'
+                                                  ? isStockProductOnlyInSalesQO
+                                                      ? ((quantity * unitValue) +
+                                                                  double.tryParse(
+                                                                      value)!) >
+                                                              selectedVariant.quantity!
+                                                          ? true
+                                                          : cartQ
+                                                              ? true
+                                                              : false
+                                                      : false
+                                                  : ((quantity * unitValue) +
+                                                              double.tryParse(
+                                                                  value)!) >
+                                                          selectedVariant.quantity!
+                                                      ? true
+                                                      : cartQ
+                                                          ? true
+                                                          : false;
+                                      calculate(selectedVariant);
+                                    });
+                                    }
+                                    },
+                                  ), headTxt: 'Quantity')),
+                                    ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Expanded(
+                                                child: ContainerFieldWidget(
+                                                    widget: Container(
+                                                        margin:
+                                                            const EdgeInsets.only(
+                                                                bottom: 7),
+                                                        padding:
+                                                            const EdgeInsets.only(
+                                                                left: 5),
+                                                        width:
+                                                            MediaQuery.of(context)
+                                                                .size
+                                                                .width,
+                                                        decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                                color: grey),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(3)),
+                                                        child: FutureBuilder(
+                                                          future: api.fetchUnitOf(
+                                                              selectedItemId!),
+                                                          builder: (BuildContext
+                                                                  context,
+                                                              AsyncSnapshot
+                                                                  snapshot) {
+                                                            List<UnitModel>
+                                                                unitListData = [];
+                                                            if (snapshot.hasData) {
+                                                              // unitListData
+                                                              //     .clear();
+                                                              for (var i = 0;
+                                                                  i <snapshot.data.length;i++) {
+                                                                if (defaultUnitID.toString().isNotEmpty) {
+                                                                  if (snapshot.data[i].id == defaultUnitID! -1) {
+                                                                    _dropDownUnit =snapshot.data[i].id;
+                                                                    _conversion =snapshot.data[i].conversion;
+                                                                  }
+                                                                }
+                                                                unitListData.add(UnitModel(
+                                                                    id: snapshot.data[i].id,
+                                                                    itemId: snapshot.data[i].itemId,
+                                                                    conversion: snapshot.data[i].conversion,
+                                                                    name: snapshot.data[i].name,
+                                                                    pUnit: snapshot.data[i].pUnit,
+                                                                    sUnit: snapshot.data[i].sUnit,
+                                                                    unit: snapshot.data[i].unit,
+                                                                    rate: snapshot.data[i].rate));
                                                               }
                                                             }
+                                                            return snapshot.data !=null &&
+                                                                    snapshot.data!.length > 0
+                                                                ? DropdownButtonHideUnderline(
+                                                                    child: DropdownButton<String>(
+                                                                      isExpanded:true,
+                                                                      style: const TextStyle(
+                                                                          fontFamily:'poppins',
+                                                                          color: black),
+                                                                      hint: Text(_dropDownUnit > 0
+                                                                          ? UnitSettings.getUnitName(_dropDownUnit)
+                                                                          : 'Unit'),
+                                                                      items: snapshot.data!.map<DropdownMenuItem<String>>(
+                                                                              (item) {
+                                                                        return DropdownMenuItem<String>(
+                                                                          value: item.id.toString(),
+                                                                          child: Text(item.name!,
+                                                                              style: const TextStyle(color: black)),
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged:(value) {
+                                                                        setState(() {
+                                                                          bool cartQ = false;
+                                                                          _dropDownUnit =int.tryParse(value!)!;
+                                                                          for (var i =0; i < unitListData.length;i++) {
+                                                                            UnitModel _unit = unitListData[i];
+                                                                            if (_unit.unit == int.tryParse(value)) {
+                                                                              double? _rate = _unit.rate == 'MRP'
+                                                                                  ? selectedVariant.sellingPrice
+                                                                                  : _unit.rate == 'WHOLESALE'
+                                                                                      ? selectedVariant.wholeSalePrice
+                                                                                      : _unit.rate == 'RETAIL'
+                                                                                          ? selectedVariant.retailPrice
+                                                                                          : _unit.rate == 'SPRETAIL'
+                                                                                              ? selectedVariant.spRetailPrice
+                                                                                              : rateType == '1'
+                                                                                                  ? selectedVariant.sellingPrice
+                                                                                                  : rateType == '2'
+                                                                                                      ? selectedVariant.retailPrice
+                                                                                                      : rateType == '3'
+                                                                                                          ? selectedVariant.wholeSalePrice
+                                                                                                          : rate;
+                                                                              if (_unit.rate!.isNotEmpty) {
+                                                                                rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
+                                                                              }
+                                                                              rate =_rate!;
+                                                                              saleRate = _rate;
+                                                                              _rateController.text = saleRate > 0
+                                                                                  ? saleRate.toStringAsFixed(2)
+                                                                                  : '';
+                                                                              _conversion = _unit.conversion!;
+                                                                              if (quantity > 0 || freeQty > 0) {
+                                                                                if (totalItem > 0) {
+                                                                                  double cartS = 0, cartQt = 0;
+                                                                                  for (var element in cartItem) {
+                                                                                    if (element.uniqueCode == selectedVariant.productId) {
+                                                                                      cartQt += element.quantity! + element.free!;
+                                                                                      cartS = element.stock!;
+                                                                                    }
+                                                                                  }
+                                                                                  if (cartS > 0) {
+                                                                                    if (cartS < cartQt + quantity + freeQty) {
+                                                                                      cartQ = true;
+                                                                                    }
+                                                                                  }
+                                                                                } else {
+                                                                                  cartQ = false;
+                                                                                }
+                                                                                outOfStock = isLockQtyOnlyInSales
+                                                                                    ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                        ? true
+                                                                                        : cartQ
+                                                                                            ? true
+                                                                                            : false
+                                                                                    : negativeStock
+                                                                                        ? false
+                                                                                        : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
+                                                                                            ? isStockProductOnlyInSalesQO
+                                                                                                ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                    ? true
+                                                                                                    : cartQ
+                                                                                                        ? true
+                                                                                                        : false
+                                                                                                : false
+                                                                                            : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                ? true
+                                                                                                : cartQ
+                                                                                                    ? true
+                                                                                                    : false;
+                                                                              }
+                                                                              break;
+                                                                            }
+                                                                          }
+                                                                          calculate(
+                                                                              selectedVariant);
+                                                                        });
+                                                                      },
+                                                                    ),
+                                                                  )
+                                                                : DropdownButtonHideUnderline(
+                                                                    child: DropdownButton<String>(
+                                                                      isExpanded: true,
+                                                                      style: const TextStyle(
+                                                                          fontFamily: 'poppins',
+                                                                          color: black),
+                                                                      hint: Text(_dropDownUnit > 0
+                                                                          ? UnitSettings.getUnitName(_dropDownUnit)
+                                                                          : 'Unit'),
+                                                                      items: unitList.map<DropdownMenuItem<String>>((item) {
+                                                                        return DropdownMenuItem<String>(
+                                                                          value: item.key.toString(),
+                                                                          child:Text(
+                                                                            item.value,
+                                                                            style: const TextStyle(
+                                                                                fontFamily: 'poppins',
+                                                                                color: black),
+                                                                          ),
+                                                                        );
+                                                                      }).toList(),
+                                                                      onChanged:(value) {
+                                                                        setState(() {
+                                                                          _dropDownUnit = int.tryParse(value!)!;
+                                                                          // for (var i = 0;
+                                                                          //     i < unitListData.length;
+                                                                          //     i++) {
+                                                                          //   UnitModel
+                                                                          //       _unit =
+                                                                          //       unitListData[i];
+                                                                          //   if (_unit.unit ==
+                                                                          //       int.tryParse(value)) {
+                                                                          //     _conversion = _unit.conversion!;
+                                                                          //     break;
+                                                                          //   }
+                                                                          // }
+                                                                          // calculate(
+                                                                          //     selectedVariant);
+                                                                        });
+                                                                      },
+                                                                    ),
+                                                                  );
+                                                          },
+                                                        )),
+                                                    headTxt: 'Unit')),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                                child: ContainerFieldWidget(
+                                                    widget: TextField(
+                                                      controller: _rateController,
+                                                      focusNode: _focusNodeRate,
+                                                      readOnly: isItemRateEditLocked,
+                                                      keyboardType:
+                                                          const TextInputType.numberWithOptions(decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      decoration: const InputDecoration(
+                                                          contentPadding:
+                                                              EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          10,
+                                                                      horizontal:
+                                                                          5),
+                                                          border:
+                                                              OutlineInputBorder()),
+                                                      onChanged: (value) {
+                                                        if (value.isNotEmpty) {
+                                                          if (isMinimumRate) {
+                                                            double minRate =
+                                                                selectedVariant
+                                                                        .minimumRate ??
+                                                                    0;
+                                                            if (double.tryParse(
+                                                                    _rateController
+                                                                        .text)! >=
+                                                                minRate) {
+                                                              setState(() {
+                                                                isMinimumRatedLock =
+                                                                    false;
+                                                                calculate(
+                                                                    selectedVariant);
+                                                              });
+                                                            } else {
+                                                              setState(() {
+                                                                isMinimumRatedLock =
+                                                                    true;
+                                                              });
+                                                            }
+                                                          } else {
+                                                            setState(() {
+                                                              calculate(
+                                                                  selectedVariant);
+                                                            });
                                                           }
-
-                                                          outOfStock = isLockQtyOnlyInSales
-                                                              ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
-                                                                  ? true
-                                                                  : cartQ
-                                                                      ? true
-                                                                      : false
-                                                              : negativeStock
-                                                                  ? false
-                                                                  : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
-                                                                      ? isStockProductOnlyInSalesQO
-                                                                          ? ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
-                                                                              ? true
-                                                                              : cartQ
-                                                                                  ? true
-                                                                                  : false
-                                                                          : false
-                                                                      : ((quantity * unitValue) + double.tryParse(value)!) > selectedVariant.quantity!
-                                                                          ? true
-                                                                          : cartQ
-                                                                              ? true
-                                                                              : false;
-                                                          calculate(
-                                                              selectedVariant);
-                                                        });
-                                                      }
-                                                    },
-                                                  ),
-                                                  headTxt: 'Quantity')),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Expanded(
-                                              child: ContainerFieldWidget(
-                                                  widget: Container(
+                                                        }
+                                                      },
+                                                    ),
+                                                    headTxt: 'Rate(Price/Unit)')),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Expanded(
+                                                child: ContainerFieldWidget(
+                                                    widget: Container(
                                                       margin:
                                                           const EdgeInsets.only(
                                                               bottom: 7),
                                                       padding:
                                                           const EdgeInsets.only(
                                                               left: 5),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                              .size
-                                                              .width,
                                                       decoration: BoxDecoration(
-                                                          border: Border.all(
-                                                              color: grey),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(3)),
-                                                      child: FutureBuilder(
-                                                        future: api.fetchUnitOf(
-                                                            selectedItemId!),
-                                                        builder: (BuildContext
-                                                                context,
-                                                            AsyncSnapshot
-                                                                snapshot) {
-                                                          List<UnitModel>
-                                                              unitListData = [];
-                                                          if (snapshot
-                                                              .hasData) {
-                                                            // unitListData
-                                                            //     .clear();
-                                                            for (var i = 0;
-                                                                i <
-                                                                    snapshot
-                                                                        .data
-                                                                        .length;
-                                                                i++) {
-                                                              if (defaultUnitID
-                                                                  .toString()
-                                                                  .isNotEmpty) {
-                                                                if (snapshot
-                                                                        .data[i]
-                                                                        .id ==
-                                                                    defaultUnitID! -
-                                                                        1) {
-                                                                  _dropDownUnit =
-                                                                      snapshot
-                                                                          .data[
-                                                                              i]
-                                                                          .id;
-                                                                  _conversion =
-                                                                      snapshot
-                                                                          .data[
-                                                                              i]
-                                                                          .conversion;
-                                                                }
-                                                              }
-                                                              unitListData.add(UnitModel(
-                                                                  id: snapshot
-                                                                      .data[i]
-                                                                      .id,
-                                                                  itemId: snapshot
-                                                                      .data[i]
-                                                                      .itemId,
-                                                                  conversion:
-                                                                      snapshot
-                                                                          .data[
-                                                                              i]
-                                                                          .conversion,
-                                                                  name: snapshot
-                                                                      .data[i]
-                                                                      .name,
-                                                                  pUnit: snapshot
-                                                                      .data[i]
-                                                                      .pUnit,
-                                                                  sUnit: snapshot
-                                                                      .data[i]
-                                                                      .sUnit,
-                                                                  unit: snapshot
-                                                                      .data[i]
-                                                                      .unit,
-                                                                  rate: snapshot
-                                                                      .data[i]
-                                                                      .rate));
-                                                            }
-                                                          }
-                                                          return snapshot.data !=
-                                                                      null &&
-                                                                  snapshot.data!
-                                                                          .length >
-                                                                      0
-                                                              ? DropdownButtonHideUnderline(
-                                                                  child:
-                                                                      DropdownButton<
-                                                                          String>(
-                                                                    isExpanded:
-                                                                        true,
-                                                                    style: const TextStyle(
-                                                                        fontFamily:
-                                                                            'poppins',
-                                                                        color:
-                                                                            black),
-                                                                    hint: Text(_dropDownUnit >
-                                                                            0
-                                                                        ? UnitSettings.getUnitName(
-                                                                            _dropDownUnit)
-                                                                        : 'Unit'),
-                                                                    items: snapshot
-                                                                        .data!
-                                                                        .map<DropdownMenuItem<String>>(
-                                                                            (item) {
-                                                                      return DropdownMenuItem<
-                                                                          String>(
-                                                                        value: item
-                                                                            .id
-                                                                            .toString(),
-                                                                        child: Text(
-                                                                            item
-                                                                                .name!,
-                                                                            style:
-                                                                                const TextStyle(color: black)),
-                                                                      );
-                                                                    }).toList(),
-                                                                    onChanged:
-                                                                        (value) {
-                                                                      setState(
-                                                                          () {
-                                                                        bool
-                                                                            cartQ =
-                                                                            false;
-                                                                        _dropDownUnit =
-                                                                            int.tryParse(value!)!;
-                                                                        for (var i =
-                                                                                0;
-                                                                            i < unitListData.length;
-                                                                            i++) {
-                                                                          UnitModel
-                                                                              _unit =
-                                                                              unitListData[i];
-                                                                          if (_unit.unit ==
-                                                                              int.tryParse(value)) {
-                                                                            double? _rate = _unit.rate == 'MRP'
-                                                                                ? selectedVariant.sellingPrice
-                                                                                : _unit.rate == 'WHOLESALE'
-                                                                                    ? selectedVariant.wholeSalePrice
-                                                                                    : _unit.rate == 'RETAIL'
-                                                                                        ? selectedVariant.retailPrice
-                                                                                        : _unit.rate == 'SPRETAIL'
-                                                                                            ? selectedVariant.spRetailPrice
-                                                                                            : rateType == '1'
-                                                                                                ? selectedVariant.sellingPrice
-                                                                                                : rateType == '2'
-                                                                                                    ? selectedVariant.retailPrice
-                                                                                                    : rateType == '3'
-                                                                                                        ? selectedVariant.wholeSalePrice
-                                                                                                        : rate;
-                                                                            if (_unit.rate!.isNotEmpty) {
-                                                                              rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
-                                                                            }
-                                                                            rate =
-                                                                                _rate!;
-                                                                            saleRate =
-                                                                                _rate;
-                                                                            _rateController.text = saleRate > 0
-                                                                                ? saleRate.toStringAsFixed(2)
-                                                                                : '';
-                                                                            _conversion =
-                                                                                _unit.conversion!;
-                                                                            if (quantity > 0 ||
-                                                                                freeQty > 0) {
-                                                                              if (totalItem > 0) {
-                                                                                double cartS = 0, cartQt = 0;
-                                                                                for (var element in cartItem) {
-                                                                                  if (element.uniqueCode == selectedVariant.productId) {
-                                                                                    cartQt += element.quantity! + element.free!;
-                                                                                    cartS = element.stock!;
-                                                                                  }
-                                                                                }
-                                                                                if (cartS > 0) {
-                                                                                  if (cartS < cartQt + quantity + freeQty) {
-                                                                                    cartQ = true;
-                                                                                  }
-                                                                                }
-                                                                              } else {
-                                                                                cartQ = false;
-                                                                              }
-                                                                              outOfStock = isLockQtyOnlyInSales
-                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                      ? true
-                                                                                      : cartQ
-                                                                                          ? true
-                                                                                          : false
-                                                                                  : negativeStock
-                                                                                      ? false
-                                                                                      : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
-                                                                                          ? isStockProductOnlyInSalesQO
-                                                                                              ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                                  ? true
-                                                                                                  : cartQ
-                                                                                                      ? true
-                                                                                                      : false
-                                                                                              : false
-                                                                                          : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
-                                                                                              ? true
-                                                                                              : cartQ
-                                                                                                  ? true
-                                                                                                  : false;
-                                                                            }
-                                                                            break;
-                                                                          }
-                                                                        }
-                                                                        calculate(
-                                                                            selectedVariant);
-                                                                      });
-                                                                    },
-                                                                  ),
-                                                                )
-                                                              : DropdownButtonHideUnderline(
-                                                                  child:
-                                                                      DropdownButton<
-                                                                          String>(
-                                                                    isExpanded:
-                                                                        true,
-                                                                    style: const TextStyle(
-                                                                        fontFamily:
-                                                                            'poppins',
-                                                                        color:
-                                                                            black),
-                                                                    hint: Text(_dropDownUnit >
-                                                                            0
-                                                                        ? UnitSettings.getUnitName(
-                                                                            _dropDownUnit)
-                                                                        : 'Unit'),
-                                                                    items: unitList
-                                                                        .map<DropdownMenuItem<String>>(
-                                                                            (item) {
-                                                                      return DropdownMenuItem<
-                                                                          String>(
-                                                                        value: item
-                                                                            .key
-                                                                            .toString(),
-                                                                        child:
-                                                                            Text(
-                                                                          item.value,
-                                                                          style: const TextStyle(
-                                                                              fontFamily: 'poppins',
-                                                                              color: black),
-                                                                        ),
-                                                                      );
-                                                                    }).toList(),
-                                                                    onChanged:
-                                                                        (value) {
-                                                                      setState(
-                                                                          () {
-                                                                        _dropDownUnit =
-                                                                            int.tryParse(value!)!;
-                                                                        // for (var i = 0;
-                                                                        //     i < unitListData.length;
-                                                                        //     i++) {
-                                                                        //   UnitModel
-                                                                        //       _unit =
-                                                                        //       unitListData[i];
-                                                                        //   if (_unit.unit ==
-                                                                        //       int.tryParse(value)) {
-                                                                        //     _conversion = _unit.conversion!;
-                                                                        //     break;
-                                                                        //   }
-                                                                        // }
-                                                                        // calculate(
-                                                                        //     selectedVariant);
-                                                                      });
-                                                                    },
-                                                                  ),
-                                                                );
-                                                        },
-                                                      )),
-                                                  headTxt: 'Unit')),
-                                        ],
-                                      ),
-                                      const SizedBox(
-                                        height: 10,
-                                      ),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                              child: ContainerFieldWidget(
-                                                  widget: TextField(
-                                                    controller: _rateController,
-                                                    focusNode: _focusNodeRate,
-                                                    readOnly:
-                                                        isItemRateEditLocked,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
-                                                    decoration: const InputDecoration(
-                                                        contentPadding:
-                                                            EdgeInsets
-                                                                .symmetric(
-                                                                    vertical:
-                                                                        10,
-                                                                    horizontal:
-                                                                        5),
-                                                        border:
-                                                            OutlineInputBorder()),
-                                                    onChanged: (value) {
-                                                      if (value.isNotEmpty) {
-                                                        if (isMinimumRate) {
-                                                          double minRate =
-                                                              selectedVariant
-                                                                      .minimumRate ??
-                                                                  0;
-                                                          if (double.tryParse(
-                                                                  _rateController
-                                                                      .text)! >=
-                                                              minRate) {
+                                                        border: Border.all(
+                                                            color: Colors.grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3),
+                                                      ),
+                                                      child:
+                                                          DropdownButtonHideUnderline(
+                                                        child: DropdownButton<
+                                                            String>(
+                                                          style: const TextStyle(
+                                                              fontFamily:
+                                                                  'poppins',
+                                                              color: black),
+                                                          value:
+                                                              selectedTaxOption,
+                                                          items: [
+                                                            const DropdownMenuItem(
+                                                              value: 'With Tax',
+                                                              child: Text(
+                                                                  'With Tax'),
+                                                            ),
+                                                            DropdownMenuItem(
+                                                              enabled: salesTypeData!
+                                                                              .id ==
+                                                                          1 ||
+                                                                      salesTypeData!
+                                                                              .id ==
+                                                                          2
+                                                                  ? false
+                                                                  : true,
+                                                              value:
+                                                                  'Without Tax',
+                                                              child: const Text(
+                                                                  'Without Tax'),
+                                                            ),
+                                                          ],
+                                                          onChanged: (value) {
                                                             setState(() {
-                                                              isMinimumRatedLock =
-                                                                  false;
-                                                              calculate(
-                                                                  selectedVariant);
+                                                              selectedTaxOption = value!;
+                                                              value == 'Without Tax' 
+                                                                  ? isTax = false
+                                                                  : isTax = true;
+                                                              calculate(selectedVariant);
                                                             });
-                                                          } else {
-                                                            setState(() {
-                                                              isMinimumRatedLock =
-                                                                  true;
-                                                            });
-                                                          }
-                                                        } else {
-                                                          setState(() {
-                                                            calculate(
-                                                                selectedVariant);
-                                                          });
-                                                        }
-                                                      }
-                                                    },
-                                                  ),
-                                                  headTxt: 'Rate(Price/Unit)')),
-                                          const SizedBox(
-                                            width: 5,
-                                          ),
-                                          Expanded(
-                                              child: ContainerFieldWidget(
-                                                  widget: Container(
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            bottom: 7),
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 5),
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3),
-                                                    ),
-                                                    child:
-                                                        DropdownButtonHideUnderline(
-                                                      child: DropdownButton<
-                                                          String>(
-                                                        style: const TextStyle(
-                                                            fontFamily:
-                                                                'poppins',
-                                                            color: black),
-                                                        value:
-                                                            selectedTaxOption,
-                                                        items: [
-                                                          const DropdownMenuItem(
-                                                            value: 'With Tax',
-                                                            child: Text(
-                                                                'With Tax'),
-                                                          ),
-                                                          DropdownMenuItem(
-                                                            enabled: salesTypeData!
-                                                                            .id ==
-                                                                        1 ||
-                                                                    salesTypeData!
-                                                                            .id ==
-                                                                        2
-                                                                ? false
-                                                                : true,
-                                                            value:
-                                                                'Without Tax',
-                                                            child: const Text(
-                                                                'Without Tax'),
-                                                          ),
-                                                        ],
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                            selectedTaxOption =
-                                                                value!;
-                                                            // value == 'With Tax'
-                                                            //     ? isTax = true
-                                                            //     : isTax = false;
-                                                            calculate(
-                                                                selectedVariant);
-                                                          });
-                                                        },
-                                                        isExpanded: true,
+                                                          },
+                                                          isExpanded: true,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  headTxt: 'Tax')),
-                                        ],
-                                      )
-                                    ],
+                                                    headTxt: 'Tax')),
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   );
                                 },
                               ),
@@ -4213,7 +5229,6 @@ class _SaleState extends ConsumerState<Sale> {
                                         element.itemId == selectedItemId,
                                     orElse: () => StockProduct.empty(),
                                   );
-
                                   return Container(
                                     width: MediaQuery.of(context).size.width,
                                     color: white,
@@ -4600,379 +5615,42 @@ class _SaleState extends ConsumerState<Sale> {
           //     }
           //   },
           // ),
-          bottomNavigationBar: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                decoration: const BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(color: grey, blurRadius: .8, spreadRadius: 100),
-                  ],
-                ),
-                height: 60,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: Colors.grey,
-                          onTap: () {
-                            editItem
-                                ? setState(() {
-                                    //  position = index;
-                                    // cartModel = cartItem.elementAt(position!);
-
-                                    int index = cartModel!.id!;
-                                  int id =   cartItem.indexWhere((i) =>
-                                        i.itemId == selectedVariant.itemId);
-                                        index = id;
-                                        position = cartItem.indexWhere((i) =>
-                                        i.itemId == selectedVariant.itemId);
-                                        index = id;
-                                    removeProduct(position!);
-                                  })
-                                : setState(() {
-                                    List<UnitModel> unitListData = [];
-                                    print(selectedVariant.name);
-                                    calculateText(selectedVariant);
-
-                                    isVariantSelected = false;
-                                    if (quantity > 0 || isFreeItem) {
-                                      if (outOfStock) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: const Text(
-                                              'Sorry stock not available.'),
-                                          duration: const Duration(seconds: 3),
-                                          action: SnackBarAction(
-                                            label: 'Click',
-                                            onPressed: () {
-                                              // print('Action is clicked');
-                                            },
-                                            textColor: Colors.white,
-                                            disabledTextColor: Colors.grey,
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ));
-                                      } else {
-                                        if (isMinimumRatedLock) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(SnackBar(
-                                            content: const Text(
-                                                'Sorry rate is limited.'),
-                                            duration:
-                                                const Duration(seconds: 1),
-                                            action: SnackBarAction(
-                                              label: 'Click',
-                                              onPressed: () {
-                                                // print('Action is clicked');
-                                              },
-                                              textColor: Colors.white,
-                                              disabledTextColor: Colors.grey,
-                                            ),
-                                            backgroundColor: Colors.red,
-                                          ));
-                                        } else {
-                                          bool profitable = true;
-                                          // if (_autoVariantSelect) {
-                                          //   double qty = 0;
-                                          //   for (StockProduct product
-                                          //       in _autoStockVariant) {
-                                          //     if (qty == quantity) {
-                                          //       break;
-                                          //     }
-                                          //     qty += product.quantity;
-                                          //     addProduct(CartItem(
-                                          //         id: totalItem + 1,
-                                          //         itemId: product.itemId,
-                                          //         itemName: product.name,
-                                          //         quantity: product.quantity,
-                                          //         rate: rate,
-                                          //         rRate: rRate,
-                                          //         uniqueCode: product.productId,
-                                          //         gross: gross,
-                                          //         discount: discount,
-                                          //         discountPercent: discountPercent,
-                                          //         rDiscount: rDisc,
-                                          //         fCess: kfc,
-                                          //         serialNo: '',
-                                          //         tax: tax,
-                                          //         taxP: taxP,
-                                          //         unitId: _dropDownUnit,
-                                          //         unitValue: unitValue,
-                                          //         pRate: pRate,
-                                          //         rPRate: rPRate,
-                                          //         barcode: barcode,
-                                          //         expDate: expDate,
-                                          //         free: free,
-                                          //         fUnitId: fUnitId,
-                                          //         cdPer: cdPer,
-                                          //         cDisc: cDisc,
-                                          //         net: subTotal,
-                                          //         cess: cess,
-                                          //         total: total,
-                                          //         profitPer: profitPer,
-                                          //         fUnitValue: fUnitValue,
-                                          //         adCess: adCess,
-                                          //         iGST: iGST,
-                                          //         cGST: csGST,
-                                          //         sGST: csGST,
-                                          //         stock: product.quantity));
-                                          //   }
-                                          // } else {
-                                          if (isEnableProfitlessSalesWarning) {
-                                            if (profitPer > 0) {
-                                              profitable = true;
-                                            } else {
-                                              profitable = false;
-                                            }
-                                          }
-                                          if (profitable) {
-                                            bool isUnit = true;
-                                            if (enableMULTIUNIT) {
-                                              if (_dropDownUnit <= 0) {
-                                                int? united = unitListData !=
-                                                        null
-                                                    ? unitListData.isNotEmpty
-                                                        ? unitListData[0].sUnit
-                                                        : unitData.isNotEmpty
-                                                            ? unitData
-                                                                .firstWhere(
-                                                                    (element) =>
-                                                                        element
-                                                                            .name ==
-                                                                        'NOS')
-                                                                .id
-                                                            : 0
-                                                    : 0;
-                                                _dropDownUnit = united!;
-                                                double? unitedValue = unitListData !=
-                                                        null
-                                                    ? unitListData.isNotEmpty
-                                                        ? unitListData[0]
-                                                            .conversion
-                                                        : unitData.isNotEmpty
-                                                            ? unitData
-                                                                .firstWhere(
-                                                                    (element) =>
-                                                                        element
-                                                                            .name ==
-                                                                        'NOS')
-                                                                .conversion
-                                                            : 1
-                                                    : 0;
-                                                _conversion = unitedValue!;
-                                              }
-                                              isUnit = _dropDownUnit > 0
-                                                  ? true
-                                                  : false;
-                                              if (unitData.isEmpty && !isUnit) {
-                                                unitValue = 1;
-                                                _conversion = 0;
-                                                isUnit = true;
-                                              }
-                                            } else {
-                                              _conversion = 0;
-                                              unitValue = 1;
-                                            }
-                                            if (isUnit) {
-                                              // if (editItem) {
-                                              //   cartItem[position!].adCess = adCess;
-                                              //   cartItem[position!].quantity =
-                                              //       quantity;
-                                              //   cartItem[position!].rate = rate;
-                                              //   cartItem[position!].rRate = rRate;
-                                              //   cartItem[position!].uniqueCode =
-                                              //       uniqueCode;
-                                              //   cartItem[position!].gross = gross;
-                                              //   cartItem[position!].discount =
-                                              //       discount;
-                                              //   cartItem[position!].discountPercent =
-                                              //       discountPercent;
-                                              //   cartItem[position!].rDiscount = rDisc;
-                                              //   cartItem[position!].fCess = kfc;
-                                              //   cartItem[position!].serialNo =
-                                              //       _serialNoController.text;
-                                              //   cartItem[position!].tax = tax;
-                                              //   cartItem[position!].taxP = taxP;
-                                              //   cartItem[position!].unitId =
-                                              //       _dropDownUnit;
-                                              //   cartItem[position!].unitValue =
-                                              //       unitValue ?? 1;
-                                              //   cartItem[position!].pRate = pRate;
-                                              //   cartItem[position!].rPRate = rPRate;
-                                              //   cartItem[position!].barcode = barcode;
-                                              //   cartItem[position!].expDate = expDate;
-                                              //   cartItem[position!].free = freeQty;
-                                              //   cartItem[position!].fUnitId = fUnitId;
-                                              //   cartItem[position!].cdPer = cdPer;
-                                              //   cartItem[position!].cDisc = cDisc;
-                                              //   cartItem[position!].net = subTotal;
-                                              //   cartItem[position!].cess = cess;
-                                              //   cartItem[position!].total = total;
-                                              //   cartItem[position!].profitPer =
-                                              //       profitPer;
-                                              //   cartItem[position!].fUnitValue =
-                                              //       fUnitValue;
-                                              //   cartItem[position!].adCess = adCess;
-                                              //   cartItem[position!].iGST = iGST;
-                                              //   cartItem[position!].cGST = csGST;
-                                              //   cartItem[position!].sGST = csGST;
-                                              //   cartItem[position!].stock =
-                                              //       selectedVariant.quantity;
-                                              //   editItem = false;
-                                              // }
-                                              // if {
-                                              addProduct(
-                                                  CartItem(
-                                                      id: totalItem + 1,
-                                                      itemId: selectedVariant
-                                                          .itemId,
-                                                      itemName:
-                                                          selectedVariant.name,
-                                                      quantity: quantity,
-                                                      rate: rate,
-                                                      rRate: rRate,
-                                                      uniqueCode: uniqueCode,
-                                                      gross: gross,
-                                                      discount: discount,
-                                                      discountPercent:
-                                                          discountPercent,
-                                                      rDiscount: rDisc,
-                                                      fCess: kfc,
-                                                      serialNo:
-                                                          _serialNoController
-                                                              .text,
-                                                      tax: tax,
-                                                      taxP: taxP,
-                                                      unitId: _dropDownUnit,
-                                                      unitValue: unitValue ?? 1,
-                                                      pRate: pRate,
-                                                      rPRate: rPRate,
-                                                      barcode: barcode,
-                                                      expDate: expDate,
-                                                      free: freeQty,
-                                                      fUnitId: fUnitId,
-                                                      cdPer: cdPer,
-                                                      cDisc: cDisc,
-                                                      net: subTotal,
-                                                      cess: cess,
-                                                      total: total,
-                                                      profitPer: profitPer,
-                                                      fUnitValue: fUnitValue,
-                                                      adCess: adCess,
-                                                      iGST: iGST,
-                                                      cGST: csGST,
-                                                      sGST: csGST,
-                                                      stock: selectedVariant
-                                                          .quantity,
-                                                      minimumRate:
-                                                          selectedVariant
-                                                              .minimumRate),
-                                                  -1);
-                                              // }
-                                            } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(SnackBar(
-                                                content: const Text(
-                                                    'Please select Unit'),
-                                                duration:
-                                                    const Duration(seconds: 1),
-                                                action: SnackBarAction(
-                                                  label: 'Click',
-                                                  onPressed: () {
-                                                    // print('Action is clicked');
-                                                  },
-                                                  textColor: Colors.white,
-                                                  disabledTextColor:
-                                                      Colors.grey,
-                                                ),
-                                                backgroundColor: Colors.red,
-                                              ));
-                                            }
-                                          } else {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(SnackBar(
-                                              content: const Text(
-                                                  'Sorry Non Profitable Rate.'),
-                                              duration:
-                                                  const Duration(seconds: 1),
-                                              action: SnackBarAction(
-                                                label: 'Click',
-                                                onPressed: () {
-                                                  // print('Action is clicked');
-                                                },
-                                                textColor: Colors.white,
-                                                disabledTextColor: Colors.grey,
-                                              ),
-                                              backgroundColor: Colors.red,
-                                            ));
-                                          }
-                                          // }
-                                        }
-                                      }
-                                    }
-                                    if (totalItem > 0) {
-                                      clearValue();
-                                      // nextWidget = 0;
-                                    }
-                                  });
-                          },
-                          child: Container(
-                            height: 60,
-                            color: Colors.white,
-                            child: Center(
-                              child: Text(
-                                editItem ? 'Delete' : 'Save & New',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: Colors.white,
-                          onTap: () {
-                            List<UnitModel> unitListData = [];
-                            print(selectedVariant.name);
-                            calculateText(selectedVariant);
-                            setState(() {
-                              isVariantSelected = false;
-                              if (quantity > 0 || isFreeItem) {
-                                if (outOfStock) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: const Text(
-                                        'Sorry stock not available.'),
-                                    duration: const Duration(seconds: 3),
-                                    action: SnackBarAction(
-                                      label: 'Click',
-                                      onPressed: () {
-                                        // print('Action is clicked');
-                                      },
-                                      textColor: Colors.white,
-                                      disabledTextColor: Colors.grey,
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ));
-                                } else {
-                                  if (isMinimumRatedLock) {
+          bottomNavigationBar: Container(
+            width: MediaQuery.of(context).size.width,
+            // decoration: const BoxDecoration(
+            //   boxShadow: [
+            //     BoxShadow(color: grey, blurRadius: .8, spreadRadius: 100),
+            //   ],
+            // ),
+            height: 60,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: Colors.grey,
+                      onTap: () {
+                        editItem
+                            ? setState(() {
+                                clearValue();
+                                removeProduct(position!);
+                                calculateTotal();
+                                nextWidget = 0;
+                              })
+                            : setState(() {
+                                List<UnitModel> unitListData = [];
+                                print(selectedVariant.name);
+                                calculateText(selectedVariant);
+                    
+                                isVariantSelected = false;
+                                if (quantity > 0 || isFreeItem) {
+                                  if (outOfStock) {
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(
-                                      content:
-                                          const Text('Sorry rate is limited.'),
-                                      duration: const Duration(seconds: 1),
+                                      content: const Text(
+                                          'Sorry stock not available.'),
+                                      duration: const Duration(seconds: 3),
                                       action: SnackBarAction(
                                         label: 'Click',
                                         onPressed: () {
@@ -4984,157 +5662,179 @@ class _SaleState extends ConsumerState<Sale> {
                                       backgroundColor: Colors.red,
                                     ));
                                   } else {
-                                    bool profitable = true;
-                                    // if (_autoVariantSelect) {
-                                    //   double qty = 0;
-                                    //   for (StockProduct product
-                                    //       in _autoStockVariant) {
-                                    //     if (qty == quantity) {
-                                    //       break;
-                                    //     }
-                                    //     qty += product.quantity;
-                                    //     addProduct(CartItem(
-                                    //         id: totalItem + 1,
-                                    //         itemId: product.itemId,
-                                    //         itemName: product.name,
-                                    //         quantity: product.quantity,
-                                    //         rate: rate,
-                                    //         rRate: rRate,
-                                    //         uniqueCode: product.productId,
-                                    //         gross: gross,
-                                    //         discount: discount,
-                                    //         discountPercent: discountPercent,
-                                    //         rDiscount: rDisc,
-                                    //         fCess: kfc,
-                                    //         serialNo: '',
-                                    //         tax: tax,
-                                    //         taxP: taxP,
-                                    //         unitId: _dropDownUnit,
-                                    //         unitValue: unitValue,
-                                    //         pRate: pRate,
-                                    //         rPRate: rPRate,
-                                    //         barcode: barcode,
-                                    //         expDate: expDate,
-                                    //         free: free,
-                                    //         fUnitId: fUnitId,
-                                    //         cdPer: cdPer,
-                                    //         cDisc: cDisc,
-                                    //         net: subTotal,
-                                    //         cess: cess,
-                                    //         total: total,
-                                    //         profitPer: profitPer,
-                                    //         fUnitValue: fUnitValue,
-                                    //         adCess: adCess,
-                                    //         iGST: iGST,
-                                    //         cGST: csGST,
-                                    //         sGST: csGST,
-                                    //         stock: product.quantity));
-                                    //   }
-                                    // } else {
-                                    if (isEnableProfitlessSalesWarning) {
-                                      if (profitPer > 0) {
-                                        profitable = true;
-                                      } else {
-                                        profitable = false;
-                                      }
-                                    }
-                                    if (profitable) {
-                                      bool isUnit = true;
-                                      if (enableMULTIUNIT) {
-                                        if (_dropDownUnit <= 0) {
-                                          int? united = unitListData != null
-                                              ? unitListData.isNotEmpty
-                                                  ? unitListData[0].sUnit
-                                                  : unitData.isNotEmpty
-                                                      ? unitData
-                                                          .firstWhere(
-                                                              (element) =>
-                                                                  element
-                                                                      .name ==
-                                                                  'NOS')
-                                                          .id
-                                                      : 0
-                                              : 0;
-                                          _dropDownUnit = united!;
-                                          double? unitedValue = unitListData !=
-                                                  null
-                                              ? unitListData.isNotEmpty
-                                                  ? unitListData[0].conversion
-                                                  : unitData.isNotEmpty
-                                                      ? unitData
-                                                          .firstWhere(
-                                                              (element) =>
-                                                                  element
-                                                                      .name ==
-                                                                  'NOS')
-                                                          .conversion
-                                                      : 1
-                                              : 0;
-                                          _conversion = unitedValue!;
-                                        }
-                                        isUnit =
-                                            _dropDownUnit > 0 ? true : false;
-                                        if (unitData.isEmpty && !isUnit) {
-                                          unitValue = 1;
-                                          _conversion = 0;
-                                          isUnit = true;
-                                        }
-                                      } else {
-                                        _conversion = 0;
-                                        unitValue = 1;
-                                      }
-                                      if (isUnit) {
-                                        if (editItem) {
-                                          cartItem[position!].adCess = adCess;
-                                          cartItem[position!].quantity =
-                                              quantity;
-                                          cartItem[position!].rate = rate;
-                                          cartItem[position!].rRate = rRate;
-                                          cartItem[position!].uniqueCode =
-                                              uniqueCode;
-                                          cartItem[position!].gross = gross;
-                                          cartItem[position!].discount =
-                                              discount;
-                                          cartItem[position!].discountPercent =
-                                              discountPercent;
-                                          cartItem[position!].rDiscount = rDisc;
-                                          cartItem[position!].fCess = kfc;
-                                          cartItem[position!].serialNo =
-                                              _serialNoController.text;
-                                          cartItem[position!].tax = tax;
-                                          cartItem[position!].taxP = taxP;
-                                          cartItem[position!].unitId =
-                                              _dropDownUnit;
-                                          cartItem[position!].unitValue =
-                                              unitValue ?? 1;
-                                          cartItem[position!].pRate = pRate;
-                                          cartItem[position!].rPRate = rPRate;
-                                          cartItem[position!].barcode = barcode;
-                                          cartItem[position!].expDate = expDate;
-                                          cartItem[position!].free = freeQty;
-                                          cartItem[position!].fUnitId = fUnitId;
-                                          cartItem[position!].cdPer = cdPer;
-                                          cartItem[position!].cDisc = cDisc;
-                                          cartItem[position!].net = subTotal;
-                                          cartItem[position!].cess = cess;
-                                          cartItem[position!].total = total;
-                                          cartItem[position!].profitPer =
-                                              profitPer;
-                                          cartItem[position!].fUnitValue =
-                                              fUnitValue;
-                                          cartItem[position!].adCess = adCess;
-                                          cartItem[position!].iGST = iGST;
-                                          cartItem[position!].cGST = csGST;
-                                          cartItem[position!].sGST = csGST;
-                                          cartItem[position!].stock =
-                                              selectedVariant.quantity;
-                                          editItem = false;
+                                    if (isMinimumRatedLock) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        content: const Text(
+                                            'Sorry rate is limited.'),
+                                        duration:
+                                            const Duration(seconds: 1),
+                                        action: SnackBarAction(
+                                          label: 'Click',
+                                          onPressed: () {
+                                            // print('Action is clicked');
+                                          },
+                                          textColor: Colors.white,
+                                          disabledTextColor: Colors.grey,
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ));
+                                    } else {
+                                      bool profitable = true;
+                                      // if (_autoVariantSelect) {
+                                      //   double qty = 0;
+                                      //   for (StockProduct product
+                                      //       in _autoStockVariant) {
+                                      //     if (qty == quantity) {
+                                      //       break;
+                                      //     }
+                                      //     qty += product.quantity;
+                                      //     addProduct(CartItem(
+                                      //         id: totalItem + 1,
+                                      //         itemId: product.itemId,
+                                      //         itemName: product.name,
+                                      //         quantity: product.quantity,
+                                      //         rate: rate,
+                                      //         rRate: rRate,
+                                      //         uniqueCode: product.productId,
+                                      //         gross: gross,
+                                      //         discount: discount,
+                                      //         discountPercent: discountPercent,
+                                      //         rDiscount: rDisc,
+                                      //         fCess: kfc,
+                                      //         serialNo: '',
+                                      //         tax: tax,
+                                      //         taxP: taxP,
+                                      //         unitId: _dropDownUnit,
+                                      //         unitValue: unitValue,
+                                      //         pRate: pRate,
+                                      //         rPRate: rPRate,
+                                      //         barcode: barcode,
+                                      //         expDate: expDate,
+                                      //         free: free,
+                                      //         fUnitId: fUnitId,
+                                      //         cdPer: cdPer,
+                                      //         cDisc: cDisc,
+                                      //         net: subTotal,
+                                      //         cess: cess,
+                                      //         total: total,
+                                      //         profitPer: profitPer,
+                                      //         fUnitValue: fUnitValue,
+                                      //         adCess: adCess,
+                                      //         iGST: iGST,
+                                      //         cGST: csGST,
+                                      //         sGST: csGST,
+                                      //         stock: product.quantity));
+                                      //   }
+                                      // } else {
+                                      if (isEnableProfitlessSalesWarning) {
+                                        if (profitPer > 0) {
+                                          profitable = true;
                                         } else {
+                                          profitable = false;
+                                        }
+                                      }
+                                      if (profitable) {
+                                        bool isUnit = true;
+                                        if (enableMULTIUNIT) {
+                                          if (_dropDownUnit <= 0) {
+                                            int? united = unitListData !=
+                                                    null
+                                                ? unitListData.isNotEmpty
+                                                    ? unitListData[0].sUnit
+                                                    : unitData.isNotEmpty
+                                                        ? unitData
+                                                            .firstWhere(
+                                                                (element) =>
+                                                                    element
+                                                                        .name ==
+                                                                    'NOS')
+                                                            .id
+                                                        : 0
+                                                : 0;
+                                            _dropDownUnit = united!;
+                                            double? unitedValue = unitListData !=
+                                                    null
+                                                ? unitListData.isNotEmpty
+                                                    ? unitListData[0]
+                                                        .conversion
+                                                    : unitData.isNotEmpty
+                                                        ? unitData
+                                                            .firstWhere(
+                                                                (element) =>
+                                                                    element
+                                                                        .name ==
+                                                                    'NOS')
+                                                            .conversion
+                                                        : 1
+                                                : 0;
+                                            _conversion = unitedValue!;
+                                          }
+                                          isUnit = _dropDownUnit > 0
+                                              ? true
+                                              : false;
+                                          if (unitData.isEmpty && !isUnit) {
+                                            unitValue = 1;
+                                            _conversion = 0;
+                                            isUnit = true;
+                                          }
+                                        } else {
+                                          _conversion = 0;
+                                          unitValue = 1;
+                                        }
+                                        if (isUnit) {
+                                          // if (editItem) {
+                                          //   cartItem[position!].adCess = adCess;
+                                          //   cartItem[position!].quantity =
+                                          //       quantity;
+                                          //   cartItem[position!].rate = rate;
+                                          //   cartItem[position!].rRate = rRate;
+                                          //   cartItem[position!].uniqueCode =
+                                          //       uniqueCode;
+                                          //   cartItem[position!].gross = gross;
+                                          //   cartItem[position!].discount =
+                                          //       discount;
+                                          //   cartItem[position!].discountPercent =
+                                          //       discountPercent;
+                                          //   cartItem[position!].rDiscount = rDisc;
+                                          //   cartItem[position!].fCess = kfc;
+                                          //   cartItem[position!].serialNo =
+                                          //       _serialNoController.text;
+                                          //   cartItem[position!].tax = tax;
+                                          //   cartItem[position!].taxP = taxP;
+                                          //   cartItem[position!].unitId =
+                                          //       _dropDownUnit;
+                                          //   cartItem[position!].unitValue =
+                                          //       unitValue ?? 1;
+                                          //   cartItem[position!].pRate = pRate;
+                                          //   cartItem[position!].rPRate = rPRate;
+                                          //   cartItem[position!].barcode = barcode;
+                                          //   cartItem[position!].expDate = expDate;
+                                          //   cartItem[position!].free = freeQty;
+                                          //   cartItem[position!].fUnitId = fUnitId;
+                                          //   cartItem[position!].cdPer = cdPer;
+                                          //   cartItem[position!].cDisc = cDisc;
+                                          //   cartItem[position!].net = subTotal;
+                                          //   cartItem[position!].cess = cess;
+                                          //   cartItem[position!].total = total;
+                                          //   cartItem[position!].profitPer =
+                                          //       profitPer;
+                                          //   cartItem[position!].fUnitValue =
+                                          //       fUnitValue;
+                                          //   cartItem[position!].adCess = adCess;
+                                          //   cartItem[position!].iGST = iGST;
+                                          //   cartItem[position!].cGST = csGST;
+                                          //   cartItem[position!].sGST = csGST;
+                                          //   cartItem[position!].stock =
+                                          //       selectedVariant.quantity;
+                                          //   editItem = false;
+                                          // }
+                                          // if {
                                           addProduct(
                                               CartItem(
                                                   id: totalItem + 1,
-                                                  itemId:
-                                                      selectedVariant.itemId,
+                                                  itemId: selectedVariant
+                                                      .itemId,
                                                   itemName:
                                                       selectedVariant.name,
                                                   quantity: quantity,
@@ -5148,7 +5848,8 @@ class _SaleState extends ConsumerState<Sale> {
                                                   rDiscount: rDisc,
                                                   fCess: kfc,
                                                   serialNo:
-                                                      _serialNoController.text,
+                                                      _serialNoController
+                                                          .text,
                                                   tax: tax,
                                                   taxP: taxP,
                                                   unitId: _dropDownUnit,
@@ -5170,18 +5871,39 @@ class _SaleState extends ConsumerState<Sale> {
                                                   iGST: iGST,
                                                   cGST: csGST,
                                                   sGST: csGST,
-                                                  stock:
-                                                      selectedVariant.quantity,
-                                                  minimumRate: selectedVariant
-                                                      .minimumRate),
+                                                  stock: selectedVariant
+                                                      .quantity,
+                                                  minimumRate:
+                                                      selectedVariant
+                                                          .minimumRate),
                                               -1);
+                                          // }
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: const Text(
+                                                'Please select Unit'),
+                                            duration:
+                                                const Duration(seconds: 1),
+                                            action: SnackBarAction(
+                                              label: 'Click',
+                                              onPressed: () {
+                                                // print('Action is clicked');
+                                              },
+                                              textColor: Colors.white,
+                                              disabledTextColor:
+                                                  Colors.grey,
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ));
                                         }
                                       } else {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(SnackBar(
-                                          content:
-                                              const Text('Please select Unit'),
-                                          duration: const Duration(seconds: 1),
+                                          content: const Text(
+                                              'Sorry Non Profitable Rate.'),
+                                          duration:
+                                              const Duration(seconds: 1),
                                           action: SnackBarAction(
                                             label: 'Click',
                                             onPressed: () {
@@ -5193,54 +5915,616 @@ class _SaleState extends ConsumerState<Sale> {
                                           backgroundColor: Colors.red,
                                         ));
                                       }
-                                    } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: const Text(
-                                            'Sorry Non Profitable Rate.'),
-                                        duration: const Duration(seconds: 1),
-                                        action: SnackBarAction(
-                                          label: 'Click',
-                                          onPressed: () {
-                                            // print('Action is clicked');
-                                          },
-                                          textColor: Colors.white,
-                                          disabledTextColor: Colors.grey,
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ));
+                                      // }
                                     }
-                                    // }
                                   }
                                 }
-                              }
-                              if (totalItem > 0) {
-                                clearValue();
-                                nextWidget = 0;
-                              }
-                            });
-                          },
-                          child: Container(
-                            height: 60,
-                            color: kPrimaryColor,
-                            child: const Center(
-                              child: Text(
-                                'Save',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
-                              ),
+                                if (totalItem > 0) {
+                                  clearValue();
+                                  // nextWidget = 0;
+                                }
+                              });
+                      },
+                      child: Container(
+                        height: 60,
+                        color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            editItem ? 'Delete' : 'Save & New',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      splashColor: Colors.white,
+                      onTap: () {
+                        editItem ? setState(() {
+                           List<UnitModel> unitListData = [];
+                        print(selectedVariant.name);
+                        calculateText(selectedVariant);
+                        setState(() {
+                          isVariantSelected = false;
+                          if (quantity > 0 || isFreeItem) {
+                            if (outOfStock) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text(
+                                    'Sorry stock not available.'),
+                                duration: const Duration(seconds: 3),
+                                action: SnackBarAction(
+                                  label: 'Click',
+                                  onPressed: () {
+                                    // print('Action is clicked');
+                                  },
+                                  textColor: Colors.white,
+                                  disabledTextColor: Colors.grey,
+                                ),
+                                backgroundColor: Colors.red,
+                              ));
+                            } else {
+                              if (isMinimumRatedLock) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      const Text('Sorry rate is limited.'),
+                                  duration: const Duration(seconds: 1),
+                                  action: SnackBarAction(
+                                    label: 'Click',
+                                    onPressed: () {
+                                      // print('Action is clicked');
+                                    },
+                                    textColor: Colors.white,
+                                    disabledTextColor: Colors.grey,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ));
+                              } else {
+                                bool profitable = true;
+                                // if (_autoVariantSelect) {
+                                //   double qty = 0;
+                                //   for (StockProduct product
+                                //       in _autoStockVariant) {
+                                //     if (qty == quantity) {
+                                //       break;
+                                //     }
+                                //     qty += product.quantity;
+                                //     addProduct(CartItem(
+                                //         id: totalItem + 1,
+                                //         itemId: product.itemId,
+                                //         itemName: product.name,
+                                //         quantity: product.quantity,
+                                //         rate: rate,
+                                //         rRate: rRate,
+                                //         uniqueCode: product.productId,
+                                //         gross: gross,
+                                //         discount: discount,
+                                //         discountPercent: discountPercent,
+                                //         rDiscount: rDisc,
+                                //         fCess: kfc,
+                                //         serialNo: '',
+                                //         tax: tax,
+                                //         taxP: taxP,
+                                //         unitId: _dropDownUnit,
+                                //         unitValue: unitValue,
+                                //         pRate: pRate,
+                                //         rPRate: rPRate,
+                                //         barcode: barcode,
+                                //         expDate: expDate,
+                                //         free: free,
+                                //         fUnitId: fUnitId,
+                                //         cdPer: cdPer,
+                                //         cDisc: cDisc,
+                                //         net: subTotal,
+                                //         cess: cess,
+                                //         total: total,
+                                //         profitPer: profitPer,
+                                //         fUnitValue: fUnitValue,
+                                //         adCess: adCess,
+                                //         iGST: iGST,
+                                //         cGST: csGST,
+                                //         sGST: csGST,
+                                //         stock: product.quantity));
+                                //   }
+                                // } else {
+                                if (isEnableProfitlessSalesWarning) {
+                                  if (profitPer > 0) {
+                                    profitable = true;
+                                  } else {
+                                    profitable = false;
+                                  }
+                                }
+                                if (profitable) {
+                                  bool isUnit = true;
+                                  if (enableMULTIUNIT) {
+                                    if (_dropDownUnit <= 0) {
+                                      int? united = unitListData != null
+                                          ? unitListData.isNotEmpty
+                                              ? unitListData[0].sUnit
+                                              : unitData.isNotEmpty
+                                                  ? unitData
+                                                      .firstWhere(
+                                                          (element) =>
+                                                              element
+                                                                  .name ==
+                                                              'NOS')
+                                                      .id
+                                                  : 0
+                                          : 0;
+                                      _dropDownUnit = united!;
+                                      double? unitedValue = unitListData !=
+                                              null
+                                          ? unitListData.isNotEmpty
+                                              ? unitListData[0].conversion
+                                              : unitData.isNotEmpty
+                                                  ? unitData
+                                                      .firstWhere(
+                                                          (element) =>
+                                                              element
+                                                                  .name ==
+                                                              'NOS')
+                                                      .conversion
+                                                  : 1
+                                          : 0;
+                                      _conversion = unitedValue!;
+                                    }
+                                    isUnit =
+                                        _dropDownUnit > 0 ? true : false;
+                                    if (unitData.isEmpty && !isUnit) {
+                                      unitValue = 1;
+                                      _conversion = 0;
+                                      isUnit = true;
+                                    }
+                                  } else {
+                                    _conversion = 0;
+                                    unitValue = 1;
+                                  }
+                                  if (isUnit) {
+                                    if (editItem) {
+                                      cartItem[position!].adCess = adCess;
+                                      cartItem[position!].quantity =
+                                          quantity;
+                                      cartItem[position!].rate = rate;
+                                      cartItem[position!].rRate = rRate;
+                                      cartItem[position!].uniqueCode =
+                                          uniqueCode;
+                                      cartItem[position!].gross = gross;
+                                      cartItem[position!].discount =
+                                          discount;
+                                      cartItem[position!].discountPercent =
+                                          discountPercent;
+                                      cartItem[position!].rDiscount = rDisc;
+                                      cartItem[position!].fCess = kfc;
+                                      cartItem[position!].serialNo =
+                                          _serialNoController.text;
+                                      cartItem[position!].tax = tax;
+                                      cartItem[position!].taxP = taxP;
+                                      cartItem[position!].unitId =
+                                          _dropDownUnit;
+                                      cartItem[position!].unitValue =
+                                          unitValue ?? 1;
+                                      cartItem[position!].pRate = pRate;
+                                      cartItem[position!].rPRate = rPRate;
+                                      cartItem[position!].barcode = barcode;
+                                      cartItem[position!].expDate = expDate;
+                                      cartItem[position!].free = freeQty;
+                                      cartItem[position!].fUnitId = fUnitId;
+                                      cartItem[position!].cdPer = cdPer;
+                                      cartItem[position!].cDisc = cDisc;
+                                      cartItem[position!].net = subTotal;
+                                      cartItem[position!].cess = cess;
+                                      cartItem[position!].total = total;
+                                      cartItem[position!].profitPer =
+                                          profitPer;
+                                      cartItem[position!].fUnitValue =
+                                          fUnitValue;
+                                      cartItem[position!].adCess = adCess;
+                                      cartItem[position!].iGST = iGST;
+                                      cartItem[position!].cGST = csGST;
+                                      cartItem[position!].sGST = csGST;
+                                      cartItem[position!].stock =
+                                          selectedVariant.quantity;
+                                      editItem = false;
+                                    }
+                                     else {
+                                      addProduct(
+                                          CartItem(
+                                              id: totalItem + 1,
+                                              itemId:
+                                                  selectedVariant.itemId,
+                                              itemName:
+                                                  selectedVariant.name,
+                                              quantity: quantity,
+                                              rate: rate,
+                                              rRate: rRate,
+                                              uniqueCode: uniqueCode,
+                                              gross: gross,
+                                              discount: discount,
+                                              discountPercent:
+                                                  discountPercent,
+                                              rDiscount: rDisc,
+                                              fCess: kfc,
+                                              serialNo:
+                                                  _serialNoController.text,
+                                              tax: tax,
+                                              taxP: taxP,
+                                              unitId: _dropDownUnit,
+                                              unitValue: unitValue ?? 1,
+                                              pRate: pRate,
+                                              rPRate: rPRate,
+                                              barcode: barcode,
+                                              expDate: expDate,
+                                              free: freeQty,
+                                              fUnitId: fUnitId,
+                                              cdPer: cdPer,
+                                              cDisc: cDisc,
+                                              net: subTotal,
+                                              cess: cess,
+                                              total: total,
+                                              profitPer: profitPer,
+                                              fUnitValue: fUnitValue,
+                                              adCess: adCess,
+                                              iGST: iGST,
+                                              cGST: csGST,
+                                              sGST: csGST,
+                                              stock:
+                                                  selectedVariant.quantity,
+                                              minimumRate: selectedVariant
+                                                  .minimumRate),
+                                          -1);
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content:
+                                          const Text('Please select Unit'),
+                                      duration: const Duration(seconds: 1),
+                                      action: SnackBarAction(
+                                        label: 'Click',
+                                        onPressed: () {
+                                          // print('Action is clicked');
+                                        },
+                                        textColor: Colors.white,
+                                        disabledTextColor: Colors.grey,
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ));
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text(
+                                        'Sorry Non Profitable Rate.'),
+                                    duration: const Duration(seconds: 1),
+                                    action: SnackBarAction(
+                                      label: 'Click',
+                                      onPressed: () {
+                                        // print('Action is clicked');
+                                      },
+                                      textColor: Colors.white,
+                                      disabledTextColor: Colors.grey,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                }
+                                // }
+                              }
+                            }
+                          }
+                          if (totalItem > 0) {
+                            clearValue();
+                            calculateTotal();
+                            nextWidget = 0;
+                          }
+                        });
+                        },):
+                       setState(() {
+                          List<UnitModel> unitListData = [];
+                        print(selectedVariant.name);
+                        calculateText(selectedVariant);
+                        setState(() {
+                          isVariantSelected = false;
+                          if (quantity > 0 || isFreeItem) {
+                            if (outOfStock) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: const Text(
+                                    'Sorry stock not available.'),
+                                duration: const Duration(seconds: 3),
+                                action: SnackBarAction(
+                                  label: 'Click',
+                                  onPressed: () {
+                                    // print('Action is clicked');
+                                  },
+                                  textColor: Colors.white,
+                                  disabledTextColor: Colors.grey,
+                                ),
+                                backgroundColor: Colors.red,
+                              ));
+                            } else {
+                              if (isMinimumRatedLock) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(SnackBar(
+                                  content:
+                                      const Text('Sorry rate is limited.'),
+                                  duration: const Duration(seconds: 1),
+                                  action: SnackBarAction(
+                                    label: 'Click',
+                                    onPressed: () {
+                                      // print('Action is clicked');
+                                    },
+                                    textColor: Colors.white,
+                                    disabledTextColor: Colors.grey,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ));
+                              } else {
+                                bool profitable = true;
+                                // if (_autoVariantSelect) {
+                                //   double qty = 0;
+                                //   for (StockProduct product
+                                //       in _autoStockVariant) {
+                                //     if (qty == quantity) {
+                                //       break;
+                                //     }
+                                //     qty += product.quantity;
+                                //     addProduct(CartItem(
+                                //         id: totalItem + 1,
+                                //         itemId: product.itemId,
+                                //         itemName: product.name,
+                                //         quantity: product.quantity,
+                                //         rate: rate,
+                                //         rRate: rRate,
+                                //         uniqueCode: product.productId,
+                                //         gross: gross,
+                                //         discount: discount,
+                                //         discountPercent: discountPercent,
+                                //         rDiscount: rDisc,
+                                //         fCess: kfc,
+                                //         serialNo: '',
+                                //         tax: tax,
+                                //         taxP: taxP,
+                                //         unitId: _dropDownUnit,
+                                //         unitValue: unitValue,
+                                //         pRate: pRate,
+                                //         rPRate: rPRate,
+                                //         barcode: barcode,
+                                //         expDate: expDate,
+                                //         free: free,
+                                //         fUnitId: fUnitId,
+                                //         cdPer: cdPer,
+                                //         cDisc: cDisc,
+                                //         net: subTotal,
+                                //         cess: cess,
+                                //         total: total,
+                                //         profitPer: profitPer,
+                                //         fUnitValue: fUnitValue,
+                                //         adCess: adCess,
+                                //         iGST: iGST,
+                                //         cGST: csGST,
+                                //         sGST: csGST,
+                                //         stock: product.quantity));
+                                //   }
+                                // } else {
+                                if (isEnableProfitlessSalesWarning) {
+                                  if (profitPer > 0) {
+                                    profitable = true;
+                                  } else {
+                                    profitable = false;
+                                  }
+                                }
+                                if (profitable) {
+                                  bool isUnit = true;
+                                  if (enableMULTIUNIT) {
+                                    if (_dropDownUnit <= 0) {
+                                      int? united = unitListData != null
+                                          ? unitListData.isNotEmpty
+                                              ? unitListData[0].sUnit
+                                              : unitData.isNotEmpty
+                                                  ? unitData
+                                                      .firstWhere(
+                                                          (element) =>
+                                                              element
+                                                                  .name ==
+                                                              'NOS')
+                                                      .id
+                                                  : 0
+                                          : 0;
+                                      _dropDownUnit = united!;
+                                      double? unitedValue = unitListData !=
+                                              null
+                                          ? unitListData.isNotEmpty
+                                              ? unitListData[0].conversion
+                                              : unitData.isNotEmpty
+                                                  ? unitData
+                                                      .firstWhere(
+                                                          (element) =>
+                                                              element
+                                                                  .name ==
+                                                              'NOS')
+                                                      .conversion
+                                                  : 1
+                                          : 0;
+                                      _conversion = unitedValue!;
+                                    }
+                                    isUnit =
+                                        _dropDownUnit > 0 ? true : false;
+                                    if (unitData.isEmpty && !isUnit) {
+                                      unitValue = 1;
+                                      _conversion = 0;
+                                      isUnit = true;
+                                    }
+                                  } else {
+                                    _conversion = 0;
+                                    unitValue = 1;
+                                  }
+                                  if (isUnit) {
+                                    if (editItem) {
+                                      cartItem[position!].adCess = adCess;
+                                      cartItem[position!].quantity =
+                                          quantity;
+                                      cartItem[position!].rate = rate;
+                                      cartItem[position!].rRate = rRate;
+                                      cartItem[position!].uniqueCode =
+                                          uniqueCode;
+                                      cartItem[position!].gross = gross;
+                                      cartItem[position!].discount =
+                                          discount;
+                                      cartItem[position!].discountPercent =
+                                          discountPercent;
+                                      cartItem[position!].rDiscount = rDisc;
+                                      cartItem[position!].fCess = kfc;
+                                      cartItem[position!].serialNo =
+                                          _serialNoController.text;
+                                      cartItem[position!].tax = tax;
+                                      cartItem[position!].taxP = taxP;
+                                      cartItem[position!].unitId =
+                                          _dropDownUnit;
+                                      cartItem[position!].unitValue =
+                                          unitValue ?? 1;
+                                      cartItem[position!].pRate = pRate;
+                                      cartItem[position!].rPRate = rPRate;
+                                      cartItem[position!].barcode = barcode;
+                                      cartItem[position!].expDate = expDate;
+                                      cartItem[position!].free = freeQty;
+                                      cartItem[position!].fUnitId = fUnitId;
+                                      cartItem[position!].cdPer = cdPer;
+                                      cartItem[position!].cDisc = cDisc;
+                                      cartItem[position!].net = subTotal;
+                                      cartItem[position!].cess = cess;
+                                      cartItem[position!].total = total;
+                                      cartItem[position!].profitPer =
+                                          profitPer;
+                                      cartItem[position!].fUnitValue =
+                                          fUnitValue;
+                                      cartItem[position!].adCess = adCess;
+                                      cartItem[position!].iGST = iGST;
+                                      cartItem[position!].cGST = csGST;
+                                      cartItem[position!].sGST = csGST;
+                                      cartItem[position!].stock =
+                                          selectedVariant.quantity;
+                                      editItem = false;
+                                    } 
+                                    else {
+                                      addProduct(
+                                          CartItem(
+                                              id: totalItem + 1,
+                                              itemId:
+                                                  selectedVariant.itemId,
+                                              itemName:
+                                                  selectedVariant.name,
+                                              quantity: quantity,
+                                              rate: rate,
+                                              rRate: rRate,
+                                              uniqueCode: uniqueCode,
+                                              gross: gross,
+                                              discount: discount,
+                                              discountPercent:
+                                                  discountPercent,
+                                              rDiscount: rDisc,
+                                              fCess: kfc,
+                                              serialNo:
+                                                  _serialNoController.text,
+                                              tax: tax,
+                                              taxP: taxP,
+                                              unitId: _dropDownUnit,
+                                              unitValue: unitValue ?? 1,
+                                              pRate: pRate,
+                                              rPRate: rPRate,
+                                              barcode: barcode,
+                                              expDate: expDate,
+                                              free: freeQty,
+                                              fUnitId: fUnitId,
+                                              cdPer: cdPer,
+                                              cDisc: cDisc,
+                                              net: subTotal,
+                                              cess: cess,
+                                              total: total,
+                                              profitPer: profitPer,
+                                              fUnitValue: fUnitValue,
+                                              adCess: adCess,
+                                              iGST: iGST,
+                                              cGST: csGST,
+                                              sGST: csGST,
+                                              stock:
+                                                  selectedVariant.quantity,
+                                              minimumRate: selectedVariant
+                                                  .minimumRate),
+                                          -1);
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content:
+                                          const Text('Please select Unit'),
+                                      duration: const Duration(seconds: 1),
+                                      action: SnackBarAction(
+                                        label: 'Click',
+                                        onPressed: () {
+                                          // print('Action is clicked');
+                                        },
+                                        textColor: Colors.white,
+                                        disabledTextColor: Colors.grey,
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ));
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(
+                                    content: const Text(
+                                        'Sorry Non Profitable Rate.'),
+                                    duration: const Duration(seconds: 1),
+                                    action: SnackBarAction(
+                                      label: 'Click',
+                                      onPressed: () {
+                                        // print('Action is clicked');
+                                      },
+                                      textColor: Colors.white,
+                                      disabledTextColor: Colors.grey,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                }
+                                // }
+                              }
+                            }
+                          }
+                          if (totalItem > 0) {
+                            clearValue();
+                            nextWidget = 0;
+                          }
+                        });
+                       },);
+                      },
+                      child: Container(
+                        height: 60,
+                        color: kPrimaryColor,
+                        child:  Center(
+                          child: Text(
+                            editItem?'Edit': 'Save',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           )),
     );
@@ -5696,7 +6980,9 @@ class _SaleState extends ConsumerState<Sale> {
                   ? ListView(
                       shrinkWrap: true,
                       children: [
+                        
                         cashCustomerWidget(),
+                        
                         const SizedBox(
                           height: 5,
                         ),
@@ -6942,7 +8228,7 @@ class _SaleState extends ConsumerState<Sale> {
       } else {
         rate = (_rateController.text.isNotEmpty
             ? (double.tryParse(_rateController.text))
-            : 0)!;
+            : 0)?? 0;
       }
     } else {
       if (_focusNodeRate.hasFocus) {
@@ -6979,10 +8265,10 @@ class _SaleState extends ConsumerState<Sale> {
         ? double.tryParse(_discountController.text)
         : 0)!;
     double? discP = _discountPercentController.text.isNotEmpty
-        ? double.tryParse(_discountPercentController.text)
+        ? double.tryParse(_discountPercentController.text)?? 0 
         : 0;
     double? disc = _discountController.text.isNotEmpty
-        ? double.tryParse(_discountController.text)
+        ? double.tryParse(_discountController.text)??0 
         : 0;
     double? qt = _quantityController.text.isNotEmpty
         ? double.tryParse(_quantityController.text)
@@ -6993,8 +8279,8 @@ class _SaleState extends ConsumerState<Sale> {
     if (_focusNodeDiscountPer.hasFocus) {
       _discountController.text = _discountPercentController.text.isNotEmpty &&
               selectedTaxOption == 'With Tax'
-          ? (((qt! * rRate!) * discP!) / 100).toStringAsFixed(2)
-          : (((qt! * rate!) * discP!) / 100).toStringAsFixed(2);
+          ? (((qt! * rRate!) * discP) / 100).toStringAsFixed(2) 
+          : (((qt! * rate!) * discP) / 100).toStringAsFixed(2);
       discount = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountController.text)
           : 0)!;
@@ -7004,8 +8290,8 @@ class _SaleState extends ConsumerState<Sale> {
     if (_focusNodeDiscount.hasFocus) {
       _discountPercentController.text =
           _discountController.text.isNotEmpty && selectedTaxOption == 'With Tax'
-              ? ((disc! * 100) / (qt! * rRate!)).toStringAsFixed(2)
-              : ((disc! * 100) / (qt! * rate!)).toStringAsFixed(2);
+              ? ((disc * 100) / (qt! * rRate!)).toStringAsFixed(2)
+              : ((disc * 100) / (qt! * rate!)).toStringAsFixed(2);
       discountPercent = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountPercentController.text)
           : 0)!;
@@ -8943,7 +10229,16 @@ class _SaleState extends ConsumerState<Sale> {
   void removeProduct(int index) {
     // int index = cartItem.indexWhere((i) => i.itemId == product.itemId);
     // cartItem[index].quantity = 1;
-    cartItem.removeAt(index); //((item) => item.id == product.id);
+    //  cartItem.removeAt(index); //((item) => item.id == product.id);
+    if (index >= 0 && index < cartItem.length) {
+      cartItem.removeAt(index);
+    }
+
+    //((item) => item.id == product.id);
+    //  if (index >= 0 && index < cartItem.length) {
+    // setState(() {
+    //   cartItem.removeAt(index);
+    // });
   }
 
   void updateProduct(product, qty, int index) {
@@ -9962,6 +11257,7 @@ class _SaleState extends ConsumerState<Sale> {
 
   fetchSale(context, data) {
     rateType = salesTypeData!.id.toString();
+    // selectedItemId = cartModel!.id;
     double billTotal = 0, billCash = 0;
 
     api.fetchSalesInvoice(data['Id'], salesTypeData!.id).then((value) {
@@ -9972,9 +11268,7 @@ class _SaleState extends ConsumerState<Sale> {
         // var serialNO = value['SerialNO'];
         // var deliveryNoteDetails = value['DeliveryNote'];
         otherAmountList = value['otherAmount'];
-
         formattedDate = DateUtil.dateDMY(information['DDate']);
-
         dataDynamic = [
           {
             'RealEntryNo': information['RealEntryNo'],
@@ -9983,14 +11277,17 @@ class _SaleState extends ConsumerState<Sale> {
             'Type': salesTypeData!.id
           }
         ];
+        
         invoiceNo = information['InvoiceNo'];
         invoiceNoController.text = invoiceNo;
         billCash = double.tryParse(information['CashReceived'].toString())!;
         billTotal = double.tryParse(information['GrandTotal'].toString())!;
         returnAmount = double.tryParse(information['ReturnAmount'].toString())!;
+        selectedItemId = information['itemId'];
         returnBillId = information['ReturnNo'];
         controllerNarration.text = information['Narration'];
-
+     
+       
         if (apiV != 'v19/') {
           Object _bankLedgerName = information['BankName'] != null
               ? information['BankName'].toString()
@@ -10004,19 +11301,18 @@ class _SaleState extends ConsumerState<Sale> {
                 element.name.toLowerCase() ==
                 _bankLedgerName.toString().toLowerCase());
             bankLedgerName = bankLedgerData.name;
+
           } else {
             bankAmountController.text = '';
             bankLedgerData = null;
             bankLedgerName = '';
           }
-
           int? _commissionLedgerAc = information['CareOff'] != null
               ? int.tryParse(information['CareOff'].toString())
               : 0;
           double? _commissionLedgerAmount = information['CareOffAmount'] != null
               ? double.tryParse(information['CareOffAmount'].toString())
               : 0;
-
           if (_commissionLedgerAmount! > 0) {
             commissionAmountController.text =
                 _commissionLedgerAmount.toString();
@@ -10045,15 +11341,20 @@ class _SaleState extends ConsumerState<Sale> {
             state: '',
             stateCode: '',
             taxNumber: information['gstno']);
-        ledgerModel = cModel;
+        ledgerModel =  cModel;
+        nameControl.text = cModel.id == acId ?  cashAc :cModel.name!;
+        selectedCustomerId =  cModel.id;
         addressControl.text = cModel.address1!;
         siteNameControl.text = cModel.address2!;
+        
         // api
         //     .getCustomerDetail(ledgerModel.id)
         //     .then((ledgerData) => accountModel = ledgerData);
         ScopedModel.of<MainModel>(context).addCustomer(cModel);
+  //       cartModel =
+  // cartItem.elementAt(position!);
         for (var product in particulars) {
-          addProduct(
+          addProduct(  
               CartItem(
                   stock: 0,
                   minimumRate: 0,
@@ -10095,9 +11396,11 @@ class _SaleState extends ConsumerState<Sale> {
                       double.tryParse(product['adcess'].toString()), //adCess,
                   iGST: double.tryParse(product['IGST'].toString()),
                   cGST: double.tryParse(product['CGST'].toString()),
-                  sGST: double.tryParse(product['SGST'].toString())),
+                  sGST: double.tryParse(product['SGST'].toString()),
+                  ),
+                  
               -1);
-        }
+        } 
         userDateCheck(information['DDate'].toString());
       }
 
@@ -10119,7 +11422,8 @@ class _SaleState extends ConsumerState<Sale> {
           returnAmountController.text = returnAmount.toString();
           returnEntryNoController.text = returnBillId.toString();
         }
-        nextWidget = 4;
+        // nextWidget = 4;
+        editItem = true;
         oldBill = true;
       });
       // Navigator.pushReplacementNamed(context, '/preview_show',

@@ -3960,7 +3960,7 @@ class DioService {
     return data;
   }
 
-  Future<dynamic> fetchPurchaseInvoiceSp(int id, String type) async {
+  Future<dynamic> fetchPurchaseInvoiceSp(int id, String type,int frmId) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
     dataBase = isEstimateDataBase
@@ -3973,7 +3973,8 @@ class DioService {
           queryParameters: {
             'id': id,
             'statement': type,
-            'fyId': currentFinancialYear!.id
+            'fyId': currentFinancialYear!.id,
+            'frmId': 8
           });
       if (response.statusCode == 200) {
         var jsonResponse = response.data;
@@ -4080,7 +4081,7 @@ class DioService {
     return _items;
   }
 
-  Future<bool> deletePurchase(entryNo, type) async {
+  Future<bool> deletePurchase(entryNo, type, int frmId) async {
     bool ret = false;
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
@@ -4097,6 +4098,7 @@ class DioService {
         },
       );
       if (response.statusCode == 200) {
+        
         ret = response.data['returnValue'] > 0 ? true : false;
       } else {
         ret = false;

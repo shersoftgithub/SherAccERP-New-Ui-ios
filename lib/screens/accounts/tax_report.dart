@@ -718,7 +718,7 @@ class _TaxReportState extends State<TaxReport> {
                           border: Border.all(color: grey),
                           borderRadius: BorderRadius.circular(3)),
                       child: ExpansionTile(
-                        dense: true,
+                        // dense: true,
                         title: const Text(
                           'Sales Name',
                           style: TextStyle(

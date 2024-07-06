@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -18,10 +20,12 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/util/show_confirm_alert_box.dart';
 import 'package:sheraccerp/widget/components.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
@@ -51,6 +55,7 @@ class _PurchaseState extends State<Purchase> {
       otherAmountLoaded = false,
       valueMore = false,
       _isLoading = false,
+      isLoading = false,
       widgetID = true,
       gstVerified = false,
       gstValidation = false,
@@ -62,9 +67,10 @@ class _PurchaseState extends State<Purchase> {
       realPRateBasedProfitPercentage = false,
       isQuantityBasedSerialNo = false,
       mrpBasedProfit = false,
+      newPurchase= false,
       isAccountLedger = false;
   List<CartItemP> cartItem = [];
-  int page = 1, pageTotal = 0, totalRecords = 0, _dropDownUnit = 0;
+  int page = 1, pageTotal = 0, totalRecords = 0, _dropDownUnit = 0,acId = 0,cashId = 0;
   List<ProductPurchaseModel> itemDisplay = [];
   List<ProductPurchaseModel> items = [];
   List<SerialNOModel> serialNoData = [];
@@ -77,10 +83,14 @@ class _PurchaseState extends State<Purchase> {
       enableBarcode = false;
   int locationId = 1, salesManId = 0, decimal = 2;
   String labelSerialNo = 'SerialNo';
+  String cashAc = '';
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   bool ledgerScanner = false, productScanner = false, serialNoScanner = false;
+  TextEditingController  supplierController = TextEditingController();
+ final productNameController = TextEditingController();
+ final billingNameController = TextEditingController();
 
   @override
   void initState() {
@@ -103,6 +113,15 @@ class _PurchaseState extends State<Purchase> {
         ScopedModel.of<MainModel>(context).getCompanySettings();
     List<CompanySettings> settings =
         ScopedModel.of<MainModel>(context).getSettings();
+
+         cashAc =
+        ComSettings.getValue('CASH A/C', settings!).toString().trim() ?? 'CASH';
+     cashId =
+        ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
+    acId = 
+         mainAccount.firstWhere((element) => element['LedName'] == cashAc,
+            orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
+        ;
 
     taxMethod = companySettings.taxCalculation!;
     enableMULTIUNIT = ComSettings.getStatus('ENABLE MULTI-UNIT', settings);
@@ -175,32 +194,40 @@ class _PurchaseState extends State<Purchase> {
   }
 
   _onWillPop() async {
-    if (nextWidget == 4) {
-      return (await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Back'),
-              content: const Text('Select Item Again?'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      nextWidget = 3;
-                      clearValue();
-                    });
-                    Navigator.of(context).pop(false);
-                  },
-                  child: const Text('Select'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Yes'),
-                ),
-              ],
-            ),
-          )) ??
-          false;
-    } else {
+    if (nextWidget == 1 ) {
+      return setState(() {
+        nextWidget =0;
+      },);
+      // (await showDialog(
+      //       context: context,
+      //       builder: (context) => AlertDialog(
+      //         title: const Text('Back'),
+      //         content: const Text('Select Item Again?'),
+      //         actions: [
+      //           TextButton(
+      //             onPressed: () {
+                   
+      //               Navigator.of(context).pop(false);
+      //             },
+      //             child: const Text('No'),
+      //           ),
+      //           TextButton(
+      //             onPressed: (){
+      //                setState(() {
+      //                 nextWidget = 0;
+      //                 clearValue();
+      //               });
+      //               //  Navigator.of(context).pop(true);
+      //             }
+      //            ,
+      //             child: const Text('Yes'),
+      //           ),
+      //         ],
+      //       ),
+      //     )) ??
+      //     false;
+    }
+     else {
       return (await showDialog(
             context: context,
             builder: (context) => AlertDialog(
@@ -226,7 +253,8 @@ class _PurchaseState extends State<Purchase> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       key: _scaffoldKey,
-      appBar: AppBar(
+      appBar: newPurchase ?
+       AppBar(
         actions: [
           Visibility(
             visible: oldBill,
@@ -306,6 +334,7 @@ class _PurchaseState extends State<Purchase> {
                                 'location': locationId,
                                 'statementtype': stType,
                                 'fyId': currentFinancialYear!.id,
+                                'frmId': 8
                               }) +
                               ']';
 
@@ -437,7 +466,7 @@ class _PurchaseState extends State<Purchase> {
                   icon: const Icon(Icons.save)),
         ],
         title: const Text('Purchase'),
-      ),
+      ) :null,
       body: ProgressHUD(
           inAsyncCall: _isLoading, opacity: 0.0, child: selectWidget()),
     );
@@ -447,6 +476,7 @@ class _PurchaseState extends State<Purchase> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
@@ -520,7 +550,7 @@ class _PurchaseState extends State<Purchase> {
       }
     }
   }
-
+OverlayEntry? _overlayEntry;
   @override
   void dispose() {
     _scrollController.dispose();
@@ -548,15 +578,23 @@ class _PurchaseState extends State<Purchase> {
     invNoController.dispose();
     newSerialNoController.dispose();
 
+    if (_overlayEntry != null) {
+      if (!mounted) {
+        _overlayEntry!.dispose();
+      }
+    }
+
     super.dispose();
   }
 
   int nextWidget = 0;
   Widget selectWidget() {
     return nextWidget == 0
-        ? baseWidget()
+        ? newPurchaseWidget(newPurchase)
+        // baseWidget()
         : nextWidget == 1
-            ? selectLedgerWidget()
+            ? addItemWidget()
+            //  selectLedgerWidget()
             : nextWidget == 2
                 ? selectLedgerDetailWidget()
                 : nextWidget == 3
@@ -583,39 +621,140 @@ class _PurchaseState extends State<Purchase> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ? Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+          child: ListView.separated(
+            separatorBuilder: (context, index) => const SizedBox(height: 5,),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                  );
+                } else {
+                  return InkWell(
                     onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
+                       showEditDialog(context, dataDisplay[index]);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
-          )
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 5),
+                            blurRadius: 6,
+                            color: const Color(0xff000000).withOpacity(0.06),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: 
+                      Row(children: [
+                        Expanded(
+                            flex: 3,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
+                                      ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                            Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],)
+                      // ListTile(
+                      //   title: Text(dataDisplay[index]['Name']),
+                      //   subtitle: Text('Date: ' +
+                      //       dataDisplay[index]['Date'] +
+                      //       ' / EntryNo : ' +
+                      //       dataDisplay[index]['Id'].toString()),
+                      //   trailing: Text(
+                      //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                      //   onTap: () {
+                      //     showEditDialog(context, dataDisplay[index]);
+                      //   },
+                      // ),
+                    ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
+        )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -918,6 +1057,4998 @@ class _PurchaseState extends State<Purchase> {
     //   );
     // }
   }
+final expandedHeight = 400.0;
+  final collapsedHeight =   200.0;
+  final collaps = 280.0;
+  final animationDuration = const Duration(milliseconds: 400);
+  bool isExpanded = false;
+  var query = 'a';
+  var selectedSupplier;
+  int? selectedSupplierId;
+  int selectedTabIndex = 0;
+  TabController? tabController;
+  var filterCashAccount;
+  var filteredName;
+ void _onTabTapped(int index) {
+  setState(() {
+    selectedTabIndex = index;
+  });
+
+  if (index == 1) {
+    setState(() {
+      selectedSupplierId = acId;
+      
+      final csDetails = api.getCustomerDetail(acId);
+      
+      csDetails.then((value) { 
+        setState(() {
+          ledgerModel = value;
+
+          filterCashAccount = cashAccount.where((element) {
+            return element.key == selectedSupplierId;
+          }).toList();
+
+          filteredName = filterCashAccount.map((element) {
+            return element.value; 
+          }).join(', ');
+
+          ledgerModel!.name = filteredName.toString(); 
+
+          print(filteredName);
+        });
+      });
+    });
+  }
+}
+newPurchaseWidget(newPurchase){
+if (newPurchase) {
+  setState(() {
+    newPurchase = true;
+  });
+}
+return DefaultTabController(
+  animationDuration: const Duration(milliseconds: 1),
+  initialIndex: selectedTabIndex,
+  length: 2,
+  child: GestureDetector(
+    onTap: () => FocusScope.of(context).unfocus(),
+    child: Scaffold(
+        backgroundColor: bagroundColor,
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            centerTitle: !oldBill ? false : true,
+            toolbarHeight: 60,
+            title: const Text('Purchase',
+            style: TextStyle(
+              fontFamily: 'poppins',
+              ),),
+            actions: [
+              !oldBill? Container(
+              height: 30,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: white,
+              ),
+              width: 130,
+              child: TabBar(
+                onTap: _onTabTapped,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorColor: green,
+                  unselectedLabelColor: black,
+                  dividerHeight: 0,
+                  labelStyle: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 10,
+                  ),
+                  padding: const EdgeInsets.all(1),
+                  indicator: BoxDecoration(
+                      color: green, borderRadius: BorderRadius.circular(30)),
+                  tabs: const [
+                    Tab(
+                      text: 'Credit',
+                      // child: SizedBox(
+                      //   // width: 65,
+                      //   child: Text('Credit'),
+                      // ),
+                    ),
+                    Tab(
+                      text: 'Cash',
+                    )
+                  ]),
+            ):const SizedBox(),
+              const SizedBox(
+                width: 10,
+              ),
+             IconButton(onPressed: (){
+
+             }, icon: const Icon(Icons.settings,color: white,)),
+             const SizedBox(
+              width: 10,
+             )
+            ],
+          ),
+          body: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              
+          Scaffold(
+            backgroundColor: bagroundColor,
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 5
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Text(' Bill No',style: 
+                                  TextStyle(fontFamily: 'poppins',fontSize: 14,fontWeight: FontWeight.w500),),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 35,
+                                    decoration: BoxDecoration(border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)
+                                    ),
+                                    child: entryNo.isEmpty
+                            ? const Align(
+                              alignment: Alignment.centerRight,
+                              child: Icon(Icons.arrow_drop_down_rounded,color: grey,))
+                            : Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  entryNo,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w400, fontSize: 13),
+                                ),
+                            ),
+                                  )
+                                ],
+                              )),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                               Expanded(
+                                child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Text(' Bill Date',style: 
+                                  TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                    ),),
+                                  InkWell(
+                                    onTap: () => _selectDate('f'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 35,
+                                      decoration: BoxDecoration(border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                                                      formattedDate!,
+                                                                      style: const TextStyle(
+                                                                          fontWeight: FontWeight.w400, fontSize: 13),
+                                                                    ),
+                                                                    const Icon(Icons.calendar_month,size: 18,color: grey,)
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              )),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 3,
+                          ),
+                            Row(
+                              children: [
+                                Expanded(child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(' Invoice No',style: 
+                                    TextStyle(fontFamily: 'poppins',fontSize: 14,fontWeight: FontWeight.w500),),
+                                    InkWell(
+                                      onTap: () {
+                                          showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) => Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                      child: TextField(
+                                        decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: 'Supplier Invoice No',
+                                            labelText:
+                                                'Enter supplier invoice no'),
+                                        controller: invNoController,
+                                        autofocus: true,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        setState(() {});
+                                      },
+                                      child: const Text("Done",style: TextStyle(color: white),),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        height: 35,
+                                        decoration: BoxDecoration(border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(invNoController.text,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 13)),
+                                            const Icon(Icons.arrow_drop_down_rounded,color: grey,)
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                 Expanded(
+                                  child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(' Invoice Date',style: 
+                                    TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500
+                                      ),),
+                                    InkWell(
+                                      onTap: () => _selectDate('t'),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                                        height: 35,
+                                        decoration: BoxDecoration(border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                            invDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w400, fontSize: 13),
+                          ),
+                                                const Icon(Icons.calendar_month,color: grey,size: 18,)
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                              ],
+                            )
+                        ],
+                      ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' Type',
+                          style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500)
+                          ,),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          width: MediaQuery.of(context).size.width,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                          child:  DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              style: const TextStyle(
+                              fontFamily: 'poppins',color: black),
+                                                  icon: const Icon(Icons.arrow_drop_down),
+                                                  items: [
+                                                    "Purchase",
+                                                    "InterState",
+                                                    "Composite",
+                                                    "UnRegistered Dealer",
+                                                    "Branch Transfer",
+                                                    "Imports"
+                                                  ].map((String items) {
+                                                    return DropdownMenuItem(
+                            value: items,
+                            child: Text(items),
+                                                    );
+                                                  }).toList(),
+                                                  value: dropDownType,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                            dropDownType = value!;
+                                                    });
+                                                  },
+                                                ),
+                          ),
+                        ),
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                               const Text('Tax',
+                        style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500)
+                        ,),
+                            Checkbox(
+                                                  checkColor: white,
+                                                  activeColor: kPrimaryColor,
+                                                  value: isTax,
+                                                  onChanged: (bool? value) {
+                                                    setState(() {
+                            isTax = value!;
+                                                    });
+                                                  },
+                                                ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                   AnimatedContainer(
+                    duration: animationDuration,
+                    width: MediaQuery.of(context).size.width,
+                    height: isExpanded 
+                      ? expandedHeight
+                      : oldBill 
+                      ? selectedSupplierId == acId 
+                      ? collaps 
+                      : collapsedHeight 
+                      : collapsedHeight,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' Supplier',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500
+                          ),),
+                        const SizedBox(
+                          height: 3,
+                        ),
+                     FutureBuilder(
+      future: api.getSupplierListData(query),
+      builder: (context, snapshot) {
+        // if(snapshot.connectionState == ConnectionState.waiting){
+        //  return CircularProgressIndicator();
+        // }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData) {
+          return const Text('No data found');
+        }
+
+        final supplierList = snapshot.data;
+
+        final names = supplierList!
+            .map((e) => e.name)
+            .where((name) => name != null)
+            .cast<String>()
+            .toList();
+
+        return EasyAutocomplete(
+          progressIndicatorBuilder: isLoading == true
+              ? const Center(child: CircularProgressIndicator())
+              : null,
+          controller: oldBill ? selectedSupplierId == acId ? 
+           TextEditingController(text: filteredName): supplierController : supplierController,
+          inputTextStyle:
+              const TextStyle(fontFamily: 'poppins', fontSize: 14),
+          suggestionTextStyle: const TextStyle(fontFamily: 'poppins'),
+          decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+              border: OutlineInputBorder()),
+          suggestions: names,
+          onChanged: (value) {
+            setState(() {
+              query = value.isNotEmpty ? value.toLowerCase() : 'a';
+            });
+          },
+          onSubmitted: (value) {
+            setState(() {
+              final selectedSupplier =
+                  supplierList.firstWhere((element) => element.name == value);
+              selectedSupplierId = selectedSupplier.id;
+
+              _isLoading = true;
+              api.getCustomerDetail(selectedSupplierId!).then((value) {
+                setState(() {
+                  ledgerModel = value;
+                  _isLoading = false;
+                });
+              });
+            });
+          },
+        );
+      },
+    ),
+
+                          const SizedBox(
+                            height: 6,
+                          ),
+                          oldBill ? selectedSupplierId == acId? 
+                           Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                               const Text(' Billing Name',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500
+                          ),),
+                        const SizedBox(
+                          height: 3,
+                        ),
+                       TextField(
+                        controller: TextEditingController(text: ledgerModel!.name),
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                           border: OutlineInputBorder()),
+                      ),
+                      const SizedBox(
+                            height: 6,
+                          ),
+                            ],
+                          ): const SizedBox() : const SizedBox(),
+                          Expanded(child: 
+                          SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Theme(data: ThemeData(dividerColor: Colors.transparent), child: Container(
+                                  decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius:
+                                              BorderRadius.circular(3)),
+                                              child: ExpansionTile(
+                                                controlAffinity:
+                                            ListTileControlAffinity.platform,
+                                                title: const Text(
+                                          'Other',
+                                          style: TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                                            child: selectedSupplierId != null ? FutureBuilder(
+                                               future: selectedSupplierId !=
+                                                            null
+                                                        ? api.getCustomerDetail(
+                                                            selectedSupplierId!)
+                                                        : api.getCustomerDetail(
+                                                            0), builder: (context, snapshot) {
+                                                               if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return const CircularProgressIndicator();
+                                                      } else if (snapshot
+                                                          .hasError) {
+                                                        return Text(
+                                                            'Error: ${snapshot.error}');
+                                                      } else if (!snapshot
+                                                          .hasData) {
+                                                        return const Text(
+                                                            'No data found');
+                                                      }
+                                                      ledgerModel = snapshot.data!;
+                                                      String address = "${ledgerModel!.address1!} ${ledgerModel!.address2!} ${ledgerModel!.address3!}";
+                                                      String phonenum = "${ledgerModel!.phone!} ";
+                                                      String taxNum = "${ledgerModel!.taxNumber!} ";
+                                              return  Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(' Address',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                          TextField(
+                                              controller:TextEditingController(text: address) ,
+                                              decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8,horizontal: 5),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                              const Text(' Phone',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              controller: TextEditingController(text: phonenum),
+                                              decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8,horizontal: 5),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                              const Text(' Tax',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                             controller: TextEditingController(text: taxNum),
+                                              decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8,horizontal: 5),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            )
+                                              ],
+                                            );
+                                            },) :  const Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(' Address',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                          TextField(
+                                              // controller:TextEditingController(text: ledgerModel!.address1) ,
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                              Text(' Phone',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                              Text(' Tax',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            )
+                                              ],
+                                            )
+                                          )
+                                        ],
+                                        onExpansionChanged: (value) {
+                                         setState(() {
+                                            isExpanded = value;
+                                         });
+                                        },
+                                        ),
+                                ))
+                              ],
+                            ),
+                          )
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))
+                            ),
+                            onPressed: (){
+                              setState(() {
+                                editItem =  false;
+                                nextWidget = 1;
+                              });
+                            }, child:  const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(width: 10),
+                                Text(
+                                  'Add Item',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'poppins',
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),)
+                      ],
+                    ),
+                   ),
+                   const SizedBox(height: 10),
+                    cartItem.isNotEmpty
+                        ? Container(
+                             constraints: const BoxConstraints(maxHeight: 300),
+                          // height: 250,
+                            width: MediaQuery.sizeOf(context).width,
+                            color: white,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 4),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 4),
+                                shrinkWrap: true,
+                                // physics: ClampingScrollPhysics() ,
+                                itemCount: cartItem.length ,
+                                // scrollDirection: Axis.vertical,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                            editItem = true;
+                                            position = index;
+                                            cartModel =
+                                                cartItem.elementAt(position!);
+                                                productNameController.text = cartModel!.itemName;
+                                            controllerRate.text =
+                                                cartModel!.rate.toString();
+                                            controllerQuantity.text =
+                                                cartModel!.quantity.toString();
+                                            controllerBranch.text =
+                                                cartModel!.branch.toString();
+                                            controllerDiscount.text =
+                                                cartModel!.discount.toString();
+                                            controllerDiscountPer.text =
+                                                cartModel!.discountPercent
+                                                    .toString();
+                                            controllerFreeQuantity.text =
+                                                cartModel!.free.toString();
+                                            controllerMrp.text =
+                                                cartModel!.mrp.toString();
+                                            controllerRetail.text =
+                                                cartModel!.retail.toString();
+                                            controllerSerialNo.text =
+                                                cartModel!.serialNo.toString();
+                                            controllerWholeSale.text =
+                                                cartModel!.wholesale.toString();
+                                                net = cartModel!.net;
+                                                total = cartModel!.total;
+                                                taxP = cartModel!.taxP;
+                                                grossTotal = cartModel!.gross;
+                                            nextWidget = 1;
+                                          });
+                                    },
+                                    child: Container(
+                                      width:
+                                          MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                          // boxShadow: [
+                                          //   BoxShadow(
+                                          //     color: Colors.grey.shade400,
+                                          //     blurRadius: 5,
+                                          //     spreadRadius: .8,
+                                          //   )
+                                          // ],
+                                          border: Border.all(
+                                              color: grey, width: .5),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color:
+                                              Colors.grey.withOpacity(.1)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 5),
+                                                    decoration:
+                                                        BoxDecoration(
+                                                            color: white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        3),
+                                                            border:
+                                                                Border.all(
+                                                              width: .3,
+                                                              color: grey,
+                                                            )),
+                                                    child: Text(
+                                                      '# ${index +1}',
+                                                      style:
+                                                          const TextStyle(
+                                                              fontSize: 12),
+                                                    )),
+                                                Text(
+                                                    ' ${cartItem[index].itemName}',
+                                                    style: const TextStyle(
+                                                        color: black,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontFamily:
+                                                            'poppins')),
+                                                const Spacer(),
+                                                
+                                              ]),
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    'Item Subtotal',
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontFamily:
+                                                            'poppins'),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(tax == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                    MediaQuery.of(context)
+                                                        .size
+                                                        .width,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      'Discount (%): ',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    Text(
+                                                      cartItem[index]
+                                                          .discountPercent!
+                                                          .toStringAsFixed(
+                                                              2),
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .orange[700],
+                                                      ),
+                                                    )
+                                                  ],
+                                                )),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Text(
+                                                  'Tax (%): ${cartItem[index].taxP}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                const Text(
+                                                  'Total',
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                              ]),
+                                            ),
+                                           
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : const Center(
+                            child: Text("No items in Cart"),
+                          ),
+                          
+                          cartItem.isNotEmpty ?
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                               const SizedBox(
+                                    height: 5,
+                                  ),
+                             Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      Text('Total Tax Amt : ${CommonService.getRound(decimal, totalAdCess).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Total Qty : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                      Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  )
+                          ],),
+                          ): const SizedBox(),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                           Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 20),
+                         child: Column(
+                           children: [
+                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${calculateGrandTotal()}',style:const 
+                                TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                              const SizedBox(
+                                        height: 8,
+                                  ),
+                             Row(
+                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Expanded(child: Text('Cash Received',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'),),),
+                                Expanded(
+                                  flex: 1,
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: TextField(
+                                                          controller: cashPaidController,
+                                                          // focusNode: _focusNodeCashReceived,
+                                                          keyboardType:
+                                                              const TextInputType.numberWithOptions(decimal: true),
+                                                          inputFormatters: [
+                                                            FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                                                allow: true, replacementString: '.')
+                                                          ],
+                                                          decoration: const InputDecoration(
+                                                            contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                            border: OutlineInputBorder(
+                                                              gapPadding: 10,
+                                                              borderRadius: BorderRadius.all( Radius.circular(2))
+                                                            ),
+                                                          ),
+                                                         onChanged: (value) {
+                        setState(() {
+                          _balance = double.tryParse(value) != null 
+                              ? totalCartTotal > 0
+                                  ? totalCartTotal - double.tryParse(value)!
+                                  : 0
+                              : totalCartTotal > 0
+                                  ? totalCartTotal
+                                  : 0;
+                        });
+                      },
+                                                        ),
+                                  ),
+                                ),
+                              ]
+                             ),
+                             const SizedBox(
+                              height: 8,
+                             ),
+                               Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Balance Due ',style:TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',style:const 
+                                TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                           ],
+                         ),
+                       ),
+                       const SizedBox(
+                        height: 20,
+                       ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                   Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: !oldBill? () async{
+                                 if (cartItem.isNotEmpty) {
+                      if (buttonEvent) {
+                        return;
+                      } else {
+                        if (companyUserData!.insertData) {
+                          setState(() {
+                            _isLoading = true;
+                            buttonEvent = true;
+                          });
+                          var inf = '[' +
+                              json.encode({
+                                'id': ledgerModel!.id,
+                                'name': ledgerModel!.name,
+                                'invNo': invNoController.text.isNotEmpty
+                                    ? invNoController.text
+                                    : '0',
+                                'invDate': DateUtil.dateYMD(invDate)
+                              }) +
+                              ']';
+                          var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                          var items = json.encode(jsonItem);
+                          var stType = 'P_Insert';
+                          var data = '[' +
+                              json.encode({
+                                'date': DateUtil.dateYMD(formattedDate),
+                                'grossValue': totalGrossValue,
+                                'discount': totalDiscount,
+                                'net': totalNet,
+                                'cess': totalCess,
+                                'total': totalCartTotal,
+                                'otherCharges':
+                                    _otherChargesController.text.isNotEmpty
+                                        ? _otherChargesController.text
+                                        : '0',
+                                'otherDiscount':
+                                    _otherDiscountController.text.isNotEmpty
+                                        ? _otherDiscountController.text
+                                        : '0',
+                                'grandTotal': calculateGrandTotal(),
+                                'taxType': isTax ? 'T' : 'N.T',
+                                'purchaseAccount': purchaseAccountList[0]['id'],
+                                'narration': _narrationController.text,
+                                'type': 'P',
+                                'cashPaid': cashPaidController.text.isNotEmpty
+                                    ? cashPaidController.text
+                                    : '0',
+                                'igst': totalIgST,
+                                'cgst': totalCgST,
+                                'sgst': totalSgST,
+                                'fCess': totalFCess,
+                                'adCess': totalAdCess,
+                                'Salesman': salesManId,
+                                'location': locationId,
+                                'statementtype': stType,
+                                'fyId': currentFinancialYear!.id,
+                                'frmId': 8
+                              }) +
+                              ']';
+
+                          final body = {
+                            'information': inf,
+                            'data': data,
+                            'particular': items,
+                            'serialNoData': json.encode(
+                                SerialNOModel.encodedToJson(serialNoData)),
+                          };
+                          // debugPrint(body.toString());
+                          bool _state = await api.addPurchase(body);
+
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          if (_state) {
+                            cartItem.clear();
+                            supplierController.clear();
+                            invNoController.clear();
+                            Fluttertoast.showToast(msg: 'Successfully Saved');
+                          } else {
+                            showInSnackBar('Error enter data correctly');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          showInSnackBar('Permission denied\ncan`t save');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                    } else {
+                      showInSnackBar('Please add at least one item');
+                    }  }
+                     :() {
+                                    if (cartItem.isNotEmpty) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    delete(context);
+                  } else {
+                    showInSnackBar('No items found on bill');
+                  }
+                              },
+                              child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: 
+                                   Text(
+                                    oldBill? 'Delete': 'Save & New',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                         Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: oldBill ? () async{
+                                  if (cartItem.isNotEmpty) {
+                      if (buttonEvent) {
+                        return;
+                      } else {
+                        if (companyUserData!.updateData) {
+                          setState(() {
+                            _isLoading = true;
+                            buttonEvent = true;
+                          });
+                          var inf = '[' +
+                              json.encode({
+                                'id': ledgerModel!.id,
+                                'name': ledgerModel!.name,
+                                'invNo': invNoController.text.isNotEmpty
+                                    ? invNoController.text
+                                    : '0',
+                                'invDate': DateUtil.dateYMD(invDate)
+                              }) +
+                              ']';
+                          var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                          var items = json.encode(jsonItem);
+                          var stType = 'P_Update';
+                          var data = '[' +
+                              json.encode({
+                                'entryNo': dataDynamic[0]['EntryNo'],
+                                'date': DateUtil.dateYMD(formattedDate),
+                                'grossValue': totalGrossValue,
+                                'discount': totalDiscount,
+                                'net': totalNet,
+                                'cess': totalCess,
+                                'total': totalCartTotal,
+                                'otherCharges':
+                                    _otherChargesController.text.isNotEmpty
+                                        ? _otherChargesController.text
+                                        : '0',
+                                'otherDiscount':
+                                    _otherDiscountController.text.isNotEmpty
+                                        ? _otherDiscountController.text
+                                        : '0',
+                                'grandTotal': calculateGrandTotal(),
+                                'taxType': isTax ? 'T' : 'N.T',
+                                'purchaseAccount': purchaseAccountList[0]['id'],
+                                'narration': _narrationController.text,
+                                'type': 'P',
+                                'cashPaid': cashPaidController.text.isNotEmpty
+                                    ? cashPaidController.text
+                                    : '0',
+                                'igst': totalIgST,
+                                'cgst': totalCgST,
+                                'sgst': totalSgST,
+                                'fCess': totalFCess,
+                                'adCess': totalAdCess,
+                                'Salesman': salesManId,
+                                'location': locationId,
+                                'statementtype': stType,
+                                'fyId': currentFinancialYear!.id,
+                                'frmId': 8
+                              }) +
+                              ']';
+
+                          final body = {
+                            'information': inf,
+                            'data': data,
+                            'particular': items,
+                            'serialNoData': json.encode(
+                                SerialNOModel.encodedToJson(serialNoData)),
+                          };
+                          bool _state = await api.addPurchase(body);
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          if (_state) {
+                            cartItem.clear();
+                            showMore(context, 'Edited');
+                          } else {
+                            showInSnackBar('Error enter data correctly');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          showInSnackBar('Permission denied\ncan`t edit');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                    } else {
+                      showInSnackBar('Please add at least one item');
+                    }
+                           
+                              }
+                              :() async{
+                                   if (cartItem.isNotEmpty) {
+                      if (buttonEvent) {
+                        return;
+                      } else {
+                        if (companyUserData!.insertData) {
+                          setState(() {
+                            _isLoading = true;
+                            buttonEvent = true;
+                          });
+                          var inf = '[' +
+                              json.encode({
+                                'id': ledgerModel!.id,
+                                'name': ledgerModel!.name,
+                                'invNo': invNoController.text.isNotEmpty
+                                    ? invNoController.text
+                                    : '0',
+                                'invDate': DateUtil.dateYMD(invDate)
+                              }) +
+                              ']';
+                          var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                          var items = json.encode(jsonItem);
+                          var stType = 'P_Insert';
+                          var data = '[' +
+                              json.encode({
+                                'date': DateUtil.dateYMD(formattedDate),
+                                'grossValue': totalGrossValue,
+                                'discount': totalDiscount,
+                                'net': totalNet,
+                                'cess': totalCess,
+                                'total': totalCartTotal,
+                                'otherCharges':
+                                    _otherChargesController.text.isNotEmpty
+                                        ? _otherChargesController.text
+                                        : '0',
+                                'otherDiscount':
+                                    _otherDiscountController.text.isNotEmpty
+                                        ? _otherDiscountController.text
+                                        : '0',
+                                'grandTotal': calculateGrandTotal(),
+                                'taxType': isTax ? 'T' : 'N.T',
+                                'purchaseAccount': purchaseAccountList[0]['id'],
+                                'narration': _narrationController.text,
+                                'type': 'P',
+                                'cashPaid': cashPaidController.text.isNotEmpty
+                                    ? cashPaidController.text
+                                    : '0',
+                                'igst': totalIgST,
+                                'cgst': totalCgST,
+                                'sgst': totalSgST,
+                                'fCess': totalFCess,
+                                'adCess': totalAdCess,
+                                'Salesman': salesManId,
+                                'location': locationId,
+                                'statementtype': stType,
+                                'fyId': currentFinancialYear!.id,
+                                'frmId': 8
+                              }) +
+                              ']';
+
+                          final body = {
+                            'information': inf,
+                            'data': data,
+                            'particular': items,
+                            'serialNoData': json.encode(
+                                SerialNOModel.encodedToJson(serialNoData)),
+                          };
+                          // debugPrint(body.toString());
+                          bool _state = await api.addPurchase(body);
+
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          if (_state) {
+                            cartItem.clear();
+                             showDialog(
+                                context: context,
+                                 builder: (BuildContext context) {
+                                  return Expanded(
+                                 child: AlertDialog(
+                                 title: const Text('Purchase Saved'),
+                                    actions: [
+                                     TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                          Navigator.pushReplacementNamed(context, '/purchase');
+                                        },
+                                        child: const Text('Ok'),
+                                    )
+                                 ],
+                                ),
+                             );
+                           },
+                         );
+                            // showMore(context, 'Saved');
+                          } else {
+                            showInSnackBar('Error enter data correctly');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          showInSnackBar('Permission denied\ncan`t save');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                    } else {
+                      showInSnackBar('Please add at least one item');
+                    }
+                              }
+                              ,
+                              child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  const Center(
+                                  child: 
+                                   Text(
+                                   'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      color: white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+          ),
+             Scaffold(
+            backgroundColor: bagroundColor,
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 5
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Text(' Bill No',style: 
+                                  TextStyle(fontFamily: 'poppins',fontSize: 14,fontWeight: FontWeight.w500),),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 35,
+                                    decoration: BoxDecoration(border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)
+                                    ),
+                                    child: entryNo.isEmpty
+                            ? const Align(
+                              alignment: Alignment.centerRight,
+                              child: Icon(Icons.arrow_drop_down_rounded,color: grey,))
+                            : Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  entryNo,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w400, fontSize: 13),
+                                ),
+                            ),
+                                  )
+                                ],
+                              )),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                               Expanded(
+                                child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Text(' Bill Date',style: 
+                                  TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                    ),),
+                                  InkWell(
+                                    onTap: () => _selectDate('f'),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 35,
+                                      decoration: BoxDecoration(border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                                                      formattedDate!,
+                                                                      style: const TextStyle(
+                                                                          fontWeight: FontWeight.w400, fontSize: 13),
+                                                                    ),
+                                                                    const Icon(Icons.calendar_month,size: 18,color: grey,)
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              )),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 3,
+                          ),
+                            Row(
+                              children: [
+                                Expanded(child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(' Invoice No',style: 
+                                    TextStyle(fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                    ),),
+                                    InkWell(
+                                      onTap: () {
+                                          showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) => Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: MediaQuery.of(context)
+                                        .viewInsets
+                                        .bottom),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                                      child: TextField(
+                                        decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            hintText: 'Supplier Invoice No',
+                                            labelText:
+                                                'Enter supplier invoice no'),
+                                        controller: invNoController,
+                                        autofocus: true,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: kPrimaryColor,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                      ),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        setState(() {});
+                                      },
+                                      child: const Text("Done",style: TextStyle(color: white),),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                                        height: 35,
+                                        decoration: BoxDecoration(border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(invNoController.text,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 13)),
+                                            const Icon(Icons.arrow_drop_down_rounded,color: grey,)
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                 Expanded(
+                                  child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(' Invoice Date',style: 
+                                    TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500
+                                      ),),
+                                    InkWell(
+                                      onTap: () => _selectDate('t'),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                                        height: 35,
+                                        decoration: BoxDecoration(border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                            invDate!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w400, fontSize: 13),
+                          ),
+                                                const Icon(Icons.calendar_month,color: grey,size: 18,)
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )),
+                              ],
+                            )
+                        ],
+                      ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' Type',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500
+                          ),),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          width: MediaQuery.of(context).size.width,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child:  DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              style: const TextStyle(fontFamily: 'poppins',color: black),
+                                                  icon: const Icon(Icons.arrow_drop_down),
+                                                  items: [
+                                                    "Purchase",
+                                                    "InterState",
+                                                    "Composite",
+                                                    "UnRegistered Dealer",
+                                                    "Branch Transfer",
+                                                    "Imports"
+                                                  ].map((String items) {
+                                                    return DropdownMenuItem(
+                            value: items,
+                            child: Text(items),
+                                                    );
+                                                  }).toList(),
+                                                  value: dropDownType,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                            dropDownType = value!;
+                                                    });
+                                                  },
+                                                ),
+                          ),
+                        ),
+                          Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                               const Text('Tax',
+                        style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500)
+                        ,),
+                            Checkbox(
+                                                  checkColor: white,
+                                                  activeColor: kPrimaryColor,
+                                                  value: isTax,
+                                                  onChanged: (bool? value) {
+                                                    setState(() {
+                            isTax = value!;
+                                                    });
+                                                  },
+                                                ),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                   AnimatedContainer(
+                    duration: animationDuration,
+                    width: MediaQuery.of(context).size.width,
+                    height: isExpanded ? expandedHeight : collapsedHeight,
+                    color: white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' Billing Name',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500
+                          ),),
+                        const SizedBox(
+                          height: 3,
+                        ),
+                       TextField(
+                        controller: billingNameController,
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                           border: OutlineInputBorder()),
+                      ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Expanded(child: 
+                          SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Theme(data: ThemeData(dividerColor: Colors.transparent), child: Container(
+                                  decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius:
+                                              BorderRadius.circular(3)),
+                                              child: ExpansionTile(
+                                                controlAffinity:
+                                            ListTileControlAffinity.platform,
+                                                title: const Text(
+                                          'Other',
+                                          style: TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        children:const [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(' Address',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                              Text(' Phone',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                              Text(' Tax',style: TextStyle(fontFamily: 'poppins',fontSize: 13,fontWeight: FontWeight.w500),),
+                                            TextField(
+                                              decoration: InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                                                border: OutlineInputBorder()),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                        onExpansionChanged: (value) {
+                                         setState(() {
+                                            isExpanded = value;
+                                         });
+                                        },
+                                        ),
+                                ))
+                              ],
+                            ),
+                          )
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: kPrimaryColor,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))
+                            ),
+                            onPressed: (){
+                              setState(() {
+                                nextWidget = 1;
+                                editItem = false;
+                              });
+                            }, child:  const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(width: 10),
+                                Text(
+                                  'Add Item',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'poppins',
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),)
+                      ],
+                    ),
+                   ),
+                     const SizedBox(height: 10),
+                    cartItem.isNotEmpty
+                        ? Container(
+                             constraints: const BoxConstraints(maxHeight: 300),
+                          // height: 250,
+                            width: MediaQuery.sizeOf(context).width,
+                            color: white,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 4),
+                              child: ListView.separated(
+                                separatorBuilder: (context, index) =>
+                                    const SizedBox(height: 4),
+                                shrinkWrap: true,
+                                // physics: ClampingScrollPhysics() ,
+                                itemCount: cartItem.length ,
+                                // scrollDirection: Axis.vertical,
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                            editItem = true;
+                                            position = index;
+                                            cartModel =
+                                                cartItem.elementAt(position!);
+                                                productNameController.text = cartModel!.itemName;
+                                            controllerRate.text =
+                                                cartModel!.rate.toString();
+                                            controllerQuantity.text =
+                                                cartModel!.quantity.toString();
+                                            controllerBranch.text =
+                                                cartModel!.branch.toString();
+                                            controllerDiscount.text =
+                                                cartModel!.discount.toString();
+                                            controllerDiscountPer.text =
+                                                cartModel!.discountPercent
+                                                    .toString();
+                                            controllerFreeQuantity.text =
+                                                cartModel!.free.toString();
+                                            controllerMrp.text =
+                                                cartModel!.mrp.toString();
+                                            controllerRetail.text =
+                                                cartModel!.retail.toString();
+                                            controllerSerialNo.text =
+                                                cartModel!.serialNo.toString();
+                                            controllerWholeSale.text =
+                                                cartModel!.wholesale.toString();
+                                                net = cartModel!.net;
+                                                total = cartModel!.total;
+                                                taxP = cartModel!.taxP;
+                                                grossTotal = cartModel!.gross;
+                                            nextWidget = 1;
+                                          });
+                                    },
+                                    child: Container(
+                                      width:
+                                          MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                          // boxShadow: [
+                                          //   BoxShadow(
+                                          //     color: Colors.grey.shade400,
+                                          //     blurRadius: 5,
+                                          //     spreadRadius: .8,
+                                          //   )
+                                          // ],
+                                          border: Border.all(
+                                              color: grey, width: .5),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color:
+                                              Colors.grey.withOpacity(.1)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Container(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 5),
+                                                    decoration:
+                                                        BoxDecoration(
+                                                            color: white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        3),
+                                                            border:
+                                                                Border.all(
+                                                              width: .3,
+                                                              color: grey,
+                                                            )),
+                                                    child: Text(
+                                                      '# ${index + 1}',
+                                                      style:
+                                                          const TextStyle(
+                                                              fontSize: 12),
+                                                    )),
+                                                Text(
+                                                    ' ${cartItem[index].itemName}',
+                                                    style: const TextStyle(
+                                                        color: black,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontFamily:
+                                                            'poppins')),
+                                                const Spacer(),
+                                                
+                                              ]),
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    'Item Subtotal',
+                                                    style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontFamily:
+                                                            'poppins'),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(tax == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                    MediaQuery.of(context)
+                                                        .size
+                                                        .width,
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      'Discount (%): ',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    Text(
+                                                      cartItem[index]
+                                                          .discountPercent!
+                                                          .toStringAsFixed(
+                                                              2),
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .orange[700],
+                                                      ),
+                                                    )
+                                                  ],
+                                                )),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                Text(
+                                                  'Tax (%): ${cartItem[index].taxP}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 5,
+                                            ),
+                                            SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(children: [
+                                                const Text(
+                                                  'Total',
+                                                  style: TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                  style: const TextStyle(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                              ]),
+                                            ),
+                                           
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          )
+                        : const Center(
+                            child: Text("No items in Cart"),
+                          ),
+                          
+                          cartItem.isNotEmpty ?
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                               const SizedBox(
+                                    height: 5,
+                                  ),
+                             Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      Text('Total Tax Amt : ${CommonService.getRound(decimal, taxTotalCartValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Total Qty : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                      Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins')),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  )
+                          ],),
+                          ): const SizedBox(),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                           Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 20),
+                         child: Column(
+                           children: [
+                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                Text('₹   ${calculateGrandTotal()}',style:const 
+                                TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                              ]
+                             ),
+                           
+                           ],
+                         ),
+                       ),
+                       const SizedBox(
+                        height: 20,
+                       ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                   Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: () {
+                             
+                              },
+                              child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: 
+                                   Text(
+                                    oldBill? 'Delete': 'Save & New',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                         Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: ()async {
+                                if (cartItem.isNotEmpty) {
+                      if (buttonEvent) {
+                        return;
+                      } else {
+                        if (companyUserData!.insertData) {
+                          setState(() {
+                            _isLoading = true;
+                            buttonEvent = true;
+                             billingNameController.text.isNotEmpty ? 
+                                        ledgerModel!.name = billingNameController.text
+                                        :
+                                        ledgerModel!.name; 
+                          });
+                          var inf = '[' +
+                              json.encode({
+                                'id': ledgerModel!.id,
+                                'name': ledgerModel!.name,
+                                'invNo': invNoController.text.isNotEmpty
+                                    ? invNoController.text
+                                    : '0',
+                                'invDate': DateUtil.dateYMD(invDate)
+                              }) +
+                              ']';
+                          var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                          var items = json.encode(jsonItem);
+                          var stType = 'P_Insert';
+                          var data = '[' +
+                              json.encode({
+                                'date': DateUtil.dateYMD(formattedDate),
+                                'grossValue': totalGrossValue,
+                                'discount': totalDiscount,
+                                'net': totalNet,
+                                'cess': totalCess,
+                                'total': totalCartTotal,
+                                'otherCharges':
+                                    _otherChargesController.text.isNotEmpty
+                                        ? _otherChargesController.text
+                                        : '0',
+                                'otherDiscount':
+                                    _otherDiscountController.text.isNotEmpty
+                                        ? _otherDiscountController.text
+                                        : '0',
+                                'grandTotal': calculateGrandTotal(),
+                                'taxType': isTax ? 'T' : 'N.T',
+                                'purchaseAccount': purchaseAccountList[0]['id'],
+                                'narration': _narrationController.text,
+                                'type': 'P',
+                                'cashPaid': cashPaidController.text.isNotEmpty
+                                    ? cashPaidController.text
+                                    : '0',
+                                'igst': totalIgST,
+                                'cgst': totalCgST,
+                                'sgst': totalSgST,
+                                'fCess': totalFCess,
+                                'adCess': totalAdCess,
+                                'Salesman': salesManId,
+                                'location': locationId,
+                                'statementtype': stType,
+                                'fyId': currentFinancialYear!.id,
+                                'frmId': 8
+                              }) +
+                              ']';
+
+                          final body = {
+                            'information': inf,
+                            'data': data,
+                            'particular': items,
+                            'serialNoData': json.encode(
+                                SerialNOModel.encodedToJson(serialNoData)),
+                          };
+                          // debugPrint(body.toString());
+                          bool _state = await api.addPurchase(body);
+
+                          setState(() {
+                            _isLoading = false;
+                          });
+                          if (_state) {
+                            cartItem.clear();
+                             showDialog(
+                                context: context,
+                                 builder: (BuildContext context) {
+                                  return Expanded(
+                                 child: AlertDialog(
+                                 title: const Text('Purchase Saved'),
+                                    actions: [
+                                     TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                          Navigator.pushReplacementNamed(context, '/purchase');
+                                        },
+                                        child: const Text('Ok'),
+                                    )
+                                 ],
+                                ),
+                             );
+                           },
+                         );
+                            // showMore(context, 'Saved');
+                          } else {
+                            showInSnackBar('Error enter data correctly');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          showInSnackBar('Permission denied\ncan`t save');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                    } else {
+                      showInSnackBar('Please add at least one item');
+                    }
+                              },
+                              child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  const Center(
+                                  child: 
+                                   Text(
+                                   'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      color: white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+          ),
+          ]),
+    ),
+  ),
+);
+}
+
+int? selectedProducteId;
+var selectedItem;
+ List<UnitModel> unitListData = [];
+ addItemWidget(){
+
+ if (editItem) {
+      taxP = isTax ? cartItem.elementAt(position!).taxP : 0;
+      tax = isTax ? cartItem.elementAt(position!).tax : 0 ;
+      kfcP = (isTax
+          ? double.tryParse(cartItem.elementAt(position!).fCess.toString())
+          : 0)!;
+      // adCessPer = isTax ? double.tryParse(productModel['adcessper'].toString());
+      // cessPer = isTax ? double.tryParse(productModel['cessper'].toString());
+      defaultUnitID = cartItem[position!].unitId;
+      uniqueCode = cartItem[position!].uniqueCode;
+
+      calculateTotal();
+    }
+     else if(selectedProducteId != null){
+      setState(() {
+        calculateTotal();
+        final fetchPrice = api.fetchProductPrize(selectedProducteId!);
+          fetchPrice.then((value) => productModelPrize = value.toList()?? 0);
+      });
+      adCessPer = isTax ? selectedItem!.adCessPer : 0;
+      cessPer = isTax ? selectedItem!.cessPer : 0;
+      taxP = isTax ? selectedItem!.tax : 0;
+      kfcP =
+          isTax ? 0 : 0; //double.tryParse(productModel['KFC'].toString()) : 0;
+      pRate = double.tryParse(productModelPrize[0]['prate'].toString())?? 0;
+      if (pRate > 0 && !editableRate) {
+        controllerRate.text = pRate.toString();
+      }
+      double.tryParse(productModelPrize[0]['realprate'].toString()) == 0 ? 0 :
+        rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())?? 0;
+      
+      mrp = double.tryParse(productModelPrize[0]['mrp'].toString())?? 0;
+      if (mrp > 0 && !focusNodeMrp.hasFocus) {
+        controllerMrp.text = mrp.toString();
+      }
+      retail = double.tryParse(productModelPrize[0]['retail'].toString())?? 0;
+      if (retail > 0 && !focusNodeRetail.hasFocus) {
+        controllerRetail.text = retail.toString();
+      }
+      wholeSale = double.tryParse(productModelPrize[0]['wsrate'].toString())?? 0;
+      if (wholeSale > 0 && !focusNodeWholeSale.hasFocus) {
+        controllerWholeSale.text = wholeSale.toString();
+      }
+      spRetail = double.tryParse(productModelPrize[0]['spretail'].toString())?? 0;
+      branch = double.tryParse(productModelPrize[0]['branch'].toString())?? 0;
+      if (branch > 0 && !focusNodeBranch.hasFocus) {
+        controllerBranch.text = branch.toString();
+      }
+    }
+
+    calculate() {
+      quantity = (controllerQuantity.text.isNotEmpty
+          ? double.tryParse(controllerQuantity.text)
+          : 0)!;
+      freeQuantity = (controllerFreeQuantity.text.isNotEmpty
+          ? double.tryParse(controllerFreeQuantity.text)
+          : 0)!;
+      pRate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+      discount = (controllerDiscount.text.isNotEmpty
+          ? double.tryParse(controllerDiscount.text)
+          : 0)!;
+      double discP = (controllerDiscountPer.text.isNotEmpty
+          ? double.tryParse(controllerDiscountPer.text)
+          : 0)!;
+      double disc = (controllerDiscount.text.isNotEmpty
+          ? double.tryParse(controllerDiscount.text)
+          : 0)!;
+      double qt = (controllerQuantity.text.isNotEmpty
+          ? double.tryParse(controllerQuantity.text)
+          : 0)!;
+      double rate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+
+      rPRate = taxMethod == 'MINUS'
+          ? cessOnNetAmount
+              ? CommonService.getRound(
+                  4, (100 * pRate) / (100 + taxP + kfcP + cessPer))
+              : CommonService.getRound(4, (100 * pRate) / (100 + taxP + kfcP))
+          : pRate;
+
+      if (focusNodeDiscountPer.hasFocus) {
+        controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
+            ? (((qt * rate) * discP) / 100).toStringAsFixed(2)
+            : '';
+        discount = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        discountPer = (double.tryParse(controllerDiscountPer.text))?? 0;
+      }
+
+      if (focusNodeDiscount.hasFocus) {
+        controllerDiscountPer.text = controllerDiscount.text.isNotEmpty
+            ? ((disc * 100) / (qt * rate)).toStringAsFixed(2)
+            : '';
+        discountPer = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        double.tryParse(controllerDiscount.text);
+      }
+
+      grossTotal = CommonService.getRound(decimal, (pRate * quantity));
+      net = CommonService.getRound(decimal, (grossTotal - discount));
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((net * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((grossTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((grossTotal * taxP) / 100));
+        csGST = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+      total = CommonService.getRound(
+          decimal, (net + csGST + csGST + iGST + cess + adCess));
+      if (mrp > 0) {
+        mrpPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(decimal, (((mrp - rPRate) * 100) / rPRate))
+            : CommonService.getRound(decimal, (((mrp - pRate) * 100) / pRate));
+      }
+      if (retail > 0) {
+        retailPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((retail - rPRate) * 100) / rPRate))
+            : CommonService.getRound(
+                decimal, (((retail - pRate) * 100) / pRate));
+      }
+      if (wholeSale > 0) {
+        wholeSalePercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((wholeSale - rPRate) * 100) / rPRate))
+            : CommonService.getRound(
+                decimal, (((wholeSale - pRate) * 100) / pRate));
+      }
+      if (spRetail > 0) {
+        spRetailPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((spRetail - rPRate) * 100) / rPRate))
+            : CommonService.getRound(
+                decimal, (((spRetail - pRate) * 100) / pRate));
+      }
+      if (branch > 0) {
+        branchPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((branch - rPRate) * 100) / rPRate))
+            : CommonService.getRound(
+                decimal, (((branch - pRate) * 100) / pRate));
+      }
+      serialNo =
+          controllerSerialNo.text.isNotEmpty ? controllerSerialNo.text : '';
+
+      unitValue = _conversion > 0 ? _conversion : 1;
+    }
+
+    calculateRate() {
+      mrp = (controllerMrp.text.isNotEmpty
+          ? double.tryParse(controllerMrp.text)
+          : 0)!;
+      mrpPercentage = (controllerMrpPercentage.text.isNotEmpty
+          ? double.tryParse(controllerMrpPercentage.text)
+          : 0)!;
+      retail = (controllerRetail.text.isNotEmpty
+          ? double.tryParse(controllerRetail.text)
+          : 0)!;
+      retailPercentage = (controllerRetailPercentage.text.isNotEmpty
+          ? double.tryParse(controllerRetailPercentage.text)
+          : 0)!;
+      spRetail = (controllerSPRetail.text.isNotEmpty
+          ? double.tryParse(controllerSPRetail.text)
+          : 0)!;
+      spRetailPercentage = (controllerSPRetailPercentage.text.isNotEmpty
+          ? double.tryParse(controllerSPRetailPercentage.text)
+          : 0)!;
+      wholeSale = (controllerWholeSale.text.isNotEmpty
+          ? double.tryParse(controllerWholeSale.text)
+          : 0)!;
+      wholeSalePercentage = (controllerWholeSalePercentage.text.isNotEmpty
+          ? double.tryParse(controllerWholeSalePercentage.text)
+          : 0)!;
+      branch = (controllerBranch.text.isNotEmpty
+          ? double.tryParse(controllerBranch.text)
+          : 0)!;
+      branchPercentage = (controllerBranchPercentage.text.isNotEmpty
+          ? double.tryParse(controllerBranchPercentage.text)
+          : 0)!;
+      pRate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+      if (mrp > 0) {
+        if (focusNodeMrp.hasFocus) {
+          double sum = 0;
+          controllerMrpPercentage.text = mrpPercentage.toStringAsFixed(2);
+          if (mrpBasedProfit && mrp > 0) {
+            sum = CommonService.getRound(2, ((mrp - pRate) / mrp * 100));
+            controllerMrpPercentage.text = sum.toStringAsFixed(2);
+          } else if (realPRateBasedProfitPercentage && rPRate > 0) {
+            sum = CommonService.getRound(2, ((mrp - rPRate) * 100) / rPRate);
+            controllerMrpPercentage.text = sum.toStringAsFixed(2);
+          } else if (pRate > 0) {
+            sum = CommonService.getRound(2, ((mrp - pRate) * 100) / pRate);
+            controllerMrpPercentage.text = sum.toStringAsFixed(2);
+          }
+          if (mrpBasedProfit) {
+            int di = int.parse(mrpPercentage.toStringAsFixed(2));
+            api.getOtherDataDiscountByName(di.toString()).then((value) {
+              List<dynamic> dtDisc = [];
+              if (dtDisc.isNotEmpty) {
+                controllerRetailPercentage.text = dtDisc[0][0].toString();
+              } else {
+                controllerRetailPercentage.text = '';
+              }
+            });
+          }
+        }
+      }
+      if (focusNodeMrpPercentage.hasFocus) {
+        mrpPercentage = (controllerMrpPercentage.text.isNotEmpty
+            ? double.tryParse(controllerMrpPercentage.text)
+            : 0)!;
+        if (realPRateBasedProfitPercentage) {
+          mrp = CommonService.getRound(
+              2, (rPRate + rPRate * mrpPercentage / 100));
+          controllerMrp.text = mrp.toStringAsFixed(2);
+        } else if (mrpBasedProfit) {
+          // textboxValue = WsPer;
+          // string ptp = textboxValue.ToString();
+          // textboxValue = (mrp * ptp) / 100;
+          // string str = textboxValue.ToString();
+          // textboxValue = mrp - str;
+          // this.txtWsrate.Text = str;
+        } else {
+          mrp =
+              CommonService.getRound(2, (pRate + pRate * mrpPercentage / 100));
+          controllerMrp.text = mrp.toString();
+          controllerRetail.text = controllerRetail.text.isEmpty
+              ? mrp.toString()
+              : controllerRetail.text;
+          controllerWholeSale.text = controllerWholeSale.text.isEmpty
+              ? mrp.toString()
+              : controllerWholeSale.text;
+          controllerSPRetail.text = controllerSPRetail.text.isEmpty
+              ? mrp.toString()
+              : controllerSPRetail.text;
+          controllerBranch.text = controllerBranch.text.isEmpty
+              ? mrp.toString()
+              : controllerBranch.text;
+        }
+      }
+      if (retail > 0) {
+        retailPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(2, (((retail - rPRate) * 100) / rPRate))
+            : CommonService.getRound(2, (((retail - pRate) * 100) / pRate));
+        if (focusNodeRetail.hasFocus) {
+          controllerRetailPercentage.text = retailPercentage.toStringAsFixed(2);
+        }
+      }
+      if (wholeSale > 0) {
+        wholeSalePercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(2, (((wholeSale - rPRate) * 100) / rPRate))
+            : CommonService.getRound(2, (((wholeSale - pRate) * 100) / pRate));
+        if (focusNodeWholeSale.hasFocus) {
+          controllerWholeSalePercentage.text =
+              wholeSalePercentage.toStringAsFixed(2);
+        }
+      }
+      if (spRetail > 0) {
+        spRetailPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(2, (((spRetail - rPRate) * 100) / rPRate))
+            : CommonService.getRound(2, (((spRetail - pRate) * 100) / pRate));
+        if (focusNodeSPRetail.hasFocus) {
+          controllerSPRetailPercentage.text =
+              spRetailPercentage.toStringAsFixed(2);
+        }
+      }
+      if (branch > 0) {
+        branchPercentage = realPRateBasedProfitPercentage
+            ? CommonService.getRound(2, (((branch - rPRate) * 100) / rPRate))
+            : CommonService.getRound(2, (((branch - pRate) * 100) / pRate));
+        if (focusNodeBranch.hasFocus) {
+          controllerBranchPercentage.text = branchPercentage.toStringAsFixed(2);
+        }
+      }
+    }
+return GestureDetector(
+  onTap: () => FocusScope.of(context).unfocus(),
+  child: Scaffold(
+    backgroundColor: bagroundColor,
+    appBar: AppBar(
+      centerTitle: true,
+      leading: IconButton(onPressed: (){
+        setState(() {
+          nextWidget = 0;
+          productNameController.clear();
+          controllerRate.clear();
+          controllerMrp.clear();
+          mrp = 0;
+          unitValue = 0;
+          taxP = 0;
+          pRate = 0;
+          controllerQuantity.clear();
+          clearValue();
+        });
+      }, icon: const Icon(Icons.arrow_back)),
+      titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+      title: const Text('Add Item to Purchase')),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width,
+              color: white,
+              padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(' Item Name',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400
+                    ),),
+                  const SizedBox(
+                    height: 3,
+                  ),
+             FutureBuilder(
+  future: api.fetchAllProductPurchase(),
+  builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return Text('Error: ${snapshot.error}');
+    } else if (!snapshot.hasData) {
+      return const Text('No data found');
+    }
+
+    final purchasePr = snapshot.data;
+
+    List<String> prName = purchasePr!
+        .map((e) => e.itemName)
+        .where((element) => element != null)
+        .cast<String>()
+        .toList();
+
+    return EasyAutocomplete(
+      inputTextStyle: const TextStyle(fontSize: 13),
+      decoration: const InputDecoration(
+          contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+          border: OutlineInputBorder()),
+      controller: productNameController,
+      suggestions: prName,
+      onChanged: (p0) {},
+      onSubmitted: (value) async {
+        selectedItem = purchasePr.firstWhere(
+          (element) => element.itemName == value,
+        );
+        selectedProducteId = selectedItem.slNo;
+        final fetchedPrice = await api.fetchProductPrize(selectedProducteId!);
+        setState(() {
+          productModelPrize = fetchedPrice.toList();
+          
+          pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
+          if (pRate > 0 && !editableRate) {
+            controllerRate.text = pRate.toString();
+          }
+
+          rPRate = double.tryParse(productModelPrize[0]['realprate'].toString()) ?? 0;
+          mrp = double.tryParse(productModelPrize[0]['mrp'].toString()) ?? 0;
+          if (mrp > 0 && !focusNodeMrp.hasFocus) {
+            controllerMrp.text = mrp.toString();
+          }
+
+          retail = double.tryParse(productModelPrize[0]['retail'].toString()) ?? 0;
+          if (retail > 0 && !focusNodeRetail.hasFocus) {
+            controllerRetail.text = retail.toString();
+          }
+
+          wholeSale = double.tryParse(productModelPrize[0]['wsrate'].toString()) ?? 0;
+          if (wholeSale > 0 && !focusNodeWholeSale.hasFocus) {
+            controllerWholeSale.text = wholeSale.toString();
+          }
+
+          spRetail = double.tryParse(productModelPrize[0]['spretail'].toString()) ?? 0;
+          branch = double.tryParse(productModelPrize[0]['branch'].toString()) ?? 0;
+          if (branch > 0 && !focusNodeBranch.hasFocus) {
+            controllerBranch.text = branch.toString();
+          }
+
+          taxP = selectedItem.tax ?? 0;
+        });
+      },
+    );
+  },
+),
+
+
+              selectedProducteId == null ? SizedBox()
+              :  const SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  children: [
+                      Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' Quantity',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400
+                    )),
+                        SizedBox(
+                          height:35,
+                          child: TextField(
+                            autofocus: true,
+                            textAlign: TextAlign.right,
+                            controller: controllerQuantity,
+                            focusNode: focusNodeQuantity,
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 5,vertical: 5),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(3))),),
+                            keyboardType:
+                                const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                  allow: true, replacementString: '.')
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                editableQuantity = true;
+                                quantity = double.tryParse(value)?? 0;
+                                calculate();
+                              });
+                            },
+                            onSubmitted: (value) {
+                              bool state = editItem
+                                  ? (isQuantityBasedSerialNo)
+                                  : (isQuantityBasedSerialNo && productModel!.serialNo);
+                              // editItem ? 'Edit SerialNo' : 'Add SerialNo'),
+                              if (state) {
+                                if (controllerQuantity.text.isNotEmpty) {
+                                  setState(() {
+                                    // nextWidget = 10;
+                                    calculate();
+                                  });
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 4,
+                  ),
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(' Unit',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400
+                    )),
+                      Visibility(
+                        visible: enableMULTIUNIT,
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          height: 35,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)
+                            ),
+                            child: 
+                            selectedProducteId == null ? SizedBox():
+                             FutureBuilder(
+                            future: api.fetchUnitOf(editItem
+                                ? cartItem[position!].itemId
+                                : selectedProducteId!),
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                unitListData.clear();
+                                for (var i = 0; i < snapshot.data.length; i++) {
+                                  if (defaultUnitID.toString().isNotEmpty) {
+                                    if (snapshot.data[i].id ==
+                                        defaultUnitID! - 1) {
+                                      _dropDownUnit = snapshot.data[i].id;
+                                      _conversion = snapshot.data[i].conversion;
+                                      unit = DataJson(
+                                          id: snapshot.data[i].id,
+                                          name: snapshot.data[i].name);
+                                    }
+                                  }
+                                  unitListData.add(UnitModel(
+                                      id: snapshot.data[i].id,
+                                      itemId: snapshot.data[i].itemId,
+                                      conversion: snapshot.data[i].conversion,
+                                      name: snapshot.data[i].name,
+                                      pUnit: snapshot.data[i].pUnit,
+                                      sUnit: snapshot.data[i].sUnit,
+                                      unit: snapshot.data[i].unit,
+                                      rate: snapshot.data[i].rate));
+                                }
+                              }
+                              return snapshot.data != null &&
+                                      snapshot.data.length > 0
+                                  ? DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                        hint: Text(_dropDownUnit > 0
+                                            ? UnitSettings.getUnitName(
+                                                _dropDownUnit)
+                                            : 'Unit',style: const TextStyle(color: black,fontSize: 12,fontWeight: FontWeight.w400),),
+                                        items: snapshot.data
+                                            .map<DropdownMenuItem<String>>((item) {
+                                          return DropdownMenuItem<String>(
+                                            value: item.id.toString(),
+                                            child: Text(item.name,style: const TextStyle(fontSize: 12,color: black),),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _dropDownUnit = int.tryParse(value!)!;
+                                            // for (var i = 0;
+                                            //     i < unitListData.length;
+                                            //     i++) {
+                                            UnitModel _unit =
+                                                unitListData.firstWhere((element) =>
+                                                    element.id == _dropDownUnit);
+                                            // if (_unit.unit == int.tryParse(value)) {
+                                            // if (_unit.rate.isNotEmpty) {
+                                            // rateTypeItem = rateTypeList
+                                            //     .firstWhere((element) =>
+                                            //         element.name ==
+                                            //         _unit.rate);
+                                            // }
+                                            _conversion = _unit.conversion!;
+                                            unit = DataJson(
+                                                id: _unit.id, name: _unit.name);
+                                            // break;
+                                            // }
+                                            // }
+                                            calculate();
+                                          });
+                                        },
+                                      ),
+                                  )
+                                  : DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                        hint: Text(_dropDownUnit > 0
+                                            ? UnitSettings.getUnitName(
+                                                _dropDownUnit)
+                                            : 'Unit',style: const TextStyle(color: black,fontSize: 12,fontWeight: FontWeight.w400),),
+                                        items: unitList
+                                            .map<DropdownMenuItem<String>>((item) {
+                                          return DropdownMenuItem<String>(
+                                            value: item.key.toString(),
+                                             
+                                            child: Text(item.value,style: const TextStyle(fontSize: 12,color: black),),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _dropDownUnit = int.tryParse(value!)!;
+                                            // for (var i = 0;
+                                            //     i < unitListData.length;
+                                            //     i++) {
+                                            //   UnitModel _unit = unitListData[i];
+                                            //   if (_unit.unit ==
+                                            //       int.tryParse(value)) {
+                                            //     _conversion = _unit.conversion;
+                                            //     break;
+                                            //   }
+                                            // }
+                                            calculate();
+                                            unit = DataJson(
+                                                id: _dropDownUnit,
+                                                name: UnitSettings.getUnitName(
+                                                    _dropDownUnit));
+                                          });
+                                        },
+                                      ),
+                                  );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))
+                  ],
+                ),
+                 const SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  children: [
+                      Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(' P Rate',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400
+                    )),
+                        SizedBox(
+                          height:35,
+                          child: TextField(
+                      controller: controllerRate,
+                      focusNode: focusNodeRate,
+                      textAlign: TextAlign.right,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 5,horizontal: 5),
+                          border: OutlineInputBorder(),),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                            allow: true, replacementString: '.')
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          editableRate = true;
+                          pRate = double.tryParse(value)!;
+                          calculate();
+                        });
+                      },
+                    ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 4,
+                  ),
+                  Expanded(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(' Gross',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400
+                    )),
+                      InkWell(
+                        onTap: () {
+                            controllerGross.text =
+                                  grossTotal.toStringAsFixed(decimal);
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) => Padding(
+                                  padding: EdgeInsets.only(
+                                      bottom: MediaQuery.of(context)
+                                          .viewInsets
+                                          .bottom),
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 16),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        child: TextField(
+                                          keyboardType:
+                                              const TextInputType.numberWithOptions(
+                                                  decimal: true),
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter(
+                                                RegExp(r'[0-9]'),
+                                                allow: true,
+                                                replacementString: '.')
+                                          ],
+                                          decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              hintText: 'Gross Amount',
+                                              labelText: 'Enter gross amount'),
+                                          controller: controllerGross,
+                                          autofocus: true,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: kPrimaryColor,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                        ),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          setState(() {
+                                            calculateGross(controllerGross.text);
+                                          });
+                                        },
+                                        child: const Text("Done",style: TextStyle(color: white),),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                        },
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 35,
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          decoration: BoxDecoration(border: Border.all(color: grey),borderRadius: BorderRadius.circular(3)),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(grossTotal.toStringAsFixed(decimal))),
+                        ),
+                      ),
+                    ],
+                  ))
+                  ],
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('Discount  ',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                    controller: controllerDiscountPer,
+                                                    focusNode: focusNodeDiscountPer,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      editableDiscountP = true;
+                                      discountPer = double.tryParse(value)?? 0;
+                                      calculate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      focusNode:
+                                                          focusNodeDiscount,
+                                                      controller:
+                                                          controllerDiscount,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                           editableDiscount = true;
+                                      discount = double.tryParse(value)?? 0;
+                                      calculate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      flex: 1,
+                      child: Text('Net ',style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400
+                      )),
+                    ),
+                     const SizedBox(width: 4),
+                                                Expanded(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      controller: TextEditingController(text: net.toStringAsFixed(decimal)),
+                                                      readOnly: true,
+                                                      // keyboardType:
+                                                      //     const TextInputType
+                                                      //         .numberWithOptions(
+                                                      //         decimal: true),
+                                                      // inputFormatters: [
+                                                      //   FilteringTextInputFormatter(
+                                                      //       RegExp(r'[0-9]'),
+                                                      //       allow: true,
+                                                      //       replacementString:
+                                                      //           '.')
+                                                      // ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                         
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    Visibility(
+                      visible: isTax,
+                      child: SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Row(
+                      children: [
+                         Text('${(companyTaxMode == 'INDIA' ? 'GST ' : companyTaxMode == 'GULF' ? 'VAT ' : 'Tax ')}          ',
+                         style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400
+                      )),
+                      const Spacer(),
+                       Flexible(
+                                                    flex: 2,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: Colors.orange),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  3)),
+                                                      height: 35,
+                                                      child: TextField(
+                                                        style: const TextStyle(fontSize: 13),
+                                                        readOnly: true,
+                                                      controller: TextEditingController(text: taxP.toStringAsFixed(decimal)),
+                                                      // focusNode: focusNodeDiscount,
+                                                      //   keyboardType:
+                                                      //       const TextInputType
+                                                      //           .numberWithOptions(
+                                                      //           decimal: true),
+                                                      //   inputFormatters: [
+                                                      //     FilteringTextInputFormatter(
+                                                      //         RegExp(r'[0-9]'),
+                                                      //         allow: true,
+                                                      //         replacementString:
+                                                      //             '.')
+                                                      //   ],
+                                      //                   onChanged: (value) {
+                                      //                     setState(() {
+                                      //   editableDiscountP = true;
+                                      //   discountPer = double.tryParse(value)!;
+                                      //   // calculate();
+                                      // });
+                                      //                   },
+                                                        decoration: InputDecoration(
+                                                          suffixIcon: Container(
+                                                            decoration: BoxDecoration(
+                                                                color: Colors
+                                                                    .orange[100],
+                                                                border: const Border(
+                                                                    left: BorderSide(
+                                                                        color: Colors
+                                                                            .orange)),
+                                                                borderRadius: const BorderRadius
+                                                                    .only(
+                                                                    bottomRight:
+                                                                        Radius
+                                                                            .circular(
+                                                                                3),
+                                                                    topRight: Radius
+                                                                        .circular(
+                                                                            3))),
+                                                            width: 25,
+                                                            child: const Center(
+                                                              child: Icon(
+                                                                Icons.percent_sharp,
+                                                                color:
+                                                                    Colors.orange,
+                                                                size: 15,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 6,
+                                                                  horizontal: 3),
+                                                          border:
+                                                              const OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide
+                                                                          .none),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                   const SizedBox(width: 4),
+                                                  Flexible(
+                                                    flex: 2,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: grey),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                  3)),
+                                                      height: 35,
+                                                      child: TextField(
+                                                        readOnly: true,
+                                                         style: const TextStyle(fontSize: 13),
+                                                        controller: TextEditingController(text: tax.toStringAsFixed(decimal)),
+                                                        // focusNode:
+                                                        //     focusNodeDiscountPer,
+                                                        // controller:
+                                                        //     controllerDiscountPer,
+                                                        // keyboardType:
+                                                        //     const TextInputType
+                                                        //         .numberWithOptions(
+                                                        //         decimal: true),
+                                                        // inputFormatters: [
+                                                        //   FilteringTextInputFormatter(
+                                                        //       RegExp(r'[0-9]'),
+                                                        //       allow: true,
+                                                        //       replacementString:
+                                                        //           '.')
+                                                        // ],
+                                                        textAlign: TextAlign.right,
+                                                        decoration: InputDecoration(
+                                                          prefixIcon: Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color:
+                                                                  Colors.grey[100],
+                                                              border: const Border(
+                                                                  right: BorderSide(
+                                                                      color: grey)),
+                                                            ),
+                                                            width: 25,
+                                                            child: const Center(
+                                                              child: Icon(
+                                                                Icons
+                                                                    .currency_rupee_outlined,
+                                                                color: Colors.grey,
+                                                                size: 15,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 6,
+                                                                  horizontal: 3),
+                                                          border:
+                                                              const OutlineInputBorder(
+                                                                  borderSide:
+                                                                      BorderSide
+                                                                          .none),
+                                                        ),
+                                                        
+                                                      ),
+                                                    ),
+                                                  ),
+                      ],
+                                        ),
+                                      ),
+                    ),
+                 const SizedBox(
+                  height: 6,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      flex: 1,
+                      child: Text('Total    ',style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400
+                      )),
+                    ),
+                     const SizedBox(width: 4),
+                                                Expanded(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      readOnly: true,
+                                                      style: const TextStyle(fontSize: 13),
+                                                      controller: TextEditingController(text: total.toStringAsFixed(decimal)),
+                                                      onTap: () {
+                                                         controllerTotal.text = total.toStringAsFixed(decimal);
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext context) => Padding(
+                              padding: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).viewInsets.bottom),
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                                    child: TextField(
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter(
+                                            RegExp(r'[0-9]'),
+                                            allow: true,
+                                            replacementString: '.')
+                                      ],
+                                      decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          hintText: 'Total Amount',
+                                          labelText: 'Enter total amount'),
+                                      controller: controllerTotal,
+                                      autofocus: true,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: kPrimaryColor,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))
+                                    ),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        calculateTotalValue(
+                                            controllerTotal.text);
+                                      });
+                                    },
+                                    child: const Text("Done",style: TextStyle(color: white),),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                                                      },
+                                                      // keyboardType:
+                                                      //     const TextInputType
+                                                      //         .numberWithOptions(
+                                                      //         decimal: true),
+                                                      // inputFormatters: [
+                                                      //   FilteringTextInputFormatter(
+                                                      //       RegExp(r'[0-9]'),
+                                                      //       allow: true,
+                                                      //       replacementString:
+                                                      //           '.')
+                                                      // ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                         
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('MRP           ',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 14),
+                                                    controller: controllerMrpPercentage,
+                                                    focusNode: focusNodeMrpPercentage,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      mrpPercentage = double.tryParse(value)!;
+                                      calculateRate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      focusNode:
+                                                          focusNodeMrp,
+                                                      controller:
+                                                          controllerMrp,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      mrp = double.tryParse(value)!;
+                                      calculateRate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('Retail        ',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                    controller: controllerRetailPercentage,
+                                                    focusNode: focusNodeRetailPercentage,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      retailPercentage = double.tryParse(value)!;
+                                      calculateRate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      focusNode:
+                                                          focusNodeRetail,
+                                                      controller:
+                                                          controllerRetail,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      retail = double.tryParse(value)!;
+                                      calculateRate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('Wholesale',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w300
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                    controller: controllerWholeSalePercentage,
+                                                    focusNode: focusNodeWholeSalePercentage,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      wholeSalePercentage = double.tryParse(value)!;
+                                      calculate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      focusNode:
+                                                          focusNodeWholeSale,
+                                                      controller:
+                                                          controllerWholeSale,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      wholeSale = double.tryParse(value)!;
+                                      calculateRate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('Branch     ',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                    controller: controllerBranchPercentage,
+                                                    focusNode: focusNodeBranchPercentage,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      branchPercentage = double.tryParse(value)!;
+                                      calculate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      focusNode:
+                                                          focusNodeBranch,
+                                                      controller:
+                                                          controllerBranch,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      branch = double.tryParse(value)!;
+                                      calculateRate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 6,
+                ),
+                    SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text('Special\nRetail        ',style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400
+                    )),
+                    const Spacer(),
+                     Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                    controller: controllerSPRetailPercentage,
+                                                    focusNode: focusNodeSPRetailPercentage,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      spRetailPercentage = double.tryParse(value)!;
+                                      calculateRate();
+                                    });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                 const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      style: const TextStyle(fontSize: 13),
+                                                      focusNode:
+                                                          focusNodeSPRetail,
+                                                      controller:
+                                                          controllerSPRetail,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                      spRetail = double.tryParse(value)!;
+                                      calculateRate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                    ],
+                  ),
+                ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                children: [
+                   Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: () {
+                               editItem ? 
+                               setState(() {
+                                clearValue();
+                                  cartItem.removeAt(position!);
+                                  calculateTotal();
+                                nextWidget = 0;
+                               },) 
+                               : setState(() {
+                                   if (isFreeItem) {
+                      setState(() {
+                        unit ??= DataJson(id: 0, name: '');
+                        pRate = (controllerRate.text.isNotEmpty
+                            ? double.tryParse(controllerRate.text)
+                            : pRate)!;
+                        discount = (controllerDiscount.text.isNotEmpty
+                            ? double.tryParse(controllerDiscount.text)
+                            : discount)!;
+                        discountPer = (controllerDiscountPer.text.isNotEmpty
+                            ? double.tryParse(controllerDiscountPer.text)
+                            : discountPer)!;
+                        mrp = (controllerMrp.text.isNotEmpty
+                            ? double.tryParse(controllerMrp.text)
+                            : mrp)!;
+                        retail = (controllerRetail.text.isNotEmpty
+                            ? double.tryParse(controllerRetail.text)
+                            : retail)!;
+                        wholeSale = (controllerWholeSale.text.isNotEmpty
+                            ? double.tryParse(controllerWholeSale.text)
+                            : wholeSale)!;
+                        // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                        branch = (controllerBranch.text.isNotEmpty
+                            ? double.tryParse(controllerBranch.text)
+                            : branch)!;
+                        quantity = (controllerQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerQuantity.text)
+                            : quantity)!;
+                        freeQuantity = (controllerFreeQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerFreeQuantity.text)
+                            : freeQuantity)!;
+                        serialNo = controllerSerialNo.text.isNotEmpty
+                            ? controllerFreeQuantity.text
+                            : '';
+
+                        if (editItem) {
+                          cartItem[position!].adCess = adCess;
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].branchPer = branchPercentage;
+                          cartItem[position!].cDisc = cDisc;
+                          cartItem[position!].cGST = csGST;
+                          cartItem[position!].cdPer = cdPer;
+                          cartItem[position!].cess = cess;
+                          cartItem[position!].discount = discount;
+                          cartItem[position!].discountPercent = discountPer;
+                          // cartItem[position!].expDate = expDate;
+                          // cartItem[position!].expense = expense;
+                          cartItem[position!].fCess = fCess;
+                          cartItem[position!].fUnitId = fUnitId;
+                          cartItem[position!].fUnitValue = fUnitValue;
+                          cartItem[position!].free = freeQuantity;
+                          cartItem[position!].gross = grossTotal;
+                          cartItem[position!].iGST = iGST;
+                          // cartItem[position!].id = cartItem.length + 1;
+                          // cartItem[position!].itemId = productModel['slno'];
+                          // cartItem[position!].itemName = productModel['itemname'];
+                          // cartItem[position!].location = locationId;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].mrpPer = mrpPercentage;
+                          cartItem[position!].net = net;
+                          cartItem[position!].profitPer = mrpPercentage;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rPRate;
+                          cartItem[position!].rate = pRate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].retailPer = retailPercentage;
+                          cartItem[position!].sGST = csGST;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].spRetailPer = spRetailPercentage;
+                          cartItem[position!].tax = tax;
+                          cartItem[position!].taxP = taxP;
+                          cartItem[position!].total = total;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          cartItem[position!].unitId = unit!.id!;
+                          cartItem[position!].unitName = unit!.name!;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].wholesalePer =
+                              wholeSalePercentage;
+                          cartItem[position!].brand = brandId;
+                          cartItem[position!].color = colorId;
+                          cartItem[position!].company = companyId;
+                          cartItem[position!].estUniqueCode = estUniqueCode;
+                          cartItem[position!].expenseQty = expenseQty;
+                          cartItem[position!].size = sizeValue;
+                        } else {
+                          cartItem.add(CartItemP(
+                              adCess: adCess,
+                              barcode: barcode,
+                              branch: branch,
+                              branchPer: branchPercentage,
+                              cDisc: cDisc,
+                              cGST: csGST,
+                              cdPer: cdPer,
+                              cess: cess,
+                              discount: discount,
+                              discountPercent: discountPer,
+                              expDate: expDate,
+                              expense: expense,
+                              fCess: fCess,
+                              fUnitId: fUnitId,
+                              fUnitValue: fUnitValue,
+                              free: freeQuantity,
+                              gross: grossTotal,
+                              iGST: iGST,
+                              id: cartItem.length + 1,
+                              itemId: productModel!.slNo,
+                              itemName: productModel!.itemName,
+                              location: locationId,
+                              mrp: mrp,
+                              mrpPer: mrpPercentage,
+                              net: net,
+                              profitPer: mrpPercentage,
+                              quantity: quantity,
+                              rRate: rPRate,
+                              rate: pRate,
+                              retail: retail,
+                              retailPer: retailPercentage,
+                              sGST: csGST,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              spRetailPer: spRetailPercentage,
+                              tax: tax,
+                              taxP: taxP,
+                              total: total,
+                              uniqueCode: uniqueCode,
+                              unitId: unit!.id!,
+                              unitName: unit!.name!,
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              wholesalePer: wholeSalePercentage,
+                              brand: brandId,
+                              color: colorId,
+                              company: companyId,
+                              estUniqueCode: estUniqueCode,
+                              expenseQty: expenseQty,
+                              size: sizeValue));
+                        }
+
+                        if (cartItem.isNotEmpty) {
+                          editItem = false;
+                          nextWidget = 5;
+                          clearValue();
+                          calculateTotal();
+                        }
+                      });
+                    }
+                     else if (total > 0) {
+                      setState(() {
+                        unit ??= DataJson(id: 0, name: '');
+                        pRate = (controllerRate.text.isNotEmpty
+                            ? double.tryParse(controllerRate.text)
+                            : pRate)!;
+                        mrp = (controllerMrp.text.isNotEmpty
+                            ? double.tryParse(controllerMrp.text)
+                            : mrp)!;
+                        retail = (controllerRetail.text.isNotEmpty
+                            ? double.tryParse(controllerRetail.text)
+                            : retail)!;
+                        wholeSale = (controllerWholeSale.text.isNotEmpty
+                            ? double.tryParse(controllerWholeSale.text)
+                            : wholeSale)!;
+                        // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                        branch = (controllerBranch.text.isNotEmpty
+                            ? double.tryParse(controllerBranch.text)
+                            : branch)!;
+                        quantity = (controllerQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerQuantity.text)
+                            : quantity)!;
+                        freeQuantity = (controllerFreeQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerFreeQuantity.text)
+                            : freeQuantity)!;
+
+                        if (editItem) {
+                          cartItem[position!].adCess = adCess;
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].branchPer = branchPercentage;
+                          cartItem[position!].cDisc = cDisc;
+                          cartItem[position!].cGST = csGST;
+                          cartItem[position!].cdPer = cdPer;
+                          cartItem[position!].cess = cess;
+                          cartItem[position!].discount = discount;
+                          cartItem[position!].discountPercent = discountPer;
+                          // cartItem[position!].expDate = expDate;
+                          // cartItem[position!].expense = expense;
+                          cartItem[position!].fCess = fCess;
+                          cartItem[position!].fUnitId = fUnitId;
+                          cartItem[position!].fUnitValue = fUnitValue;
+                          cartItem[position!].free = freeQuantity;
+                          cartItem[position!].gross = grossTotal;
+                          cartItem[position!].iGST = iGST;
+                          // cartItem[position!].id = cartItem.length + 1;
+                          // cartItem[position!].itemId = productModel['slno'];
+                          // cartItem[position!].itemName = productModel['itemname'];
+                          // cartItem[position!].location = locationId;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].mrpPer = mrpPercentage;
+                          cartItem[position!].net = net;
+                          cartItem[position!].profitPer = mrpPercentage;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rPRate;
+                          cartItem[position!].rate = pRate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].retailPer = retailPercentage;
+                          cartItem[position!].sGST = csGST;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].spRetailPer = spRetailPercentage;
+                          cartItem[position!].tax = tax;
+                          cartItem[position!].taxP = taxP;
+                          cartItem[position!].total = total;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          cartItem[position!].unitId = unit!.id!;
+                          cartItem[position!].unitName = unit!.name!;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].wholesalePer =
+                              wholeSalePercentage;
+                        } else {
+                          cartItem.add(CartItemP(
+                              adCess: adCess,
+                              barcode: barcode,
+                              branch: branch,
+                              branchPer: branchPercentage,
+                              cDisc: cDisc,
+                              cGST: csGST,
+                              cdPer: cdPer,
+                              cess: cess,
+                              discount: discount,
+                              discountPercent: discountPer,
+                              expDate: expDate,
+                              expense: expense,
+                              fCess: fCess,
+                              fUnitId: fUnitId,
+                              fUnitValue: fUnitValue,
+                              free: freeQuantity,
+                              gross: grossTotal,
+                              iGST: iGST,
+                              id: cartItem.length + 1,
+                              itemId: selectedItem!.slNo,
+                              itemName: selectedItem!.itemName,
+                              location: locationId,
+                              mrp: mrp,
+                              mrpPer: mrpPercentage,
+                              net: net,
+                              profitPer: mrpPercentage,
+                              quantity: quantity,
+                              rRate: rPRate,
+                              rate: pRate,
+                              retail: retail,
+                              retailPer: retailPercentage,
+                              sGST: csGST,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              spRetailPer: spRetailPercentage,
+                              tax: tax,
+                              taxP: taxP,
+                              total: total,
+                              uniqueCode: uniqueCode,
+                              unitId: unit!.id!,
+                              unitName: unit!.name!,
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              wholesalePer: wholeSalePercentage,
+                              brand: brandId,
+                              color: colorId,
+                              company: companyId,
+                              estUniqueCode: estUniqueCode,
+                              expenseQty: expenseQty,
+                              size: sizeValue));
+                        }
+                        if (cartItem.isNotEmpty) {
+                          editItem = false;
+                          // nextWidget = 0;
+                          clearValue();
+                          calculateTotal();
+                        }
+                      });
+                    } else {
+                      if (!isFreeItem) {
+                        if (quantity <= 0) {
+                          showWarningAlertBox(context, 'Fill data quantity',
+                              '0 quantity not allowed');
+                        } else if (pRate <= 0) {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 rate not allowed');
+                        } else {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 rate not allowed');
+                        }
+                      }
+                    }
+                               },);
+                              },
+                              child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: 
+                                   Text(
+                                    editItem? 'Delete': 'Save & New',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                         Expanded(
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.grey,
+                              onTap: () {
+                               if (isFreeItem) {
+                      setState(() {
+                        unit ??= DataJson(id: 0, name: '');
+                        pRate = (controllerRate.text.isNotEmpty
+                            ? double.tryParse(controllerRate.text)
+                            : pRate)!;
+                        discount = (controllerDiscount.text.isNotEmpty
+                            ? double.tryParse(controllerDiscount.text)
+                            : discount)!;
+                        discountPer = (controllerDiscountPer.text.isNotEmpty
+                            ? double.tryParse(controllerDiscountPer.text)
+                            : discountPer)!;
+                        mrp = (controllerMrp.text.isNotEmpty
+                            ? double.tryParse(controllerMrp.text)
+                            : mrp)!;
+                        retail = (controllerRetail.text.isNotEmpty
+                            ? double.tryParse(controllerRetail.text)
+                            : retail)!;
+                        wholeSale = (controllerWholeSale.text.isNotEmpty
+                            ? double.tryParse(controllerWholeSale.text)
+                            : wholeSale)!;
+                        // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                        branch = (controllerBranch.text.isNotEmpty
+                            ? double.tryParse(controllerBranch.text)
+                            : branch)!;
+                        quantity = (controllerQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerQuantity.text)
+                            : quantity)!;
+                        freeQuantity = (controllerFreeQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerFreeQuantity.text)
+                            : freeQuantity)!;
+                        serialNo = controllerSerialNo.text.isNotEmpty
+                            ? controllerFreeQuantity.text
+                            : '';
+
+                        if (editItem) {
+                          cartItem[position!].adCess = adCess;
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].branchPer = branchPercentage;
+                          cartItem[position!].cDisc = cDisc;
+                          cartItem[position!].cGST = csGST;
+                          cartItem[position!].cdPer = cdPer;
+                          cartItem[position!].cess = cess;
+                          cartItem[position!].discount = discount;
+                          cartItem[position!].discountPercent = discountPer;
+                          // cartItem[position!].expDate = expDate;
+                          // cartItem[position!].expense = expense;
+                          cartItem[position!].fCess = fCess;
+                          cartItem[position!].fUnitId = fUnitId;
+                          cartItem[position!].fUnitValue = fUnitValue;
+                          cartItem[position!].free = freeQuantity;
+                          cartItem[position!].gross = grossTotal;
+                          cartItem[position!].iGST = iGST;
+                          // cartItem[position!].id = cartItem.length + 1;
+                          // cartItem[position!].itemId = productModel['slno'];
+                          // cartItem[position!].itemName = productModel['itemname'];
+                          // cartItem[position!].location = locationId;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].mrpPer = mrpPercentage;
+                          cartItem[position!].net = net;
+                          cartItem[position!].profitPer = mrpPercentage;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rPRate;
+                          cartItem[position!].rate = pRate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].retailPer = retailPercentage;
+                          cartItem[position!].sGST = csGST;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].spRetailPer = spRetailPercentage;
+                          cartItem[position!].tax = tax;
+                          cartItem[position!].taxP = taxP;
+                          cartItem[position!].total = total;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          cartItem[position!].unitId = unit!.id!;
+                          cartItem[position!].unitName = unit!.name!;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].wholesalePer =
+                              wholeSalePercentage;
+                          cartItem[position!].brand = brandId;
+                          cartItem[position!].color = colorId;
+                          cartItem[position!].company = companyId;
+                          cartItem[position!].estUniqueCode = estUniqueCode;
+                          cartItem[position!].expenseQty = expenseQty;
+                          cartItem[position!].size = sizeValue;
+                        } else {
+                          cartItem.add(CartItemP(
+                              adCess: adCess,
+                              barcode: barcode,
+                              branch: branch,
+                              branchPer: branchPercentage,
+                              cDisc: cDisc,
+                              cGST: csGST,
+                              cdPer: cdPer,
+                              cess: cess,
+                              discount: discount,
+                              discountPercent: discountPer,
+                              expDate: expDate,
+                              expense: expense,
+                              fCess: fCess,
+                              fUnitId: fUnitId,
+                              fUnitValue: fUnitValue,
+                              free: freeQuantity,
+                              gross: grossTotal,
+                              iGST: iGST,
+                              id: cartItem.length + 1,
+                              itemId: productModel!.slNo,
+                              itemName: productModel!.itemName,
+                              location: locationId,
+                              mrp: mrp,
+                              mrpPer: mrpPercentage,
+                              net: net,
+                              profitPer: mrpPercentage,
+                              quantity: quantity,
+                              rRate: rPRate,
+                              rate: pRate,
+                              retail: retail,
+                              retailPer: retailPercentage,
+                              sGST: csGST,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              spRetailPer: spRetailPercentage,
+                              tax: tax,
+                              taxP: taxP,
+                              total: total,
+                              uniqueCode: uniqueCode,
+                              unitId: unit!.id!,
+                              unitName: unit!.name!,
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              wholesalePer: wholeSalePercentage,
+                              brand: brandId,
+                              color: colorId,
+                              company: companyId,
+                              estUniqueCode: estUniqueCode,
+                              expenseQty: expenseQty,
+                              size: sizeValue));
+                        }
+
+                        if (cartItem.isNotEmpty) {
+                          editItem = false;
+                          nextWidget = 5;
+                          clearValue();
+                          calculateTotal();
+                        }
+                      });
+                    }
+                     else if (total > 0) {
+                      setState(() {
+                        unit ??= DataJson(id: 0, name: '');
+                        pRate = (controllerRate.text.isNotEmpty
+                            ? double.tryParse(controllerRate.text)
+                            : pRate)!;
+                        mrp = (controllerMrp.text.isNotEmpty
+                            ? double.tryParse(controllerMrp.text)
+                            : mrp)!;
+                        retail = (controllerRetail.text.isNotEmpty
+                            ? double.tryParse(controllerRetail.text)
+                            : retail)!;
+                        wholeSale = (controllerWholeSale.text.isNotEmpty
+                            ? double.tryParse(controllerWholeSale.text)
+                            : wholeSale)!;
+                        // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                        branch = (controllerBranch.text.isNotEmpty
+                            ? double.tryParse(controllerBranch.text)
+                            : branch)!;
+                        quantity = (controllerQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerQuantity.text)
+                            : quantity)!;
+                        freeQuantity = (controllerFreeQuantity.text.isNotEmpty
+                            ? double.tryParse(controllerFreeQuantity.text)
+                            : freeQuantity)!;
+
+                        if (editItem) {
+                          cartItem[position!].adCess = adCess;
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].branchPer = branchPercentage;
+                          cartItem[position!].cDisc = cDisc;
+                          cartItem[position!].cGST = csGST;
+                          cartItem[position!].cdPer = cdPer;
+                          cartItem[position!].cess = cess;
+                          cartItem[position!].discount = discount;
+                          cartItem[position!].discountPercent = discountPer;
+                          // cartItem[position!].expDate = expDate;
+                          // cartItem[position!].expense = expense;
+                          cartItem[position!].fCess = fCess;
+                          cartItem[position!].fUnitId = fUnitId;
+                          cartItem[position!].fUnitValue = fUnitValue;
+                          cartItem[position!].free = freeQuantity;
+                          cartItem[position!].gross = grossTotal;
+                          cartItem[position!].iGST = iGST;
+                          // cartItem[position!].id = cartItem.length + 1;
+                          // cartItem[position!].itemId = productModel['slno'];
+                          // cartItem[position!].itemName = productModel['itemname'];
+                          // cartItem[position!].location = locationId;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].mrpPer = mrpPercentage;
+                          cartItem[position!].net = net;
+                          cartItem[position!].profitPer = mrpPercentage;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rPRate;
+                          cartItem[position!].rate = pRate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].retailPer = retailPercentage;
+                          cartItem[position!].sGST = csGST;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].spRetailPer = spRetailPercentage;
+                          cartItem[position!].tax = tax;
+                          cartItem[position!].taxP = taxP;
+                          cartItem[position!].total = total;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          cartItem[position!].unitId = unit!.id!;
+                          cartItem[position!].unitName = unit!.name!;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].wholesalePer =
+                              wholeSalePercentage;
+                        } else {
+                          cartItem.add(CartItemP(
+                              adCess: adCess,
+                              barcode: barcode,
+                              branch: branch,
+                              branchPer: branchPercentage,
+                              cDisc: cDisc,
+                              cGST: csGST,
+                              cdPer: cdPer,
+                              cess: cess,
+                              discount: discount,
+                              discountPercent: discountPer,
+                              expDate: expDate,
+                              expense: expense,
+                              fCess: fCess,
+                              fUnitId: fUnitId,
+                              fUnitValue: fUnitValue,
+                              free: freeQuantity,
+                              gross: grossTotal,
+                              iGST: iGST,
+                              id: cartItem.length + 1,
+                              itemId: selectedItem!.slNo,
+                              itemName: selectedItem!.itemName,
+                              location: locationId,
+                              mrp: mrp,
+                              mrpPer: mrpPercentage,
+                              net: net,
+                              profitPer: mrpPercentage,
+                              quantity: quantity,
+                              rRate: rPRate,
+                              rate: pRate,
+                              retail: retail,
+                              retailPer: retailPercentage,
+                              sGST: csGST,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              spRetailPer: spRetailPercentage,
+                              tax: tax,
+                              taxP: taxP,
+                              total: total,
+                              uniqueCode: uniqueCode,
+                              unitId: unit!.id!,
+                              unitName: unit!.name!,
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              wholesalePer: wholeSalePercentage,
+                              brand: brandId,
+                              color: colorId,
+                              company: companyId,
+                              estUniqueCode: estUniqueCode,
+                              expenseQty: expenseQty,
+                              size: sizeValue));
+                        }
+                        if (cartItem.isNotEmpty) {
+                          editItem = false;
+                          nextWidget = 0;
+                          clearValue();
+                          calculateTotal();
+                        }
+                      });
+                    } else {
+                      if (!isFreeItem) {
+                        if (quantity <= 0) {
+                          showWarningAlertBox(context, 'Fill data quantity',
+                              '0 quantity not allowed');
+                        } else if (pRate <= 0) {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 rate not allowed');
+                        } else {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 rate not allowed');
+                        }
+                      }
+                    }
+                  
+                              },
+                              child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  const Center(
+                                  child: 
+                                   Text(
+                                   'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      color: white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+  ),
+);
+ }
+ 
+
 
   selectLedgerDetailWidget() {
     return FutureBuilder<CustomerModel>(
@@ -1531,16 +6662,24 @@ class _PurchaseState extends State<Purchase> {
       editableFreeQuantity = false,
       editableDiscount = false,
       editableDiscountP = false;
-  dynamic productModelPrize = [
-    {'mrp': 0},
-    {'retail': 0},
-    {'wsrate': 0},
-    {'spretail': 0},
-    {'branch': 0},
-    {'serialno': ''},
-    {'prate': 0},
-    {'realprate': 0},
-    {'uniquecode': 0}
+  dynamic productModelPrize = [{'mrp': 0,
+  'retail': 0,
+  'wsrate': 0,
+  'spretail': 0,
+  'branch': 0,
+  'serialno': '',
+  'prate': 0,
+  'realprate': 0,
+  'uniquecode': 0},
+    // {'mrp': 0},
+    // {'retail': 0},
+    // {'wsrate': 0},
+    // {'spretail': 0},
+    // {'branch': 0},
+    // {'serialno': ''},
+    // {'prate': 0},
+    // {'realprate': 0},
+    // {'uniquecode': 0}
   ];
 
   itemDetailWidget() {
@@ -2023,7 +7162,8 @@ class _PurchaseState extends State<Purchase> {
                           clearValue();
                         }
                       });
-                    } else if (total > 0) {
+                    }
+                     else if (total > 0) {
                       setState(() {
                         unit ??= DataJson(id: 0, name: '');
                         pRate = (controllerRate.text.isNotEmpty
@@ -3992,6 +9132,16 @@ class _PurchaseState extends State<Purchase> {
       grandTotal = 0;
   int get totalItem => cartItem.length;
 
+  void clearCart() {
+    for (var f in cartItem) {
+      f.quantity = 1;
+    }
+    setState(() {
+      cartItem = [];
+      calculateTotal();
+    });
+  }
+
   calculateTotal() {
     totalGrossValue = 0;
     totalDiscount = 0;
@@ -4020,6 +9170,7 @@ class _PurchaseState extends State<Purchase> {
       totalCartTotal += f.total;
       totalProfit += f.profitPer;
     }
+    
     // totalCartValue =
     //     ComSettings.appSettings('bool', 'key-round-off-amount', false)
     //         ? totalCartValue
@@ -4050,6 +9201,7 @@ class _PurchaseState extends State<Purchase> {
     controllerBranchPercentage.text = '';
     controllerSPRetail.text = '';
     controllerSPRetailPercentage.text = '';
+    productNameController.text = '';
     editableQuantity = false;
     editableRate = false;
     editableDiscount = false;
@@ -4135,7 +9287,7 @@ class _PurchaseState extends State<Purchase> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'P_Find').then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'P_Find',8).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -4182,6 +9334,10 @@ class _PurchaseState extends State<Purchase> {
             state: '',
             stateCode: '',
             taxNumber: '');
+            supplierController.text = cModel.name.toString();
+            selectedSupplierId = cModel.id;
+            invNoController.text = dataDynamic[0]['InvoiceNo'];
+            entryNo = dataDynamic[0]['EntryNo'].toString();
         cartItem.clear();
         for (var product in particulars) {
           cartItem.add(CartItemP(
@@ -4248,7 +9404,8 @@ class _PurchaseState extends State<Purchase> {
           cashPaidController.text = billCash.toStringAsFixed(decimal);
         }
         _narrationController.text = narration;
-        nextWidget = 5;
+        nextWidget = 0;
+        calculateTotal();
         oldBill = true;
       });
     });
@@ -4277,7 +9434,7 @@ class _PurchaseState extends State<Purchase> {
   }
 
   deleteData() {
-    api.deletePurchase(dataDynamic[0]['EntryNo'], 'P_Delete').then((value) {
+    api.deletePurchase(dataDynamic[0]['EntryNo'], 'P_Delete',8).then((value) {
       setState(() {
         _isLoading = false;
       });
@@ -4296,7 +9453,7 @@ class _PurchaseState extends State<Purchase> {
                       Navigator.of(context).pop();
                       Navigator.pushReplacementNamed(context, '/purchase');
                     },
-                    child: const Text('CANCEL'),
+                    child: const Text('Ok'),
                   )
                 ],
               ),

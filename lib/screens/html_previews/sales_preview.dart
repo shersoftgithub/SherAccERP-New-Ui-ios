@@ -3255,7 +3255,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                             ],
                                                           )),
                                                           const SizedBox(
-                                                            height: 20,
+                                                            height: 15,
                                                           ),
                                                           const Text(
                                                             "Certified that the particular given above are true and Correct",

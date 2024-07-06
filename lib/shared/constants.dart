@@ -53,7 +53,7 @@ String _sherSoftPassword = '';
 String get sherSoftPassword => _sherSoftPassword;
 set sherSoftPassword(String value) => _sherSoftPassword = value;
 
-const String apiV = 'v23/';
+const String apiV = 'v24/';
 
 const currencySymbol = '₹';
 // const bool isVariant = false;
@@ -284,6 +284,10 @@ class ComSettings {
         }
       }
     });
+
+//    bool isCashAc(){
+// cashAccount.firstWhere((element) => element.id == acId); 
+//     }
 
     api.getMainHead().then((value) {
       groupList = [];
