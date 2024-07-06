@@ -95,6 +95,7 @@ dependencies:
   riverpod_generator: ^2.4.0
   riverpod_annotation: ^2.3.5
   flutter_async_autocomplete: ^0.1.1
+  easy_pie_chart: ^1.0.0
  
 
 dev_dependencies:

@@ -7,6 +7,7 @@ import 'package:sheraccerp/models/expense_list_item_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/expense_listview.dart';
 import 'package:sheraccerp/widget/loading.dart';
@@ -21,7 +22,14 @@ class Expense extends StatefulWidget {
 
 class _ExpenseState extends State<Expense> {
   String heading = "";
-  final List<ChartExpense> _expenseData = [];
+  // final List<ChartExpense> _expenseData = [];
+  final List<ChartExpense> _expenseData = [
+      ChartExpense(name: 'Shop', amount: '2', id: 1, colorVal: '0xff990099'),
+    ChartExpense(name: 'General Purchase A/c', amount: '2', id: 2, colorVal: '0xffE33335'),
+    ChartExpense(name: 'Service Charge', amount: '2', id: 3, colorVal: '0xffEED44C'),
+    ChartExpense(name: 'Samsung Service Charge', amount: '2', id: 4, colorVal: '0xff109618'),
+    ChartExpense(name: 'Salary', amount: '2', id: 5, colorVal: '0xFF0000FF'),
+  ];
   DateTime now = DateTime.now();
   String? formattedDate;
   DioService api = DioService();
@@ -104,6 +112,7 @@ class _ExpenseState extends State<Expense> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: PreferredSize(
             preferredSize: Size.fromHeight(100),
             child: AppbarWidgget(
@@ -113,11 +122,14 @@ class _ExpenseState extends State<Expense> {
               },
             )),
         body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Card(
-                elevation: 2,
-                child: DropDownSettingsTile<int>(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+            child: Column(
+              children: [
+                DropDownSettingsTile<int>(
+                  
+                  titleTextStyle: const TextStyle(
+                    fontFamily: 'poppins',fontSize: 15,fontWeight: FontWeight.w500),
                   title: 'Branch',
                   settingKey: 'key-dropdown-default-location-view',
                   values: locationList.isNotEmpty
@@ -133,30 +145,40 @@ class _ExpenseState extends State<Expense> {
                     _fetchData(dropDownBranchId);
                   },
                 ),
-              ),
-              const Center(
-                child: Text(
-                  'All Expenses',
-                  style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                // const Center(
+                //   child: Text(
+                //     'All Expenses',
+                //     style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                //   ),
+                // ),
+                const SizedBox(
+                  height: 30.0,
                 ),
-              ),
-              const SizedBox(
-                height: 10.0,
-              ),
-              SizedBox(
-                  height: 320.0,
-                  width: 320.0,
-                  child: _expenseData.isNotEmpty
-                      ? SimplePieDiagram(_getExpenseSeriesData(), animate: true)
-                      : const Loading()),
-              const SizedBox(
-                height: 10.0,
-              ),
-              lItems.isNotEmpty
-                  ? ExpenseListView(
-                      listViewModels: lItems, branchId: dropDownBranchId)
-                  : const Loading(),
-            ],
+                SizedBox(
+          height: 200.0,
+          width: 200.0,
+          child: _expenseData.isNotEmpty
+              ? SimplePieDiagram(_expenseData, animate: true)
+              : const CircularProgressIndicator(),
+        ),
+                // SizedBox(
+                //     height: 320.0,
+                //     width: 320.0,
+                //     child: _expenseData.isNotEmpty
+                //         ? SimplePieDiagram(
+                          
+                //           _getExpenseSeriesData(), animate: true)
+                //         : const Loading()),
+               
+                const SizedBox(
+                  height: 30.0,
+                ),
+                lItems.isNotEmpty
+                    ? ExpenseListView(
+                        listViewModels: lItems, branchId: dropDownBranchId)
+                    : const Loading(),
+              ],
+            ),
           ),
         ));
   }

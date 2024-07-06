@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 
@@ -18,6 +19,7 @@ class CashAndBank extends StatelessWidget {
         '-' +
         now.day.toString();
     return Scaffold(
+      backgroundColor: bagroundColor,
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: AppbarWidgget(
@@ -45,7 +47,7 @@ class CashAndBank extends StatelessWidget {
             //   ),
             // ),
             Expanded(
-              flex: 9,
+              // flex: 9,
               child: FutureBuilder(
                   future: api.fetchCashBankLedger(dated, dated),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -54,32 +56,31 @@ class CashAndBank extends StatelessWidget {
                     } else {
                       return snapshot.hasData
                           ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Expanded(
-                                  flex: 10,
-                                  child: ListView.separated(
-                                      separatorBuilder: (context, index) =>
-                                          const Divider(
-                                            color: Colors.black,
-                                          ),
-                                      shrinkWrap: true,
-                                      itemCount: snapshot.data[0].length,
-                                      padding: const EdgeInsets.all(0),
-                                      itemBuilder:
-                                          (BuildContext context, int position) {
-                                        return createViewItem(
-                                            snapshot.data[0][position],
-                                            context);
-                                      }),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    'Total : ${snapshot.data[1][0]['total']}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20),
-                                  ),
+                                ListView.separated(
+                                    separatorBuilder: (context, index) =>
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                    shrinkWrap: true,
+                                    itemCount: snapshot.data[0].length,
+                                    padding: const EdgeInsets.all(0),
+                                    itemBuilder:
+                                        (BuildContext context, int position) {
+                                      return createViewItem(
+                                          snapshot.data[0][position],
+                                          context);
+                                    }),
+                                    const SizedBox(
+                                      height: 16,
+                                    ),
+                                Text(
+                                  'Total : ${snapshot.data[1][0]['total']}',
+                                  style: const TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500),
                                 ),
                               ],
                             )
@@ -94,41 +95,57 @@ class CashAndBank extends StatelessWidget {
   }
 
   Widget createViewItem(Map<String, dynamic> data, BuildContext context) {
-    return ListTile(
-      title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(
-          children: [
-            Visibility(
-              visible: false,
-              child: Padding(
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        border: Border.all(color: grey,width: .1),
+        borderRadius: BorderRadius.circular(5),color: white,),
+      width: MediaQuery.of(context).size.width,
+      child: ListTile(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(
+            children: [
+              Visibility(
+                visible: false,
+                child: Padding(
+                    child: Text(
+                      data['slno'].toString(),
+                      style: const TextStyle(),
+                      textAlign: TextAlign.right,
+                    ),
+                    padding: const EdgeInsets.all(2.0)),
+              ),
+              Padding(
                   child: Text(
-                    data['slno'].toString(),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.right,
+                    data['name'],
+                    textAlign: TextAlign.justify,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500
+                    ),
+                    maxLines: 2,
                   ),
-                  padding: const EdgeInsets.all(2.0)),
-            ),
-            Padding(
-                child: Text(
-                  data['name'],
-                  textAlign: TextAlign.justify,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 19),
-                  maxLines: 2,
+                  padding: const EdgeInsets.all(1.0)),
+            ],
+          ),
+          Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: Text(
+                '${data['amount']}',
+                style: const TextStyle(
+                  fontFamily: 'poppins',
+                      fontSize: 15,
+                      color: grey,
+                      fontWeight: FontWeight.w500
                 ),
-                padding: const EdgeInsets.all(1.0)),
-          ],
-        ),
-        Padding(
-            child: Text(
-              '${data['amount']}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 19),
-              textAlign: TextAlign.right,
-            ),
-            padding: const EdgeInsets.all(1.0)),
-      ]),
-      // onTap: () => _onTapItem(context, listItemModel),
+                textAlign: TextAlign.right,
+              )),
+        ]),
+        // onTap: () => _onTapItem(context, listItemModel),
+      ),
     );
   }
 }

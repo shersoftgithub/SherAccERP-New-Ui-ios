@@ -1497,7 +1497,7 @@ return DefaultTabController(
               ? const Center(child: CircularProgressIndicator())
               : null,
           controller: oldBill ? selectedSupplierId == acId ? 
-           TextEditingController(text: filteredName): supplierController : supplierController,
+           TextEditingController(text: cashAc): supplierController : supplierController,
           inputTextStyle:
               const TextStyle(fontFamily: 'poppins', fontSize: 14),
           suggestionTextStyle: const TextStyle(fontFamily: 'poppins'),
@@ -1759,6 +1759,7 @@ return DefaultTabController(
                                                 cartModel!.serialNo.toString();
                                             controllerWholeSale.text =
                                                 cartModel!.wholesale.toString();
+                                                unitValue = cartModel!.unitValue;
                                                 net = cartModel!.net;
                                                 total = cartModel!.total;
                                                 taxP = cartModel!.taxP;
@@ -2086,7 +2087,7 @@ return DefaultTabController(
                             child: InkWell(
                               splashColor: Colors.grey,
                               onTap: !oldBill? () async{
-                                 if (cartItem.isNotEmpty) {
+                                 if (selectedSupplierId != null && cartItem.isNotEmpty) {
                       if (buttonEvent) {
                         return;
                       } else {
@@ -2177,7 +2178,11 @@ return DefaultTabController(
                         }
                       }
                     } else {
-                      showInSnackBar('Please add at least one item');
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: selectedSupplierId == null ?
+                         "Please Select Supplier" :
+                          'Please add at least one item');
                     }  }
                      :() {
                                     if (cartItem.isNotEmpty) {
@@ -2306,7 +2311,7 @@ return DefaultTabController(
                            
                               }
                               :() async{
-                                   if (cartItem.isNotEmpty) {
+                                   if (selectedSupplierId != null && cartItem.isNotEmpty) {
                       if (buttonEvent) {
                         return;
                       } else {
@@ -2414,7 +2419,11 @@ return DefaultTabController(
                         }
                       }
                     } else {
-                      showInSnackBar('Please add at least one item');
+                       Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: selectedSupplierId == null ?
+                         "Please Select Supplier" :
+                          'Please add at least one item');
                     }
                               }
                               ,
@@ -3354,8 +3363,6 @@ var selectedItem;
      else if(selectedProducteId != null){
       setState(() {
         calculateTotal();
-        final fetchPrice = api.fetchProductPrize(selectedProducteId!);
-          fetchPrice.then((value) => productModelPrize = value.toList()?? 0);
       });
       adCessPer = isTax ? selectedItem!.adCessPer : 0;
       cessPer = isTax ? selectedItem!.cessPer : 0;
@@ -3389,15 +3396,37 @@ var selectedItem;
     }
 
     calculate() {
+       if (enableMULTIUNIT) {
+            if (pRate > 0) {
+              if (_conversion > 0) {
+                if (focusNodeRate.hasFocus) {
+            pRate = double.tryParse(controllerRate.text)!;
+            // rate = double.tryParse(_rateController.text) * _conversion;
+            // lastRateStatus = false;
+          } else {
+            pRate = editItem ? pRate : (pRate * _conversion);
+            // rate = saleRate; // * _conversion;
+            controllerRate.text = pRate.toStringAsFixed(decimal);
+          }
+
+              }
+            }
+          }
+          else{
+            pRate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+          }
       quantity = (controllerQuantity.text.isNotEmpty
           ? double.tryParse(controllerQuantity.text)
           : 0)!;
       freeQuantity = (controllerFreeQuantity.text.isNotEmpty
           ? double.tryParse(controllerFreeQuantity.text)
           : 0)!;
-      pRate = (controllerRate.text.isNotEmpty
-          ? double.tryParse(controllerRate.text)
-          : 0)!;
+         
+      // pRate = (controllerRate.text.isNotEmpty
+      //     ? double.tryParse(controllerRate.text)
+      //     : 0)!;
       discount = (controllerDiscount.text.isNotEmpty
           ? double.tryParse(controllerDiscount.text)
           : 0)!;
@@ -3420,7 +3449,7 @@ var selectedItem;
                   4, (100 * pRate) / (100 + taxP + kfcP + cessPer))
               : CommonService.getRound(4, (100 * pRate) / (100 + taxP + kfcP))
           : pRate;
-
+      
       if (focusNodeDiscountPer.hasFocus) {
         controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
             ? (((qt * rate) * discP) / 100).toStringAsFixed(2)
@@ -3703,9 +3732,19 @@ return GestureDetector(
         setState(() {
           productModelPrize = fetchedPrice.toList();
           
+          // pRate = 0;
+          // rPRate = 0;
+          // mrp = 0;
+          // retail = 0;
+          // wholeSale = 0;
+          // spRetail = 0;
+          // branch = 0;
+
           pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
           if (pRate > 0 && !editableRate) {
             controllerRate.text = pRate.toString();
+          } else{
+            controllerRate.text = '' ;
           }
 
           rPRate = double.tryParse(productModelPrize[0]['realprate'].toString()) ?? 0;
@@ -3713,24 +3752,34 @@ return GestureDetector(
           if (mrp > 0 && !focusNodeMrp.hasFocus) {
             controllerMrp.text = mrp.toString();
           }
+          else{
+            controllerMrp.text = '';
+          }
 
           retail = double.tryParse(productModelPrize[0]['retail'].toString()) ?? 0;
           if (retail > 0 && !focusNodeRetail.hasFocus) {
             controllerRetail.text = retail.toString();
+          } else{
+            controllerRetail.text = '' ;
           }
 
           wholeSale = double.tryParse(productModelPrize[0]['wsrate'].toString()) ?? 0;
           if (wholeSale > 0 && !focusNodeWholeSale.hasFocus) {
             controllerWholeSale.text = wholeSale.toString();
+          } else{
+            controllerWholeSale.text = '' ;
           }
 
           spRetail = double.tryParse(productModelPrize[0]['spretail'].toString()) ?? 0;
           branch = double.tryParse(productModelPrize[0]['branch'].toString()) ?? 0;
           if (branch > 0 && !focusNodeBranch.hasFocus) {
             controllerBranch.text = branch.toString();
+          } else{
+            controllerBranch.text = '' ;
           }
 
           taxP = selectedItem.tax ?? 0;
+          calculateRate();
         });
       },
     );
@@ -3887,6 +3936,7 @@ return GestureDetector(
                                             // }
                                             // }
                                             calculate();
+                                            calculateRate();
                                           });
                                         },
                                       ),
@@ -3968,7 +4018,7 @@ return GestureDetector(
                       onChanged: (value) {
                         setState(() {
                           editableRate = true;
-                          pRate = double.tryParse(value)!;
+                          // pRate = double.tryParse(value)!;
                           calculate();
                         });
                       },
@@ -6662,7 +6712,8 @@ return GestureDetector(
       editableFreeQuantity = false,
       editableDiscount = false,
       editableDiscountP = false;
-  dynamic productModelPrize = [{'mrp': 0,
+  dynamic productModelPrize = [{
+  'mrp': 0,
   'retail': 0,
   'wsrate': 0,
   'spretail': 0,
