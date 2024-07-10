@@ -286,12 +286,24 @@ class AccountsMenu extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
             title: const Text('Receipt Option'),
+            titleTextStyle: const TextStyle(
+              fontFamily: 'poppins',
+              color: black,
+              fontSize: 16,
+              fontWeight: FontWeight.w500
+              ),
             children: [
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Cash Receipt'))),
+                child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const Center(child: Text('Cash Receipt',
+                    style: TextStyle(fontFamily: 'poppins',color: white),
+                    ))),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/RPVoucher',
@@ -299,9 +311,14 @@ class AccountsMenu extends StatelessWidget {
                 },
               ),
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Bank Receipt'))),
+                child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const Center(child: Text('Bank Receipt',
+                    style: TextStyle(fontFamily: 'poppins',color: white),
+                    ))),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/BankVoucher',
@@ -309,9 +326,15 @@ class AccountsMenu extends StatelessWidget {
                 },
               ),
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Receipt Invoice'))),
+                child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const Center(
+                      child: Text('Receipt Invoice',
+                      style: TextStyle(fontFamily: 'poppins',color: white),),
+                    )),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/InvRPVoucher',
@@ -344,12 +367,26 @@ class AccountsMenu extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
             title: const Text('Payment Option'),
+            titleTextStyle: const TextStyle(
+              fontFamily: 'poppins',
+              color: black,
+              fontSize: 16,
+              fontWeight: FontWeight.w500
+              ),
             children: [
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Cash Payment'))),
+                child: 
+                Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const  Center(
+                      child: Text('Cash Payment',
+                      style: TextStyle(fontFamily: 'poppins',color: white),),
+                    )),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/RPVoucher',
@@ -357,9 +394,16 @@ class AccountsMenu extends StatelessWidget {
                 },
               ),
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Bank Payment'))),
+                child:
+                 Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const Center(
+                      child: Text('Bank Payment',
+                      style: TextStyle(fontFamily: 'poppins',color: white)),
+                    )),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/BankVoucher',
@@ -367,9 +411,13 @@ class AccountsMenu extends StatelessWidget {
                 },
               ),
               SimpleDialogOption(
-                child: Card(
-                    color: blue.shade50,
-                    child: const ListTile(title: Text('Payment Invoice'))),
+                child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const  Center(child: Text('Payment Invoice'
+                    ,style: TextStyle(fontFamily: 'poppins',color: white)))),
                 onPressed: () {
                   Navigator.of(context).pop();
                   Navigator.pushNamed(context, '/InvRPVoucher',

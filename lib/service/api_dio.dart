@@ -4094,7 +4094,8 @@ class DioService {
         queryParameters: {
           'entryNo': entryNo,
           'type': type,
-          'fyId': currentFinancialYear!.id
+          'fyId': currentFinancialYear!.id,
+          'frmId': frmId,
         },
       );
       if (response.statusCode == 200) {

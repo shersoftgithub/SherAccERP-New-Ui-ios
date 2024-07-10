@@ -183,9 +183,10 @@ class _JournalState extends State<Journal> {
                         });
                       }
                     },
-                    icon: const Icon(Icons.save)),
+                    icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: const Text('Journal'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -196,160 +197,200 @@ class _JournalState extends State<Journal> {
 
   var nameLike = 'a';
   _body() {
-    return Container(
-      padding: const EdgeInsets.all(6.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+        body: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 8),
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                const Text(
-                  'Date : ',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Date ',
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16),
+                    ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 4
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                          color: grey,
+                          width: .5
+                        )),
+                        child: Row(
+                          children: [
+                            Text(
+                              formattedDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 15,
+                                  fontFamily: 'poppins'
+                                  ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(Icons.calendar_month,size: 20,color: grey,)
+                          ],
+                        ),
+                      ),
+                      onTap: () => _selectDate(),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
                 ),
                 InkWell(
-                  child: Text(
-                    formattedDate!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  onTap: () => _selectDate(),
-                ),
-              ],
-            ),
-            Card(
-              elevation: 5,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/ledger',
-                          arguments: {'parent': ''});
-                    },
-                    child: const Text('Add new ledger'),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: kPrimaryColor,
-                    ),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/ledger',
-                          arguments: {'parent': ''});
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            DropdownSearch<LedgerModel>(
-              popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                  isFilterOnline: true,
-                  showSearchBox: true,
-                  constraints: BoxConstraints(
-                    maxHeight: 300,
-                  )),
-              asyncItems: (String filter) async {
-                nameLike = filter.isNotEmpty ? filter : 'a';
-                var models = ledgerUserFilterCreation(ledgerList!, nameLike);
-                return models;
-              },
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Select Debit Account"),
-              ),
-              onChanged: (LedgerModel? data) {
-                debugPrint(data.toString());
-                ledgerDebitData = data;
-                setState(() {
-                  isSelected = true;
-                });
-              },
-              selectedItem: ledgerDebitData,
-            ),
-            const Divider(),
-            DropdownSearch<LedgerModel>(
-              popupProps: PopupPropsMultiSelection.modalBottomSheet(
-                  isFilterOnline: true,
-                  showSearchBox: true,
-                  constraints: BoxConstraints(
-                    maxHeight: 300,
-                  )),
-              asyncItems: (String filter) async {
-                nameLike = filter.isNotEmpty ? filter : 'a';
-                var models = ledgerUserFilterCreation(ledgerList!, nameLike);
-                return models;
-              },
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Select Credit Account"),
-              ),
-              onChanged: (LedgerModel? data) {
-                ledgerCreditData = data;
-                setState(() {
-                  isSelected = true;
-                });
-              },
-              selectedItem: ledgerCreditData,
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controllerAmount,
-                    focusNode: _focusNode,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.right,
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Amount'),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        amount = (value != null
-                            ? value.trim().isNotEmpty
-                                ? double.tryParse(value)
-                                : 0
-                            : 0)!;
-                      });
-                    },
+                  onTap: () {
+                    Navigator.pushNamed(context, '/ledger',
+                                arguments: {'parent': ''});
+                  },
+                  child: Container(
+                    height: 40,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),color: kPrimaryColor),
+                      child: const Center(
+                        child: Text('Add new ledger',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          color: white
+                        ),
+                        ),
+                      ),
                   ),
                 ),
-              ],
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controllerNarration,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Narration'),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        narration = value;
-                      });
-                    },
-                  ),
+                const SizedBox(
+                  height: 10,
                 ),
+                DropdownSearch<LedgerModel>(
+                  popupProps: PopupPropsMultiSelection.dialog(
+                      isFilterOnline: true,
+                      showSearchBox: true,
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 500,
+                      //   minHeight: 200
+                      // ),
+                      ),
+                  asyncItems: (String filter) async {
+                    nameLike = filter.isNotEmpty ? filter : 'a';
+                    var models = ledgerUserFilterCreation(ledgerList!, nameLike);
+                    return models;
+                  },
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Select Debit Account"),
+                  ),
+                  onChanged: (LedgerModel? data) {
+                    debugPrint(data.toString());
+                    ledgerDebitData = data;
+                    setState(() {
+                      isSelected = true;
+                    });
+                  },
+                  selectedItem: ledgerDebitData,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                DropdownSearch<LedgerModel>(
+                  popupProps: PopupPropsMultiSelection.dialog(
+                      isFilterOnline: true,
+                      showSearchBox: true,
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // ),
+                      ),
+                  asyncItems: (String filter) async {
+                    nameLike = filter.isNotEmpty ? filter : 'a';
+                    var models = ledgerUserFilterCreation(ledgerList!, nameLike);
+                    return models;
+                  },
+                  dropdownDecoratorProps: DropDownDecoratorProps(
+                    dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Select Credit Account"),
+                  ),
+                  onChanged: (LedgerModel? data) {
+                    ledgerCreditData = data;
+                    setState(() {
+                      isSelected = true;
+                    });
+                  },
+                  selectedItem: ledgerCreditData,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controllerAmount,
+                        focusNode: _focusNode,
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        textAlign: TextAlign.right,
+                        inputFormatters: [
+                          FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                              allow: true, replacementString: '.')
+                        ],
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          label: Text('Amount'),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            amount = (value != null
+                                ? value.trim().isNotEmpty
+                                    ? double.tryParse(value)
+                                    : 0
+                                : 0)!;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controllerNarration,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          label: Text('Narration'),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            narration = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                // const Divider(),
               ],
             ),
-            const Divider(),
-          ],
+          ),
         ),
       ),
     );
@@ -367,6 +408,9 @@ class _JournalState extends State<Journal> {
                       color: Colors.white, fontWeight: FontWeight.bold),
                 ),
                 style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -377,6 +421,7 @@ class _JournalState extends State<Journal> {
                 }),
           ],
           title: const Text('Journal'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: Container(
           child: previousBill(),
@@ -503,15 +548,22 @@ class _JournalState extends State<Journal> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No data in Journal"),
+              const Text("No data in Journal",
+              style: TextStyle(fontFamily: 'poppins'),),
               TextButton.icon(
+                style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(
+                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(5))),
+                  backgroundColor: MaterialStatePropertyAll(kPrimaryColor),
+                ),
                   onPressed: () {
                     setState(() {
                       widgetID = false;
                     });
                   },
-                  icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New Journal'))
+                  icon: const Icon(Icons.shopping_bag,color: white,),
+                  label: const Text('Take New Journal',
+                  style: TextStyle(fontFamily: 'poppins',color: white),))
             ],
           ));
   }

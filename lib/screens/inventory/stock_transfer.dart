@@ -282,9 +282,12 @@ class _StockTransferState extends State<StockTransfer> {
                       }
                     }
                   },
-                  icon: const Icon(Icons.save)),
+                  icon:  Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
         ],
         title: const Text('Stock Transfer'),
+        titleTextStyle: TextStyle(
+          fontFamily: 'poppins'
+        ),
       ),
       body: ProgressHUD(
           inAsyncCall: _isLoading, opacity: 0.0, child: selectWidget()),
@@ -297,12 +300,10 @@ class _StockTransferState extends State<StockTransfer> {
         appBar: AppBar(
           actions: [
             TextButton(
-                child: const Text(
-                  " New ",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
                 style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -310,9 +311,15 @@ class _StockTransferState extends State<StockTransfer> {
                   setState(() {
                     widgetID = false;
                   });
-                }),
+                },
+                child: const Text(
+                  " New ",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                )),
           ],
           title: const Text('Stock Transfer'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: Container(
           child: previousBill(),
@@ -431,9 +438,13 @@ class _StockTransferState extends State<StockTransfer> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Stock Transfer"),
+              const Text("No items in Stock Transfer",
+              style: TextStyle(fontFamily: 'poppins'),),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)
+                    )),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -445,7 +456,9 @@ class _StockTransferState extends State<StockTransfer> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New Stock Transfer'))
+                  label: const Text('Take New Stock Transfer',
+                  style: TextStyle(fontFamily: 'poppins'),
+                  ))
             ],
           ));
   }
@@ -453,127 +466,196 @@ class _StockTransferState extends State<StockTransfer> {
   bool isData = false;
 
   purchaseHeaderWidget() {
-    return Center(
-        child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
+    return Scaffold(
+      backgroundColor: bagroundColor,
+      body: Center(
           child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Text(
-                    'Date : ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  InkWell(
-                    child: Text(
-                      formattedDate!,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () => _selectDate(),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Text(
-                    'From',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      height: 100,
-                      width: 130,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButton<int>(
-                              hint: const Text('Select Branch'),
-                              value: locationFromId,
-                              items: locationData
-                                  .map<DropdownMenuItem<int>>((value) {
-                                return DropdownMenuItem<int>(
-                                  value: value.key,
-                                  child: Text(value.value),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  locationFromId = value!;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Date  ',
+                      style: TextStyle(fontWeight: FontWeight.w500,
+                      fontFamily: 'poppins',
+                      fontSize: 16
                       ),
                     ),
-                  ),
-                  const Icon(Icons.forward),
-                  const Text(
-                    'To',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      height: 100,
-                      width: 130,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: DropdownButton<int>(
-                              hint: const Text('Select Branch'),
-                              value: locationToId,
-                              items: locationData
-                                  .map<DropdownMenuItem<int>>((value) {
-                                return DropdownMenuItem<int>(
-                                  value: value.key,
-                                  child: Text(value.value),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  locationToId = value!;
-                                });
-                              },
-                            ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 3
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: grey,width: .7),
+                          borderRadius: BorderRadius.circular(3)
                           ),
-                        ],
+                        child: Row(
+                          children: [
+                            Text(
+                              formattedDate!,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 15
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(Icons.calendar_month,
+                            size: 20,
+                            color: grey,
+                            )
+                          ],
+                        ),
                       ),
+                      onTap: () => _selectDate(),
                     ),
+                  ],
+                ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Text(
+                        'From',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 35,
+                              width: 130,
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                               decoration: BoxDecoration(
+                                                    border: Border.all(color: grey,),
+                                                    borderRadius: BorderRadius.circular(3)
+                                                    ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  isExpanded: true,
+                                  hint: const Text('Select Branch',style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),),
+                                  value: locationFromId,
+                                  items: locationData
+                                      .map<DropdownMenuItem<int>>((value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value.key,
+                                      child: Text(value.value,style: TextStyle(
+                                         fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                      ),),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      locationFromId = value!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(Icons.forward),
+                      const Spacer(),
+                      const Text(
+                        'To',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            Container(
+                               height: 35,
+                              width: 130,
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                               decoration: BoxDecoration(
+                                                    border: Border.all(color: grey,),
+                                                    borderRadius: BorderRadius.circular(3)
+                                                    ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  hint: const Text('Select Branch',
+                                  style: TextStyle(
+                                                        fontFamily: 'poppins',
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  value: locationToId,
+                                  items: locationData
+                                      .map<DropdownMenuItem<int>>((value) {
+                                    return DropdownMenuItem<int>(
+                                      value: value.key,
+                                      child: Text(value.value,
+                                      style: TextStyle(
+                                                        fontFamily: 'poppins',
+                                                        fontSize: 14,
+                                                        fontWeight: FontWeight.w500),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      locationToId = value!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              )
-            ],
-          ),
-        ),
-        InkWell(
-            child: const SizedBox(
-              height: 40,
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Text(
-                      'Add Item',
-                      style: TextStyle(
-                          color: blue,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )),
+                )
+              ],
             ),
-            onTap: () {
-              setState(() {
-                nextWidget = 1;
-              });
-            }),
-      ],
-    ));
+          ),
+          InkWell(
+              child:  Container(
+                width: 100,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),color: kPrimaryColor,),
+                child: Center(
+                  child: Text(
+                    'Add Item',
+                    style: TextStyle(
+                        color: white,
+                        fontSize: 16,
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  nextWidget = 1;
+                });
+              }),
+        ],
+      )),
+    );
   }
 
   bool isItemData = false;

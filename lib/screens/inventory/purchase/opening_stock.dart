@@ -11,6 +11,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/cart_item.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -60,6 +61,7 @@ class _OpeningStockState extends State<OpeningStock> {
       useUniqueCodeAsBarcode = false,
       useOldBarcode = false;
   int locationId = 1, salesManId = 0, decimal = 2;
+  VoucherType? voucherTypeData;
 
   @override
   void initState() {
@@ -2243,7 +2245,7 @@ class _OpeningStockState extends State<OpeningStock> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'OP_Find',0).then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'OP_Find',voucherTypeData!.id).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -2351,7 +2353,7 @@ class _OpeningStockState extends State<OpeningStock> {
   }
 
   deleteData() {
-    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'OP_Delete',0).then((value) {
+    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'OP_Delete',voucherTypeData!.id).then((value) {
       setState(() {
         _isLoading = false;
       });

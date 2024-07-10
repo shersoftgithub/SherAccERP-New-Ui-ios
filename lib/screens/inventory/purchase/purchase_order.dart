@@ -10,6 +10,7 @@ import 'package:sheraccerp/models/cart_item.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_model.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -59,6 +60,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       useOLDBARCODE = false,
       realPRATEBASEDPROFITPERCENTAGE = false;
   int locationId = 1, salesManId = 0, decimal = 2;
+  VoucherType? voucherTypeData;
 
   @override
   void initState() {
@@ -1757,7 +1759,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'PO_Find',9).then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'PO_Find',voucherTypeData!.id).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -1873,7 +1875,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
   }
 
   deleteData() {
-    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'PO_Delete',9).then((value) {
+    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'PO_Delete',voucherTypeData!.id).then((value) {
       setState(() {
         _isLoading = false;
       });

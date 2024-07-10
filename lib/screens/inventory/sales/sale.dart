@@ -4565,6 +4565,7 @@ void _onTabTapped(int index) {
                                   print('onChanged value: $value');
                                 },
                                 onSubmitted: (value) {
+                                  _dropDownUnit = 0;
                                   setState(() {
                                     final selectedItem = data.firstWhere(
                                       (element) => element.name == value,
@@ -8208,7 +8209,7 @@ void _onTabTapped(int index) {
         if (_conversion > 0) {
           //var r = 0.0;
           if (_focusNodeRate.hasFocus) {
-            rate = double.tryParse(_rateController.text)!;
+            rate = double.tryParse(_rateController.text) ?? 0;
             // rate = double.tryParse(_rateController.text) * _conversion;
             lastRateStatus = false;
           } else {
@@ -8221,9 +8222,9 @@ void _onTabTapped(int index) {
           pRate = product.buyingPrice! * _conversion;
           rPRate = product.buyingPriceReal! * _conversion;
         } else {
-          rate = _rateController.text.isNotEmpty
-              ? (double.tryParse(_rateController.text)!)
-              : 0;
+          rate = (_rateController.text.isNotEmpty
+              ? (double.tryParse(_rateController.text))
+              : 0) ?? 0;
         }
       } else {
         rate = (_rateController.text.isNotEmpty

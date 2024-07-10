@@ -12,6 +12,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -64,6 +65,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
       useOLDBARCODE = false,
       realPRATEBASEDPROFITPERCENTAGE = false;
   int locationId = 1, salesManId = 0, decimal = 2;
+  VoucherType? voucherTypeData;
 
   @override
   void initState() {
@@ -307,8 +309,9 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                       showInSnackBar('Error enter data correctly');
                     }
                   },
-                  icon: const Icon(Icons.save)),
+                  icon:  Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
         ],
+        titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         title: const Text('Purchase Return'),
       ),
       body: ProgressHUD(
@@ -341,6 +344,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                       fontFamily: 'poppins'),
                 )),
           ],
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
           title: const Text('Purchase Return'),
         ),
         body: Container(
@@ -460,9 +464,14 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Purchase Return"),
+              const Text("No items in Purchase Return",
+              style: TextStyle(fontFamily: 'poppins'),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)
+                    )),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -474,7 +483,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New Purchase Return'))
+                  label: const Text('Take New Purchase Return',
+                  style: TextStyle(fontFamily: 'poppins'),))
             ],
           ));
   }
@@ -2601,7 +2611,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find',10).then((value) {
+    api.fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find',voucherTypeData!.id).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -2717,7 +2727,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
   }
 
   deleteData() {
-    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'Pr_Delete',10).then((value) {
+    dio.deletePurchase(dataDynamic[0]['EntryNo'], 'Pr_Delete',voucherTypeData!.id).then((value) {
       setState(() {
         _isLoading = false;
       });

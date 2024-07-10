@@ -40,8 +40,8 @@ class SimplePieDiagramPayRec extends StatelessWidget {
 
   static List<charts.Series<ChartPayRec, String>> _createSampleData() {
     final data = [
-      ChartPayRec(amount: 'Rec 19800', id: 1, colorVal: '0xff109618'),
-      ChartPayRec(amount: 'Pay 19000', id: 2, colorVal: '0xffE33335'),
+      ChartPayRec(amount: 'Rec 19800', id: 1, colorVal: '0xff0008B3'),
+      ChartPayRec(amount: 'Pay 9000', id: 2, colorVal: '0xff0008B3'),
     ];
 
     return [
@@ -75,14 +75,16 @@ class ChartPayRec {
 }
 
 final colorValues = [
-  '0xff109618',
-  '0xffE33335',
-  '0xff990099',
-  '0xffEED44C',
-  '0xff109618',
-  '0xFF0000FF',
-  '0xff990099',
-  '0xffE33335',
-  '0xffEED44C',
-  '0xFF0000FF'
+  '0xff0008B3',
+  '0xff0008B3'
+  // '0xff109618',
+  // '0xffE33335',
+  // '0xff990099',
+  // '0xffEED44C',
+  // '0xff109618',
+  // '0xFF0000FF',
+  // '0xff990099',
+  // '0xffE33335',
+  // '0xffEED44C',
+  // '0xFF0000FF'
 ];

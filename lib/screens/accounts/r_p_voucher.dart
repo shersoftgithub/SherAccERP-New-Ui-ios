@@ -20,6 +20,7 @@ import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
@@ -39,6 +40,8 @@ class _RPVoucherState extends State<RPVoucher> {
   Size? deviceSize;
   List<dynamic> items = [];
   List<dynamic> itemDisplay = [];
+  List<String> ledgerListDisplay = [];
+  List<LedgerModel> ledgerList = [];
   DioService api = DioService();
   DateTime now = DateTime.now();
   String? formattedDate, narration = '', projectId = '-1';
@@ -81,6 +84,20 @@ class _RPVoucherState extends State<RPVoucher> {
         cashBankACList.addAll(value);
       });
     });
+
+      api.getCustomerNameListLike(
+                      groupId, areaId, routeId, salesManId, nameLike).then(
+                         (value) {
+        setState(() {
+          ledgerList.addAll(value);
+          ledgerListDisplay.addAll(List<String>.from(ledgerList
+              .map((item) => (item.name))
+              .toList()
+              .map((s) => s)
+              .toList()));
+        });
+      },
+                      );
 
     loadSettings();
     loadAsset();
@@ -304,9 +321,10 @@ class _RPVoucherState extends State<RPVoucher> {
                         });
                       }
                     },
-                    icon: const Icon(Icons.save)),
+                    icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: Text(title),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -329,6 +347,7 @@ class _RPVoucherState extends State<RPVoucher> {
 
   widgetPrefix(mode) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           actions: [
@@ -883,46 +902,157 @@ class _RPVoucherState extends State<RPVoucher> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ? Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListView.separated(
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 5,
+            ),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                  );
+                } else {
+                  return 
+                  InkWell(
                     onTap: () {
                       showEditDialog(context, dataDisplay[index], mode);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
-          )
+                    child:
+                    Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
+        )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("No data in" + mode),
+              Text("No data in" + mode,
+              style: const TextStyle(fontFamily: 'poppins'),),
               TextButton.icon(
                   style: const ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(5))
+                    )),
                       backgroundColor: MaterialStatePropertyAll(kPrimaryColor)),
                   onPressed: () {
                     setState(() {
@@ -1056,7 +1186,7 @@ class _RPVoucherState extends State<RPVoucher> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5),
                         // width: 140,
-                        height: 40,
+                        height: 30,
                         decoration: BoxDecoration(
                             border: Border.all(color: grey),
                             borderRadius: BorderRadius.circular(3)),
@@ -1161,14 +1291,17 @@ class _RPVoucherState extends State<RPVoucher> {
           const SizedBox(
             height: 10,
           ),
+          
           ContainerFieldWidget(
               widget: DropdownSearch<LedgerModel>(
-                popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                popupProps: const PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
                     isFilterOnline: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
+                    
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
                 asyncItems: (String filter) async {
                   nameLike = filter.isNotEmpty ? filter : 'a';
                   var models = api.getCustomerNameListLike(

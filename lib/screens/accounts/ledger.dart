@@ -389,900 +389,905 @@ class _LedgerState extends State<Ledger> {
   }
 
   tabBarWidget() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        children: [
-          Expanded(
-            flex: 0,
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimaryColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5))),
-                    child: Text(
-                      isExist ? 'Edit' : 'Save',
-                      style:
-                          const TextStyle(fontFamily: 'poppins', color: white),
-                    ),
-                    onPressed: () {
-                      if (buttonEvent) {
-                        return;
-                      } else {
-                        if (isExist) {
-                          if (companyUserData!.updateData) {
-                            if (ledgerId.isNotEmpty) {
-                              setState(() {
-                                _isLoading = true;
-                                buttonEvent = true;
-                              });
-                              _handleSubmitted('edit');
-                            } else {
-                              showInSnackBar('Please select ledger');
-                              setState(() {
-                                buttonEvent = false;
-                              });
-                            }
-                          } else {
-                            showInSnackBar('Permission denied\ncan`t edit');
-                            setState(() {
-                              buttonEvent = false;
-                            });
-                          }
-                        } else {
-                          if (companyUserData!.insertData) {
-                            if (ledgerId.isEmpty) {
-                              setState(() {
-                                _isLoading = true;
-                                buttonEvent = true;
-                              });
-                              _handleSubmitted('save');
-                            } else {
-                              showInSnackBar('Please add ledger');
-                              setState(() {
-                                buttonEvent = false;
-                              });
-                            }
-                          } else {
-                            showInSnackBar('Permission denied\ncan`t save');
-                            setState(() {
-                              buttonEvent = false;
-                            });
-                          }
-                        }
-                      }
-                    },
-                  ),
-                  ElevatedButton(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 0,
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: kPrimaryColor,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5))),
-                      onPressed: () => clear(),
-                      child: const Text(
-                        'Clear',
-                        style: TextStyle(fontFamily: 'poppins', color: white),
-                      )),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimaryColor,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5))),
-                    onPressed: isExist
-                        ? () {
-                            if (buttonEvent) {
-                              return;
-                            } else {
-                              if (companyUserData!.deleteData) {
-                                if (ledgerId.isNotEmpty) {
-                                  setState(() {
-                                    _isLoading = true;
-                                    buttonEvent = true;
-                                  });
-                                  _deleteLedger(context);
-                                } else {
-                                  showInSnackBar('Please select ledger');
-                                  setState(() {
-                                    buttonEvent = false;
-                                  });
-                                }
+                      child: Text(
+                        isExist ? 'Edit' : 'Save',
+                        style:
+                            const TextStyle(fontFamily: 'poppins', color: white),
+                      ),
+                      onPressed: () {
+                        if (buttonEvent) {
+                          return;
+                        } else {
+                          if (isExist) {
+                            if (companyUserData!.updateData) {
+                              if (ledgerId.isNotEmpty) {
+                                setState(() {
+                                  _isLoading = true;
+                                  buttonEvent = true;
+                                });
+                                _handleSubmitted('edit');
                               } else {
-                                showInSnackBar(
-                                    'Permission denied\ncan`t delete');
+                                showInSnackBar('Please select ledger');
                                 setState(() {
                                   buttonEvent = false;
                                 });
                               }
+                            } else {
+                              showInSnackBar('Permission denied\ncan`t edit');
+                              setState(() {
+                                buttonEvent = false;
+                              });
+                            }
+                          } else {
+                            if (companyUserData!.insertData) {
+                              if (ledgerId.isEmpty) {
+                                setState(() {
+                                  _isLoading = true;
+                                  buttonEvent = true;
+                                });
+                                _handleSubmitted('save');
+                              } else {
+                                showInSnackBar('Please add ledger');
+                                setState(() {
+                                  buttonEvent = false;
+                                });
+                              }
+                            } else {
+                              showInSnackBar('Permission denied\ncan`t save');
+                              setState(() {
+                                buttonEvent = false;
+                              });
                             }
                           }
-                        : null,
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(fontFamily: 'poppins', color: white),
+                        }
+                      },
                     ),
-                  ),
-                  // PopupMenuButton<String>(
-                  //   icon: const Icon(Icons.settings, color: blue),
-                  //   onSelected: (value) {
-                  //     // Handle menu item selection
-                  //     setState(() {
-                  //       // Perform actions based on the selected value
-                  //       if (value == 'ReName Ledger') {
-                  //         if (lName.isNotEmpty) {
-                  //           _reNameLedgerDialog(context);
-                  //         }
-                  //       }
-                  //     });
-                  //   },
-                  //   itemBuilder: (BuildContext context) => [
-                  //     const PopupMenuItem<String>(
-                  //       value: 'ReName Ledger',
-                  //       child: Text('ReName Ledger'),
-                  //     ),
-                  //   ],
-                  // ),
-                ]),
-          ),
-          const SizedBox(
-            height: 16,
-          ),
-          Expanded(
-            flex: 1,
-            child: DefaultTabController(
-              length: 3,
-              child: Scaffold(
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(45),
-                  child: AppBar(
-                    excludeHeaderSemantics: false,
-                    backgroundColor: kPrimaryColor,
-                    automaticallyImplyLeading: false,
-                    titleSpacing: -15,
-                    shape: const BeveledRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(3))),
-                    title: TabBar(
-                      indicator: const BoxDecoration(
-                        color: kPrimaryColor,
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: kPrimaryColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5))),
+                        onPressed: () => clear(),
+                        child: const Text(
+                          'Clear',
+                          style: TextStyle(fontFamily: 'poppins', color: white),
+                        )),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: kPrimaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5))),
+                      onPressed: isExist
+                          ? () {
+                              if (buttonEvent) {
+                                return;
+                              } else {
+                                if (companyUserData!.deleteData) {
+                                  if (ledgerId.isNotEmpty) {
+                                    setState(() {
+                                      _isLoading = true;
+                                      buttonEvent = true;
+                                    });
+                                    _deleteLedger(context);
+                                  } else {
+                                    showInSnackBar('Please select ledger');
+                                    setState(() {
+                                      buttonEvent = false;
+                                    });
+                                  }
+                                } else {
+                                  showInSnackBar(
+                                      'Permission denied\ncan`t delete');
+                                  setState(() {
+                                    buttonEvent = false;
+                                  });
+                                }
+                              }
+                            }
+                          : () {
+                            
+                          },
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(fontFamily: 'poppins', color: white),
                       ),
-                      // indicatorWeight: 5,
-                      // indicatorColor: kPrimaryColor,
-                      dividerColor: kPrimaryColor,
-                      dividerHeight: 0,
-                      // indicatorWeight: ,
-                      // indicatorPadding: EdgeInsets.only(right: 10),
-                      labelPadding: const EdgeInsets.only(right: 15),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      // tabAlignment: TabAlignment.center,
-                      labelStyle:
-                          const TextStyle(fontFamily: 'poppins', fontSize: 13),
-                      splashFactory: NoSplash.splashFactory,
-                      // isScrollable: true,
-                      tabs: [
-                        const Tab(
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 25),
-                            child: Text('Account'),
-                          ),
+                    ),
+                    // PopupMenuButton<String>(
+                    //   icon: const Icon(Icons.settings, color: blue),
+                    //   onSelected: (value) {
+                    //     // Handle menu item selection
+                    //     setState(() {
+                    //       // Perform actions based on the selected value
+                    //       if (value == 'ReName Ledger') {
+                    //         if (lName.isNotEmpty) {
+                    //           _reNameLedgerDialog(context);
+                    //         }
+                    //       }
+                    //     });
+                    //   },
+                    //   itemBuilder: (BuildContext context) => [
+                    //     const PopupMenuItem<String>(
+                    //       value: 'ReName Ledger',
+                    //       child: Text('ReName Ledger'),
+                    //     ),
+                    //   ],
+                    // ),
+                  ]),
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Expanded(
+              flex: 1,
+              child: DefaultTabController(
+                length: 3,
+                child: Scaffold(
+                  appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(45),
+                    child: AppBar(
+                      excludeHeaderSemantics: false,
+                      backgroundColor: kPrimaryColor,
+                      automaticallyImplyLeading: false,
+                      titleSpacing: -15,
+                      shape: const BeveledRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(3))),
+                      title: TabBar(
+                        indicator: const BoxDecoration(
+                          color: kPrimaryColor,
                         ),
-                        Tab(
-                          child: Container(
-                            // width: 220,
-                            height: 90,
-                            decoration: const BoxDecoration(
-                                border: Border(
-                                    left: BorderSide(color: white, width: 1.8),
-                                    right:
-                                        BorderSide(color: white, width: 1.8))),
-                            child: const Center(child: Text('Address')),
+                        // indicatorWeight: 5,
+                        // indicatorColor: kPrimaryColor,
+                        dividerColor: kPrimaryColor,
+                        dividerHeight: 0,
+                        // indicatorWeight: ,
+                        // indicatorPadding: EdgeInsets.only(right: 10),
+                        labelPadding: const EdgeInsets.only(right: 15),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        // tabAlignment: TabAlignment.center,
+                        labelStyle:
+                            const TextStyle(fontFamily: 'poppins', fontSize: 13),
+                        splashFactory: NoSplash.splashFactory,
+                        // isScrollable: true,
+                        tabs: [
+                          const Tab(
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 25),
+                              child: Text('Account'),
+                            ),
                           ),
-                        ),
-                        const Tab(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: 6),
-                            child: Text("Opening Balance"),
+                          Tab(
+                            child: Container(
+                              // width: 220,
+                              height: 90,
+                              decoration: const BoxDecoration(
+                                  border: Border(
+                                      left: BorderSide(color: white, width: 1.8),
+                                      right:
+                                          BorderSide(color: white, width: 1.8))),
+                              child: const Center(child: Text('Address')),
+                            ),
                           ),
-                        ),
-                      ],
+                          const Tab(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 6),
+                              child: Text("Opening Balance"),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                body: TabBarView(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: Column(
+                  body: TabBarView(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Column(
+                          children: [
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: SimpleAutoCompleteTextField(
+                                  key: keyLedgerName,
+                                  controller: _nameCtr,
+                                  clearOnSubmit: false,
+                                  suggestions: ledgerListDisplay,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  textSubmitted: (data) {
+                                    lName = data;
+                                    if (lName.isNotEmpty) {
+                                      int _id = ledgerList
+                                          .firstWhere(
+                                              (element) => element.name == lName,
+                                              orElse: () =>
+                                                  LedgerModel(id: 0, name: ''))
+                                          .id;
+                                      if (_id > 0) {
+                                        ledgerId = _id.toString();
+                                        isExist = true;
+                                        findLedger(ledgerId);
+                                      }
+                                    }
+                                  },
+                                ),
+                                headTxt: 'Ledger Name'),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            ContainerFieldWidget(
+                                widget: Container(
+                                  // width: MediaQuery.sizeOf(context).width,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      isExpanded: true,
+                                      hint: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text('Select under',
+                                            textAlign: TextAlign.center),
+                                      ),
+                                      value: _dropDownValue.toString(),
+                                      items: ledgerGroupList
+                                          .map<DropdownMenuItem<String>>((item) {
+                                        return DropdownMenuItem<String>(
+                                          value: item.id.toString(),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(item.name,
+                                                overflow: TextOverflow.ellipsis),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          isUnderSelected = true;
+                                          _dropDownValue = int.parse(value!);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                headTxt: 'Under'),
+                            // Card(
+                            //   elevation: 10,
+                            //   child: DropdownButton<String>(
+                            //     isExpanded: true,
+                            //     hint: const Padding(
+                            //       padding: EdgeInsets.all(8.0),
+                            //       child: Text('Select under',
+                            //           textAlign: TextAlign.center),
+                            //     ),
+                            //     value: _dropDownValue.toString(),
+                            //     items: ledgerGroupList
+                            //         .map<DropdownMenuItem<String>>((item) {
+                            //       return DropdownMenuItem<String>(
+                            //         value: item.id.toString(),
+                            //         child: Padding(
+                            //           padding: const EdgeInsets.all(8.0),
+                            //           child: Text(item.name,
+                            //               overflow: TextOverflow.ellipsis),
+                            //         ),
+                            //       );
+                            //     }).toList(),
+                            //     onChanged: (value) {
+                            //       setState(() {
+                            //         isUnderSelected = true;
+                            //         _dropDownValue = int.parse(value!);
+                            //       });
+                            //     },
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                      ListView(
                         children: [
                           const SizedBox(
                             height: 10,
                           ),
                           ContainerFieldWidget(
-                              widget: SimpleAutoCompleteTextField(
-                                key: keyLedgerName,
-                                controller: _nameCtr,
-                                clearOnSubmit: false,
-                                suggestions: ledgerListDisplay,
+                              widget: TextFormField(
+                                controller: _add1Ctr,
+                                keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
                                 ),
-                                textSubmitted: (data) {
-                                  lName = data;
-                                  if (lName.isNotEmpty) {
-                                    int _id = ledgerList
-                                        .firstWhere(
-                                            (element) => element.name == lName,
-                                            orElse: () =>
-                                                LedgerModel(id: 0, name: ''))
-                                        .id;
-                                    if (_id > 0) {
-                                      ledgerId = _id.toString();
-                                      isExist = true;
-                                      findLedger(ledgerId);
-                                    }
-                                  }
-                                },
                               ),
-                              headTxt: 'Ledger Name'),
+                              headTxt: 'Address'),
                           const SizedBox(
                             height: 10,
                           ),
                           ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _add2Ctr,
+                                keyboardType: TextInputType.text,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Address 2'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _add3Ctr,
+                                keyboardType: TextInputType.text,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Address 3'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _add4Ctr,
+                                keyboardType: TextInputType.text,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Address 4'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _taxNoCtr,
+                                keyboardType: TextInputType.text,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Tax No'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: SimpleAutoCompleteTextField(
+                                clearOnSubmit: false,
+                                key: keyCity,
+                                suggestions: cityList,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                                textSubmitted: (data) {
+                                  cityData = otherRegAreaList.firstWhere(
+                                    (element) => element.name == data,
+                                    orElse: () =>
+                                        OtherRegistrationModel.emptyData(),
+                                  );
+                                },
+                                controller: _cityCtr,
+                              ),
+                              headTxt: 'Select Area'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: SimpleAutoCompleteTextField(
+                                clearOnSubmit: false,
+                                key: keyRoute,
+                                suggestions: routeList,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                                textSubmitted: (data) {
+                                  routeData = otherRegRouteList.firstWhere(
+                                    (element) => element.name == data,
+                                    orElse: () =>
+                                        OtherRegistrationModel.emptyData(),
+                                  );
+                                },
+                                controller: _routeCtr,
+                              ),
+                              headTxt: 'Select Route'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          TextFormField(
+                            controller: _phoneNumberCtr,
+                            maxLength: 12,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Telephone",
+                              icon: Icon(Icons.phone),
+                            ),
+                          ),
+                          TextFormField(
+                            controller: _emailCtr,
+                            inputFormatters: [
+                              LengthLimitingTextInputFormatter(50),
+                            ],
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: 'E-mail',
+                              icon: Icon(Icons.email),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const Card(
+                            // color: kPrimaryColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(3))),
+                            elevation: 2,
+                            child: Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'State',
+                                    style: TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  ),
+                                  Text(
+                                    'Code',
+                                    style: TextStyle(
+                                        decoration: TextDecoration.underline),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<GSTStateModel>(
+                                isExpanded: true,
+                                items: gstStateModels
+                                    .map<DropdownMenuItem<GSTStateModel>>((item) {
+                                  return DropdownMenuItem<GSTStateModel>(
+                                    value: item,
+                                    child: Text(item.state!),
+                                  );
+                                }).toList(),
+                                onChanged: (item) {
+                                  setState(() {
+                                    _dropDownState = item!.state!;
+                                    _stateCode = item.code!;
+                                    gstStateM = item;
+                                  });
+                                },
+                                value: gstStateM,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            "State Code : $_stateCode",
+                            style: const TextStyle(
+                                fontFamily: 'poppins',
+                                color: kPrimaryColor,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _panCtr,
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(20),
+                                ],
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'PAN'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _pinCtr,
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(10),
+                                ],
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: "PIN"),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _secondNameCtr,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Second Name(native language)'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Container(
+                                  width: 120,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(3),
+                                      color: kPrimaryColor),
+                                  child: const Center(
+                                    child: Text(
+                                      'Credit Limit',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          color: white),
+                                    ),
+                                  )),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: ContainerFieldWidget(
+                                          widget: TextFormField(
+                                            controller: _creditAmtCtr,
+                                            keyboardType: const TextInputType
+                                                .numberWithOptions(decimal: true),
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                          headTxt: 'Amount')),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  Expanded(
+                                      child: ContainerFieldWidget(
+                                          widget: TextFormField(
+                                            controller: _creditDaysCtr,
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                          headTxt: 'Days')),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ContainerFieldWidget(
+                              widget: TextFormField(
+                                controller: _personCtr,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                              headTxt: 'Contact Person'),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // const Text('SalesMan'),
+                          ContainerFieldWidget(
                               widget: Container(
-                                // width: MediaQuery.sizeOf(context).width,
                                 decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(color: grey)),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<String>(
                                     isExpanded: true,
                                     hint: const Padding(
                                       padding: EdgeInsets.all(8.0),
-                                      child: Text('Select under',
+                                      child: Text('Select SalesMan',
                                           textAlign: TextAlign.center),
                                     ),
-                                    value: _dropDownValue.toString(),
-                                    items: ledgerGroupList
+                                    items: salesManList
                                         .map<DropdownMenuItem<String>>((item) {
                                       return DropdownMenuItem<String>(
-                                        value: item.id.toString(),
+                                        value: item['Auto'].toString(),
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
-                                          child: Text(item.name,
+                                          child: Text(item['Name'],   
                                               overflow: TextOverflow.ellipsis),
                                         ),
                                       );
                                     }).toList(),
+                                    // value: salesManId.toString(),
                                     onChanged: (value) {
                                       setState(() {
-                                        isUnderSelected = true;
-                                        _dropDownValue = int.parse(value!);
+                                        salesManId = int.parse(value!);
                                       });
                                     },
                                   ),
                                 ),
                               ),
-                              headTxt: 'Under'),
-                          // Card(
-                          //   elevation: 10,
-                          //   child: DropdownButton<String>(
-                          //     isExpanded: true,
-                          //     hint: const Padding(
-                          //       padding: EdgeInsets.all(8.0),
-                          //       child: Text('Select under',
-                          //           textAlign: TextAlign.center),
-                          //     ),
-                          //     value: _dropDownValue.toString(),
-                          //     items: ledgerGroupList
-                          //         .map<DropdownMenuItem<String>>((item) {
-                          //       return DropdownMenuItem<String>(
-                          //         value: item.id.toString(),
-                          //         child: Padding(
-                          //           padding: const EdgeInsets.all(8.0),
-                          //           child: Text(item.name,
-                          //               overflow: TextOverflow.ellipsis),
-                          //         ),
-                          //       );
-                          //     }).toList(),
-                          //     onChanged: (value) {
-                          //       setState(() {
-                          //         isUnderSelected = true;
-                          //         _dropDownValue = int.parse(value!);
-                          //       });
-                          //     },
-                          //   ),
+                              headTxt: 'Select Salesman'),
+                          // const Divider(
+                          //   height: 150,
                           // ),
                         ],
                       ),
-                    ),
-                    ListView(
-                      children: [
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _add1Ctr,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Address'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _add2Ctr,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Address 2'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _add3Ctr,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Address 3'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _add4Ctr,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Address 4'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _taxNoCtr,
-                              keyboardType: TextInputType.text,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Tax No'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: SimpleAutoCompleteTextField(
-                              clearOnSubmit: false,
-                              key: keyCity,
-                              suggestions: cityList,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                              textSubmitted: (data) {
-                                cityData = otherRegAreaList.firstWhere(
-                                  (element) => element.name == data,
-                                  orElse: () =>
-                                      OtherRegistrationModel.emptyData(),
-                                );
-                              },
-                              controller: _cityCtr,
-                            ),
-                            headTxt: 'Select Area'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: SimpleAutoCompleteTextField(
-                              clearOnSubmit: false,
-                              key: keyRoute,
-                              suggestions: routeList,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                              textSubmitted: (data) {
-                                routeData = otherRegRouteList.firstWhere(
-                                  (element) => element.name == data,
-                                  orElse: () =>
-                                      OtherRegistrationModel.emptyData(),
-                                );
-                              },
-                              controller: _routeCtr,
-                            ),
-                            headTxt: 'Select Route'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        TextFormField(
-                          controller: _phoneNumberCtr,
-                          maxLength: 12,
-                          keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: "Telephone",
-                            icon: Icon(Icons.phone),
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _emailCtr,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(50),
-                          ],
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'E-mail',
-                            icon: Icon(Icons.email),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Card(
-                          // color: kPrimaryColor,
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(3))),
-                          elevation: 2,
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'State',
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline),
-                                ),
-                                Text(
-                                  'Code',
-                                  style: TextStyle(
-                                      decoration: TextDecoration.underline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: grey),
-                              borderRadius: BorderRadius.circular(3)),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<GSTStateModel>(
-                              isExpanded: true,
-                              items: gstStateModels
-                                  .map<DropdownMenuItem<GSTStateModel>>((item) {
-                                return DropdownMenuItem<GSTStateModel>(
-                                  value: item,
-                                  child: Text(item.state!),
-                                );
-                              }).toList(),
-                              onChanged: (item) {
-                                setState(() {
-                                  _dropDownState = item!.state!;
-                                  _stateCode = item.code!;
-                                  gstStateM = item;
-                                });
-                              },
-                              value: gstStateM,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          "State Code : $_stateCode",
-                          style: const TextStyle(
-                              fontFamily: 'poppins',
-                              color: kPrimaryColor,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _panCtr,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(20),
-                              ],
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'PAN'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _pinCtr,
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                              ],
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: "PIN"),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _secondNameCtr,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                            headTxt: 'Second Name(native language)'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
                           children: [
-                            Container(
-                                width: 120,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(3),
-                                    color: kPrimaryColor),
-                                child: const Center(
-                                  child: Text(
-                                    'Credit Limit',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontFamily: 'poppins',
-                                        fontWeight: FontWeight.w500,
-                                        color: white),
-                                  ),
-                                )),
+                            // const Card(
+                            //     child: Text(
+                            //   'Opening Balance',
+                            //   style: TextStyle(
+                            //       fontSize: 25,
+                            //       decoration: TextDecoration.underline),
+                            // )),
                             const SizedBox(
-                              height: 5,
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  'Date',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: InkWell(
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          obDate,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'poppins',
+                                              fontSize: 15),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        const Icon(
+                                          Icons.calendar_month_outlined,
+                                          color: grey,
+                                        )
+                                      ],
+                                    ),
+                                    onTap: () => _selectDate(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
                             ),
                             Row(
                               children: [
                                 Expanded(
                                     child: ContainerFieldWidget(
                                         widget: TextFormField(
-                                          controller: _creditAmtCtr,
+                                          controller: _debitAmountCtr,
+                                          inputFormatters: [
+                                            LengthLimitingTextInputFormatter(50),
+                                          ],
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
                                           decoration: const InputDecoration(
                                             border: OutlineInputBorder(),
                                           ),
+                                          textAlign: TextAlign.right,
                                         ),
-                                        headTxt: 'Amount')),
+                                        headTxt: 'Receive Amount')),
                                 const SizedBox(
                                   width: 5,
                                 ),
                                 Expanded(
                                     child: ContainerFieldWidget(
                                         widget: TextFormField(
-                                          controller: _creditDaysCtr,
-                                          keyboardType: TextInputType.number,
+                                          controller: _creditAmountCtr,
+                                          inputFormatters: [
+                                            LengthLimitingTextInputFormatter(50),
+                                          ],
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(decimal: true),
                                           decoration: const InputDecoration(
                                             border: OutlineInputBorder(),
                                           ),
+                                          textAlign: TextAlign.right,
                                         ),
-                                        headTxt: 'Days')),
+                                        headTxt: 'Pay Amount')),
                               ],
                             ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        ContainerFieldWidget(
-                            widget: TextFormField(
-                              controller: _personCtr,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
+                            const SizedBox(
+                              height: 10,
                             ),
-                            headTxt: 'Contact Person'),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        // const Text('SalesMan'),
-                        ContainerFieldWidget(
-                            widget: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(3),
-                                  border: Border.all(color: grey)),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  hint: const Padding(
-                                    padding: EdgeInsets.all(8.0),
-                                    child: Text('Select SalesMan',
-                                        textAlign: TextAlign.center),
-                                  ),
-                                  items: salesManList
-                                      .map<DropdownMenuItem<String>>((item) {
-                                    return DropdownMenuItem<String>(
-                                      value: item['Auto'].toString(),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(item['Name'],   
-                                            overflow: TextOverflow.ellipsis),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  // value: salesManId.toString(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      salesManId = int.parse(value!);
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                            headTxt: 'Select Salesman'),
-                        // const Divider(
-                        //   height: 150,
-                        // ),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Column(
-                        children: [
-                          // const Card(
-                          //     child: Text(
-                          //   'Opening Balance',
-                          //   style: TextStyle(
-                          //       fontSize: 25,
-                          //       decoration: TextDecoration.underline),
-                          // )),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            children: [
-                              const Text(
-                                'Date',
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
-                                child: InkWell(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        obDate,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'poppins',
-                                            fontSize: 15),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      const Icon(
-                                        Icons.calendar_month_outlined,
-                                        color: grey,
-                                      )
-                                    ],
-                                  ),
-                                  onTap: () => _selectDate(),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: ContainerFieldWidget(
-                                      widget: TextFormField(
-                                        controller: _debitAmountCtr,
-                                        inputFormatters: [
-                                          LengthLimitingTextInputFormatter(50),
-                                        ],
-                                        keyboardType: const TextInputType
-                                            .numberWithOptions(decimal: true),
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
+                            IntrinsicHeight(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(3),
+                                          color: kPrimaryColor),
+                                      child: CheckboxListTile(
+                                        title: const Text(
+                                          'Active',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: white),
                                         ),
-                                        textAlign: TextAlign.right,
-                                      ),
-                                      headTxt: 'Receive Amount')),
-                              const SizedBox(
-                                width: 5,
-                              ),
-                              Expanded(
-                                  child: ContainerFieldWidget(
-                                      widget: TextFormField(
-                                        controller: _creditAmountCtr,
-                                        inputFormatters: [
-                                          LengthLimitingTextInputFormatter(50),
-                                        ],
-                                        keyboardType: const TextInputType
-                                            .numberWithOptions(decimal: true),
-                                        decoration: const InputDecoration(
-                                          border: OutlineInputBorder(),
-                                        ),
-                                        textAlign: TextAlign.right,
-                                      ),
-                                      headTxt: 'Pay Amount')),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          IntrinsicHeight(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: kPrimaryColor),
-                                    child: CheckboxListTile(
-                                      title: const Text(
-                                        'Active',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                            color: white),
-                                      ),
-                                      value: valueActive,
-                                      activeColor: white,
-                                      checkColor: kPrimaryColor,
-                                      side: const BorderSide(color: white),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          valueActive = value!;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                // const VerticalDivider(
-                                //   color: Colors.black,
-                                //   thickness: 2,
-                                // ),
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: kPrimaryColor),
-                                    child: CheckboxListTile(
-                                      value: valueCostCenter,
-                                      activeColor: white,
-                                      checkColor: kPrimaryColor,
-                                      side: const BorderSide(color: white),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          valueCostCenter = value!;
-                                        });
-                                      },
-                                      title: const Text(
-                                        'Cost Center',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: white),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          IntrinsicHeight(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: kPrimaryColor),
-                                    child: CheckboxListTile(
-                                        value: valueFranchisee,
+                                        value: valueActive,
                                         activeColor: white,
                                         checkColor: kPrimaryColor,
                                         side: const BorderSide(color: white),
                                         onChanged: (value) {
                                           setState(() {
-                                            valueFranchisee = value!;
+                                            valueActive = value!;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  // const VerticalDivider(
+                                  //   color: Colors.black,
+                                  //   thickness: 2,
+                                  // ),
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(3),
+                                          color: kPrimaryColor),
+                                      child: CheckboxListTile(
+                                        value: valueCostCenter,
+                                        activeColor: white,
+                                        checkColor: kPrimaryColor,
+                                        side: const BorderSide(color: white),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            valueCostCenter = value!;
                                           });
                                         },
                                         title: const Text(
-                                          'Franchisee',
+                                          'Cost Center',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontFamily: 'poppins',
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
                                               color: white),
-                                        )),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            IntrinsicHeight(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(3),
+                                          color: kPrimaryColor),
+                                      child: CheckboxListTile(
+                                          value: valueFranchisee,
+                                          activeColor: white,
+                                          checkColor: kPrimaryColor,
+                                          side: const BorderSide(color: white),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              valueFranchisee = value!;
+                                            });
+                                          },
+                                          title: const Text(
+                                            'Franchisee',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: white),
+                                          )),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: kPrimaryColor),
-                                    child: CheckboxListTile(
-                                      value: valueBillWise,
-                                      activeColor: white,
-                                      checkColor: kPrimaryColor,
-                                      side: const BorderSide(color: white),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          valueBillWise = value!;
-                                        });
-                                      },
-                                      title: const Text(
-                                        'Bill Wise (Receipt/Payment)',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                            color: white),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(3),
+                                          color: kPrimaryColor),
+                                      child: CheckboxListTile(
+                                        value: valueBillWise,
+                                        activeColor: white,
+                                        checkColor: kPrimaryColor,
+                                        side: const BorderSide(color: white),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            valueBillWise = value!;
+                                          });
+                                        },
+                                        title: const Text(
+                                          'Bill Wise (Receipt/Payment)',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: white),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ],
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

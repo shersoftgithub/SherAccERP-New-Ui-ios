@@ -106,15 +106,15 @@ class ExpenseListView extends StatelessWidget {
                   border: TableBorder(borderRadius: BorderRadius.circular(3),
                   verticalInside: const BorderSide(color: grey,width: .5)),
                   columns: const [
-                    DataColumn(label: Text('ID')),
-                    DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Amount')),
+                    // DataColumn(label: Text('ID')),
+                    DataColumn(label: Text('NAME')),
+                    DataColumn(label: Text('AMOUNT')),
                   ],
                   rows: listViewModels!
                       .map(
                         (item) => DataRow(
                           cells: [
-                            DataCell(Text(item.id.toString())),
+                            // DataCell(Text(item.id.toString())),
                             DataCell(
                               Text(
                                 item.party,

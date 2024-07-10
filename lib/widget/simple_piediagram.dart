@@ -158,12 +158,13 @@ class SimplePieDiagram extends StatelessWidget {
       children: pies,
       borderEdge: StrokeCap.butt,
       pieType: PieType.crust,
+      showValue: false,
       borderWidth: 45,
       onTap: (index) {
         print("Tapped on index $index");
       },
       style: const TextStyle(color: white, fontSize: 10),
-      gap: 0.02,
+      gap: 0.00,
       start: 0,
       size: 200,
     );
@@ -209,6 +210,7 @@ class ChartPurchase {
   }
 }
 
+
 class ChartExpense {
   final String? amount;
   final int? id;
@@ -232,7 +234,7 @@ class ChartExpense {
 
 // Sample usage:
 // class MyHomePage extends StatelessWidget {
-//   final List<ChartExpense> _expenseData = [
+//   final List<ChartExpense> _expenseData = [ 
 //     ChartExpense(name: 'A CH', amount: '19800', id: 1, colorVal: '0xff990099'),
 //     ChartExpense(name: 'B CH', amount: '19000', id: 2, colorVal: '0xffE33335'),
 //     ChartExpense(name: 'C CH', amount: '18000', id: 3, colorVal: '0xffEED44C'),

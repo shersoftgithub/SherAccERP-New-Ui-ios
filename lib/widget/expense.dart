@@ -13,6 +13,7 @@ import 'package:sheraccerp/widget/expense_listview.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/simple_piediagram.dart';
 
+
 class Expense extends StatefulWidget {
   const Expense({Key? key}) : super(key: key);
 
@@ -22,24 +23,25 @@ class Expense extends StatefulWidget {
 
 class _ExpenseState extends State<Expense> {
   String heading = "";
-  // final List<ChartExpense> _expenseData = [];
-  final List<ChartExpense> _expenseData = [
-      ChartExpense(name: 'Shop', amount: '2', id: 1, colorVal: '0xff990099'),
-    ChartExpense(name: 'General Purchase A/c', amount: '2', id: 2, colorVal: '0xffE33335'),
-    ChartExpense(name: 'Service Charge', amount: '2', id: 3, colorVal: '0xffEED44C'),
-    ChartExpense(name: 'Samsung Service Charge', amount: '2', id: 4, colorVal: '0xff109618'),
-    ChartExpense(name: 'Salary', amount: '2', id: 5, colorVal: '0xFF0000FF'),
-  ];
+  final List<ChartExpense> _expenseData = [];
+  
+  // final List<ChartExpense> _expenseData = [
+  //     ChartExpense(name: 'Shop', amount: '0.53', id: 1, colorVal: '0xff00008B'),
+  //   ChartExpense(name: 'General Purchase A/c', amount: '2', id: 2, colorVal: '0xff0047AB'),
+  //   ChartExpense(name: 'Service Charge', amount: '2', id: 3, colorVal: '0xff0096FF'),
+  //   ChartExpense(name: 'Samsung Service Charge', amount: '2', id: 4, colorVal: '0xff1434A4'),
+  //   ChartExpense(name: 'Salary', amount: '2', id: 5, colorVal: '0xFF0000FF'),
+  // ];
   DateTime now = DateTime.now();
   String? formattedDate;
   DioService api = DioService();
   final colorValues = [
-    '0xffE33335',
-    '0xff990099',
-    '0xffEED44C',
-    '0xff109618',
+    // '0xffE33335',
+    '0xff0008B3',
+    '0xff0047AB',
+    '0xff0096FF',
+    '0xff1434A4',
     '0xFF0000FF',
-    '0xff990099',
     '0xffE33335',
     '0xffEED44C',
     '0xff109618',
@@ -171,7 +173,179 @@ class _ExpenseState extends State<Expense> {
                 //         : const Loading()),
                
                 const SizedBox(
-                  height: 30.0,
+                  height: 40.0,
+                ),
+               const Row(
+                 children: [
+                   Expanded(
+                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                         Row(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           children: [
+                             CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('General Purchase A/C',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500),),
+                             // Spacer(),
+                           
+                           ],
+                         ),
+                       SizedBox(
+                        height: 8,
+                      ),
+                       Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           CircleAvatar(
+                             radius: 10,
+                             backgroundColor: Color(0xff0008B3),
+                           ),
+                           SizedBox(
+                             width: 4,
+                           ),
+                           Text('Allowance Paid',
+                           style: TextStyle(
+                             fontFamily: 'poppins',
+                             fontSize: 12,
+                             fontWeight: FontWeight.w500),),
+                          
+                         ],
+                       ),
+                       SizedBox(
+                        height: 8.0,
+                      ),
+                       Row(
+                         children: [
+                           CircleAvatar(
+                             radius: 10,
+                             backgroundColor: Color(0xff0008B3),
+                           ),
+                           SizedBox(
+                             width: 4,
+                           ),
+                           Text('Wages',
+                           style: TextStyle(
+                             fontFamily: 'poppins',
+                             fontSize: 12,
+                             fontWeight: FontWeight.w500),),
+                          
+                         ],
+                       ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                         Row(
+                           children: [
+                             CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('O.T Wages',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500),),
+                             
+                           ],
+                         ),
+                      ],
+                     ),
+                   ),
+                   Expanded(child: Column(
+                    children: [
+                      Row(
+                        children: [
+                            CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('General Purchase A/C',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500))
+                        ],
+                      ),
+                       SizedBox(
+                        height: 8.0,
+                      ),
+                      Row(
+                        children: [
+                            CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('Discount Allowed',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500))
+                        ],
+                      ),
+                       SizedBox(
+                        height: 8.0,
+                      ),
+                      Row(
+                        children: [
+                            CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('Damaged Goods',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500))
+                        ],
+                      ),
+                       SizedBox(
+                        height: 8.0,
+                      ),
+                      Row(
+                        children: [
+                            CircleAvatar(
+                               radius: 10,
+                               backgroundColor: Color(0xff0008B3),
+                             ),
+                             SizedBox(
+                               width: 4,
+                             ),
+                             Text('Round of Difference',
+                             style: TextStyle(
+                               fontFamily: 'poppins',
+                               fontSize: 12,
+                               fontWeight: FontWeight.w500))
+                        ],
+                      ),
+                    ],
+                   ))
+                 ],
+               ),
+                const SizedBox(
+                  height: 10,
                 ),
                 lItems.isNotEmpty
                     ? ExpenseListView(
