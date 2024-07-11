@@ -44,6 +44,13 @@ const eWayBillCancelApi = "/ewaybillapi/v1.03/ewayapi/canewb";
 //05AAACH6188F1ZM
 //mastergst	Malli#123	29AABCT1332L000
 
+const gstCommonUserName = 'mastergst';
+const gstCommonPassword = 'Malli#123';
+const gstCommonMailId = 'shersoftware@gmail.com';
+const gstCommonGstNo = '29AABCT1332L000';
+const gstCommonClientId = 'ce357943-5598-4af5-8d7f-7119ef5dd2b3';
+const gstCommonClientSecret = '2dbffc02-86b9-4a48-9782-03727edad504';
+
 bool isDarkTheme = false;
 bool isUsingHive = true;
 String deviceId = '0';
@@ -136,6 +143,14 @@ const List<String> rateTypeData = [
   'WHOLESALE',
   'BRANCH'
 ];
+List<DataJson> rateTypeModelData = [
+  DataJson(id: 0, name: ''),
+  DataJson(id: 1, name: 'MRP'),
+  DataJson(id: 2, name: 'RETAIL'),
+  DataJson(id: 3, name: 'SPRETAIL'),
+  DataJson(id: 4, name: 'WHOLESALE'),
+  DataJson(id: 5, name: 'BRANCH')
+];
 
 class ComSettings {
   fetchOtherData() {
@@ -154,16 +169,33 @@ class ComSettings {
       }
     });
     api.getSalesTypeList().then((value) {
+      salesTypeList.clear();
       salesTypeList.addAll(value);
     });
 
     api.getVoucherTypeList().then((value) {
+      voucherTypeList.clear();
       voucherTypeList.addAll(value);
     });
 
     api.fetchOtherRegList().then((value) {
       if (value != null && value.isNotEmpty) {
         otherRegistrationList = value;
+        if (otherRegistrationList.isNotEmpty) {
+          locationList.clear();
+          otherRegUnitList.clear();
+          areaList.clear();
+          otherRegAreaList.clear();
+          salesmanList.clear();
+          otherRegSalesManList.clear();
+          routeList.clear();
+          otherRegRouteList.clear();
+          brandList.clear();
+          categoryList.clear();
+          mfrList.clear();
+          modelList.clear();
+          subCategoryList.clear();
+        }
         Map<String, dynamic> map = value[0];
         if (map['location'].length > 0) {
           if (map['location'][0]['Auto'] == 1) {
@@ -297,6 +329,13 @@ class ComSettings {
       for (var element in value) {
         groupList.add(
             AppSettingsMap(key: element['ledCode'], value: element['LedName']));
+      }
+    });
+
+    api.getRateTypeList().then((value) {
+      if (value.isNotEmpty) {
+        optionRateTypeList = [];
+        optionRateTypeList.addAll(value);
       }
     });
 
@@ -448,6 +487,16 @@ class ComSettings {
     }
     return sTypeList;
   }
+  
+  static salesRateTypeList(cacheKey, defaultValue) {
+    List<OptionRateType> rateTypeList = [];
+    for (var option in optionRateTypeList) {
+      if (appSettings('bool', cacheKey + option.id.toString(), defaultValue)) {
+        rateTypeList.add(option);
+      }
+    }
+    return rateTypeList;
+  }
 
   static userControl(String name) {
     int result;
@@ -500,7 +549,8 @@ class ComSettings {
 
   static String removeInvDesignFilePath(String filePath) {
     List<String> splits = filePath.split('.');
-    return '${splits[0].replaceAll('D:', '').replaceAll(RegExp('[^A-Za-z0-9]'), '.').replaceAll(".SherAcc.INVOICE.", '').replaceAll(".", '_').replaceAll('_SherAcc_Invoice_', '')}.${splits[1]}';
+    return '${splits[0].replaceAll('D:', '').replaceAll(RegExp('[^A-Za-z0-9]'), '.').replaceAll(".SherAcc.INVOICE.",
+    '').replaceAll(".", '_').replaceAll('_SherAcc_Invoice_', '')}.${splits[1]}';
   }
 }
 
@@ -725,3 +775,10 @@ List<dynamic> tempCustomerData = [];
 String capitalize(String value) {
   return "${value[0].toUpperCase()}${value.substring(1).toLowerCase()}";
 }
+
+bool defaultSalesMan = false;
+bool defaultBranch = false;
+bool defaultCashAc = false;
+bool defaultArea = false;
+bool defaultGroup = false;
+bool defaultRoute = false;

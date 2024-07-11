@@ -25,6 +25,7 @@ import 'package:sheraccerp/models/tax_group_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/models/user_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
+import 'package:sheraccerp/screens/accounts/account_summary.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/widget/simple_piediagram_pay_rec.dart';
 
@@ -609,6 +610,14 @@ class DioService {
         //RealEntryNo,EntryNo,InvoiceNo,Type
         var jsonResponse = response.data; //json.decode(response.data);
         if (jsonResponse['returnValue'] > 0) {
+           dataDynamic = [
+            {
+              'RealEntryNo': jsonResponse['returnValue'],
+              'EntryNo': jsonResponse['returnValue'],
+              'InvoiceNo': '0',
+              'Type': '0'
+            }
+          ];
           ret = true;
         } else {
           ret = false;
@@ -1924,14 +1933,54 @@ class DioService {
     dataBase = isEstimateDataBase
         ? (pref.getString('DBName') ?? "cSharp")
         : (pref.getString('DBNameT') ?? "cSharp");
-    List<LedgerParent> _items = [];
+    List<LedgerParent> items = [];
     try {
       final response = await dio
           .get('${pref.getString('api')}${apiV}Ledger/getParentList/$dataBase');
       if (response.statusCode == 200) {
         var jsonResponse = response.data;
         for (var group in jsonResponse) {
-          _items.add(LedgerParent.fromJson(group));
+          items.add(LedgerParent.fromJson(group));
+        }
+        return items;
+      } else {
+        debugPrint('Failed to load data');
+        return items;
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return items;
+    }
+  }
+
+   Future<List<LedgerModel>> getLedgerByGroup(groupId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    List<LedgerModel> _items = [];
+    try {
+      var _groupId = groupId > 1 ? groupId : 0,
+          _areaId = 0,
+          _routeId = 0,
+          _salesman = 0,
+          like = '';
+      final response = await dio.get(
+        '${pref.getString('api')}${apiV}Ledger/getLedgerByParent/$dataBase',
+        queryParameters: {
+          'groupId': _groupId,
+          'areaId': _areaId,
+          'routeId': _routeId,
+          'salesman': _salesman,
+          'like': like
+        },
+      );
+      if (response.statusCode == 200) {
+        for (var data in response.data) {
+          _items.add(LedgerModel.fromJson(data));
         }
         return _items;
       } else {
@@ -1939,12 +1988,11 @@ class DioService {
         return _items;
       }
     } catch (e) {
-      final errorMessage =
-          DioExceptions.fromDioError('$e' as DioError).toString();
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
       debugPrint(errorMessage.toString());
       return _items;
     }
-  }
+   }
 
   Future<List<dynamic>> getLedger(String name) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -1971,7 +2019,44 @@ class DioService {
     }
     return _items;
   }
-
+   Future<List<LedgerModel>> getLedgerBySalesMan(salesManId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    List<LedgerModel> _items = [];
+    try {
+      var _salesman = salesManId > 1 ? salesManId : 0,
+          _areaId = 0,
+          _routeId = 0,
+          _groupId = 0,
+          like = '';
+      final response = await dio.get(
+        '${pref.getString('api')}${apiV}Ledger/getLedgerByParent/$dataBase',
+        queryParameters: {
+          'groupId': _groupId,
+          'areaId': _areaId,
+          'routeId': _routeId,
+          'salesman': _salesman,
+          'like': like
+        },
+      );
+      if (response.statusCode == 200) {
+        for (var data in response.data) {
+          _items.add(LedgerModel.fromJson(data));
+        }
+        return _items;
+      } else {
+        debugPrint('Failed to load data');
+        return _items;
+      }
+    } catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return _items;
+    }
+  }
   Future<List<dynamic>> getPaginationList(String statement, int page,
       String location, String type, String date, String salesMan) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -2782,7 +2867,35 @@ class DioService {
     }
     return _items;
   }
-
+  
+   Future<List<LedgerReports>> accountSummery(data) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    List<LedgerReports> _items = [];
+    try {
+      final response = await dio.post(
+          '${pref.getString('api')}${apiV}accounts_report/getLedgerReport/$dataBase',
+          data: data,
+          options: Options(headers: {'Content-Type': 'application/json'}));
+      if (response.statusCode == 200) {
+        if (response.data.toString().isNotEmpty) {
+          List<dynamic> data = response.data['recordset'];
+          _items = List.from(data);
+        }
+      } else {
+        debugPrint('Failed to load data');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;
+  }
+  
   Future<List<Map<String, dynamic>>> fetchLedgerReport(data) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
@@ -5671,6 +5784,29 @@ class DioService {
     return ret;
   }
 
+   Future<List<dynamic>> getCityListBySalesMan(int id) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    dynamic resultData;
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}$apiV/salesman/getCityListBySalesMan/$dataBase',
+          queryParameters: {'id': id});
+      if (response.statusCode == 200) {
+        resultData = response.data;
+      } else {
+        debugPrint('Unexpected error Occurred!');
+      }
+    } catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return resultData;
+  }
+
   Future<List<UserModel>> getUserListAll() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
@@ -6653,7 +6789,105 @@ class DioService {
     }
     return translation;
   }
+
+  Future<dynamic> getBalance(
+      int id, String statement, String type, String date, entryNo) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    dynamic _items = '0';
+    try {
+      Response response = await dio.get(
+          '${pref.getString('api')}${apiV}Ledger/getBalance/$dataBase',
+          queryParameters: {
+            'Id': id,
+            'statement': statement,
+            'type': type,
+            'date': date,
+            'entryNo': entryNo,
+            'fyId': currentFinancialYear!.id
+          });
+
+      if (response.statusCode == 200) {
+        var data = response.data;
+        if (data != null) {
+          _items = data;
+        }
+      } else {
+        debugPrint('Failed to load data');
+      }
+    } catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;
+  }
+  Future<List<dynamic>> getSalesManReport(data) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    try {
+      final response = await dio.post(
+          '${pref.getString('api')}${apiV}accounts_report/salesManReport/$dataBase',
+          data: data,
+          options: Options(headers: {'Content-Type': 'application/json'}));
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data;
+      } else {
+        debugPrint('Failed to load data');
+        return [];
+      }
+    } catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return [];
+    }
+  }
+  Future<bool> validateGstNo(String taxNumber) async {
+    var _ip = await getPublicIp();
+    var result = false;
+    var authResponse = await authenticateGSTPortal(
+        gstCommonUserName,
+        gstCommonPassword,
+        _ip,
+        gstCommonClientId,
+        gstCommonClientSecret,
+        gstCommonGstNo);
+    if (authResponse != null) {
+      AuthClass authData = authResponse;
+      if (authData.status_cd.toString() != "Sucess") {
+        result = false;
+      } else {
+        await getGstResult(
+                'SHERSOFT',
+                taxNumber,
+                gstCommonUserName,
+                _ip,
+                gstCommonClientId,
+                gstCommonClientSecret,
+                authData.data.AuthToken,
+                gstCommonGstNo)
+            .then((resultResponse) {
+          if (resultResponse.status_cd == '1') {
+            result = true;
+          } else {
+            result = false;
+          }
+        });
+      }
+    } else {
+      result = false;
+    }
+    return result;
+  }
 }
+
 
 class DataJson {
   int? id;

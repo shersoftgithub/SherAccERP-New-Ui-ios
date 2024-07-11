@@ -395,7 +395,12 @@ class _JournalState extends State<Journal> {
       ),
     );
   }
-
+  
+   loadLedgerData() {
+    ledgerList!.clear();
+    api.getLedgerAll().then((value) => ledgerList!.addAll(value));
+  }
+  
   widgetPrefix() {
     return Scaffold(
         key: _scaffoldKey,

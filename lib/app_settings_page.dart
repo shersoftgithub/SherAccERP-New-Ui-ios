@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sheraccerp/screens/settings/add_logo.dart';
@@ -185,6 +183,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultSalesMan,
                                       title: 'Default SalesMan',
                                       settingKey:
                                           'key-dropdown-default-salesman-view',
@@ -205,6 +204,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultBranch,
                                       title: 'Default Branch',
                                       settingKey:
                                           'key-dropdown-default-location-view',
@@ -225,6 +225,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultCashAc,
                                       title: 'Default CASH AC',
                                       settingKey:
                                           'key-dropdown-default-cash-ac',
@@ -245,6 +246,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultArea,
                                       title: 'Default Area',
                                       settingKey:
                                           'key-dropdown-default-area-view',
@@ -265,6 +267,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultGroup,
                                       title: 'Default Group',
                                       settingKey:
                                           'key-dropdown-default-group-view',
@@ -285,6 +288,7 @@ class AppSettings extends StatelessWidget {
                                       },
                                     ),
                                     DropDownSettingsTileNew<int>(
+                                      enabled: defaultRoute,
                                       title: 'Default Route',
                                       settingKey:
                                           'key-dropdown-default-route-view',
@@ -1107,6 +1111,44 @@ class AppSettings extends StatelessWidget {
                                     const SizedBox(
                                       height: 10,
                                     ),
+                                     ExpandableSettingsTile(
+                    title: 'Item Rate Type',
+                    subtitle: 'show columns for rate slot of item',
+                    children: [
+                      SwitchSettingsTile(
+                        title: 'Select item rate type option',
+                        settingKey: 'key-switch-sales-rate-type-set',
+                        onChange: (value) {
+                          debugPrint('key-switch-sales-rate-type-set: $value');
+                        },
+                        childrenIfEnabled: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: optionRateTypeList.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: CheckboxSettingsTile(
+                                  settingKey:
+                                      'key-item-rate-type-control-${optionRateTypeList[index].id}',
+                                  title:
+                                      'Show ${optionRateTypeList[index].name}',
+                                  enabledLabel: 'Enabled',
+                                  disabledLabel: 'Disabled',
+                                  onChange: (value) {
+                                    debugPrint(
+                                        'key-item-rate-type-control-${optionRateTypeList[index].id}: $value');
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ]),
+                    const SizedBox(
+                      height: 10,
+                    ),
                                     ExpandableSettingsTile(
                                       title: 'Item Batch Details',
                                       subtitle:
@@ -1382,12 +1424,12 @@ class AppSettings extends StatelessWidget {
                                     },
                                   ),
                                   DropDownSettingsTile<int>(
-                                    title: 'Print Copy',
+                                    title: 'Paper Size',
+                                    settingKey: 'key-dropdown-printer-paper-size',
                                     titleTextStyle: const TextStyle(
                                         fontFamily: 'poppins',
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500),
-                                    settingKey: 'key-dropdown-print-copy-view',
                                     values: const <int, String>{
                                       2: '1',
                                       3: '2',
@@ -1395,10 +1437,10 @@ class AppSettings extends StatelessWidget {
                                       5: '4',
                                       6: '5',
                                     },
-                                    selected: 2,
+                                    selected: 4,
                                     onChange: (value) {
                                       debugPrint(
-                                          'key-dropdown-print-copy-view: $value');
+                                          'key-dropdown-printer-paper-size: $value');
                                     },
                                   ),
                                   DropDownSettingsTile<int>(

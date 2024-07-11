@@ -2,10 +2,8 @@ import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -13,12 +11,12 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
+import 'package:sheraccerp/models/rp_model.dart';
 import 'package:sheraccerp/models/sms_data_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
-import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -37,6 +35,7 @@ class RPVoucher extends StatefulWidget {
 class _RPVoucherState extends State<RPVoucher> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<LedgerModel> cashBankACList = [];
+  List<RpVoucherParticularModel> particularList = [];
   Size? deviceSize;
   List<dynamic> items = [];
   List<dynamic> itemDisplay = [];
@@ -45,7 +44,7 @@ class _RPVoucherState extends State<RPVoucher> {
   DioService api = DioService();
   DateTime now = DateTime.now();
   String? formattedDate, narration = '', projectId = '-1';
-  double? balance = 0, total = 0, amount = 0, discount = 0;
+  double? balance = 0, total = 0, amount = 0, discount = 0,oldBalance = 0;
   var accountId = '', accountName = '';
   LedgerModel? ledData;
   bool _isLoading = false,
@@ -56,6 +55,8 @@ class _RPVoucherState extends State<RPVoucher> {
       lastRecord = false,
       buttonEvent = false,
       isMultiRvPv = false,
+      keyLockCashAccount = false,
+      isSalesManWiseLedger = false,
       keyEditAndDeleteAdminOnlyDaysBefore = false,
       daysBefore = false;
   int refNo = 0, acId = 0;
@@ -102,20 +103,24 @@ class _RPVoucherState extends State<RPVoucher> {
     loadSettings();
     loadAsset();
   }
-
+String cashAc = '';
+  int cashId = 0;
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
 
-    String cashAc =
+     cashAc =
         ComSettings.getValue('CASH A/C', settings!).toString().trim() ?? 'CASH';
-    int cashId =
+      acId = mainAccount
+        .firstWhere((element) => element['LedName'] == cashAc)['LedCode'];
+    cashId =
         ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
-    acId = cashId > 0
+    var acModel = cashId > 0
         ? mainAccount.firstWhere((element) => element['LedCode'] == cashId,
-            orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
-        : acId;
-
+            orElse: () => {'LedName': cashAc, 'LedCode': acId})
+        : {'LedName': cashAc, 'LedCode': acId};
+    acId = cashId > 0 ? acModel['LedCode'] : acId;
+    cashAc = cashId > 0 ? acModel['LedName'] : cashAc;
     if (acId > 0) {
       _dropDownValue = '$acId-$cashAc';
       accountId = acId.toString();
@@ -144,6 +149,9 @@ class _RPVoucherState extends State<RPVoucher> {
     valueDaysBefore = int.tryParse(ComSettings.getValue(
             'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!)
         .toString())!;
+    isSalesManWiseLedger =
+        ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    userDateCheck(DateUtil.dateYMD(formattedDate));
   }
 
   userDateCheck(String date) {
@@ -156,7 +164,11 @@ class _RPVoucherState extends State<RPVoucher> {
           date1: date1, date2: date2, days: valueDaysBefore)) {
         if (companyUserData!.userType.toUpperCase() != 'ADMIN') {
           daysBefore = true;
+        }else {
+          daysBefore = false;
         }
+      }else {
+        daysBefore = false;
       }
     }
   }
@@ -175,7 +187,13 @@ class _RPVoucherState extends State<RPVoucher> {
           : title == 'Receipt'
               ? voucherTypeList.firstWhere(
                   (element) => element.voucher.toLowerCase() == 'receipt')
-              : VoucherType.emptyData();
+                  : title == 'Receipt Order'
+                  ? voucherTypeList.firstWhere((element) =>
+                      element.voucher.toLowerCase() == 'receipt order')
+                      : title == 'Payment Order'
+                       ? voucherTypeList.firstWhere((element) =>
+                          element.voucher.toLowerCase() == 'Payment order')
+                            : VoucherType.emptyData();
     }
     return PopScope(
         canPop: false,
@@ -436,6 +454,11 @@ class _RPVoucherState extends State<RPVoucher> {
       future: api.getCustomerDetail(id),
       builder: (context, snapshot) {
         ledgerData = snapshot.data;
+          if (snapshot.hasData) {
+          oldBalance = oldVoucher
+              ? oldBalance
+              : double.parse(snapshot.data!.balance.toString().split(' ')[0]);
+        }
         return snapshot.hasData
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -443,6 +466,11 @@ class _RPVoucherState extends State<RPVoucher> {
                   Expanded(
                       child: Text(
                     'Balance : ${snapshot.data!.balance}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  )),
+                    Expanded(
+                      child: Text(
+                    oldVoucher ? 'OB : $oldBalance' : '',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )),
                 ],
@@ -460,7 +488,11 @@ class _RPVoucherState extends State<RPVoucher> {
       },
     );
   }
-
+   getOldBalance(int Id, String statement, String type, String date, entryno) {
+    api.getBalance(Id, statement, type, date, entryno).then((value) {
+      oldBalance = double.parse(value['oldBalance'].toString());
+    });
+  }
   // paymentVoucher() {
   //   //Payment
   //   return Column(
@@ -499,33 +531,28 @@ class _RPVoucherState extends State<RPVoucher> {
     if (accountId.isEmpty) {
       Fluttertoast.showToast(msg: 'Select Cash Account');
     } else {
-      if (amount! <= 0 || ledData!.id <= 0) {
-        Fluttertoast.showToast(msg: 'Select Account and amount');
-        setState(() {
-          buttonEvent = false;
-        });
-      } else {
+      if (isMultiRvPv) {
         setState(() {
           _isLoading = true;
           buttonEvent = true;
         });
-        var particular = '[' +
-            json.encode({
-              'amount': amount,
-              'discount': discount,
-              'total': total,
-              'narration': narration,
-              'Ledid': ledData!.id
-            }) +
-            ']';
+        var particular =
+            RpVoucherParticularModel.toMapData(particularList).toString();
+        double totalAmount = 0, totalDiscount = 0, totalTotal = 0;
+        totalAmount = particularList.fold(
+            0, (previousValue, element) => previousValue + element.amount);
+        totalDiscount = particularList.fold(
+            0, (previousValue, element) => previousValue + element.discount);
+        totalTotal = particularList.fold(
+            0, (previousValue, element) => previousValue + element.total);
         var data = [
           {
             'entryno': oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '0',
             'date': formatDMY(formattedDate),
             'debitAccount': accountId,
-            'amount': amount,
-            'discount': discount,
-            'total': total,
+            'amount': totalAmount,
+            'discount': totalDiscount,
+            'total': totalTotal,
             'location': locationId,
             'user': 1,
             'project': projectId,
@@ -557,7 +584,111 @@ class _RPVoucherState extends State<RPVoucher> {
             if (operation == 'DELETE') {
               showInSnackBar('Deleted');
             } else {
-              var dataAll = [
+               for (var ledData in particularList) {
+                var dataAll = [
+                  {
+                    'entryNo': oldVoucher
+                        ? dataDynamic[0]['EntryNo'].toString()
+                        : refNo,
+                    'date': formatDMY(formattedDate),
+                    'debitAccount': accountId,
+                    'amount': amount,
+                    'discount': discount,
+                    'total': total,
+                    'particular': particular,
+                    'account': accountName,
+                    'name': ledData.name,
+                    'balance': ledData.balance,
+                    'oldBalance': oldBalance,
+                    'message': footerMessage
+                  }
+                ];
+
+                if (ComSettings.appSettings(
+                    'bool', 'key-sms-customer', false)) {
+                  var bal = ledData.balance.toString().split(' ');
+                  if (bal[1] == 'Dr') {
+                    // var oldBalance = double.tryParse(bal[0].toString()) ?? 0;
+                    if (mode == 'Payment') {
+                      balance = oldBalance! - (data[0]['total'] as double?)!;
+                    } else {
+                      balance = operation == 'UPDATE'
+                          ? oldBalance
+                          : oldBalance! - (data[0]['total'] as double?)!;
+                    }
+                  } else {
+                    // var oldBalance =
+                    //     (double.tryParse(bal[0].toString()) * (-1));
+                    balance = oldBalance! - (data[0]['total'] as double?)!;
+                  }
+                  var amt = balance!.toStringAsFixed(2);
+                  var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+                  String smsBody =
+                      "Dear ${ledData.name.toString()},\nYour $form ${data[0]['entryno'].toString()}, Dated : $formattedDate for the Amount of ${data[0]['total'].toString()}/- \nBalance:$amt /- has been confirmed  \n${companySettings!.name}";
+                  if (ledData.phone.toString().isNotEmpty) {
+                    sendSms(ledData.phone, smsBody);
+                  }
+                }
+
+                if (ComSettings.getStatus('ENABLE SMS OPTION', settings!)) {
+                  String form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+                  SmsDataModel smsData = smsSettingsList.firstWhere(
+                      (element) => element.voucher == form,
+                      orElse: () => SmsDataModel.emptyData());
+                  if (smsData != null && smsData.apiLink.isNotEmpty) {
+                    String smsBody = smsData.messageBody;
+                    String urlData = smsData.apiLink;
+                    var bal = ledData.balance.toString().split(' ');
+                    // double oldBalance = 0;
+                    if (bal[1] == 'Dr') {
+                      // oldBalance = double.tryParse(bal[0].toString()) ?? 0;
+                      if (mode == 'Payment') {
+                        balance = oldBalance! - (data[0]['total'] as double?)!;
+                      } else {
+                        balance = operation == 'UPDATE'
+                            ? oldBalance
+                            : oldBalance! - (data[0]['total'] as double?)!;
+                      }
+                    } else {
+                      // oldBalance = (double.tryParse(bal[0].toString()) * (-1));
+                      balance = oldBalance! - (data[0]['total'] as double?)!;
+                    }
+                    double cashReceived = 0, billAmount = 0;
+                    billAmount = (data[0]['total'] as double?)!;
+                    smsBody = smsBody
+                        .replaceFirst("#Customer#", ledData.name.toString())
+                        .replaceFirst("#OB#", oldBalance!.toStringAsFixed(2))
+                        .replaceFirst(
+                            "#EntryNo#", data[0]['entryno'].toString())
+                        .replaceFirst(
+                            "#ThisBill#", billAmount.toStringAsFixed(2))
+                        .replaceFirst(
+                            "#CashReceived#", cashReceived.toStringAsFixed(2));
+                    double totalBalance =
+                        ((billAmount + cashReceived)).roundToDouble();
+                    smsBody = smsBody
+                        .replaceFirst(
+                            "#TotalBalance#", totalBalance.toStringAsFixed(2))
+                        .replaceFirst("#NetBalance#", balance.toString())
+                        .replaceFirst(
+                            "#GrandTotal#", billAmount.toStringAsFixed(2))
+                        .replaceFirst("#Narration#", ledData.narration);
+
+                    if (ledData.phone.toString().trim().isNotEmpty) {
+                      if (ledData.phone.toString().trim().length == 10) {
+                        urlData = urlData
+                            .replaceFirst(
+                                "#MobileNo#", ledData.phone.toString().trim())
+                            .replaceFirst("#SMS#", smsBody);
+                        api.sentSmsOverApi(urlData);
+                      }
+                    }
+                  } else {
+                    debugPrint('sms data is empty');
+                  }
+                }
+              }
+              actionShow(mode, context, [
                 {
                   'entryNo':
                       oldVoucher ? dataDynamic[0]['EntryNo'].toString() : refNo,
@@ -572,92 +703,8 @@ class _RPVoucherState extends State<RPVoucher> {
                   'oldBalance': ledgerData!.balance,
                   'message': footerMessage
                 }
-              ];
-              actionShow(mode, context, dataAll);
-              if (ComSettings.appSettings('bool', 'key-sms-customer', false)) {
-                var bal = ledgerData!.balance.toString().split(' ');
-                if (bal[1] == 'Dr') {
-                  var oldBalance = double.tryParse(bal[0].toString()) ?? 0;
-
-                  if (mode == 'Payment') {
-                    balance = oldBalance - (data[0]['total'] as double?)!;
-                  } else {
-                    balance = operation == 'UPDATE'
-                        ? oldBalance
-                        : oldBalance - (data[0]['total'] as double?)!;
-                  }
-                } else {
-                  var oldBalance = (double.tryParse(bal[0].toString())! * (-1));
-                  balance = oldBalance - (data[0]['total'] as double?)!;
-                }
-                var amt = balance!.toStringAsFixed(2);
-                var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
-                String smsBody =
-                    "Dear ${ledgerData!.name.toString()},\nYour $form ${data[0]['entryno'].toString()}, Dated : $formattedDate for the Amount of ${data[0]['total'].toString()}/- \nBalance:$amt /- has been confirmed  \n${companySettings!.name}";
-                if (ledgerData!.phone.toString().isNotEmpty) {
-                  sendSms(ledgerData!.phone, smsBody);
-                }
-              }
-
-              if (ComSettings.getStatus('ENABLE SMS OPTION', settings!)) {
-                String form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
-                SmsDataModel smsData = smsSettingsList.firstWhere(
-                    (element) => element.voucher == form,
-                    orElse: () => SmsDataModel.emptyData());
-                if (smsData != null && smsData.apiLink.isNotEmpty) {
-                  String smsBody = smsData.messageBody;
-                  String urlData = smsData.apiLink;
-                  var bal = ledgerData!.balance.toString().split(' ');
-                  double oldBalance = 0;
-                  if (bal[1] == 'Dr') {
-                    oldBalance = double.tryParse(bal[0].toString()) ?? 0;
-                    if (mode == 'Payment') {
-                      balance = oldBalance - (data[0]['total'] as double?)!;
-                    } else {
-                      balance = operation == 'UPDATE'
-                          ? oldBalance
-                          : oldBalance - (data[0]['total'] as double?)!;
-                    }
-                  } else {
-                    oldBalance = (double.tryParse(bal[0].toString())! * (-1));
-                    balance = oldBalance - (data[0]['total'] as double?)!;
-                  }
-                  double cashReceived = 0, billAmount = 0;
-                  billAmount = (data[0]['total'] as double?)!;
-
-                  smsBody = smsBody
-                      .replaceFirst("#Customer#", ledgerData!.name.toString())
-                      .replaceFirst("#OB#", oldBalance.toStringAsFixed(2))
-                      .replaceFirst("#EntryNo#", data[0]['entryno'].toString())
-                      .replaceFirst("#ThisBill#", billAmount.toStringAsFixed(2))
-                      .replaceFirst(
-                          "#CashReceived#", cashReceived.toStringAsFixed(2));
-                  double totalBalance =
-                      ((billAmount + cashReceived)).roundToDouble();
-                  smsBody = smsBody
-                      .replaceFirst(
-                          "#TotalBalance#", totalBalance.toStringAsFixed(2))
-                      .replaceFirst("#NetBalance#", balance.toString())
-                      .replaceFirst(
-                          "#GrandTotal#", billAmount.toStringAsFixed(2))
-                      .replaceFirst(
-                          "#Narration#", billAmount.toStringAsFixed(2));
-
-                  if (ledgerData!.phone.toString().trim().isNotEmpty) {
-                    if (ledgerData!.phone.toString().trim().length == 10) {
-                      urlData = urlData
-                          .replaceFirst(
-                              "#MobileNo#", ledgerData!.phone.toString().trim())
-                          .replaceFirst("#SMS#", smsBody);
-                      api.sentSmsOverApi(urlData);
-                    }
-                  }
-                } else {
-                  debugPrint('sms data is empty');
-                }
-              }
+              ]);
             }
-            clearData();
           });
         } else {
           var opr = operation == 'DELETE'
@@ -667,6 +714,177 @@ class _RPVoucherState extends State<RPVoucher> {
                   : 'error : Cannot save this ' + mode;
           showInSnackBar(opr);
         }
+      } else {
+        if (total! <= 0 || ledData!.id <= 0) {
+          Fluttertoast.showToast(msg: 'Select Account and amount');
+          setState(() {
+            buttonEvent = false;
+          });
+        } else {
+          setState(() {
+            _isLoading = true;
+            buttonEvent = true;
+          });
+          var particular = '[${json.encode({
+                'amount': amount,
+                'discount': discount,
+                'total': total,
+                'narration': narration,
+                'Ledid': ledData!.id
+              })}]';
+          var data = [
+            {
+              'entryno':
+                  oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '0',
+              'date': formatDMY(formattedDate),
+              'debitAccount': accountId,
+              'amount': amount,
+              'discount': discount,
+              'total': total,
+              'location': locationId,
+              'user': 1,
+              'project': projectId,
+              'salesman': salesManId,
+              'month': '',
+              'particular': particular,
+              'fyId': currentFinancialYear!.id,
+              'frmId': voucherTypeData.id,
+              'statementType': operation == 'UPDATE'
+                  ? mode == 'Payment'
+                      ? 'Update_Pv'
+                      : 'Update_Rv'
+                  : mode == 'Payment'
+                      ? 'InsertPv'
+                      : 'Insert_Rv'
+              // 'Update_Rv'  Update_Pv Delete_Pv Delete_Rv  FindPv FindRv
+            }
+          ];
+          refNo = await api.addVoucher(data);
+          if (refNo > 0) {
+            setState(() {
+              _isLoading = false;
+              buttonEvent = false;
+              // showInSnackBar(operation == 'DELETE'
+              //     ? 'Deleted : ' + mode + ' voucher.'
+              //     : operation == 'UPDATE'
+              //         ? 'Update : ' + mode + ' voucher.'
+              //         : 'Saved : ' + mode + ' voucher.');
+              if (operation == 'DELETE') {
+                showInSnackBar('Deleted');
+              } else {
+                var dataAll = [
+                  {
+                    'entryNo': oldVoucher
+                        ? dataDynamic[0]['EntryNo'].toString()
+                        : refNo,
+                    'date': formatDMY(formattedDate),
+                    'debitAccount': accountId,
+                    'amount': amount,
+                    'discount': discount,
+                    'total': total,
+                    'particular': particular,
+                    'account': accountName,
+                    'name': ledgerData!.name,
+                    'oldBalance': ledgerData!.balance,
+                    'message': footerMessage
+                  }
+                ];
+                actionShow(mode, context, dataAll);
+                if (ComSettings.appSettings(
+                    'bool', 'key-sms-customer', false)) {
+                  var bal = ledgerData!.balance.toString().split(' ');
+                  if (bal[1] == 'Dr') {
+                     var oldBalance = double.tryParse(bal[0].toString()) ?? 0;
+                    if (mode == 'Payment') {
+                       balance = oldBalance - (data[0]['total'] as double?)!;
+                    } else {
+                      balance = operation == 'UPDATE'
+                          ? oldBalance
+                          : oldBalance - (data[0]['total'] as double?)!;
+                    }
+                  } else {
+                     var oldBalance =
+                        (double.tryParse(bal[0].toString())! * (-1));
+                    balance = oldBalance - (data[0]['total'] as double?)!;
+                  }
+                  var amt = balance!.toStringAsFixed(2);
+                  var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+                  String smsBody =
+                      "Dear ${ledgerData!.name.toString()},\nYour $form ${data[0]['entryno'].toString()}, Dated : $formattedDate for the Amount of ${data[0]['total'].toString()}/- \nBalance:$amt /- has been confirmed  \n${companySettings!.name}";
+                  if (ledgerData!.phone.toString().isNotEmpty) {
+                    sendSms(ledgerData!.phone, smsBody);
+                  }
+               }
+                     if (ComSettings.getStatus('ENABLE SMS OPTION', settings!)) {
+                  String form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+                  SmsDataModel smsData = smsSettingsList.firstWhere(
+                      (element) => element.voucher == form,
+                      orElse: () => SmsDataModel.emptyData());
+                  if (smsData != null && smsData.apiLink.isNotEmpty) {
+                    String smsBody = smsData.messageBody;
+                    String urlData = smsData.apiLink;
+                    var bal = ledgerData!.balance.toString().split(' ');
+                    double oldBalance = 0;
+                    if (bal[1] == 'Dr') {
+                      oldBalance = double.tryParse(bal[0].toString()) ?? 0;
+                      if (mode == 'Payment') {
+                        balance = oldBalance - (data[0]['total'] as double?)!;
+                      } else {
+                        balance = operation == 'UPDATE'
+                            ? oldBalance
+                            : oldBalance - (data[0]['total'] as double?)!;
+                      }
+                    } else {
+                      oldBalance = (double.tryParse(bal[0].toString())! * (-1));
+                      balance = oldBalance - (data[0]['total'] as double?)!;
+                    }
+                    double cashReceived = 0, billAmount = 0;
+                    billAmount = (data[0]['total'] as double?)!;
+                    smsBody = smsBody
+                        .replaceFirst("#Customer#", ledgerData!.name.toString())
+                        .replaceFirst("#OB#", oldBalance.toStringAsFixed(2))
+                        .replaceFirst(
+                            "#EntryNo#", data[0]['entryno'].toString())
+                        .replaceFirst(
+                            "#ThisBill#", billAmount.toStringAsFixed(2))
+                        .replaceFirst(
+                            "#CashReceived#", cashReceived.toStringAsFixed(2));
+                    double totalBalance =
+                        ((billAmount + cashReceived)).roundToDouble();
+                    smsBody = smsBody
+                        .replaceFirst(
+                            "#TotalBalance#", totalBalance.toStringAsFixed(2))
+                        .replaceFirst("#NetBalance#", balance.toString())
+                        .replaceFirst(
+                            "#GrandTotal#", billAmount.toStringAsFixed(2))
+                        .replaceFirst("#Narration#", narration!);
+
+                   if (ledgerData!.phone.toString().trim().isNotEmpty) {
+                      if (ledgerData!.phone.toString().trim().length == 10) {
+                        urlData = urlData
+                            .replaceFirst("#MobileNo#",
+                                ledgerData!.phone.toString().trim())
+                            .replaceFirst("#SMS#", smsBody);
+                        api.sentSmsOverApi(urlData);
+                      }
+                    }
+                    } else {
+                    debugPrint('sms data is empty');
+                  }
+               
+                }
+              }
+              clearData();
+            });
+          } else {
+            var opr = operation == 'DELETE'
+                ? 'error : Cannot delete this ' + mode
+                : operation == 'UPDATE'
+                    ? 'error : Cannot update this ' + mode
+                    : 'error : Cannot save this ' + mode;
+            showInSnackBar(opr);
+          }
+        }
       }
     }
   }
@@ -675,7 +893,18 @@ class _RPVoucherState extends State<RPVoucher> {
     if (accountId.isEmpty) {
       Fluttertoast.showToast(msg: 'Select Cash Account');
     } else {
-      if (amount! <= 0 || ledData!.id <= 0) {
+      bool state = false;
+      if (isMultiRvPv) {
+        if (particularList.isEmpty) {
+          state = true;
+        }
+      } else {
+        if (amount! <= 0 || ledData!.id <= 0) {
+          state = true;
+        }
+      }
+      if (state) {
+        // if (amount! <= 0 || ledData!.id <= 0) {
         Fluttertoast.showToast(msg: 'Select Account and amount');
         setState(() {
           buttonEvent = false;
@@ -699,6 +928,7 @@ class _RPVoucherState extends State<RPVoucher> {
             _isLoading = false;
             buttonEvent = false;
             showInSnackBar('Deleted');
+            particularList = [];
             clearData();
           });
         } else {
@@ -716,6 +946,26 @@ class _RPVoucherState extends State<RPVoucher> {
     final buffer = bytes.buffer;
     byteImage = Uint8List.view(buffer);
   }
+  
+  Future<String?> selectPositionDialog(BuildContext context, int length) async {
+    return await showDialog<String>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: const Text('Select SlNo'),
+            children: List.generate(
+              length,
+              (index) => SimpleDialogOption(
+                onPressed: () {
+                  Navigator.pop(context, index.toString());
+                },
+                child: Text('${index + 1}'),
+              ),
+            ),
+          );
+        });
+  }
 
   actionShow(mode, context, data) async {
     var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
@@ -726,13 +976,56 @@ class _RPVoucherState extends State<RPVoucher> {
         buttonColorForYes: Colors.green,
         icon: Icons.check,
         onPressedNo: () {
+          clearData();
+          particularList = [];
           Navigator.of(context).pop();
         },
         onPressedYes: () {
           Navigator.of(context).pop();
           // _showPrinterSize(context).then((value) => printBluetooth(context,
           //     title, companySettings, settings, data, byteImage, value, form));
-          sentToPreview(title, form, data);
+          if (isMultiRvPv) {
+            selectPositionDialog(context, particularList.length).then((value) {
+              int index = int.parse(value!);
+              RpVoucherParticularModel partData = particularList[index];
+              ledData = LedgerModel(id: partData.id, name: partData.name);
+              var particular = '[${json.encode({
+                    'amount': partData.amount,
+                    'discount': partData.discount,
+                    'total': partData.total,
+                    'narration': partData.narration,
+                    'Ledid': ledData!.id
+                  })}]';
+              data = [
+                {
+                  'entryNo': dataDynamic[0]['EntryNo'].toString(),
+                  'entryNo': oldVoucher
+                      ? dataDynamic[0]['EntryNo'].toString()
+                      : refNo.toString(),
+                  'date': formatDMY(formattedDate),
+                  'debitAccount': accountId,
+                  'amount': partData.amount,
+                  'discount': partData.discount,
+                  'total': partData.total,
+                  'particular': particular,
+                  'account': accountName,
+                  'name': ledData!.name,
+                  'balance': partData.balance.toString() == "0"
+                      ? '0 Dr'
+                      : partData.balance,
+                  'oldBalance': oldBalance,
+                  'message': footerMessage
+                }
+              ];
+
+              particularList = [];
+              clearData();
+              return sentToPreview(title, form, data);
+            });
+          } else {
+            clearData();
+            return sentToPreview(title, form, data);
+          }
         },
         buttonTextForNo: 'No',
         buttonTextForYes: 'YES',
@@ -843,6 +1136,7 @@ class _RPVoucherState extends State<RPVoucher> {
   var _dropDownValue = '';
   widgetAccount() {
     return Container(
+      height: 35,
       padding: const EdgeInsets.only(left: 3),
       width: MediaQuery.sizeOf(context).width,
       decoration: BoxDecoration(
@@ -855,21 +1149,36 @@ class _RPVoucherState extends State<RPVoucher> {
               _dropDownValue.isNotEmpty
                   ? _dropDownValue.split('-')[1]
                   : 'Select cash account',
-              style: const TextStyle(fontFamily: 'poppins', color: black),
+              style: const TextStyle(
+              fontFamily: 'poppins', 
+              color: black,
+              fontSize: 13,
+              fontWeight: FontWeight.w500
+              ),
             ),
           ),
           items: cashBankACList.map<DropdownMenuItem<String>>((item) {
             return DropdownMenuItem<String>(
-              value: item.id.toString() + "-" + item.name,
-              child: Text(item.name),
+              value: "${item.id}-${item.name}",
+              child: Text(item.name,
+               style: const TextStyle(
+              fontFamily: 'poppins', 
+              color: black,
+              fontSize: 13,
+              fontWeight: FontWeight.w500
+              ),
+              ),
             );
           }).toList(),
           onChanged: (value) {
-            setState(() {
-              _dropDownValue = value!;
-              accountId = value.split('-')[0];
-              accountName = value.split('-')[1];
-            });
+             if (!keyLockCashAccount) {
+          // if (cashId <= 0) {
+          setState(() {
+            _dropDownValue = value!;
+            accountId = value.split('-')[0];
+            accountName = value.split('-')[1];
+          });
+        }
           },
         ),
       ),
@@ -884,6 +1193,7 @@ class _RPVoucherState extends State<RPVoucher> {
         lastDate: DateTime(2100));
     if (picked != null) {
       setState(() => formattedDate = DateFormat('dd-MM-yyyy').format(picked));
+      userDateCheck(DateUtil.dateYMD(formattedDate));
     }
   }
 
@@ -1118,9 +1428,7 @@ class _RPVoucherState extends State<RPVoucher> {
         ];
 
         voucherTotal = double.tryParse(information['Total'].toString())!;
-        _dropDownValue = information['LedCode'].toString() +
-            '-' +
-            information['LedName'].toString();
+         _dropDownValue = '${information['LedCode']}-${information['LedName']}';
         accountName = information['LedName'].toString();
         accountId = information['LedCode'].toString();
         acId = information['LedCode'];
@@ -1130,9 +1438,42 @@ class _RPVoucherState extends State<RPVoucher> {
         discount = double.tryParse(part1['Discount'].toString())!;
         total = double.tryParse(part1['Total'].toString())!;
         narration = part1['Narration'].toString();
-        // for (var part in particulars) {
-        //   //
-        // }
+         if (isMultiRvPv) {
+          for (var part in particulars) {
+            particularList.add(RpVoucherParticularModel(
+                id: part['LedCode'],
+                name: part['LedName'],
+                amount: double.tryParse(part['Amount'].toString())!,
+                discount: double.tryParse(part['Discount'].toString())!,
+                total: double.tryParse(part['Total'].toString())!,
+                narration: part['Narration'].toString(),
+                balance: '0',
+                phone: ''));
+            ledData = LedgerModel(id: 0, name: '');
+            isSelected = false;
+            //   amount = double.tryParse(part['Amount'].toString());
+            //   discount = double.tryParse(part['Discount'].toString());
+            //   total = double.tryParse(part['Total'].toString());
+            //   narration = part['Narration'].toString();
+          }
+        } else {
+          var part1 = particulars[0];
+          ledData = LedgerModel(id: part1['LedCode'], name: part1['LedName']);
+          amount = double.tryParse(part1['Amount'].toString());
+          discount = double.tryParse(part1['Discount'].toString());
+          total = double.tryParse(part1['Total'].toString());
+          narration = part1['Narration'].toString();
+        }
+        if (isMultiRvPv) {
+          // particularList
+        } else {
+          getOldBalance(
+              ledData!.id,
+              (mode == 'Payment' ? 'SupplierOB' : 'CustomerOB'),
+              mode,
+              DateUtil.dateYMD(formattedDate),
+              information['EntryNo']);
+        }
 
         userDateCheck(information['DDate']);
         setState(() {
@@ -1143,6 +1484,14 @@ class _RPVoucherState extends State<RPVoucher> {
             _controllerAmount.text = amount.toString();
             _controllerDiscount.text = discount! > 0 ? discount.toString() : '';
             _controllerNarration.text = narration.toString();
+          }else {
+            ledData = LedgerModel(id: 0, name: '');
+            widgetID = false;
+            oldVoucher = true;
+            isSelected = true;
+            _controllerAmount.text = '';
+            _controllerDiscount.text = '';
+            _controllerNarration.text = '';
           }
         });
       }
@@ -1168,12 +1517,11 @@ class _RPVoucherState extends State<RPVoucher> {
 
   voucherWidget(var mode) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // const Text(
               //   'Date : ',
@@ -1181,36 +1529,49 @@ class _RPVoucherState extends State<RPVoucher> {
               // ),
               Expanded(
                 flex: 1,
-                child: ContainerFieldWidget(
-                    widget: InkWell(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        // width: 140,
-                        height: 30,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: grey),
-                            borderRadius: BorderRadius.circular(3)),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              formattedDate!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
-                                  fontFamily: 'poppins'),
-                            ),
-                            const Icon(
-                              Icons.calendar_month_outlined,
-                              size: 20,
-                              color: grey,
-                            )
-                          ],
-                        ),
-                      ),
-                      onTap: () => _selectDate(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(' Date',
+                     style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                      fontFamily: 'poppins'),
                     ),
-                    headTxt: 'Date'),
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    InkWell(
+                          child: Container(
+                            // margin: EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            // width: 140,
+                            height: 35,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  formattedDate!,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13,
+                                      fontFamily: 'poppins'),
+                                ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  size: 20,
+                                  color: grey,
+                                )
+                              ],
+                            ),
+                          ),
+                          onTap: () => _selectDate(),
+                        ),
+                  ],
+                ),
               ),
               const SizedBox(
                 width: 8,
@@ -1218,8 +1579,21 @@ class _RPVoucherState extends State<RPVoucher> {
               Expanded(
                 flex: 2,
                 // width: 200,
-                child: ContainerFieldWidget(
-                    widget: widgetAccount(), headTxt: 'Cash Account'),
+                child:  Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(' Cash Account',
+                      style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 15,
+                                      fontFamily: 'poppins'),
+                    ),
+                    const SizedBox(
+                      height: 4,
+                    ),
+                    widgetAccount(),
+                  ],
+                )
               )
             ],
           ),
@@ -1304,12 +1678,18 @@ class _RPVoucherState extends State<RPVoucher> {
                     ),
                 asyncItems: (String filter) async {
                   nameLike = filter.isNotEmpty ? filter : 'a';
-                  var models = api.getCustomerNameListLike(
-                      groupId, areaId, routeId, salesManId, nameLike);
+                  var models = isSalesManWiseLedger
+                ? api.getLedgerBySalesManLike(salesManId, nameLike)
+                : api.getCustomerNameListLike(
+                    groupId, areaId, routeId, salesManId, nameLike);
                   return models;
                 },
                 dropdownDecoratorProps: const DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 5,
+                      horizontal: 5
+                    ),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -1324,9 +1704,9 @@ class _RPVoucherState extends State<RPVoucher> {
               ),
               headTxt: 'Select Ledger Name'),
           const SizedBox(
-            height: 15,
+            height: 8,
           ),
-          isSelected
+          isSelected && ledData!.id > 0
               ? ledgerDetailWidget(ledData!.id)
               : const Text(
                   'Balance : 0',
@@ -1337,7 +1717,7 @@ class _RPVoucherState extends State<RPVoucher> {
                       color: kPrimaryColor),
                 ),
           const SizedBox(
-            height: 15,
+            height: 8,
           ),
           ContainerFieldWidget(
               widget: TextField(
@@ -1349,6 +1729,10 @@ class _RPVoucherState extends State<RPVoucher> {
                       allow: true, replacementString: '.')
                 ],
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5
+                  ),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
@@ -1364,7 +1748,7 @@ class _RPVoucherState extends State<RPVoucher> {
               ),
               headTxt: 'Ammount'),
           const SizedBox(
-            height: 10,
+            height: 4,
           ),
           ContainerFieldWidget(
               widget: TextField(
@@ -1376,6 +1760,10 @@ class _RPVoucherState extends State<RPVoucher> {
                       allow: true, replacementString: '.')
                 ],
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5
+                  ),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
@@ -1391,7 +1779,7 @@ class _RPVoucherState extends State<RPVoucher> {
               ),
               headTxt: 'Discount'),
           const SizedBox(
-            height: 15,
+            height: 8,
           ),
           Text(
             'Total : ${total!.toStringAsFixed(0)}',
@@ -1402,12 +1790,16 @@ class _RPVoucherState extends State<RPVoucher> {
                 color: kPrimaryColor),
           ),
           const SizedBox(
-            height: 15,
+            height: 8,
           ),
           ContainerFieldWidget(
               widget: TextField(
                 controller: _controllerNarration,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5
+                  ),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (value) {
@@ -1423,9 +1815,255 @@ class _RPVoucherState extends State<RPVoucher> {
     );
   }
 
-  voucherParticularWidget(mode) {
-    return const Center(
-      child: Text('Coming soon'),
+  // voucherParticularWidget(mode) {
+  //   return const Center(
+  //     child: Text('Coming soon'),
+  //   );
+  // }
+   voucherParticularWidget(mode) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const Text(
+              'Date : ',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            InkWell(
+              child: Text(
+                formattedDate!,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              onTap: () => _selectDate(),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            const Text('Cash Account',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            widgetAccount(),
+          ],
+        ),
+        Card(
+          elevation: 5,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+                  Navigator.pushNamed(context, '/ledger',
+                      arguments: {'parent': under});
+                },
+                child: const Text('Add new ledger'),
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.add_circle,
+                  color: kPrimaryColor,
+                ),
+                onPressed: () {
+                  var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+                  Navigator.pushNamed(context, '/ledger',
+                      arguments: {'parent': under});
+                },
+              ),
+            ],
+          ),
+        ),
+        const Divider(),
+        DropdownSearch<LedgerModel>(
+          // onFind: (String filter) async {
+          //   nameLike = filter.isNotEmpty ? filter : 'a';
+          //   var models = isSalesManWiseLedger
+          //       ? api.getLedgerBySalesManLike(salesManId, nameLike)
+          //       : api.getCustomerNameListLike(
+          //           groupId, areaId, routeId, salesManId, nameLike);
+          //   return models;
+          // },
+          onChanged: (LedgerModel? data) {
+            // print(data);
+            ledData = data;
+            setState(() {
+              isSelected = true;
+            });
+          },
+          selectedItem: ledData,
+          popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+              showSearchBox: true,
+              isFilterOnline: true,
+              constraints: BoxConstraints(
+                maxHeight: 300,
+              )),
+          asyncItems: (String filter) async {
+            nameLike = filter.isNotEmpty ? filter : 'a';
+            var models = isSalesManWiseLedger
+                ? api.getLedgerBySalesManLike(salesManId, nameLike)
+                : api.getCustomerNameListLike(
+                    groupId, areaId, routeId, salesManId, nameLike);
+            return models;
+          },
+          dropdownDecoratorProps: const DropDownDecoratorProps(
+            dropdownSearchDecoration: InputDecoration(
+                border: OutlineInputBorder(), labelText: "Select Ledger Name"),
+          ),
+        ),
+        const Divider(),
+        isSelected && ledData!.id > 0
+            ? ledgerDetailWidget(ledData!.id)
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Expanded(
+                      child: Text(
+                    'Balance : 0',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+                ],
+              ),
+        const Divider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controllerAmount,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                      allow: true, replacementString: '.')
+                ],
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  label: Text('Amount'),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    amount = value != null
+                        ? value.trim().isNotEmpty
+                            ? double.tryParse(value)
+                            : 0
+                        : 0;
+                    calculate(mode);
+                  });
+                },
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: TextField(
+                controller: _controllerDiscount,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                      allow: true, replacementString: '.')
+                ],
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  label: Text('Discount'),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    discount = value != null
+                        ? value.trim().isNotEmpty
+                            ? double.tryParse(value)
+                            : 0
+                        : 0;
+                    calculate(mode);
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        const Divider(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controllerNarration,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  label: Text('Narration'),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    narration = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        ElevatedButton(
+            onPressed: () {
+              if (ledData!.id.toString().trim().isNotEmpty &&
+                  ledData!.name.trim().isNotEmpty) {
+                setState(() {
+                  particularList.add(RpVoucherParticularModel(
+                      id: ledData!.id,
+                      name: ledData!.name,
+                      amount: amount!,
+                      discount: discount!,
+                      total: amount! + discount!,
+                      narration: narration!,
+                      balance:
+                          isSelected ? ledgerData!.balance.toString() : '0',
+                      phone: isSelected ? ledgerData!.phone.toString() : ''));
+
+                  _controllerAmount.text = '';
+                  _controllerDiscount.text = '';
+                  _controllerNarration.text = '';
+                  ledgerData = null;
+                  balance = 0;
+                  amount = 0;
+                  discount = 0;
+                  narration = '';
+                  ledData!.id = 0;
+                  ledData!.name = '';
+                  total = 0;
+                });
+              }
+            },
+            child: const Text('Add')),
+        const Divider(),
+        ListView.builder(
+          itemCount: particularList.length,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            RpVoucherParticularModel data = particularList[index];
+            return Card(
+              elevation: 10,
+              child: ListTile(
+                title: Text(data.name),
+                subtitle: Text(
+                    'Amount: ${data.amount} Disc: ${data.discount} Total :${data.total}'),
+                trailing: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        if (companyUserData!.deleteData) {
+                          particularList.removeAt(index);
+                        }
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                      color: red,
+                    )),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

@@ -599,6 +599,7 @@ class _LedgerState extends State<Ledger> {
                       Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(
                               height: 10,
@@ -610,6 +611,10 @@ class _LedgerState extends State<Ledger> {
                                   clearOnSubmit: false,
                                   suggestions: ledgerListDisplay,
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 5
+                                    ),
                                     border: OutlineInputBorder(),
                                   ),
                                   textSubmitted: (data) {
@@ -631,12 +636,23 @@ class _LedgerState extends State<Ledger> {
                                 ),
                                 headTxt: 'Ledger Name'),
                             const SizedBox(
-                              height: 10,
+                              height: 2,
                             ),
-                            ContainerFieldWidget(
-                                widget: Container(
+                            const Text('  Under',
+                            style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500
+                                            ),
+                            ),
+                            const SizedBox(
+                              height: 4,
+                            ),
+                             Container(
+                                  height: 47,
                                   // width: MediaQuery.sizeOf(context).width,
                                   decoration: BoxDecoration(
+                                    color: white,
                                       border: Border.all(color: grey),
                                       borderRadius: BorderRadius.circular(3)),
                                   child: DropdownButtonHideUnderline(
@@ -645,6 +661,12 @@ class _LedgerState extends State<Ledger> {
                                       hint: const Padding(
                                         padding: EdgeInsets.all(8.0),
                                         child: Text('Select under',
+                                             style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              color: black,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500
+                                            ),
                                             textAlign: TextAlign.center),
                                       ),
                                       value: _dropDownValue.toString(),
@@ -655,6 +677,11 @@ class _LedgerState extends State<Ledger> {
                                           child: Padding(
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(item.name,
+                                            style: const TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500
+                                            ),
                                                 overflow: TextOverflow.ellipsis),
                                           ),
                                         );
@@ -668,7 +695,7 @@ class _LedgerState extends State<Ledger> {
                                     ),
                                   ),
                                 ),
-                                headTxt: 'Under'),
+                                
                             // Card(
                             //   elevation: 10,
                             //   child: DropdownButton<String>(
@@ -711,60 +738,80 @@ class _LedgerState extends State<Ledger> {
                                 controller: _add1Ctr,
                                 keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Address'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _add2Ctr,
                                 keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Address 2'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _add3Ctr,
                                 keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Address 3'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _add4Ctr,
                                 keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Address 4'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _taxNoCtr,
                                 keyboardType: TextInputType.text,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Tax No'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: SimpleAutoCompleteTextField(
@@ -772,7 +819,13 @@ class _LedgerState extends State<Ledger> {
                                 key: keyCity,
                                 suggestions: cityList,
                                 decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
+                                  border: OutlineInputBorder(
+                                    
+                                  ),
                                 ),
                                 textSubmitted: (data) {
                                   cityData = otherRegAreaList.firstWhere(
@@ -785,7 +838,7 @@ class _LedgerState extends State<Ledger> {
                               ),
                               headTxt: 'Select Area'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: SimpleAutoCompleteTextField(
@@ -793,6 +846,10 @@ class _LedgerState extends State<Ledger> {
                                 key: keyRoute,
                                 suggestions: routeList,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                                 textSubmitted: (data) {
@@ -806,13 +863,17 @@ class _LedgerState extends State<Ledger> {
                               ),
                               headTxt: 'Select Route'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           TextFormField(
                             controller: _phoneNumberCtr,
                             maxLength: 12,
                             keyboardType: TextInputType.phone,
                             decoration: const InputDecoration(
+                               contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                               border: OutlineInputBorder(),
                               labelText: "Telephone",
                               icon: Icon(Icons.phone),
@@ -825,13 +886,17 @@ class _LedgerState extends State<Ledger> {
                             ],
                             keyboardType: TextInputType.emailAddress,
                             decoration: const InputDecoration(
+                               contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                               border: OutlineInputBorder(),
                               labelText: 'E-mail',
                               icon: Icon(Icons.email),
                             ),
                           ),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           const Card(
                             // color: kPrimaryColor,
@@ -859,7 +924,7 @@ class _LedgerState extends State<Ledger> {
                             ),
                           ),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -898,7 +963,7 @@ class _LedgerState extends State<Ledger> {
                                 fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
@@ -907,12 +972,16 @@ class _LedgerState extends State<Ledger> {
                                   LengthLimitingTextInputFormatter(20),
                                 ],
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'PAN'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
@@ -921,23 +990,31 @@ class _LedgerState extends State<Ledger> {
                                   LengthLimitingTextInputFormatter(10),
                                 ],
                                 decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: "PIN"),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _secondNameCtr,
                                 decoration: const InputDecoration(
+                                   contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Second Name(native language)'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -970,6 +1047,10 @@ class _LedgerState extends State<Ledger> {
                                             keyboardType: const TextInputType
                                                 .numberWithOptions(decimal: true),
                                             decoration: const InputDecoration(
+                                              contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                               border: OutlineInputBorder(),
                                             ),
                                           ),
@@ -983,6 +1064,10 @@ class _LedgerState extends State<Ledger> {
                                             controller: _creditDaysCtr,
                                             keyboardType: TextInputType.number,
                                             decoration: const InputDecoration(
+                                              contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                               border: OutlineInputBorder(),
                                             ),
                                           ),
@@ -992,18 +1077,22 @@ class _LedgerState extends State<Ledger> {
                             ],
                           ),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           ContainerFieldWidget(
                               widget: TextFormField(
                                 controller: _personCtr,
                                 decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
                                 ),
                               ),
                               headTxt: 'Contact Person'),
                           const SizedBox(
-                            height: 10,
+                            height: 4,
                           ),
                           // const Text('SalesMan'),
                           ContainerFieldWidget(

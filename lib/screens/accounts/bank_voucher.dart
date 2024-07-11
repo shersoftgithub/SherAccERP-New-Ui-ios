@@ -815,12 +815,12 @@ class _BankVoucherState extends State<BankVoucher> {
                 groupId, areaId, routeId, salesManId, nameLike);
             return models;
           },
-          popupProps: PopupProps.menu(
+          popupProps: const PopupProps.menu(
             constraints: BoxConstraints(maxHeight: 300),
             showSearchBox: true,
             isFilterOnline: true,
           ),
-          dropdownDecoratorProps: DropDownDecoratorProps(
+          dropdownDecoratorProps: const DropDownDecoratorProps(
               dropdownSearchDecoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Select Ledger Name")),
