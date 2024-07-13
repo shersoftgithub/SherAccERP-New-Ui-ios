@@ -22,6 +22,7 @@ import 'package:sheraccerp/models/print_settings_model.dart';
 import 'package:sheraccerp/models/sales_bill.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/html_previews/sales_preview.dart';
 import 'package:sheraccerp/screens/html_previews/sales_return_preview.dart';
@@ -73,6 +74,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
   var companyTaxMode = '';
   List<JsonTableColumn>? columnsVAT, columnsGST, columns;
   CompanyInformation? companySettings;
+  VoucherType? voucherTypeData;
   var customerBalance = '0';
   List<CompanySettings>? settings;
   var dataInformation,
@@ -183,7 +185,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
       JsonTableColumn("Total", label: "Total")
     ];
     eNo = dataDynamic[0]['EntryNo'];
-    type = dataDynamic[0]['Type'];
+    type = int.parse(dataDynamic[0]['Type'].toString());
 
     if (printSettingsList != null) {
       if (printSettingsList.isNotEmpty) {
@@ -197,9 +199,12 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
                 : PrintSettingsModel.empty());
       }
     }
+    voucherTypeData = voucherTypeList.firstWhere(
+        (element) => element.voucher.toLowerCase() == 'purchase return');
 
     api
-        .fetchPurchaseReturnInvoice(dataDynamic[0]['EntryNo'], '1')
+        .fetchPurchaseReturnInvoice(
+            dataDynamic[0]['EntryNo'], '1', voucherTypeData!.id!)
         .then((value) {
       if (value != null) {
         setState(() {
@@ -428,230 +433,6 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
     //         )));
   }
 
-  webView() {
-    var taxSale = dataInformation != null
-        ? dataInformation['TaxType'] == 'T'
-            ? true
-            : false
-        : false;
-    var invoiceHead = Settings.getValue<String>('key-purchase-return-head',
-        defaultValue: 'PURCHASE RETURN');
-
-    return _isLoading
-        ? const Loading()
-        : Column(children: [
-            Expanded(
-                child: RepaintBoundary(
-              key: _globalKey,
-              child: WebView(
-                  initialUrl: '',
-                  javascriptMode: JavascriptMode.unrestricted,
-                  onWebViewCreated: (contr) {
-                    String dataHtml = taxSale
-                        ? '''${'''${'''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-
-                            <h2 align="center" >${companySettings!.name}</h2>
-                            <table align="center" width="100%" >
-                              <tr><td width="16.7%" align="center">${companySettings!.add1}</td></tr>
-                              <tr><td width="16.7%" align="center">${companySettings!.add2}</td></tr>
-                              <tr><td width="16.7%" align="center">Tel : ${companySettings!.telephone! + ',' + companySettings!.mobile!}</td></tr>
-                              <tr><td width="16.7%" align="center">${companyTaxMode == 'INDIA' ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}' : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}'}</td></tr>
-                            </table>
-                            <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <h5>${companyTaxMode == 'INDIA' ? dataInformation['Add1'] : 'T-No :' + dataInformation['gstno']}<h5/>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        
-                        ''' + _itemHeader(companyTaxMode) + _item(taxSale)}<tr>
-                          <td colspan="4" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr>
-                        <td width="64%" align="center">Total : </td>
-                        <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                        <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                        <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                        <td colspan="2" class="total-line" align="right">Tax :</td>
-                        <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['tax'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        ''' + _otherAmount()}                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total(Inclusive of all taxes) :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;">${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                          <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:12px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                        <td style="font-size:12px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Balance : ${(double.tryParse(customerBalance)! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                          <td width="16.7%" align="center" style="font-size:10px;">${data['message']}</td>
-                        </tr>
-                            </table>
-                        '''
-                        : '''${'''${'''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-                        <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        <tr> ''' + _itemHeader1() + _item(taxSale)}<tr>
-                          <td colspan="4" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr>
-                        <td width="64%" align="center">Total : </td>
-                        <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                        <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                        <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                              </tr>
-                              ''' + _otherAmount()}                              <tr>
-                                <td colspan="3" class="blank"></td>
-                                <td colspan="2" class="total-value1" align="right">Tax :</td>
-                                    <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['tax'].toString())! + double.tryParse(dataInformation['Cess'].toString())! + double.tryParse(dataInformation['TCS'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;"> Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                        <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:10px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" >
-                            <tr>
-                        <td style="font-size:10px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Balance : ${((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="80%" >
-                        <tr>
-                          <td width="16.7%" align="center" style="font-size:9px;">${data['message']}</td>
-                        </tr>
-                            ''';
-
-                    /*********************QR Code**********************/
-                    if (isQrCodeKSA) {
-                      if (taxSale) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      } else if (isEsQrCodeKSA) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      }
-                    }
-                    dataHtml += '''
-                            </table>
-                        ''';
-                    contr.loadUrl(Uri.dataFromString(dataHtml,
-                            mimeType: 'text/html', encoding: utf8)
-                        .toString());
-                  }),
-            )),
-          ]);
-  }
-
   invoiceGenerate(context) {
     var taxInvoice = dataInformation != null
         ? dataInformation['TaxType'] == 'T'
@@ -660,6 +441,230 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
         : false;
     var invoiceHead = Settings.getValue<String>('key-purchase-return-head',
         defaultValue: 'PURCHASE RETURN');
+
+  //   return _isLoading
+  //       ? const Loading()
+  //       : Column(children: [
+  //           Expanded(
+  //               child: RepaintBoundary(
+  //             key: _globalKey,
+  //             child: WebView(
+  //                 initialUrl: '',
+  //                 javascriptMode: JavascriptMode.unrestricted,
+  //                 onWebViewCreated: (contr) {
+  //                   String dataHtml = taxSale
+  //                       ? '''${'''${'''
+  //                       <style>
+  //                       .total-value {
+  //                           font-size:14px;font-weight: bold
+  //                       }
+  //                       .total-value1 {
+  //                           font-size:16px;font-weight: bold
+  //                       }
+  //                       .total-line{
+  //                         font-size:14px;font-weight: bold
+  //                       }
+  //                       </style>
+
+  //                           <h2 align="center" >${companySettings!.name}</h2>
+  //                           <table align="center" width="100%" >
+  //                             <tr><td width="16.7%" align="center">${companySettings!.add1}</td></tr>
+  //                             <tr><td width="16.7%" align="center">${companySettings!.add2}</td></tr>
+  //                             <tr><td width="16.7%" align="center">Tel : ${companySettings!.telephone! + ',' + companySettings!.mobile!}</td></tr>
+  //                             <tr><td width="16.7%" align="center">${companyTaxMode == 'INDIA' ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}' : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}'}</td></tr>
+  //                           </table>
+  //                           <table width="100%">
+  //                             <tr>
+  //                     <th align="center"><u>$invoiceHead</u></th>
+  //                             </tr>
+  //                           </table>
+  //                           <table width="100%">
+  //                     <tr>
+  //                     <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
+  //                     </tr>
+  //                           </table>
+  //                           <h4>Bill To : ${dataInformation['ToName']}</h4>
+  //                           <h5>${companyTaxMode == 'INDIA' ? dataInformation['Add1'] : 'T-No :' + dataInformation['gstno']}<h5/>
+  //                           <hr size="1" width="100%">
+  //                           <table id="items">
+                        
+  //                       ''' + _itemHeader(companyTaxMode) + _item(taxSale)}<tr>
+  //                         <td colspan="4" class="blank"><hr></hr></td>
+  //                     </tr>
+  //                           </table>
+  //                           <table width="100%" id="line_total">
+  //                             <tr>
+  //                       <td width="64%" align="center">Total : </td>
+  //                       <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
+  //                       <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
+  //                       <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table width="100%" id="item_total">
+  //                             <tr>
+  //                     <td colspan="3" class="blank"></td>
+  //                     <td colspan="2" class="total-line" align="right">Total :</td>
+  //                     <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                             <tr>
+  //                       <td colspan="3" class="blank"> </td>
+  //                       <td colspan="2" class="total-line" align="right">Tax :</td>
+  //                       <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['tax'].toString())!).toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                             <tr>
+  //                       ''' + _otherAmount()}                              </tr>
+  //                             <tr>
+  //                     <td colspan="3" class="blank"></td>
+  //                     <td colspan="2" class="total-value1" align="right">Net Total(Inclusive of all taxes) :</td>
+  //                         <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                           </table>
+  //                           <table width="100%">
+  //                     <tr>
+  //                         <td style="font-size:10px;">${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
+  //                       </tr>
+  //                       </table>
+  //                         <hr></hr>
+  //                           <table width="100%">
+  //                       <tr>
+  //                       <td style="font-size:12px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
+  //                       <td style="font-size:12px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
+  //                       </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table align="center" width="100%" >
+  //                     <tr>
+  //                       <td style="font-size:12px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
+  //                       <td style="font-size:12px;" align="right"> Balance : ${(double.tryParse(customerBalance)! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
+  //                       </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table align="center" width="100%" >
+  //                     <tr>
+  //                         <td width="16.7%" align="center" style="font-size:10px;">${data['message']}</td>
+  //                       </tr>
+  //                           </table>
+  //                       '''
+  //                       : '''${'''${'''
+  //                       <style>
+  //                       .total-value {
+  //                           font-size:14px;font-weight: bold
+  //                       }
+  //                       .total-value1 {
+  //                           font-size:16px;font-weight: bold
+  //                       }
+  //                       .total-line{
+  //                         font-size:14px;font-weight: bold
+  //                       }
+  //                       </style>
+  //                       <table width="100%">
+  //                             <tr>
+  //                     <th align="center"><u>$invoiceHead</u></th>
+  //                             </tr>
+  //                           </table>
+  //                           <table width="100%">
+  //                     <tr>
+  //                     <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
+  //                     </tr>
+  //                           </table>
+  //                           <h4>Bill To : ${dataInformation['ToName']}</h4>
+  //                           <hr size="1" width="100%">
+  //                           <table id="items">
+  //                       <tr> ''' + _itemHeader1() + _item(taxSale)}<tr>
+  //                         <td colspan="4" class="blank"><hr></hr></td>
+  //                     </tr>
+  //                           </table>
+  //                           <table width="100%" id="line_total">
+  //                             <tr>
+  //                       <td width="64%" align="center">Total : </td>
+  //                       <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
+  //                       <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
+  //                       <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table width="100%" id="item_total">
+  //                             <tr>
+  //                     <td colspan="3" class="blank"></td>
+  //                     <td colspan="2" class="total-line" align="right">Total :</td>
+  //                     <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                             <tr>
+  //                       <td colspan="3" class="blank"> </td>
+  //                             </tr>
+  //                             ''' + _otherAmount()}                              <tr>
+  //                               <td colspan="3" class="blank"></td>
+  //                               <td colspan="2" class="total-value1" align="right">Tax :</td>
+  //                                   <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['tax'].toString())! + double.tryParse(dataInformation['Cess'].toString())! + double.tryParse(dataInformation['TCS'].toString())!).toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                             <tr>
+  //                     <td colspan="3" class="blank"></td>
+  //                     <td colspan="2" class="total-value1" align="right">Net Total :</td>
+  //                         <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
+  //                             </tr>
+  //                           </table>
+  //                           <table width="100%">
+  //                     <tr>
+  //                         <td style="font-size:10px;"> Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
+  //                       </tr>
+  //                       </table>
+  //                       <hr></hr>
+  //                           <table width="100%">
+  //                       <tr>
+  //                       <td style="font-size:10px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
+  //                       <td style="font-size:10px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
+  //                       </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table width="100%" >
+  //                           <tr>
+  //                       <td style="font-size:10px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
+  //                       <td style="font-size:10px;" align="right"> Balance : ${((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
+  //                       </tr>
+  //                           </table>
+  //                           <hr></hr>
+  //                           <table align="center" width="80%" >
+  //                       <tr>
+  //                         <td width="16.7%" align="center" style="font-size:9px;">${data['message']}</td>
+  //                       </tr>
+  //                           ''';
+
+  //                   /*********************QR Code**********************/
+  //                   if (isQrCodeKSA) {
+  //                     if (taxSale) {
+  //                       String html =
+  //                           "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
+  //                       String image = uint8ListTob64(byteImageQr!);
+  //                       html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
+  //                       dataHtml += html;
+  //                     } else if (isEsQrCodeKSA) {
+  //                       String html =
+  //                           "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
+  //                       String image = uint8ListTob64(byteImageQr!);
+  //                       html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
+  //                       dataHtml += html;
+  //                     }
+  //                   }
+  //                   dataHtml += '''
+  //                           </table>
+  //                       ''';
+  //                   contr.loadUrl(Uri.dataFromString(dataHtml,
+  //                           mimeType: 'text/html', encoding: utf8)
+  //                       .toString());
+  //                 }),
+  //           )),
+  //         ]);
+  // }
+
+  // invoiceGenerate(context) {
+  //   var taxInvoice = dataInformation != null
+  //       ? dataInformation['TaxType'] == 'T'
+  //           ? true
+  //           : false
+  //       : false;
+  //   var invoiceHead = Settings.getValue<String>('key-purchase-return-head',
+  //       defaultValue: 'PURCHASE RETURN');
     var ledger = dataLedger[0];
     List<dynamic> itemData = [];
     double subTotalQty = 0,
@@ -1019,7 +1024,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
                       /*company*/
                       Row(
                         children: [
-                          Text(companySettings!.name!,
+                          Text(companySettings!.name,
                               style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 22,
@@ -1276,149 +1281,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
                 ));
   }
 
-  _itemHeader(String tType) {
-    var str = '';
-    str += tType == 'INDIA'
-        ? '''
-    <tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>CGST</b></th>
-                            <th width="10%" align="center"><b>SGST</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                            '''
-        : '''<tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>Vat</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>''';
-    return str;
-  }
-
-  _itemHeader1() {
-    var str = '';
-    str += isItemSerialNo!
-        ? '''                            <th width="50%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>$labelSerialNo</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        '''
-        : '''
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        ''';
-    return str;
-  }
-
-  _item(bool taxIn) {
-    var str = '';
-    for (var i = 0; i < dataParticulars.length; i++) {
-      str += taxIn
-          ? companyTaxMode == 'INDIA'
-              ? isItemSerialNo!
-                  ? '''
-                    </tr>
-                      <tr class="item-row">
-                      <td width="50%" align="left">${dataParticulars[i]['ProductName']}</td>
-                      <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}</td>
-                      <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                      <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="3%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                    </tr>
-                    '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['ProductName']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-              : isItemSerialNo!
-                  ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['ProductName']}</td>
-                    <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['ProductName']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['tax'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-          : isItemSerialNo!
-              ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="64%" align="left">${dataParticulars[i]['ProductName']}</td>
-                    <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-              : '''
-                </tr>
-                  <tr class="item-row">
-                  <td width="64%" align="left">${dataParticulars[i]['ProductName']}</td>
-                  <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${'${dataParticulars[i]['Qty']} (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['PRate'].toString())!.toStringAsFixed(decimal)}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                </tr>
-                ''';
-      totalQty += double.tryParse(dataParticulars[i]['Qty'].toString())!;
-      totalRate += double.tryParse(dataParticulars[i]['PRate'].toString())!;
-    }
-    return str;
-  }
-
-  _otherAmount() {
-    var str = ''; //Auto,symbol,LedName,Amount
-    for (var i = 0; i < otherAmount.length; i++) {
-      if (otherAmount[i]['Amount'].toDouble() > 0) {
-        str += '''
-      <tr>
-        <td colspan="3" class="blank"> </td>
-        <td colspan="2" class="total-line" align="right">${otherAmount[i]['LedName']} :</td>
-        <td class="total-value" align="right">${otherAmount[i]['Amount']}</td>
-      </tr>
-      ''';
-      }
-    }
-    return str;
-  }
+ 
 
   Future<Uint8List> _captureQr() async {
     // print('inside');
@@ -4424,19 +4287,17 @@ void printSunmiV1(dataAll) async {
       await SunmiPrinter.lineWrap(1);
       await SunmiPrinter.printText(invoiceHead);
       await SunmiPrinter.setCustomFontSize(24);
-      await SunmiPrinter.printRow(
-        cols: [
-          ColumnMaker(
-              text: 'Invoice No : ${inf['InvoiceNo']}',
-              width: 18,
-              align: SunmiPrintAlign.LEFT),
-          ColumnMaker(
-              text:
-                  'Date : ${'${DateUtil.dateDMY(inf['DDate'])} ${DateUtil.timeHMSA(inf['BTime'])}'}',
-              width: 19,
-              align: SunmiPrintAlign.LEFT)
-        ],
-      );
+     await SunmiPrinter.printRow(cols: [
+        ColumnMaker(
+            text: 'Invoice No : ${inf['InvoiceNo']}',
+            width: 18,
+            align: SunmiPrintAlign.LEFT),
+        ColumnMaker(
+            text:
+                'Date : ${'${DateUtil.dateDMY(inf['DDate'])} ${DateUtil.timeHMSA(inf['BTime'])}'}',
+            width: 19,
+            align: SunmiPrintAlign.LEFT),
+      ]);
       await SunmiPrinter.lineWrap(1);
       await SunmiPrinter.printText('Bill To : ${inf['ToName']}');
       await SunmiPrinter.setAlignment(SunmiPrintAlign.LEFT);
@@ -7129,7 +6990,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : '${companySettings.add1!}\n${companySettings.add2!}',
+                                                : '${companySettings.add1}\n${companySettings.add2}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,
@@ -9528,7 +9389,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : '${companySettings.add1!}\n${companySettings.add2!}',
+                                                : '${companySettings.add1}\n${companySettings.add2}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,
@@ -10838,7 +10699,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : '${companySettings.add1!}\n${companySettings.add2!}',
+                                                : '${companySettings.add1}\n${companySettings.add2}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,

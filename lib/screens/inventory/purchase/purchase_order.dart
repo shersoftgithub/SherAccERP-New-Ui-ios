@@ -173,21 +173,18 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     setState(() {
                       _isLoading = true;
                     });
-                    var inf = '[' +
-                        json.encode({
+                    var inf = '[${json.encode({
                           'id': ledgerModel.id,
                           'name': ledgerModel.name,
                           'invNo': invNoController.text.isNotEmpty
                               ? invNoController.text
                               : '0',
                           'invDate': DateUtil.dateYMD(invDate)
-                        }) +
-                        ']';
+                        })}]';
                     var jsonItem = CartItemP.encodeCartToJson(cartItem);
                     var items = json.encode(jsonItem);
                     var stType = 'PO_Update';
-                    var data = '[' +
-                        json.encode({
+                    var data = '[${json.encode({
                           'entryNo': dataDynamic[0]['EntryNo'],
                           'date': DateUtil.dateYMD(formattedDate),
                           'grossValue': totalGrossValue,
@@ -212,9 +209,10 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                           'adCess': totalAdCess,
                           'Salesman': salesManId,
                           'location': locationId,
-                          'statementtype': stType
-                        }) +
-                        ']';
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
 
                     final body = {
                       'information': inf,
@@ -242,21 +240,18 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     setState(() {
                       _isLoading = true;
                     });
-                    var inf = '[' +
-                        json.encode({
+                    var inf = '[${json.encode({
                           'id': ledgerModel.id,
                           'name': ledgerModel.name,
                           'invNo': invNoController.text.isNotEmpty
                               ? invNoController.text
                               : '0',
                           'invDate': DateUtil.dateYMD(invDate)
-                        }) +
-                        ']';
+                        })}]';
                     var jsonItem = CartItemP.encodeCartToJson(cartItem);
                     var items = json.encode(jsonItem);
                     var stType = 'PO_Insert';
-                    var data = '[' +
-                        json.encode({
+                    var data = '[${json.encode({
                           'date': DateUtil.dateYMD(formattedDate),
                           'grossValue': totalGrossValue,
                           'discount': totalDiscount,
@@ -280,9 +275,10 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                           'adCess': totalAdCess,
                           'Salesman': salesManId,
                           'location': locationId,
-                          'statementtype': stType
-                        }) +
-                        ']';
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
 
                     final body = {
                       'information': inf,

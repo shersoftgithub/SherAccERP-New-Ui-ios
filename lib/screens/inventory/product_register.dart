@@ -13,7 +13,6 @@ import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/tax_group_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
-import 'package:sheraccerp/screens/accounts/ledger.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -148,18 +147,10 @@ class _ProductRegisterState extends State<ProductRegister> {
 
         unitModel
             .addAll(DataJson.fromJsonListX(otherRegistrationList[0]['unit']));
-        rateTypeModel = [
-          DataJson(id: 0, name: ''),
-          DataJson(id: 1, name: 'MRP'),
-          DataJson(id: 2, name: 'RETAIL'),
-          DataJson(id: 3, name: 'WHOLESALE'),
-          DataJson(id: 4, name: 'SPRATE'),
-          DataJson(id: 5, name: 'BRANCH')
-        ];
-        dropDownUnitPurchase = unitModel[0].id;
+          dropDownUnitPurchase = unitModel[0].id;
         dropDownUnitSale = unitModel[0].id;
         dropDownUnitData = unitModel[0].id!;
-        dropDownRateData = rateTypeModel[0].id!;
+        dropDownRateData = rateTypeModelData[0].id!;
       });
     });
     api.getProductId().then((value) => {
@@ -223,7 +214,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                 maxOrderLevelController.text = '';
                 reOrderLevelController.text = '';
                 cessController.text = '';
-                addCessController.text = '';
+                additionalCessController.text = '';
                 isExist = false;
                 nextWidget = 0;
               });
@@ -276,8 +267,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                     });
                     var jsonItem = UnitDetailModel.encodeCartToJson(unitDetail);
                     var items = json.encode(jsonItem);
-                    var data = '[' +
-                        json.encode({
+                    var data = '[${json.encode({
                           'id': productId.isNotEmpty ? productId : '0',
                           'hsnCode': hsnController.text.trim().isNotEmpty
                               ? hsnController.text.trim()
@@ -321,12 +311,14 @@ class _ProductRegisterState extends State<ProductRegister> {
                                   ? double.tryParse(cessController.text.trim())
                                   : 0
                               : 0,
-                          'addCessPer': addCessController.text.trim().isNotEmpty
-                              ? double.tryParse(
-                                          addCessController.text.trim())! >
+                           'addCessPer': additionalCessController.text
+                                  .trim()
+                                  .isNotEmpty
+                              ? double.tryParse(additionalCessController.text
+                                          .trim())! >
                                       0
                                   ? double.tryParse(
-                                      addCessController.text.trim())
+                                      additionalCessController.text.trim())
                                   : 0
                               : 0,
                           'mrp': mrpController.text.trim().isNotEmpty
@@ -375,8 +367,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                           'expiry': 0,
                           'brand': brand != null ? brand!.id : 0,
                           'lc': 0.0
-                        }) +
-                        ']';
+                       })}]';
 
                     final body = {'product': data, 'unitDetails': items};
                     var result = await api.editProduct(body);
@@ -401,8 +392,7 @@ class _ProductRegisterState extends State<ProductRegister> {
 
                     var jsonItem = UnitDetailModel.encodeCartToJson(unitDetail);
                     var items = json.encode(jsonItem);
-                    var data = '[' +
-                        json.encode({
+                     var data = '[${json.encode({
                           'id': productId.isNotEmpty ? productId : '0',
                           'hsnCode': hsnController.text.trim().isNotEmpty
                               ? hsnController.text.trim()
@@ -446,12 +436,14 @@ class _ProductRegisterState extends State<ProductRegister> {
                                   ? double.tryParse(cessController.text.trim())
                                   : 0
                               : 0,
-                          'addCessPer': addCessController.text.trim().isNotEmpty
-                              ? double.tryParse(
-                                          addCessController.text.trim())! >
+                          'addCessPer': additionalCessController.text
+                                  .trim()
+                                  .isNotEmpty
+                              ? double.tryParse(additionalCessController.text
+                                          .trim())! >
                                       0
                                   ? double.tryParse(
-                                      addCessController.text.trim())
+                                      additionalCessController.text.trim())
                                   : 0
                               : 0,
                           'mrp': mrpController.text.trim().isNotEmpty
@@ -500,8 +492,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                           'expiry': 0,
                           'brand': brand != null ? brand!.id : 0,
                           'lc': 0.0
-                        }) +
-                        ']';
+                       })}]';
 
                     final body = {'product': data, 'unitDetails': items};
                     var result = await api.addProduct(body);
@@ -555,7 +546,7 @@ class _ProductRegisterState extends State<ProductRegister> {
   TextEditingController maxOrderLevelController = TextEditingController();
   TextEditingController reOrderLevelController = TextEditingController();
   TextEditingController cessController = TextEditingController();
-  TextEditingController addCessController = TextEditingController();
+  TextEditingController additionalCessController = TextEditingController();
 
   formWidget() {
     return nextWidget == 0
@@ -1308,14 +1299,14 @@ class _ProductRegisterState extends State<ProductRegister> {
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
-                                  headTxt: 'CESS')),
+                                  headTxt: 'Cess')),
                           const SizedBox(
                             width: 5,
                           ),
                           Expanded(
                               child: ContainerFieldWidget(
                                   widget: TextFormField(
-                                    controller: addCessController,
+                                    controller: additionalCessController,
                                     keyboardType:
                                         const TextInputType.numberWithOptions(
                                             decimal: true),
@@ -1329,7 +1320,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
-                                  headTxt: 'ADD CESS'))
+                                  headTxt: 'Additional Cess'))
                         ]),
                     const SizedBox(
                       height: 10,
@@ -1489,7 +1480,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                 isExpanded: true,
                                 value: dropDownRateData.toString(),
                                 hint: const Text('Rate'),
-                                items: rateTypeModel
+                                items: rateTypeModelData
                                     .map<DropdownMenuItem<String>>((item) {
                                   return DropdownMenuItem<String>(
                                     value: item.id.toString(),
@@ -1547,7 +1538,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                       .firstWhere((element) =>
                                           element.id == dropDownUnitData)
                                       .name!,
-                                  rateType: rateTypeModel
+                                  rateType: rateTypeModelData
                                       .firstWhere((element) =>
                                           element.id == dropDownRateData)
                                       .name!,
@@ -1606,15 +1597,8 @@ class _ProductRegisterState extends State<ProductRegister> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(unitDetail[index].id.toString() +
-                    ' , ' +
-                    unitDetail[index].name +
-                    ' , ' +
-                    unitDetail[index].conversion.toString() +
-                    ' , ' +
-                    unitDetail[index].rateType +
-                    ' , Barcode:' +
-                    unitDetail[index].barcode),
+                 Text(
+                    '${unitDetail[index].id} , ${unitDetail[index].name} , ${unitDetail[index].conversion} , ${unitDetail[index].rateType} , Barcode:${unitDetail[index].barcode}'),
                 TextButton.icon(
                     style: ButtonStyle(
                       backgroundColor:
@@ -1704,7 +1688,7 @@ class _ProductRegisterState extends State<ProductRegister> {
         brandController.text = brand!.name!;
       }
       cessController.text = value.cess.toString();
-      addCessController.text = value.adcessper.toString();
+      additionalCessController.text = value.adcessper.toString();
       mrpController.text = value.mrp.toString();
       active = value.active == 1 ? true : false;
       wholeSaleController.text = value.wsrate.toString();

@@ -296,22 +296,19 @@ class _PurchaseState extends State<Purchase> {
                                   _isLoading = true;
                                   buttonEvent = true;
                                 });
-                                var inf = '[' +
-                                    json.encode({
+                                var inf = '[${json.encode({
                                       'id': ledgerModel!.id,
                                       'name': ledgerModel!.name,
                                       'invNo': invNoController.text.isNotEmpty
                                           ? invNoController.text
                                           : '0',
                                       'invDate': DateUtil.dateYMD(invDate)
-                                    }) +
-                                    ']';
+                                    })}]';
                                 var jsonItem =
                                     CartItemP.encodeCartToJson(cartItem);
                                 var items = json.encode(jsonItem);
                                 var stType = 'P_Update';
-                                var data = '[' +
-                                    json.encode({
+                                var data = '[${json.encode({
                                       'entryNo': dataDynamic[0]['EntryNo'],
                                       'date': DateUtil.dateYMD(formattedDate),
                                       'grossValue': totalGrossValue,
@@ -347,8 +344,7 @@ class _PurchaseState extends State<Purchase> {
                                       'statementtype': stType,
                                       'fyId': currentFinancialYear!.id,
                                       'frmId': voucherTypeData!.id,
-                                    }) +
-                                    ']';
+                                    })}]';
 
                                 final body = {
                                   'information': inf,
@@ -396,22 +392,19 @@ class _PurchaseState extends State<Purchase> {
                                   _isLoading = true;
                                   buttonEvent = true;
                                 });
-                                var inf = '[' +
-                                    json.encode({
+                                var inf = '[${json.encode({
                                       'id': ledgerModel!.id,
                                       'name': ledgerModel!.name,
                                       'invNo': invNoController.text.isNotEmpty
                                           ? invNoController.text
                                           : '0',
                                       'invDate': DateUtil.dateYMD(invDate)
-                                    }) +
-                                    ']';
+                                    })}]';
                                 var jsonItem =
                                     CartItemP.encodeCartToJson(cartItem);
                                 var items = json.encode(jsonItem);
                                 var stType = 'P_Insert';
-                                var data = '[' +
-                                    json.encode({
+                                var data = '[${json.encode({
                                       'date': DateUtil.dateYMD(formattedDate),
                                       'grossValue': totalGrossValue,
                                       'discount': totalDiscount,
@@ -445,8 +438,7 @@ class _PurchaseState extends State<Purchase> {
                                       'location': locationId,
                                       'statementtype': stType,
                                       'fyId': currentFinancialYear!.id,
-                                    }) +
-                                    ']';
+                                    })}]';
 
                                 final body = {
                                   'information': inf,

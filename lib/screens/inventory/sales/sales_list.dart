@@ -66,37 +66,46 @@ class _SalesListState extends State<SalesList> {
   List<TypeItem> dropdownItemsType = [
     TypeItem(1, 'Daily'),
     TypeItem(2, 'Summary'),
-    TypeItem(3, 'Sales Daily'),
-    TypeItem(4, 'Sales ItemWise'),
-    TypeItem(5, 'Item Summary'),
-    TypeItem(6, 'P&L Summary'),
-    TypeItem(7, 'P&L ItemWise'),
-    TypeItem(8, 'P&L ItemSimple'),
-    TypeItem(9, 'Packing Slip'),
-    TypeItem(10, 'Customer Summary'),
-    TypeItem(11, 'Daily Sales Tax Report'),
-    TypeItem(12, 'IVA Report'),
-    TypeItem(13, 'Customer Summery Invoice'),
-    TypeItem(14, 'Counter Wise Report'),
-    TypeItem(15, 'Replace P&L ItemWise'),
-    TypeItem(16, 'Simple P&l Report'),
-    TypeItem(17, 'Scheme Report'),
-    TypeItem(18, 'ItemWise Monthly'),
-    TypeItem(19, 'P&L ItemWise New'),
-    TypeItem(20, 'Customer Address'),
-    TypeItem(21, 'Insurance Report'),
-    TypeItem(22, 'Sales Qty Total'),
-    TypeItem(23, 'Group Summery Custom'),
-    TypeItem(24, 'P&L Monthly'),
-    TypeItem(25, 'ItemWise Rate Analysis'),
-    TypeItem(26, 'ItemWise Profit Analysis'),
-    TypeItem(27, 'Sales E-Invoice Report'),
-    TypeItem(28, 'Month Wise Item Summery'),
-    TypeItem(29, 'Supplier Wise Sales Total'),
-    TypeItem(30, 'Sales ItemWise Customer Grouping'),
-    TypeItem(31, 'Sales Summery DC'),
-    TypeItem(32, 'Sales Monthly'),
-    TypeItem(33, 'DeliveryNote Summery')
+    TypeItem(3, 'ItemWise'),
+    TypeItem(4, 'Item Summary'),
+    TypeItem(5, 'Customer Summary'),
+    TypeItem(6, 'Loading Slip'),
+    TypeItem(7, 'Daily Sales Tax Report'),
+    TypeItem(8, 'IVA Report'),
+    TypeItem(9, 'Customer Summary (Cost Center)'),
+    TypeItem(10, 'Counter Wise Report'),
+    TypeItem(11, 'Simple With SerialNo'),
+    TypeItem(12, 'Address List'),
+    TypeItem(13, 'Scheme Report'),
+    TypeItem(14, 'ItemWise Monthly'),
+    TypeItem(15, 'Insurance Report'),
+    TypeItem(16, 'Qty Total'),
+    TypeItem(17, 'Group Summery'),
+    TypeItem(18, 'Loading Slip (Two Unit)'),
+    TypeItem(19, 'ItemWise Rate Analysis'),
+    TypeItem(20, 'E-Invoice Report'),
+    TypeItem(21, 'Delivery Note Summary'),
+    TypeItem(22, 'Item Month Wise Summary'),
+    TypeItem(23, 'Supplier Wise Sales Total'),
+    TypeItem(24, 'ItemWise Customer Grouping'),
+    TypeItem(25, 'Summary -DC'),
+    TypeItem(26, "Sales Q / Sales Differance"),
+    TypeItem(27, 'Customer Volume Analysis'),
+    TypeItem(28, 'Customer Visit Analysis'),
+    TypeItem(29, 'Customer Wise Item Qty Total'),
+    TypeItem(30, 'Customer Wise Daily Sales Total'),
+    TypeItem(31, 'Daily Sales Details'),
+    TypeItem(32, 'Custom ItemWise'),
+    TypeItem(33, 'Sales Itemwise Comparison on Stock Rates'),
+    TypeItem(34, 'Serial No Sellout Report'),
+    TypeItem(35, 'Delivery Slip (Print)'),
+    TypeItem(36, 'Customer Wise Sales Total'),
+    TypeItem(37, 'Location Wise Monthly Report'),
+    TypeItem(38, 'Sales Tender Report'),
+    TypeItem(39, 'Location Wise Category Summary'),
+    TypeItem(40, 'Price Range Sales Report'),
+    TypeItem(41, 'Custom ItemWise ||'),
+    
   ];
   int valueType = 1;
   String area = '0', route = '0';
@@ -139,7 +148,11 @@ class _SalesListState extends State<SalesList> {
     final routes = (ModalRoute.of(context)!.settings.arguments) != null
         ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
         : {'title': ''};
-    var title = routes.isNotEmpty ? routes['title'].toString() : 'Sales';
+    var title = routes != null
+        ? routes['title'].toString().isNotEmpty
+            ? routes['title'].toString()
+            : 'Sales'
+        : 'Sales';
     isType = title == 'Sales' ? true : false;
     return Scaffold(
         appBar: AppBar(
@@ -250,51 +263,100 @@ class _SalesListState extends State<SalesList> {
             title == 'Summary' ||
             title == 'Sales'
         ? 'Sales_Summery'
-        : title == 'Sales ItemWise'
-            ? 'Sales_ItemWise'
-            : title == 'Daily'
-                ? 'Sales_Daily'
-                : title == 'Sales Daily'
-                    ? 'Sales_Daily'
-                    : title == 'P&L Summary'
-                        ? 'P_l_Summery'
-                        : title == 'P&L ItemWise'
-                            ? 'P_l_ItemWise_New'
-                            : title == 'P&L ItemSimple'
-                                ? 'P_l_ItemSimple'
-                                : title == 'Item Summary'
-                                    ? 'Item_Summery'
-                                    : title == 'Packing Slip'
-                                        ? 'Packing_Slip'
-                                        : title == 'Customer Summary'
-                                            ? 'Sales_Customer_Summery'
-                                            : title == 'Daily Sales Tax Report'
-                                                ? 'Daily Sales Tax Report'
-                                                : title == 'IVA Report'
-                                                    ? 'IVA Report'
-                                                    : title ==
-                                                            'Customer Summery Invoice'
-                                                        ? 'Customer_Summery_Invoice'
-                                                        : title ==
-                                                                'Counter Wise Report'
-                                                            ? 'Counter_Wise_Report'
-                                                            : title ==
-                                                                    'Replace P&L ItemWise'
-                                                                ? 'Replace_p_l_Itemwise'
-                                                                : title ==
-                                                                        'Simple P&l Report'
-                                                                    ? 'Simple_P_l_Report'
-                                                                    : title ==
-                                                                            'Scheme Report'
-                                                                        ? 'SchemeReport'
-                                                                        : title ==
-                                                                                'ItemWise Monthly'
-                                                                            ? 'Itemwise_monthly'
-                                                                            : 'Sales_Summery';
+      : title == 'Sales ItemWise'
+                  ? 'Sales_ItemWise'
+                  : title == 'Daily' || title == 'Sales Daily'
+                      ? 'Sales_Daily'
+                      : title == 'P&L Summary'
+                          ? 'P_l_Summery'
+                          : title == 'P&L ItemWise'
+                              ? 'P_l_ItemWise_New'
+                              : title == 'P&L ItemSimple'
+                                  ? 'P_l_ItemSimple'
+                                  : title == 'Item Summary'
+                                      ? 'Item_Summery'
+                                      : title == 'Packing Slip'
+                                          ? 'Packing_Slip'
+                                          : title == 'Customer Summary'
+                                              ? 'Sales_Customer_Summery'
+                                              : title == 'Daily Sales Tax Report'
+                                                  ? 'Daily Sales Tax Report'
+                                                  : title == 'IVA Report'
+                                                      ? 'IVA Report'
+                                                      : title == 'Customer Summary (Cost Center)'
+                                                          ? 'Customer_Summery_Invoice"'
+                                                          : title == 'Counter Wise Report'
+                                                              ? 'Counter_Wise_Report'
+                                                              : title == 'Replace P&L ItemWise'
+                                                                  ? 'Replace_p_l_Itemwise'
+                                                                  : title == 'Qty Total'
+                                                                      ? 'Sales_QtyTotal'
+                                                                      : title == 'Simple P&l Report'
+                                                                          ? 'Simple_P_l_Report'
+                                                                          : title == 'Scheme Report'
+                                                                              ? 'SchemeReport'
+                                                                              : title == 'ItemWise Monthly'
+                                                                                  ? 'Itemwise_monthly'
+                                                                                  : title == 'Insurance Report'
+                                                                                      ? 'Insurance_Report'
+                                                                                      : title == 'Group Summery'
+                                                                                          ? 'Group_Summery_Custom'
+                                                                                          : title == 'Loading Slip (Two Unit)'
+                                                                                              ? 'Packing_Slip_Unit'
+                                                                                               : title == 'Loading Slip'
+                                                                                                ? 'Packing_Slip'
+                                                                                                 : title == 'ItemWise Rate Analysis'
+                                                                                                  ? 'ItemWise_Rate_Analysis'
+                                                                                                  : title == 'E-Invoice Report'
+                                                                                                      ? 'SalesEinvoice_Report'
+                                                                                                      : title == 'Simple With SerialNo'
+                                                                                                      ? 'Simple_P_l_Report'
+                                                                                                      :  title == 'Address List'
+                                                                                                      ? 'CustomerAdress'
+                                                                                                        : title == 'Delivery Note Summary'
+                                                                                                          ? 'DELIVERYNOTE_Summery'
+                                                                                                          : title == 'Item Month Wise Summary'
+                                                                                                              ? 'Item Month Wise Summary'
+                                                                                                              : title == 'Supplier Wise Sales Total'
+                                                                                                                  ? 'Supplier Wise Sales Total'
+                                                                                                                  : title == 'ItemWise Customer Grouping'
+                                                                                                                      ? 'Sales_ItemWise_Customer_Grouping'
+                                                                                                                      : title == 'Summary -DC'
+                                                                                                                          ? 'Sales_Summery_DC'
+                                                                                                                          : title == 'Customer Volume Analysis'
+                                                                                                                              ? 'Customer_Volume_Analysis'
+                                                                                                                               : title == 'Customer Visit Analysis'
+                                                                                                                                ? 'Customer Visit Analysis'
+                                                                                                                                : title == 'Customer Wise Item Qty Total'
+                                                                                                                                  ? 'Customer Wise Item Qty Total'
+                                                                                                                                  : title == 'Customer Wise Daily Sales Total'
+                                                                                                                                    ? 'Customer Wise Daily Sales Total'
+                                                                                                                                    : title == 'Daily Sales Details'
+                                                                                                                                      ? 'Daily Sales Details'
+                                                                                                                                      : title == 'Custom ItemWise'
+                                                                                                                                        ? 'Custom_Sales_ItemWise'
+                                                                                                                                        : title == 'Sales Itemwise Comparison on Stock Rates'
+                                                                                                                                          ? 'Sales Itemwise Comparison on Stock Rates'
+                                                                                                                                          : title == 'Serial No Sellout Report'
+                                                                                                                                            ? 'Sellout_Report'
+                                                                                                                                            : title == 'Delivery Slip (Print)'
+                                                                                                                                              ? 'DeliverySlip_Print'
+                                                                                                                                              : title == 'Customer Wise Sales Total'
+                                                                                                                                                ? 'Customer_Wise_Sales_Total'
+                                                                                                                                                : title == 'Location Wise Monthly Report'
+                                                                                                                                                  ? 'Location Wise Monthly Report'
+                                                                                                                                                  : title == 'Sales Tender Report'
+                                                                                                                                                    ? 'Sales Tender Report'
+                                                                                                                                                    : title == 'Location Wise Category Summary'
+                                                                                                                                                      ? 'Location Wise Category Summary'
+                                                                                                                                                      : title == 'Price Range Sales Report'
+                                                                                                                                                        ? 'Price_Range_SalesReport'
+                                                                                                                                                        : title == 'Custom ItemWise ||'
+                                                                                                                                                          ? 'Custom ItemWise ||'
+                                                                                                                                                          : 'Sales_Summery';
     for (var data in salesTypeDataList) {
       if (data.stock) dataSType.add({'id': data.id});
     }
-
     if (title == 'Daily') {
       newMode = true;
     } else {
@@ -408,7 +470,7 @@ class _SalesListState extends State<SalesList> {
                                 (b[col[i]] != null
                                     ? b[col[i]] == ''
                                         ? 0
-                                        : double.parse(b[col[i]].toString())
+                                        : double.tryParse(b[col[i]].toString()) ?? 0 
                                     : 0))
                         .toStringAsFixed(2);
                   }
@@ -1228,29 +1290,52 @@ class _SalesListState extends State<SalesList> {
               const SizedBox(
                 height: 10,
               ),
-              isType
-                  ? Row(
+              // isType
+              //     ?
+                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Text('Type : '),
-                        DropdownButton(
-                          value: valueType,
-                          items: dropdownItemsType.map((TypeItem item) {
-                            return DropdownMenuItem<int>(
-                              child: Text(item.name),
-                              value: item.id,
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              valueType = value!;
-                            });
-                          },
+                        const Text('Type ',
+                        style: TextStyle(fontFamily: 'poppins',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15
+                        ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(color: grey)),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                isExpanded: true,
+                                value: valueType,
+                                items: dropdownItemsType.map((TypeItem item) {
+                                  return DropdownMenuItem<int>(
+                                    value: item.id,
+                                    child: Text(item.name,style: const TextStyle(
+                                      fontFamily: 'poppins'
+                                    ),),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    valueType = value!;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
-                    )
-                  : Container(),
+                    ),
+                  // : Container(),
               // Divider(),
+              const SizedBox(
+                height: 4,
+              ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     backgroundColor: kPrimaryColor,

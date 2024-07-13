@@ -205,19 +205,16 @@ class _OpeningStockState extends State<OpeningStock> {
                           _isLoading = true;
                           buttonEvent = true;
                         });
-                        var inf = '[' +
-                            json.encode({
+                       var inf = '[${json.encode({
                               'id': '0',
                               'name': '',
                               'invNo': '0',
                               'invDate': ''
-                            }) +
-                            ']';
+                           })}]';
                         var jsonItem = CartItemOP.encodeCartToJson(cartItem);
                         var items = json.encode(jsonItem);
                         var stType = 'OP_Update';
-                        var data = '[' +
-                            json.encode({
+                        var data = '[${json.encode({
                               'entryNo': dataDynamic[0]['EntryNo'],
                               'date': DateUtil.dateYMD(formattedDate),
                               'grossValue': totalGrossValue,
@@ -242,8 +239,7 @@ class _OpeningStockState extends State<OpeningStock> {
                               'location': locationId,
                               'statementtype': stType,
                               'fyId': currentFinancialYear!.id,
-                            }) +
-                            ']';
+                           })}]';
 
                         final body = {
                           'information': inf,
@@ -286,19 +282,16 @@ class _OpeningStockState extends State<OpeningStock> {
                           _isLoading = true;
                           buttonEvent = true;
                         });
-                        var inf = '[' +
-                            json.encode({
+                        var inf = '[${json.encode({
                               'id': '0',
                               'name': '',
                               'invNo': '0',
                               'invDate': ''
-                            }) +
-                            ']';
+                           })}]';
                         var jsonItem = CartItemOP.encodeCartToJson(cartItem);
                         var items = json.encode(jsonItem);
                         var stType = 'Op_Insert';
-                        var data = '[' +
-                            json.encode({
+                        var data = '[${json.encode({
                               'date': DateUtil.dateYMD(formattedDate),
                               'grossValue': totalGrossValue,
                               'discount': totalDiscount,
@@ -323,8 +316,7 @@ class _OpeningStockState extends State<OpeningStock> {
                               'statementtype': stType,
                               'fyId': currentFinancialYear!.id,
                               'entryNo': 0,
-                            }) +
-                            ']';
+                           })}]';
 
                         final body = {
                           'information': inf,
@@ -2314,7 +2306,7 @@ class _OpeningStockState extends State<OpeningStock> {
               wholesale: double.tryParse(product['WSrate'].toString())!,
               wholesalePer: double.tryParse(product['wsalesp'].toString())!,
               supplierId: product['Supplier'],
-              supplier: product['LedName']));
+              supplier: product['SupplierName'] ?? ''));
         }
       }
 

@@ -19,6 +19,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/service/blue_thermal.dart';
 import 'package:sunmi_printer_plus/column_maker.dart';
 import 'package:sunmi_printer_plus/enums.dart';
 import 'package:sunmi_printer_plus/sunmi_printer_plus.dart';
@@ -115,26 +116,28 @@ class _RVPreviewShowState extends State<RVPreviewShow> {
     var title = widget.title;
     var value = widget.dataAll;
     if (value != null) {
-      setState(() {
+      data = value;
+      // dataInformation = value['Information'][0];
+      // customerBalance = dataInformation['Balance'].toString();
+      // dataParticularsAll = value['Particulars'];
+      bill = widget.dataAll[0][0];
+      form = widget.dataAll[1];
+      eNo = int.tryParse(bill['entryNo'].toString()) ?? 0;
+      dataParticulars = jsonDecode(bill['particular']);
+      // dataParticulars = bill['particular'];
+      api
+          .getBalance(
+              dataParticulars[0]['Ledid'],
+              (form == 'PAYMENT' ? 'SupplierOB' : 'CustomerOB'),
+              form,
+              bill['date'],
+              eNo)
+          .then((obValue) {
         data = value;
-        // dataInformation = value['Information'][0];
-        // customerBalance = dataInformation['Balance'].toString();
-        // dataParticularsAll = value['Particulars'];
-
-        bill = widget.dataAll[0][0];
-        form = widget.dataAll[1];
-        eNo = int.tryParse(bill['entryNo'].toString()) ?? 0;
-        dataParticulars = jsonDecode(bill['particular']);
-        // dataParticulars = bill['particular'];
-        // var ledgerName = bill['name'];//oldBalance: 897823.00 Cr
-        var bal = bill['oldBalance'].toString().split(' ');
-        if (bal[1] == 'Dr') {
-          oldBalance = double.tryParse(bal[0].toString()) ?? 0;
-          balance = oldBalance - bill['total'];
-        } else {
-          oldBalance = (double.tryParse(bal[0].toString())! * (-1));
-          balance = oldBalance - bill['total'];
-        }
+        oldBalance = double.parse(obValue['oldBalance'].toString());
+        bill['oldBalance'] = oldBalance;
+        balance = double.parse(obValue['balance'].toString());
+        bill['balance'] = balance;
         invoiceHead = (form == 'RECEIPT'
             ? Settings.getValue<String>('key-receipt-voucher-head',
                         defaultValue: 'RECEIPT')!
@@ -149,9 +152,10 @@ class _RVPreviewShowState extends State<RVPreviewShow> {
                     defaultValue: 'PAYMENT')
                 : 'Payment Invoice')!;
 
-        _isLoading = false;
-
-        _createPDF(title + '_ref_$eNo', companySettings, settings, bill,
+        setState(() {
+          _isLoading = false;
+        });
+        _createPDF('${title}_ref_$eNo', companySettings, settings, bill,
                 dataParticulars, invoiceHead, form, dataParticulars)
             .then((value) => pdfPath = value);
       });
@@ -287,104 +291,7 @@ class _RVPreviewShowState extends State<RVPreviewShow> {
     //         )));
   }
 
-  webView() {
-    return _isLoading
-        ? const Loading()
-        : Column(children: [
-            Expanded(
-                child: RepaintBoundary(
-              key: _globalKey,
-              child: WebView(
-                  initialUrl: '',
-                  javascriptMode: JavascriptMode.unrestricted,
-                  onWebViewCreated: (contr) {
-                    debugPrint(bill.toString());
-                    String dataHtml = '''
-                      <html>
-                          <body>
-                      <style>
-                      .total-value {
-                          font-size:14px;font-weight: bold
-                      }
-                      .total-value1 {
-                          font-size:16px;font-weight: bold
-                      }
-                      .total-line{
-                        font-size:14px;font-weight: bold
-                      }
-                      table.tableA{
-                        border-collapse: collapse;
-                      }
-                      table.tableA td, 
-                      table.tableA th {
-                          border: 1px solid black;
-                          padding: 10px;
-                        }
-                      </style>
-                      <h2 align="center" >${companySettings.name}</h2>
-                            <table align="center" width="100%" >
-                              <tr><td width="16.7%" align="center">${companySettings.add1}</td></tr>
-                              <tr><td width="16.7%" align="center">${companySettings.add2}</td></tr>
-                              <tr><td width="16.7%" align="center">Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}</td></tr>
-                              <tr><td width="16.7%" align="center">${companyTaxMode == 'INDIA' ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}' : 'TRN : ${ComSettings.getValue('GST-NO', settings)}'}</td></tr>
-                            </table>
-                      <table width="100%">
-                            <tr>
-                    <th align="center"><u>$invoiceHead</u></th>
-                            </tr>
-                          </table>
-                          <br>
-                          <table width="100%">
-                    <tr>
-                    <td align="left">VoucherNo : ${bill['entryNo']}<td align="right">Date : ${DateUtil.dateDMY(bill['date'])}
-                    
-                    </tr>
-                          </table>
-                          
-                          <table id="items" class="tableA">
-                      <tr>
-                          <th width="64%" align="center"><b>Particulars</b></th>
-                          <th width="8%" align="center"><b>Amount</b></th>
-                          <th width="10%" align="center"><b>Discount</b></th>
-                          <th width="10%" align="center"><b>Total</b></th>
-                      </tr>
-        <tr class="item-row">
-        <td width="64%" align="left">${bill['name']}<br />${dataParticulars[0]['narration'].toString()}</td>
-        <td width="6%" align="right">${double.tryParse(dataParticulars[0]['amount'].toString())!.toStringAsFixed(decimal)}</td>
-        <td width="10%" align="right">${double.tryParse(dataParticulars[0]['discount'].toString())!.toStringAsFixed(decimal)}</td>
-        <td width="10%" align="right">${double.tryParse(dataParticulars[0]['total'].toString())!.toStringAsFixed(decimal)}</td>
-      </tr>
-                          </table>
-                          <table width="100%">
-                                         <tr>
-                         <td style="font-size:10px;"> Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(bill['total'].toString()))}</td>
-                         
-                       </tr>
-                       </table>
-                       <br>
-                           <table width="100%" >
-                           <tr>
-                       <td style="font-size:10px;" align="left"> Old Balance : ${oldBalance.toStringAsFixed(decimal)}</td>
-                       <td style="font-size:10px;" align="right"> Balance : ${balance.toStringAsFixed(decimal)}</td>
-                       </tr>
-                           </table>
-                           <br>
-                           <table align="center" width="80%" >
-                       <tr>
-                         <td width="16.7%" align="center" style="font-size:9px;">${bill['message'].toString().isNotEmpty ? bill['message'].toString().isNotEmpty : 'Thank you'}</td>
-                       </tr>
-                           </table>
-                        
-                            </body>
-                        </html>
-                        ''';
-                    contr.loadUrl(Uri.dataFromString(dataHtml,
-                            mimeType: 'text/html', encoding: utf8)
-                        .toString());
-                  }),
-            )),
-          ]);
-  }
+ 
 
   String uint8ListTob64(Uint8List uint8list) {
     String base64String = base64Encode(uint8list);
@@ -869,7 +776,7 @@ previewWidget(
                               width: 130,
                               child: form == 'RECEIPT'
                                   ? const Text(
-                                      "Recieved With Thanks From",
+                                      "Received With Thanks From",
                                       style: TextStyle(fontSize: 10),
                                     )
                                   : const Text(
@@ -977,80 +884,63 @@ previewWidget(
                           const SizedBox(
                             height: 15,
                           ),
-                          Visibility(
-                            visible: oldBalance <= 0 && balance <= 0,
-                            child: Column(
-                              children: const [
-                                SizedBox(
-                                  height: 50,
+                          ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        height: 50,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(border: Border.all()),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children:  [
+                                Row(
+                                  children: [
+                                    const SizedBox(
+                                      width: 100,
+                                      child: Text(
+                                        "Old Balance    :",
+                                        style: TextStyle(fontSize: 11),
+                                      ),
+                                    ),
+                                    Text(
+                                      "${oldBalance.toStringAsFixed(2)}",
+                                      style: const TextStyle(fontSize: 11),
+                                    )
+                                  ],
                                 ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    const SizedBox(
+                                      width: 100,
+                                      child: Text(
+                                        "Balance           :",
+                                        style: TextStyle(fontSize: 11),
+                                      ),
+                                    ),
+                                    Text(
+                                      "${balance.toStringAsFixed(2)}",
+                                      style: const TextStyle(fontSize: 11),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
                                 Text(
                                   "Receiver Signature   ",
                                   style: TextStyle(fontSize: 8),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                      Visibility(
-                        visible: oldBalance > 0 || balance > 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          height: 50,
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(border: Border.all()),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const SizedBox(
-                                        width: 100,
-                                        child: Text(
-                                          "Old Balance    :",
-                                          style: TextStyle(fontSize: 11),
-                                        ),
-                                      ),
-                                      Text(
-                                        "${oldBalance.toStringAsFixed(2)}",
-                                        style: const TextStyle(fontSize: 11),
-                                      )
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      const SizedBox(
-                                        width: 100,
-                                        child: Text(
-                                          "Balance           :",
-                                          style: TextStyle(fontSize: 11),
-                                        ),
-                                      ),
-                                      Text(
-                                        "${balance.toStringAsFixed(2)}",
-                                        style: const TextStyle(fontSize: 11),
-                                      )
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: const [
-                                  Text(
-                                    "Receiver Signature   ",
-                                    style: TextStyle(fontSize: 8),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                          ]
                         ),
                       ),
                     ],
@@ -1096,6 +986,8 @@ askPrintDevice(
           context, title, companySettings, settings, data, byteImage);
     } else if (printerDevice == 6) {
       //                6: 'Thermal',
+      _selectBtThermalPrint(
+          context, title, companySettings, settings, data, byteImage, "4");
     } else if (printerDevice == 7) {
       //                7: 'RP_80',
     } else if (printerDevice == 8) {
@@ -1133,6 +1025,8 @@ askPrintDevice(
           context, title, companySettings, settings, data, byteImage);
     } else if (printerDevice == 6) {
       //                6: 'Thermal',
+      _selectBtThermalPrint(
+          context, title, companySettings, settings, data, byteImage, "4");
       _showPrinterSize(
           context, title, companySettings, settings, data, byteImage);
     } else if (printerDevice == 7) {
@@ -1164,6 +1058,20 @@ askPrintDevice(
   } else {
     printDocument(title, companySettings, settings, data, customerModel);
   }
+}
+
+_selectBtThermalPrint(
+    BuildContext context,
+    String title,
+    CompanyInformation companySettings,
+    List<CompanySettings> settings,
+    data,
+    byteImage,
+    size) async {
+  var dataAll = [companySettings, settings, data, size, "RECEIPT"];
+  // dataAll.add('Settings[' + settings + ']');b
+  Navigator.push(context,
+      MaterialPageRoute(builder: (_) => BlueThermalPrint(dataAll, byteImage)));
 }
 
 List<String> newDataList = ["2", "3", "4"];
@@ -1908,18 +1816,14 @@ Future<pw.Document> makePDF(
     String invoiceHead,
     form,
     dataParticulars) async {
-  double oldBalance = 0, balance = 0, a = 0;
+  double oldBalance = 0, balance = 0;
   var bill = information;
   dataParticulars = jsonDecode(bill['particular']);
-  //  var dataParticulars = bill['Particulars'];
-  var bal = information['oldBalance'].toString().split(' ');
-  if (bal[1] == 'Dr') {
-    oldBalance = double.tryParse(bal[0].toString()) ?? 0;
-    balance = oldBalance - information['total'];
-  } else {
-    oldBalance = (double.tryParse(bal[0].toString())! * (-1));
-    balance = oldBalance - information['total'];
-  }
+    // var dataParticulars = bill['Particulars'];
+  // var bal = information['oldBalance'].toString().split(' ');
+  // oldBalance = double.tryParse(bal[0].toString()) ?? 0;
+  oldBalance = double.tryParse(information['oldBalance'].toString()) ?? 0;
+  balance = oldBalance - information['total'];
   final pdf = pw.Document();
 
   // pdf.addPage(pw.MultiPage(
@@ -2269,7 +2173,7 @@ Future<pw.Document> makePDF(
                             width: 180,
                             child: form == 'RECEIPT'
                                 ? pw.Text(
-                                    "Recieved With Thanks From",
+                                    "Received With Thanks From",
                                     style: pw.TextStyle(fontSize: 10),
                                   )
                                 : pw.Text(

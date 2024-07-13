@@ -182,12 +182,9 @@ class _DamageEntryState extends State<DamageEntry> {
                   elevation: 2,
                   child: ListTile(
                     title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                    subtitle: Text(
+                        'Date: ${dataDisplay[index]['Date']} / EntryNo : ${dataDisplay[index]['Id']}'),
+                    trailing: Text('Total : ${dataDisplay[index]['Total']}'),
                     onTap: () {
                       // print(dataDisplay[index]);
                     },
@@ -283,8 +280,7 @@ class _DamageEntryState extends State<DamageEntry> {
       var jsonItem = CartItem.encodeCartToJson(cartItem);
       var items = json.encode(jsonItem);
 
-      var data = '[' +
-          json.encode({
+      var data = '[${json.encode({
             'date': DateUtil.dateYMD(formattedDate),
             'accountId': accountId,
             'total':
@@ -295,8 +291,7 @@ class _DamageEntryState extends State<DamageEntry> {
             'location': locationId.toString(),
             'transferStatus': '0',
             'narration': _narration!.isNotEmpty ? _narration : ''
-          }) +
-          ']';
+           })}]';
 
       final body = {'data': data, 'particular': items};
       dio.addDamage(body).then((value) {
@@ -370,7 +365,8 @@ class _DamageEntryState extends State<DamageEntry> {
                                   text = text.toLowerCase();
                                   setState(() {
                                     ledgerDisplay = _ledger.where((item) {
-                                      var itemName = item.LedName.toLowerCase();
+                                       var itemName =
+                                          item['LedName'].toLowerCase();
                                       return itemName.contains(text);
                                     }).toList();
                                   });

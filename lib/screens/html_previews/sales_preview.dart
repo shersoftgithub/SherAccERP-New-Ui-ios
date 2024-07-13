@@ -52,7 +52,12 @@ class SalesPreviewShow extends StatefulWidget {
   State<SalesPreviewShow> createState() => _SalesPreviewShowState();
 }
 
-int pdfType = 0, pdfSize = 2, pdfModel = 2, pdfCopy = 1, pdfLineSpace = 0;
+int pdfType = 0,
+    pdfSize = 2,
+    pdfModel = 2,
+    pdfCopy = 1,
+    pdfLineSpace = 0,
+    paperSize = 3;
 
 class _SalesPreviewShowState extends State<SalesPreviewShow> {
   final GlobalKey _globalKey = GlobalKey();
@@ -115,7 +120,11 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
   }
 
   var labelSerialNo = 'SerialNo';
-  bool? isItemSerialNo, isInvoiceDesigner = false;
+  bool? isItemSerialNo,
+      isInvoiceDesigner = false,
+      isQuantityBasedSerialNo = false,
+      isPrintSerialNoLineByLine = false,
+      isPrintSerialNoInSales = false;
 
   @override
   void initState() {
@@ -141,13 +150,22 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     printLines = ComSettings.billLineValue(
         ComSettings.appSettings('int', "key-dropdown-print-line", 2));
 
-    pdfType = ComSettings.appSettings('int', "key-dropdown-pdf-type-view", 0);
+     pdfType = ComSettings.appSettings('int', "key-dropdown-pdf-type-view", 0);
     pdfSize = ComSettings.appSettings('int', "key-dropdown-pdf-size-view", 0);
     pdfCopy = ComSettings.appSettings('int', "key-dropdown-pdf-copy-view", 0);
+    paperSize =
+        ComSettings.appSettings('int', "key-dropdown-printer-paper-size", 4) -
+            1;
     pdfModel = ComSettings.appSettings('int', "key-dropdown-pdf-model-view", 2);
     pdfLineSpace = ComSettings.appSettings('int', "key-dropdown-pdf-line", 0);
 
     isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings!);
+     isPrintSerialNoInSales =
+        ComSettings.getStatus('SHOW SERIAL NO IN SALES PRINT', settings!);
+    isPrintSerialNoLineByLine =
+        ComSettings.getStatus('PRINT SERIAL NO AS LINE BY LINE', settings!);
+    isQuantityBasedSerialNo =
+        ComSettings.getStatus('ENABLE QUANTITY BASED SERIAL NO', settings!);
     labelSerialNo =
         ComSettings.getValue('KEY ITEM SERIAL NO', settings!).toString();
     labelSerialNo.isNotEmpty ?? 'SerialNo';
@@ -431,7 +449,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
 
   Future<List<int>> _qr1() async {
     var _dataQr = SaudiConversion.getBase64(
-        companySettings!.name!,
+        companySettings!.name,
         '${ComSettings.getValue('GST-NO', settings!)}',
         DateUtil.dateTimeQrDMY(
             '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
@@ -475,241 +493,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     //         )));
   }
 
-  webView() {
-    var taxSale = salesTypeData!.tax;
-    var invoiceHead = salesTypeData!.type == 'SALES-ES'
-        ? Settings.getValue<String>('key-sales-estimate-head',
-            defaultValue: 'ESTIMATE')
-        : salesTypeData!.type == 'SALES-Q'
-            ? Settings.getValue<String>('key-sales-quotation-head',
-                defaultValue: 'QUOTATION')
-            : salesTypeData!.type == 'SALES-O'
-                ? Settings.getValue<String>('key-sales-order-head',
-                    defaultValue: 'ORDER')
-                : Settings.getValue<String>('key-sales-invoice-head',
-                    defaultValue: 'INVOICE');
-
-    return _isLoading
-        ? const Loading()
-        : Column(children: [
-            Expanded(
-                child: RepaintBoundary(
-              key: _globalKey,
-              child: WebView(
-                  initialUrl: '',
-                  javascriptMode: JavascriptMode.unrestricted,
-                  onWebViewCreated: (contr) {
-                    String dataHtml = taxSale
-                        ? '''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-
-                            <h2 align="center" >${companySettings!.name}</h2>
-                            <table align="center" width="100%" >
-                              <tr><td width="16.7%" align="center">${companySettings!.add1}</td></tr>
-                              <tr><td width="16.7%" align="center">${companySettings!.add2}</td></tr>
-                              <tr><td width="16.7%" align="center">Tel : ${companySettings!.telephone! + ',' + companySettings!.mobile!}</td></tr>
-                              <tr><td width="16.7%" align="center">${companyTaxMode == 'INDIA' ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}' : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}'}</td></tr>
-                            </table>
-                            <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <h5>${companyTaxMode == 'INDIA' ? dataInformation['Add1'] : 'T-No :' + dataInformation['gstno']}<h5/>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        
-                        ''' +
-                            _itemHeader(companyTaxMode) +
-                            _item(taxSale) +
-                            '''<tr>
-                          <td colspan="$strLine" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr>''' +
-                            subTotal(taxSale) +
-                            '''</tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                        <td colspan="2" class="total-line" align="right">Tax :</td>
-                        <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['IGST'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        ''' +
-                            _otherAmount() +
-                            '''
-                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total(Inclusive of all taxes) :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;">${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                          <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:12px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                        <td style="font-size:12px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Balance : ${(double.tryParse(customerBalance)! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                          <td width="16.7%" align="center" style="font-size:10px;">${data['message']}</td>
-                        </tr>
-                            </table>
-                        '''
-                        : '''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-                        <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        <tr> ''' +
-                            _itemHeader1() +
-                            _item(taxSale) +
-                            '''<tr>
-                          <td colspan="$strLine" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr> ''' +
-                            subTotal(taxSale) +
-                            ''' </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                              </tr>
-                              ''' +
-                            _otherAmount() +
-                            '''
-                              <tr>
-                                <td colspan="3" class="blank"></td>
-                                <td colspan="2" class="total-value1" align="right">Tax :</td>
-                                    <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['IGST'].toString())! + double.tryParse(dataInformation['cess'].toString())! + double.tryParse(dataInformation['TCS'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;"> Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                        <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:10px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" >
-                            <tr>
-                        <td style="font-size:10px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Balance : ${((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="80%" >
-                        <tr>
-                          <td width="16.7%" align="center" style="font-size:9px;">${data['message']}</td>
-                        </tr>
-                            ''';
-
-                    /*********************QR Code**********************/
-                    if (isQrCodeKSA) {
-                      if (taxSale) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      } else if (isEsQrCodeKSA) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      }
-                    }
-                    dataHtml += '''
-                            </table>
-                        ''';
-                    contr.loadUrl(Uri.dataFromString(dataHtml,
-                            mimeType: 'text/html', encoding: utf8)
-                        .toString());
-                  }),
-            )),
-          ]);
-  }
-
+ 
   invoiceGenerate(context) {
     bool isLoading = false;
     var taxSale = salesTypeData!.tax;
@@ -734,6 +518,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         subTotalDiscount = 0,
         subTotalGross = 0,
         subTotalMrp = 0;
+        bool serialNoIsEmpty = false;
     for (var item in dataParticulars) {
       subTotalQty += double.tryParse(item['Qty'].toString())!;
       subTotalRate += double.tryParse(item['Rate'].toString())!;
@@ -747,7 +532,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       itemData.add({
         "Barcode": item['UniqueCode'].toString() ?? '0.00',
         "ItemCode": item['itemId'].toString() ?? '0',
-        "ItemName": item['itemname'].toString() ?? ' ',
+        "ItemName": item['itemname'].toString() ?? '',
         "Qty": item['Qty'].toString() ?? '0',
         "Rate": item['Rate'].toString() ?? '0.00',
         "RRate": item['RealRate'].toString() ?? '0.00',
@@ -772,19 +557,19 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         "ItemId": item['itemId'].toString() ?? '0',
         "SlNo": item['slno'].toString() ?? '0',
         "Mrp": item['Rate'].toString() ?? '0',
-        "Unit": ' ',
+        "Unit": '',
         "CessP": item['cessper'].toString() ?? '0',
         "Cess": item['cess'].toString() ?? '0',
         "Adcess": item['adcess'].toString() ?? '0',
         "AdcessP": item['adcessper'].toString() ?? '0',
-        "SerialNo": item['serialno'].toString() ?? ' ',
-        "HSN": item['hsncode'].toString() ?? ' ',
-        "AltQty": "ن" ?? '0',
-        "RegItemName": "ييب" ?? ' ',
-        "isRegItemName": "يلل" ?? ' ',
-        "QtyArabic": "ث" ?? '0',
-        "RateArabic": "ق" ?? '0',
-        "TotalArabic": "ف" ?? '0',
+        "SerialNo": item['serialno'].toString() ?? '',
+        "HSN": item['hsncode'].toString() ?? '',
+        "AltQty": '0', //arabic
+        "RegItemName": '', //arabic
+        "isRegItemName": '', //arabic
+        "QtyArabic": '0', //arabic
+        "RateArabic": '0', //arabic
+        "TotalArabic": '0', //arabic
         "MinQty": '0',
         "MaxQty": '0',
         "Branch": item['Rate'].toString() ?? '0',
@@ -792,18 +577,254 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         "TaxPer": item['igst'].toString() ?? '0',
         "UnitCost": '0',
         "FreeQty": item['freeQty'].toString() ?? '0',
-        "ScanBarcode": ' ',
+        "ScanBarcode": '',
         "TotalTax": '0',
         "MUltiUnitRate": '0',
-        "ItemMultiBarcode": ' ',
-        "EmpCode": ' ',
-        "UnitId": ' ',
+        "ItemMultiBarcode": '',
+        "EmpCode": '',
+        "UnitId": '',
         "UnitValue": item['UnitValue'].toString() ?? '1',
-        "Remark": item['serialno'].toString() ?? ' ',
+        "Remark": item['serialno'].toString() ?? '',
         "isRegName": false
       });
+       if (isPrintSerialNoInSales! &&
+          serialNoIsEmpty && !isQuantityBasedSerialNo!) {
+        for (var slItem in dataSerialNO) {
+          itemData.add({
+            "Barcode": '',
+            "ItemCode": '',
+            "ItemName": slItem['SerialNO'].toString() ?? '',
+            "Qty": '',
+            "Rate": '',
+            "RRate": '',
+            "Gross": '',
+            "Disc": '',
+            "DiscPer": '',
+            "RDisc": '',
+            "Net": '',
+            "CGST": '',
+            "CGSTP": '',
+            "SGST": '',
+            "SGSTP": '',
+            "IGST": '',
+            "IGSTP": '',
+            "KFC": '',
+            "KFCPer": '',
+            "Total": '',
+            "ItemId": '0',
+            "SlNo": '',
+            "Mrp": '',
+            "Unit": '',
+            "CessP": '',
+            "Cess": '',
+            "Adcess": '',
+            "AdcessP": '',
+            "SerialNo": '',
+            "HSN": '',
+            "AltQty": '',
+            "RegItemName": '',
+            "isRegItemName": '',
+            "QtyArabic": '',
+            "RateArabic": '',
+            "TotalArabic": '',
+            "MinQty": '',
+            "MaxQty": '',
+            "Branch": '',
+            "LC": '',
+            "TaxPer": '',
+            "UnitCost": '',
+            "FreeQty": '',
+            "ScanBarcode": '',
+            "TotalTax": '',
+            "MUltiUnitRate": '',
+            "ItemMultiBarcode": '',
+            "EmpCode": '',
+            "UnitId": '',
+            "UnitValue": '',
+            "Remark": '',
+            "isRegName": false
+          });
+        }
+      }
+      
+      if (!(isPrintSerialNoLineByLine!)) {
+        String slNoData = '';
+        for (var slItem in dataSerialNO) {
+          if (slItem['SerialNO'].toString().trim().isNotEmpty) {
+            slNoData += '${slItem['SerialNO'].toString() ?? ''}, ';
+          }
+        }
+        itemData.add({
+          "Barcode": '',
+          "ItemCode": '',
+          "ItemName": slNoData,
+          "Qty": '',
+          "Rate": '',
+          "RRate": '',
+          "Gross": '',
+          "Disc": '',
+          "DiscPer": '',
+          "RDisc": '',
+          "Net": '',
+          "CGST": '',
+          "CGSTP": '',
+          "SGST": '',
+          "SGSTP": '',
+          "IGST": '',
+          "IGSTP": '',
+          "KFC": '',
+          "KFCPer": '',
+          "Total": '',
+          "ItemId": '0',
+          "SlNo": '',
+          "Mrp": '',
+          "Unit": '',
+          "CessP": '',
+          "Cess": '',
+          "Adcess": '',
+          "AdcessP": '',
+          "SerialNo": '',
+          "HSN": '',
+          "AltQty": '',
+          "RegItemName": '',
+          "isRegItemName": '',
+          "QtyArabic": '',
+          "RateArabic": '',
+          "TotalArabic": '',
+          "MinQty": '',
+          "MaxQty": '',
+          "Branch": '',
+          "LC": '',
+          "TaxPer": '',
+          "UnitCost": '',
+          "FreeQty": '',
+          "ScanBarcode": '',
+          "TotalTax": '',
+          "MUltiUnitRate": '',
+          "ItemMultiBarcode": '',
+          "EmpCode": '',
+          "UnitId": '',
+          "UnitValue": '',
+          "Remark": '',
+          "isRegName": false
+        });
+      } else {
+        if (dataSerialNO.isNotEmpty) {
+          for (var slItem in dataSerialNO) {
+            itemData.add({
+              "Barcode": '',
+              "ItemCode": '',
+              "ItemName": slItem['SerialNO'].toString() ?? '',
+              "Qty": '',
+              "Rate": '',
+              "RRate": '',
+              "Gross": '',
+              "Disc": '',
+              "DiscPer": '',
+              "RDisc": '',
+              "Net": '',
+              "CGST": '',
+              "CGSTP": '',
+              "SGST": '',
+              "SGSTP": '',
+              "IGST": '',
+              "IGSTP": '',
+              "KFC": '',
+              "KFCPer": '',
+              "Total": '',
+              "ItemId": item['itemId'].toString() ?? '0',
+              "SlNo": '',
+              "Mrp": '',
+              "Unit": '',
+              "CessP": '',
+              "Cess": '',
+              "Adcess": '',
+              "AdcessP": '',
+              "SerialNo": '',
+              "HSN": '',
+              "AltQty": '',
+              "RegItemName": '',
+              "isRegItemName": '',
+              "QtyArabic": '',
+              "RateArabic": '',
+              "TotalArabic": '',
+              "MinQty": '',
+              "MaxQty": '',
+              "Branch": '',
+              "LC": '',
+              "TaxPer": '',
+              "UnitCost": '',
+              "FreeQty": '',
+              "ScanBarcode": '',
+              "TotalTax": '',
+              "MUltiUnitRate": '',
+              "ItemMultiBarcode": '',
+              "EmpCode": '',
+              "UnitId": '',
+              "UnitValue": '',
+              "Remark": '',
+              "isRegName": false
+            });
+          }
+        } else {
+          itemData.add({
+            "Barcode": '',
+            "ItemCode": '',
+            "ItemName": item['serialno'].toString() ?? '',
+            "Qty": '',
+            "Rate": '',
+            "RRate": '',
+            "Gross": '',
+            "Disc": '',
+            "DiscPer": '',
+            "RDisc": '',
+            "Net": '',
+            "CGST": '',
+            "CGSTP": '',
+            "SGST": '',
+            "SGSTP": '',
+            "IGST": '',
+            "IGSTP": '',
+            "KFC": '',
+            "KFCPer": '',
+            "Total": '',
+            "ItemId": item['itemId'].toString() ?? '0',
+            "SlNo": '',
+            "Mrp": '',
+            "Unit": '',
+            "CessP": '',
+            "Cess": '',
+            "Adcess": '',
+            "AdcessP": '',
+            "SerialNo": '',
+            "HSN": '',
+            "AltQty": '',
+            "RegItemName": '',
+            "isRegItemName": '',
+            "QtyArabic": '',
+            "RateArabic": '',
+            "TotalArabic": '',
+            "MinQty": '',
+            "MaxQty": '',
+            "Branch": '',
+            "LC": '',
+            "TaxPer": '',
+            "UnitCost": '',
+            "FreeQty": '',
+            "ScanBarcode": '',
+            "TotalTax": '',
+            "MUltiUnitRate": '',
+            "ItemMultiBarcode": '',
+            "EmpCode": '',
+            "UnitId": '',
+            "UnitValue": '',
+            "Remark": '',
+            "isRegName": false
+          });
+        }
+      }
     }
-    var data = {
+    var dataMap = {
       "fileName":
           ComSettings.removeInvDesignFilePath(printSettingsModel!.filePath) ??
               ' ',
@@ -812,7 +833,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       "decimalPoint": decimal ?? 2,
       "CurrencyFormat": "##0.00",
       "printCaption": invoiceHead ?? ' ',
-      "obTotal": "0.00",
+      "obTotal": dataInformation['Balance'].toString(),
       "obNetBalance": "0.00",
       "checkob": true,
       "bankifsc": ' ',
@@ -881,17 +902,15 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       "ServiceCharge": "0.00",
       "GrandTotal": dataInformation['GrandTotal'].toString() ?? '0',
       "cashpaid": dataInformation['CashReceived'].toString() ?? '0',
-      "ledgerOpeningBalance": "0.00",
+      "ledgerOpeningBalance": dataInformation['LedgerBalance'].toString(),
       "Roundoff": dataInformation['Roundoff'].toString() ?? '0',
       "Time":
           DateUtil.timeHMSA(dataInformation['BTime'].toString()) ?? '00:00:000',
-      "words": ((companySettings!.sCurrency!.isEmpty
-                  ? ' Rupees '
-                  : companySettings!.sCurrency)! +
-              NumberToWord().convertDouble('en',
-                  double.tryParse(dataInformation['GrandTotal'].toString())) +
-              'Only') ??
-          ' ',
+      "words":
+          ('${(companySettings!.sCurrency!.isEmpty ? ' Rupees ' :
+           companySettings!.sCurrency)!}${NumberToWord().convertDouble('en',
+          double.tryParse(dataInformation['GrandTotal'].toString()))}Only') ??
+              ' ',
       "deliverynote": ' ',
       "vehicle": ' ',
       "destination": ' ',
@@ -926,14 +945,14 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       "mrpTotal": "0.00",
       "TenderType": " ",
       "CheckCardDetails": false,
-      "IRN": " ",
-      "SignInv": " ",
-      "SignQR": " ",
+      "IRN": dataInformation['IRNNO'].toString() ?? ' ',
+      "SignInv": dataInformation['SignedInvNo'].toString() ?? ' ',
+      "SignQR": dataInformation['SignedQrCode'].toString() ?? ' ',
       "upiurl": " ",
       "TcsAmount": "0.00",
       "TcsPer": "0",
-      "AckDate": " ",
-      "Ackno": " ",
+      "AckDate": dataInformation['AckDate'].toString() ?? ' ',
+      "Ackno": dataInformation['AckNo'].toString() ?? ' ',
       "SecondName": " ",
       "dtSalesDate": " ",
       "paymentTerms": " ",
@@ -1096,7 +1115,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                       /*company*/
                       Row(
                         children: [
-                          Text(companySettings!.name!,
+                          Text(companySettings!.name,
                               style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 22,
@@ -1353,236 +1372,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                 ));
   }
 
-  _itemHeader(String tType) {
-    var str = '';
-    str += tType == 'INDIA'
-        ? '''
-    <tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>CGST</b></th>
-                            <th width="10%" align="center"><b>SGST</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                            '''
-        : '''<tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>Vat</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>''';
-    return str;
-  }
-
-  _itemHeader1() {
-    var str = '';
-    str += isItemSerialNo!
-        ? '''                            <th width="50%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>$labelSerialNo</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        '''
-        : '''
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        ''';
-    return str;
-  }
-
-  _item(bool taxIn) {
-    var str = '';
-    for (var i = 0; i < dataParticulars.length; i++) {
-      str += taxIn
-          ? companyTaxMode == 'INDIA'
-              ? isItemSerialNo!
-                  ? '''
-                    </tr>
-                      <tr class="item-row">
-                      <td width="50%" align="left">${dataParticulars[i]['itemname']} ${dataParticulars[i]['serialno'].toString()}</td>
-                      <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                      <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                    </tr>
-                    '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-              : isItemSerialNo!
-                  ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']} ${dataParticulars[i]['serialno'].toString()}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['IGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['IGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-          : isItemSerialNo!
-              ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="64%" align="left">${dataParticulars[i]['itemname']} ${dataParticulars[i]['serialno'].toString()}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-              : '''
-                </tr>
-                  <tr class="item-row">
-                  <td width="64%" align="left">${dataParticulars[i]['itemname']}</td>
-                  <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                </tr>
-                ''';
-      totalQty += double.tryParse(dataParticulars[i]['Qty'].toString())!;
-      totalRate += double.tryParse(dataParticulars[i]['Rate'].toString())!;
-    }
-    strLine = taxIn
-        ? companyTaxMode == 'INDIA'
-            ? '8'
-            : '7'
-        : '4';
-    return str;
-  }
-
   var strLine = "4";
-
-  String subTotal(bool taxIn) {
-    // var str = '''
-    //                     <td width="64%" align="center">Total : </td>
-    //                     <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
-    //                     <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-    //                     <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString()).toStringAsFixed(decimal)}</td>
-    //                     ''';
-    var str = taxIn
-        ? companyTaxMode == 'INDIA'
-            ? isItemSerialNo!
-                ? '''
-                    </tr>
-                      <tr class="item-row">
-                      <td width="55%" align="center">Total : </td>
-                      <td width="6%" align="left"></td>
-                      <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                      <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                      <td width="3%" align="right"></td>
-                      <td width="10%" align="right"></td>
-                      <td width="10%" align="right"></td>
-                      <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                    </tr>
-                    '''
-                : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="55%" align="center">Total : </td>
-                    <td width="6%" align="left"></td>
-                    <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                    <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right"></td>
-                    <td width="10%" align="right"></td>
-                    <td width="10%" align="right"></td>
-                    <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-            : isItemSerialNo!
-                ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="55%" align="center">Total : </td>
-                    <td width="6%" align="left"></td>
-                    <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                    <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right"></td>
-                    <td width="10%" align="right"></td>
-                    <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-                : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="55%" align="center">Total : </td>
-                    <td width="6%" align="left"></td>
-                    <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                    <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right"></td>
-                    <td width="10%" align="right"></td>
-                    <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-        : isItemSerialNo!
-            ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="68%" align="center">Total : </td>
-                    <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                    <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                  </tr>
-                '''
-            : '''
-                </tr>
-                    <tr class="item-row">
-                    <td width="68%" align="center">Total : </td>
-                    <td width="6%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                    <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                  </tr>
-                ''';
-    return str;
-  }
-
-  _otherAmount() {
-    var str = ''; //Auto,symbol,LedName,Amount
-    for (var i = 0; i < otherAmount.length; i++) {
-      if (otherAmount[i]['Amount'].toDouble() > 0) {
-        str += '''
-      <tr>
-        <td colspan="3" class="blank"> </td>
-        <td colspan="2" class="total-line" align="right">${otherAmount[i]['LedName']} :</td>
-        <td class="total-value" align="right">${otherAmount[i]['Amount']}</td>
-      </tr>
-      ''';
-      }
-    }
-    return str;
-  }
 
   Future<Uint8List> _captureQr() async {
     // print('inside');
@@ -1602,8 +1392,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     try {
       final Directory appDir = await getTemporaryDirectory();
       String tempPath = appDir.path;
-      final String fileName =
-          DateTime.now().microsecondsSinceEpoch.toString() + '-' + 's.pdf';
+      final String fileName = '${DateTime.now().microsecondsSinceEpoch}-s.pdf';
       File file = File('$tempPath/$fileName');
       if (!await file.exists()) {
         await file.create();
@@ -1647,15 +1436,13 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         0, (total, particular) => total + particular['Total'].toDouble());
     double totalVAt = dataParticulars.fold(
         0.0, (total, particular) => total + particular['IGST'].toDouble());
-    double oldBalance = double.tryParse(customerBalance)!.toDouble();
+    double oldBalance = dataInformation == null
+        ? 0.00
+        : double.tryParse(dataInformation['LedgerBalance'].toString())!
+            .toDouble();
+    double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
 
-    double cBalance = double.tryParse(customerBalance)!.toDouble() ?? 0;
-    double grandTotal =
-        _isLoading ? 0 : dataInformation['GrandTotal']!.toDouble() ?? 0;
-    double cashReceived =
-        _isLoading ? 0 : dataInformation['CashReceived'].toDouble() ?? 0;
-
-    double balance = cBalance + grandTotal - cashReceived;
+   
     return taxSale
         ? SafeArea(
             child: Padding(
@@ -1698,7 +1485,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.all(10),
-                                          height: 100,
+                                          height: 115,
                                           width:
                                               MediaQuery.of(context).size.width,
                                           decoration: BoxDecoration(
@@ -1707,9 +1494,9 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                           ),
                                           child: Row(
                                             mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                                MainAxisAlignment.center,
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                CrossAxisAlignment.center,
                                             children: [
                                               Padding(
                                                 padding: const EdgeInsets.only(
@@ -1719,7 +1506,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      companySettings!.name!,
+                                                      companySettings!.name,
                                                       style: const TextStyle(
                                                           fontSize: 13,
                                                           fontWeight:
@@ -1735,45 +1522,60 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                       style: const TextStyle(
                                                           fontSize: 8),
                                                     ),
+                                                      Visibility(
+                                                      visible: companySettings!
+                                                          .add3!.isNotEmpty,
+                                                      child: Text(
+                                                        companySettings!.add3!,
+                                                        style: const TextStyle(
+                                                            fontSize: 8),
+                                                      ),
+                                                    ),
+                                                    Visibility(
+                                                        visible:
+                                                            companySettings!
+                                                                .add4!
+                                                                .isNotEmpty,
+                                                        child: Text(
+                                                          companySettings!
+                                                              .add4!,
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 8),
+                                                        )),
+                                                    Visibility(
+                                                      visible: companySettings!
+                                                          .email!.isNotEmpty,
+                                                      child: Text(
+                                                        companySettings!.email!,
+                                                        style: const TextStyle(
+                                                            fontSize: 8),
+                                                      ),
+                                                    ),
+                                                    Visibility(
+                                                      visible: companySettings!
+                                                          .mobile!.isNotEmpty,
+                                                      child: Text(
+                                                        companySettings!
+                                                            .mobile!,
+                                                        style: const TextStyle(
+                                                            fontSize: 8),
+                                                      ),
+                                                    ),
                                                     Text(
-                                                      companySettings!.email!,
+                                                      "GST No : $companyTaxNo",
                                                       style: const TextStyle(
                                                           fontSize: 8),
                                                     ),
                                                     Text(
-                                                      companySettings!.mobile!,
+                                                      "State      : $companyState       $companyStateCode",
                                                       style: const TextStyle(
                                                           fontSize: 8),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const SizedBox(
-                                                    height: 5,
-                                                  ),
-                                                  Text(
-                                                    "GST No : $companyTaxNo",
-                                                    style: const TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                  const SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Text(
-                                                    "State      : $companyState       $companyStateCode",
-                                                    style: const TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                ],
-                                              ),
+                                            
                                             ],
                                           ),
                                         ),
@@ -3242,7 +3044,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                                           ),
                                                                         ),
                                                                         Text(
-                                                                          (double.tryParse(customerBalance)! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!))
+                                                                           double.tryParse(customerBalance)!
                                                                               .toStringAsFixed(decimal),
                                                                           style:
                                                                               const TextStyle(fontSize: 6),
@@ -3609,7 +3411,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            companySettings!.name!,
+                                            companySettings!.name,
                                             style: const TextStyle(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.bold),
@@ -5655,10 +5457,11 @@ askPrintDevice(
     //
   } else if (printerType == 4) {
     // 4: 'Document',
-    if (printModel == 4)
+    if (printModel == 4) {
       savePrintPDF(documentPDF!);
-    else
+    } else {
       printDocument(title, companySettings, settings, data, customerModel);
+      }
   } else if (printerType == 5) {
     // 5: 'POS',
     if (printerDevice == 2) {
@@ -5703,10 +5506,11 @@ askPrintDevice(
     // 8: 'USB,
     //
   } else {
-    if (printModel == 4)
+    if (printModel == 4) {
       savePrintPDF(documentPDF!);
-    else
+     } else {
       printDocument(title, companySettings, settings, data, customerModel);
+     }
   }
 }
 
@@ -6471,16 +6275,10 @@ void printSunmiV2(dataAll) async {
   await SunmiPrinter.lineWrap(1);
   await SunmiPrinter.setAlignment(SunmiPrintAlign.RIGHT);
   await SunmiPrinter.setCustomFontSize(27);
-  await SunmiPrinter.printText("GrandTotal : " + inf['GrandTotal'].toString());
+  await SunmiPrinter.printText("GrandTotal : ${inf['GrandTotal']}");
   await SunmiPrinter.lineWrap(1);
   await SunmiPrinter.setCustomFontSize(22);
-  var balance = (double.tryParse(inf['Balance'].toString())! -
-              double.tryParse(inf['GrandTotal'].toString())!) >
-          0
-      ? (double.tryParse(inf['Balance'].toString())! -
-              double.tryParse(inf['GrandTotal'].toString())!)
-          .toString()
-      : '0';
+  var balance = inf['Balance'].toString();
   await SunmiPrinter.lineWrap(1);
   // await SunmiPrinter.columnsText([
   //   'Received : ${inf['CashReceived']}'
@@ -6493,7 +6291,7 @@ void printSunmiV2(dataAll) async {
   //   2
   // ]);
   await SunmiPrinter.printText(
-      'Received : ${inf['CashReceived']} / Balance : ${(double.tryParse(balance))! + (double.tryParse(inf['GrandTotal'].toString())! - double.tryParse(inf['CashReceived'].toString())!)}');
+    'Received : ${inf['CashReceived']} / Balance : ${double.tryParse(balance)!.toStringAsFixed(2)}');
   await SunmiPrinter.lineWrap(1);
   await SunmiPrinter.setAlignment(SunmiPrintAlign.CENTER);
   await SunmiPrinter.setCustomFontSize(20);
@@ -6538,21 +6336,14 @@ void printUrovo(dataAll) async {
   //   await lineWrap(14, poSunmiPrinter);
   // }
   if (result) {
-    String balance = (double.tryParse(inf['Balance'].toString())! -
-                double.tryParse(inf['GrandTotal'].toString())!) >
-            0
-        ? (double.tryParse(inf['Balance'].toString())! -
-                double.tryParse(inf['GrandTotal'].toString())!)
-            .toString()
-        : '0';
+   String balance = inf['Balance'].toString();
     String qrCode = isQrCodeKSA
         ? taxSale
             ? SaudiConversion.getBase64(
                 settings.name,
                 ComSettings.getValue('GST-NO', settings),
-                DateUtil.dateTimeQrDMY(DateUtil.datedYMD(inf['DDate']) +
-                    ' ' +
-                    DateUtil.timeHMS(inf['BTime'])),
+                DateUtil.dateTimeQrDMY(
+                    '${DateUtil.datedYMD(inf['DDate'])} ${DateUtil.timeHMS(inf['BTime'])}'),
                 double.tryParse(inf['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(inf['CGST'].toString())! +
@@ -6564,9 +6355,8 @@ void printUrovo(dataAll) async {
             ? SaudiConversion.getBase64(
                 settings.name,
                 ComSettings.getValue('GST-NO', settings),
-                DateUtil.dateTimeQrDMY(DateUtil.datedYMD(inf['DDate']) +
-                    ' ' +
-                    DateUtil.timeHMS(inf['BTime'])),
+                DateUtil.dateTimeQrDMY(
+                    '${DateUtil.datedYMD(inf['DDate'])} ${DateUtil.timeHMS(inf['BTime'])}'),
                 double.tryParse(inf['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(inf['CGST'].toString())! +
@@ -6606,7 +6396,7 @@ void printUrovo(dataAll) async {
         taxNo: ComSettings.getValue('GST-NO', settings),
         companyInfo: [
           CompanyInfo(
-              name: firm.name!,
+              name: firm.name,
               add1: firm.add1!,
               add2: firm.add2!,
               add3: firm.add3!,
@@ -6662,7 +6452,7 @@ void printUrovo(dataAll) async {
                   double.tryParse(inf["ReturnAmount"].toString()) ?? 0,
               returnNo: inf["ReturnNo"],
               balanceAmount:
-                  double.tryParse(inf["BalanceAmount"].toString()) ?? 0,
+                  double.tryParse(inf["LedgerBalance"].toString()) ?? 0,
               balance: double.tryParse(inf["Balance"].toString()) ?? 0,
               gstno: inf["gstno"])
         ],
@@ -6876,7 +6666,7 @@ void printUrovo(dataAll) async {
           .invokeMethod('sentPrintUrovo', <String, String>{'content': c});
       debugPrint('Print finished' + status.ToString());
     } catch (ex) {
-      debugPrint('errrr:' + ex.toString());
+      debugPrint('errrr:$ex');
     }
   } else {
     debugPrint('Printer app not installed');
@@ -6982,7 +6772,7 @@ Future<String> savePreviewPDF(pw.Document pdf, var title) async {
     return '';
   } else {
     var output = await getTemporaryDirectory();
-    final file = File('${output.path}/' + title + '.pdf');
+    final file = File('${'${output.path}/' + title}.pdf');
     await file.writeAsBytes(await pdf.save());
     return file.path.toString();
   }
@@ -8899,9 +8689,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : companySettings.add1! +
-                                                    '\n' +
-                                                    companySettings.add2!,
+                                                : '${companySettings.add1!}\n${companySettings.add2!}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,
@@ -9351,7 +9139,7 @@ Future<pw.Document> makePDF(
                                         child: pw.Text(
                                             dataParticulars[i]['itemname'],
                                             style: const pw.TextStyle(
-                                                fontSize: 9)),
+                                                fontSize: 10)),
                                         // pw.Divider(thickness: 1)
                                       )
                                     ]),
@@ -9571,7 +9359,7 @@ Future<pw.Document> makePDF(
                                         child: pw.Text(
                                             dataParticulars[i]['itemname'],
                                             style: const pw.TextStyle(
-                                                fontSize: 9)),
+                                                fontSize: 10)),
                                         // pw.Divider(thickness: 1)
                                       ),
                                     ]),
@@ -9812,7 +9600,7 @@ Future<pw.Document> makePDF(
                       pw.Row(
                         children: [
                           pw.Text(
-                            'Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}',
+                            'Old Balance : ${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
@@ -10002,7 +9790,7 @@ Future<pw.Document> makePDF(
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(2.0),
                                   child: pw.Text(dataParticulars[i]['itemname'],
-                                      style: const pw.TextStyle(fontSize: 9)),
+                                      style: const pw.TextStyle(fontSize: 10)),
                                   // pw.Divider(thickness: 1)
                                 ),
                               ]),
@@ -10146,14 +9934,14 @@ Future<pw.Document> makePDF(
                       pw.Row(
                         children: [
                           pw.Text(
-                            'Old Balance : ${double.tryParse(customerBalance)!.toStringAsFixed(decimal)}',
+                            'Old Balance : ${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
                       pw.Row(
                         children: [
                           pw.Text(
-                            'Balance : ${((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}',
+                            'Balance : ${dataInformation['Balance']!.toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
@@ -12050,9 +11838,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : companySettings.add1! +
-                                                    '\n' +
-                                                    companySettings.add2!,
+                                                : '${companySettings.add1!}\n${companySettings.add2!}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,
@@ -12963,7 +12749,7 @@ Future<pw.Document> makePDF(
                       pw.Row(
                         children: [
                           pw.Text(
-                            'Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}',
+                            'Old Balance : ${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
@@ -13364,9 +13150,7 @@ Future<pw.Document> makePDF(
                                                     .toString()
                                                     .isEmpty
                                                 ? companySettings.add1
-                                                : companySettings.add1! +
-                                                    '\n' +
-                                                    companySettings.add2!,
+                                                : '${companySettings.add1!}\n${companySettings.add2!}',
                                             style: pw.TextStyle(
                                               fontWeight: pw.FontWeight.bold,
                                               fontSize: 10,
@@ -14277,14 +14061,13 @@ Future<pw.Document> makePDF(
                       pw.Row(
                         children: [
                           pw.Text(
-                            'Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}',
+                            'Old Balance : ${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
                       pw.Row(
                         children: [
-                          pw.Text(
-                            'Balance : ${double.tryParse(((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toString())!.toStringAsFixed(decimal)}',
+                          pw.Text('Balance : ${dataInformation['Balance']!.toStringAsFixed(decimal)}',
                           ),
                         ],
                       ),
@@ -15694,7 +15477,7 @@ Future<pw.Document> makePDF(
                       calculateEstTotalAmount(dataParticulars);
                   double totalEstQuantity =
                       calculateEstTotalQuantity(dataParticulars);
-                  final int totalRowCount = 12; // Desired total row count
+                  final int totalRowCount = pdfLineSpace > 0 ? pdfLineSpace : 6;
                   final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed
@@ -16478,7 +16261,7 @@ Future<pw.Document> makePDF(
                 },
               ))
             : pdf.addPage(pw.MultiPage(
-                maxPages: 100,
+                 maxPages: 100,
                 pageFormat: pw.PdfPageFormat.a4,
                 header: (pw.Context context) => _buildHeaderTax(
                     context,
@@ -16494,7 +16277,6 @@ Future<pw.Document> makePDF(
                     return perticu.fold(
                         0, (total, particular) => total + particular['Qty']);
                   }
-
                   double calculateTotalTaxablevalue(List<dynamic> perticu) {
                     return perticu.fold(
                         0,
@@ -16544,7 +16326,7 @@ Future<pw.Document> makePDF(
                   double totalQuantity =
                       calculateTotalQuantity(dataParticulars);
 
-                  double totalTaxablevalue =
+                   double totalTaxablevalue =
                       calculateTotalTaxablevalue(dataParticulars);
                   double totalAmount = calculateTotalAmount(dataParticulars);
                   double totalCGST = calculateTotalCGST(dataParticulars);
@@ -16553,7 +16335,9 @@ Future<pw.Document> makePDF(
                       calculateEstTotalAmount(dataParticulars);
                   double totalEstQuantity =
                       calculateEstTotalQuantity(dataParticulars);
-                  final int totalRowCount = 32; // Desired total row count
+                  final int totalRowCount = pdfLineSpace > 0
+                      ? pdfLineSpace
+                      : 10; // Desired total row count
                   final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed
@@ -16567,7 +16351,7 @@ Future<pw.Document> makePDF(
                           horizontalInside: pw.BorderSide
                               .none, // Remove horizontal borders inside the table
 
-                          verticalInside:
+                        verticalInside:
                               pw.BorderSide(), // Keep vertical borders
                         ),
                         columnWidths: const {
@@ -16600,16 +16384,16 @@ Future<pw.Document> makePDF(
                                   ),
                                 ],
                               )),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  dataParticulars[i]['itemname'],
-                                  style: pw.TextStyle(
-                                      fontSize: 5,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                              pw.Row(
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(2.0),
+                                    child: pw.Text(
+                                      dataParticulars[i]['itemname'],
+                                      style: pw.TextStyle(
+                                          fontSize: 5,
+                                          fontWeight: pw.FontWeight.bold),
+                                    ),
+                                  ),
+                               pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16623,8 +16407,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                                pw.Row(
                                   mainAxisAlignment:
                                       pw.MainAxisAlignment.center,
                                   children: [
@@ -16652,8 +16436,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                                pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16667,14 +16451,14 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                                pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
                                     padding: const pw.EdgeInsets.all(2.0),
                                     child: pw.Text(
-                                      dataParticulars[i]['DiscPersent']
+                                      dataParticulars[i]['GrossValue']
                                           .toStringAsFixed(2),
                                       style: pw.TextStyle(
                                           fontSize: 5,
@@ -16682,8 +16466,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                                pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16697,8 +16481,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                               pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16712,8 +16496,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                               pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16727,8 +16511,8 @@ Future<pw.Document> makePDF(
                                     ),
                                   ),
                                 ],
-                              ),
-                              pw.Row(
+                                  ),
+                               pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16737,13 +16521,13 @@ Future<pw.Document> makePDF(
                                       dataParticulars[i]['Total']
                                           .toStringAsFixed(2),
                                       style: pw.TextStyle(
-                                          fontSize: 6,
+                                          fontSize: 9,
                                           fontWeight: pw.FontWeight.bold),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ]),
+                                  ),
+                                ]),
                           for (var j = 0; j < emptyRowCount; j++)
                             pw.TableRow(children: [
                               pw.Center(
@@ -16760,25 +16544,26 @@ Future<pw.Document> makePDF(
                                   ),
                                 ],
                               )),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  "",
-                                  style: pw.TextStyle(
-                                      fontSize: 5,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  "",
-                                  style: pw.TextStyle(
-                                      fontSize: 5,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                              pw.Row(
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(2.0),
+                                    child: pw.Text(
+                                      "",
+                                      style: pw.TextStyle(
+                                          fontSize: 5,
+                                          fontWeight: pw.FontWeight.bold),
+                                    ),
+                                  ),
+                               
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(2.0),
+                                    child: pw.Text(
+                                      "",
+                                      style: pw.TextStyle(
+                                          fontSize: 5,
+                                          fontWeight: pw.FontWeight.bold),
+                                    ),
+                                  ),
+                               pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16792,16 +16577,16 @@ Future<pw.Document> makePDF(
                                   ),
                                 ],
                               ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  "",
-                                  style: pw.TextStyle(
-                                      fontSize: 5,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                              pw.Row(
+                                  pw.Padding(
+                                    padding: const pw.EdgeInsets.all(2.0),
+                                    child: pw.Text(
+                                      "",
+                                      style: pw.TextStyle(
+                                          fontSize: 5,
+                                          fontWeight: pw.FontWeight.bold),
+                                    ),
+                                  ),
+                                pw.Row(
                                 mainAxisAlignment: pw.MainAxisAlignment.end,
                                 children: [
                                   pw.Padding(
@@ -16883,7 +16668,7 @@ Future<pw.Document> makePDF(
                                     child: pw.Text(
                                       "",
                                       style: pw.TextStyle(
-                                          fontSize: 6,
+                                          fontSize: 9,
                                           color: const pw.PdfColor.fromInt(
                                               0xFF000000),
                                           fontWeight: pw.FontWeight.bold),
@@ -17019,7 +16804,7 @@ Future<pw.Document> makePDF(
                           //             child: pw.Text(
                           //               "",
                           //               style: pw.TextStyle(
-                          //                   fontSize: 6, fontWeight: pw.FontWeight.bold),
+                          //                   fontSize: 9, fontWeight: pw.FontWeight.bold),
                           //             ),
                           //           ),
                           //         ],
@@ -17055,41 +16840,42 @@ Future<pw.Document> makePDF(
                               children: [
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(2.0),
-                                  child: pw.Text(
-                                    "Total",
-                                    style: pw.TextStyle(
-                                        fontSize: 6,
-                                        fontWeight: pw.FontWeight.bold),
-                                  ),
-                                ),
-                              ],
+                                      child: pw.Text(
+                                        "Total",
+                                        style: pw.TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: pw.FontWeight.bold),
+                                      ),
+                                    ),
+                                 ],
                             )),
                             pw.Row(
                               mainAxisAlignment: pw.MainAxisAlignment.center,
                               children: [
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(2.0),
-                                  child: pw.Text(
-                                    totalQuantity.toStringAsFixed(2),
-                                    style: pw.TextStyle(
-                                        fontSize: 3,
-                                        fontWeight: pw.FontWeight.bold),
+                                      child: pw.Text(
+                                       totalQuantity.toStringAsFixed(2),
+                                        style: pw.TextStyle(
+                                            fontSize: 5,
+                                            fontWeight: pw.FontWeight.bold),
+                                      ),
+                                    ),
+                              ]
+                                ),
+                           
+                                pw.Padding(
+                                  padding: const pw.EdgeInsets.all(2.0),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                      '',
+                                      style: pw.TextStyle(
+                                          fontSize: 4,
+                                          fontWeight: pw.FontWeight.bold),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                  '',
-                                  style: pw.TextStyle(
-                                      fontSize: 4,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            pw.Row(
+                             pw.Row(
                               mainAxisAlignment: pw.MainAxisAlignment.end,
                               children: [
                                 pw.Padding(
@@ -17102,22 +16888,22 @@ Future<pw.Document> makePDF(
                                   ),
                                 ),
                               ],
-                            ),
-                            pw.Row(
+                                ),
+                             pw.Row(
                               mainAxisAlignment: pw.MainAxisAlignment.end,
                               children: [
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.all(2.0),
                                   child: pw.Center(
-                                    child: pw.Text(
-                                      // "${totalSGST?.toStringAsFixed(2)}",
+                                child: pw.Text(
+                                  // "${totalSGST?.toStringAsFixed(2)}",
                                       totalVAt.toStringAsFixed(2),
-                                      style: pw.TextStyle(
-                                          fontSize: 4,
-                                          fontWeight: pw.FontWeight.bold),
-                                    ),
-                                  ),
+                                  style: pw.TextStyle(
+                                      fontSize: 6,
+                                      fontWeight: pw.FontWeight.bold),
                                 ),
+                              ),
+                           ),
                               ],
                             ),
                             pw.Row(
@@ -17189,7 +16975,7 @@ Future<pw.Document> makePDF(
         //                                     companySettings.add2,
         //                             style: pw.TextStyle(
         //                               fontWeight: pw.FontWeight.bold,
-        //                               fontSize: 10,
+        //                               fontSize: 9,
         //                             ),
         //                             children: [
         //                               companySettings.telephone
@@ -17234,7 +17020,7 @@ Future<pw.Document> makePDF(
         //                 pw.Text('EntryNo : ' + dataInformation['InvoiceNo'],
         //                     style: pw.TextStyle(
         //                       fontWeight: pw.FontWeight.bold,
-        //                       fontSize: 10,
+        //                       fontSize: 9,
         //                     ),
         //                     textAlign: pw.TextAlign.left),
         //                 pw.Text(
@@ -17967,23 +17753,22 @@ Future<pw.Document> makePDF(
                           pw.Center(
                               child: pw.Column(
                             children: [
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  dataParticulars[i]['slno'],
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                            ],
+                          pw.Padding(
+                            padding: const pw.EdgeInsets.all(2.0),
+                            child: pw.Text(
+                              dataParticulars[i]['slno'],
+                              style: pw.TextStyle(
+                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
+                            ),
+                          ),
+                                                     ],
                           )),
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(2.0),
                             child: pw.Text(
                               dataParticulars[i]['itemname'],
                               style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
+                                  fontSize: 7, fontWeight: pw.FontWeight.bold),
                             ),
                           ),
                           pw.Padding(
@@ -17992,10 +17777,10 @@ Future<pw.Document> makePDF(
                               child: pw.Text(
                                 dataParticulars[i]['Qty'].toStringAsFixed(2),
                                 style: pw.TextStyle(
-                                    fontSize: 6,
+                                    fontSize: 9,
                                     fontWeight: pw.FontWeight.bold),
-                              ),
-                            ),
+                          ),
+                        ),
                           ),
                           pw.Padding(
                             padding: const pw.EdgeInsets.all(2.0),
@@ -18004,11 +17789,10 @@ Future<pw.Document> makePDF(
                               children: [
                                 pw.Text(
                                   dataParticulars[i]['unitName'].toString(),
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
+                              style: pw.TextStyle(
+                                  fontSize: 9, fontWeight: pw.FontWeight.bold),
+                            ),
+                           ],
                             ),
                           ),
                           pw.Padding(
@@ -18019,10 +17803,10 @@ Future<pw.Document> makePDF(
                                 pw.Text(
                                   dataParticulars[i]['Rate'].toStringAsFixed(2),
                                   style: pw.TextStyle(
-                                      fontSize: 6,
+                                      fontSize: 9,
                                       fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
+                            ),
+                           ],
                             ),
                           ),
                           pw.Padding(
@@ -18031,200 +17815,17 @@ Future<pw.Document> makePDF(
                               mainAxisAlignment: pw.MainAxisAlignment.end,
                               children: [
                                 pw.Text(
-                                  dataParticulars[i]['Total']
-                                      .toStringAsFixed(2),
+                                  dataParticulars[i]['Rate'].toStringAsFixed(2),
                                   style: pw.TextStyle(
-                                      fontSize: 6,
+                                      fontSize: 9,
                                       fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
+                            ),
+                            ],
                             ),
                           ),
                         ]),
                       if (dataParticulars.length > 45)
                         for (var k = 0; k < 45; k++)
-                          pw.TableRow(children: [
-                            pw.Center(
-                                child: pw.Column(
-                              children: [
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.all(2.0),
-                                  child: pw.Text(
-                                    '\n',
-                                    style: pw.TextStyle(
-                                        fontSize: 6,
-                                        fontWeight: pw.FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            )),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text(
-                                '',
-                                style: pw.TextStyle(
-                                    fontSize: 6,
-                                    fontWeight: pw.FontWeight.bold),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                  '',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Row(
-                                mainAxisAlignment: pw.MainAxisAlignment.end,
-                                children: [
-                                  pw.Text(
-                                    '',
-                                    style: pw.TextStyle(
-                                        fontSize: 6,
-                                        fontWeight: pw.FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Row(
-                                mainAxisAlignment: pw.MainAxisAlignment.end,
-                                children: [
-                                  pw.Text(
-                                    '',
-                                    style: pw.TextStyle(
-                                        fontSize: 6,
-                                        fontWeight: pw.FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Row(
-                                mainAxisAlignment: pw.MainAxisAlignment.end,
-                                children: [
-                                  pw.Text(
-                                    '',
-                                    style: pw.TextStyle(
-                                        fontSize: 6,
-                                        fontWeight: pw.FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ]),
-                      for (var j = 0; j < emptyRowCount; j++)
-                        pw.TableRow(children: [
-                          pw.Center(
-                              child: pw.Column(
-                            children: [
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(2.0),
-                                child: pw.Text(
-                                  '\n',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                          )),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Text(
-                              '',
-                              style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Center(
-                              child: pw.Text(
-                                '',
-                                style: pw.TextStyle(
-                                    fontSize: 6,
-                                    fontWeight: pw.FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.end,
-                              children: [
-                                pw.Text(
-                                  '',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.end,
-                              children: [
-                                pw.Text(
-                                  '',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.all(2.0),
-                            child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.end,
-                              children: [
-                                pw.Text(
-                                  '',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ]),
-                    ],
-                  ),
-                ),
-                pw.Container(
-                  decoration: const pw.BoxDecoration(
-                      color: pw.PdfColor.fromInt(0xFFCCCCCC),
-                      border: pw.Border(
-                          bottom: pw.BorderSide(),
-                          left: pw.BorderSide(),
-                          right: pw.BorderSide())),
-                  child: pw.Table(
-                    border: const pw.TableBorder(
-                      horizontalInside: pw.BorderSide
-                          .none, // Remove horizontal borders inside the table
-
-                      verticalInside: pw.BorderSide(), // Keep vertical borders
-                    ),
-                    columnWidths: const {
-                      0: pw.FixedColumnWidth(15),
-                      1: pw.FlexColumnWidth(20),
-                      2: pw.FlexColumnWidth(10),
-                      3: pw.FlexColumnWidth(10),
-                      4: pw.FlexColumnWidth(10),
-                      5: pw.FlexColumnWidth(20),
-                    },
-                    children: [
                       pw.TableRow(children: [
                         pw.Center(
                             child: pw.Column(
@@ -18232,9 +17833,9 @@ Future<pw.Document> makePDF(
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Text(
-                                '',
+                                '\n',
                                 style: pw.TextStyle(
-                                    fontSize: 6,
+                                    fontSize: 9,
                                     fontWeight: pw.FontWeight.bold),
                               ),
                             ),
@@ -18242,22 +17843,11 @@ Future<pw.Document> makePDF(
                         )),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2.0),
-                          child: pw.Center(
-                            child: pw.Text(
-                              'Total',
-                              style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2.0),
-                          child: pw.Center(
-                            child: pw.Text(
-                              '${calculateEstTotalQuantity(dataParticulars)}',
-                              style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
-                            ),
+                           child: pw.Text(
+                                '',
+                                style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold),
                           ),
                         ),
                         pw.Padding(
@@ -18266,18 +17856,36 @@ Future<pw.Document> makePDF(
                             child: pw.Text(
                               '',
                               style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
+                                  fontSize: 9, fontWeight: pw.FontWeight.bold),
                             ),
                           ),
                         ),
                         pw.Padding(
                           padding: const pw.EdgeInsets.all(2.0),
-                          child: pw.Center(
-                            child: pw.Text(
-                              '',
-                              style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
-                            ),
+                         child: pw.Row(
+                                mainAxisAlignment: pw.MainAxisAlignment.end,
+                                children: [
+                                  pw.Text(
+                                    '',
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold),
+                                  ),
+                                ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                                mainAxisAlignment: pw.MainAxisAlignment.end,
+                                children: [
+                                  pw.Text(
+                                    '',
+                                    style: pw.TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: pw.FontWeight.bold),
+                                  ),
+                                ],
                           ),
                         ),
                         pw.Padding(
@@ -18286,9 +17894,9 @@ Future<pw.Document> makePDF(
                             mainAxisAlignment: pw.MainAxisAlignment.end,
                             children: [
                               pw.Text(
-                                '${calculateEstTotalAmount(dataParticulars).toStringAsFixed(2)} ',
+                                '',
                                 style: pw.TextStyle(
-                                    fontSize: 6,
+                                    fontSize: 9,
                                     fontWeight: pw.FontWeight.bold),
                               ),
                             ],
@@ -19330,6 +18938,11 @@ _buildEstimateFooter(pw.Context context, dataBankLedger, dataInformation,
                             "NET AMOUNT    :",
                             style: pw.TextStyle(
                                 fontSize: 8, fontWeight: pw.FontWeight.bold),
+                                 ),
+                          pw.Text(
+                            "Balance            :",
+                            style: pw.TextStyle(
+                                fontSize: 8, fontWeight: pw.FontWeight.bold),
                           )
                         ],
                       ),
@@ -19353,7 +18966,7 @@ _buildEstimateFooter(pw.Context context, dataBankLedger, dataInformation,
                                 fontSize: 8, fontWeight: pw.FontWeight.bold),
                           ),
                           pw.Text(
-                            "${dataInformation['BalanceAmount'].toStringAsFixed(2)} ",
+                            "${dataInformation['LedgerBalance'].toStringAsFixed(2)} ",
                             style: pw.TextStyle(
                                 fontSize: 8, fontWeight: pw.FontWeight.bold),
                           ),
@@ -19366,7 +18979,9 @@ _buildEstimateFooter(pw.Context context, dataBankLedger, dataInformation,
                             height: 5,
                           ),
                           pw.Text(
-                            "${dataInformation['GrandTotal'].toStringAsFixed(2)} ",
+                            "${(double.parse(dataInformation['GrandTotal'].toStringAsFixed(2)) + 
+                            double.parse(dataInformation['Balance'].toStringAsFixed(2)) -
+                            double.parse(dataInformation['CashReceived'].toStringAsFixed(2))).toStringAsFixed(2)} ",
                             style: pw.TextStyle(
                                 fontSize: 8, fontWeight: pw.FontWeight.bold),
                           )
@@ -19653,13 +19268,10 @@ _buildEstimateHeader(
 
 _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, otherAmount,
     dataInformation, customerBalance) {
-  double oldBalance = double.tryParse(customerBalance)!.toDouble();
-
-  double cBalance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
-  double grandTotal = dataInformation['GrandTotal'].toDouble() ?? 0.00;
-  double cashReceived = dataInformation['CashReceived'].toDouble() ?? 0.00;
-
-  double balance = cBalance + grandTotal - cashReceived;
+double oldBalance =
+      double.tryParse(dataInformation['LedgerBalance'].toString())!.toDouble();
+  double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
+  
   return pw.Column(
     children: [
       pw.Row(
@@ -19745,7 +19357,9 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, otherAmount,
                                         ),
                                       ),
                                       pw.Text(
-                                        double.tryParse(customerBalance)!
+                                        double.tryParse(
+                                                dataInformation['LedgerBalance']
+                                                    .toString())!
                                             .toStringAsFixed(2),
                                         style: const pw.TextStyle(fontSize: 6),
                                       )
@@ -19764,15 +19378,7 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, otherAmount,
                                         ),
                                       ),
                                       pw.Text(
-                                        (double.tryParse(customerBalance)! +
-                                                (double.tryParse(
-                                                        dataInformation[
-                                                                'GrandTotal']
-                                                            .toString())! -
-                                                    double.tryParse(
-                                                        dataInformation[
-                                                                'CashReceived']
-                                                            .toString())!))
+                                        double.tryParse(customerBalance)!
                                             .toStringAsFixed(2),
                                         style: const pw.TextStyle(fontSize: 6),
                                       )

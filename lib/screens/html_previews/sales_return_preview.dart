@@ -290,7 +290,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
           dataSerialNO = data['SerialNO'];
           dataDeliveryNote = data['DeliveryNote'];
           otherAmount = data['otherAmount'];
-          customerBalance = '0'; //data['BalanceAmount'].toString();
+          customerBalance = dataInformation['Balance'].toString();
           dataLedger = data['ledger'];
           dataBankLedger = data['bankLedger'];
           loadAsset();
@@ -466,7 +466,6 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
   Future<List<int>> _qr1() async {
    
     var _dataQr = dataInformation != null
-
         ? ''
         : SaudiConversion.getBase64(
             companySettings!.name!,
@@ -512,243 +511,12 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
     //         )));
   }
 
-  webView() {
-    var taxSale = dataInformation != null
-        ? dataInformation['TaxType'] == 'T'
-            ? true
-            : false
-        : false;
-    var invoiceHead =
-        Settings.getValue<String>('key-sales-return-head', defaultValue: 'SALES RETURN');
-
-    return _isLoading
-        ? const Loading()
-        : Column(children: [
-            Expanded(
-                child: RepaintBoundary(
-              key: _globalKey,
-              child: WebView(
-                  initialUrl: '',
-                  javascriptMode: JavascriptMode.unrestricted,
-                  onWebViewCreated: (contr) {
-                    String dataHtml = taxSale
-                        ? '''${'''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-
-                            <h2 align="center" >${companySettings!.name}</h2>
-                            <table align="center" width="100%" >
-                              <tr><td width="16.7%" align="center">${companySettings!.add1}</td></tr>
-                              <tr><td width="16.7%" align="center">${companySettings!.add2}</td></tr>
-                              <tr><td width="16.7%" align="center">Tel : ${companySettings!.telephone! + ',' + companySettings!.mobile!}</td></tr>
-                              <tr><td width="16.7%" align="center">${companyTaxMode == 'INDIA' ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings!)}' : 'TRN : ${ComSettings.getValue('GST-NO', settings!)}'}</td></tr>
-                            </table>
-                            <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <h5>${companyTaxMode == 'INDIA' ? dataInformation['Add1'] : 'T-No :' + dataInformation['gstno']}<h5/>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        
-                        ''' +
-                            _itemHeader(companyTaxMode) +
-                            _item(taxSale) +
-                            '''<tr>
-                          <td colspan="4" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr>
-                        <td width="64%" align="center">Total : </td>
-                        <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                        <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                        <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                        <td colspan="2" class="total-line" align="right">Tax :</td>
-                        <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString())! + double.tryParse(dataInformation['IGST'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        ''' +
-                            _otherAmount()}                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total(Inclusive of all taxes) :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;">${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                          <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:12px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                        <td style="font-size:12px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:12px;" align="right"> Balance : ${(double.tryParse(customerBalance)! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="100%" >
-                      <tr>
-                          <td width="16.7%" align="center" style="font-size:10px;">${data['message']}</td>
-                        </tr>
-                            </table>
-                        '''
-                        : '''${'''
-                        <style>
-                        .total-value {
-                            font-size:14px;font-weight: bold
-                        }
-                        .total-value1 {
-                            font-size:16px;font-weight: bold
-                        }
-                        .total-line{
-                          font-size:14px;font-weight: bold
-                        }
-                        </style>
-                        <table width="100%">
-                              <tr>
-                      <th align="center"><u>$invoiceHead</u></th>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                      <p><td align="left">Invoice No : ${dataInformation['InvoiceNo']}<td align="right">Date : ${DateUtil.dateDMY(dataInformation['DDate'])}</p>
-                      </tr>
-                            </table>
-                            <h4>Bill To : ${dataInformation['ToName']}</h4>
-                            <hr size="1" width="100%">
-                            <table id="items">
-                        <tr> ''' +
-                            _itemHeader1() +
-                            _item(taxSale) +
-                            '''<tr>
-                          <td colspan="4" class="blank"><hr></hr></td>
-                      </tr>
-                            </table>
-                            <table width="100%" id="line_total">
-                              <tr>
-                        <td width="64%" align="center">Total : </td>
-                        <td width="8%" align="right">${totalQty.toStringAsFixed(0)}</td>
-                        <td width="10%" align="right">${totalRate.toStringAsFixed(decimal)}</td>
-                        <td width="10%" align="right">${double.tryParse(dataInformation['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" id="item_total">
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-line" align="right">Total :</td>
-                      <td class="total-value" align="right">${double.tryParse(dataInformation['NetAmount'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                        <td colspan="3" class="blank"> </td>
-                              </tr>
-                              ''' +
-                            _otherAmount()}                              <tr>
-                                <td colspan="3" class="blank"></td>
-                                <td colspan="2" class="total-value1" align="right">Tax :</td>
-                                    <td class="total-value" align="right">${(double.tryParse(dataInformation['CGST'].toString())! + double.tryParse(dataInformation['SGST'].toString()) !+ double.tryParse(dataInformation['IGST'].toString())! + double.tryParse(dataInformation['cess'].toString())! + double.tryParse(dataInformation['TCS'].toString())!).toStringAsFixed(decimal)}</td>
-                              </tr>
-                              <tr>
-                      <td colspan="3" class="blank"></td>
-                      <td colspan="2" class="total-value1" align="right">Net Total :</td>
-                          <td class="total-value" align="right">${double.tryParse(dataInformation['GrandTotal'].toString())!.toStringAsFixed(decimal)}</td>
-                              </tr>
-                            </table>
-                            <table width="100%">
-                      <tr>
-                          <td style="font-size:10px;"> Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}</td>
-                        </tr>
-                        </table>
-                        <hr></hr>
-                            <table width="100%">
-                        <tr>
-                        <td style="font-size:10px;" align="left"> Cash Received : ${double.tryParse(dataInformation['CashReceived'].toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Bill Balance : ${(double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table width="100%" >
-                            <tr>
-                        <td style="font-size:10px;" align="left"> Old Balance : ${double.tryParse(customerBalance.toString())!.toStringAsFixed(decimal)}</td>
-                        <td style="font-size:10px;" align="right"> Balance : ${((double.tryParse(customerBalance))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)).toStringAsFixed(decimal)}</td>
-                        </tr>
-                            </table>
-                            <hr></hr>
-                            <table align="center" width="80%" >
-                        <tr>
-                          <td width="16.7%" align="center" style="font-size:9px;">${data['message']}</td>
-                        </tr>
-                            ''';
-
-                    /*********************QR Code**********************/
-                    if (isQrCodeKSA) {
-                      if (taxSale) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      } else if (isEsQrCodeKSA) {
-                        String html =
-                            "<img src='{IMAGE_PLACEHOLDER}' style=\"float:center;margin-left:132px;width:80px;height:80px;\">\n";
-                        String image = uint8ListTob64(byteImageQr!);
-                        html = html.replaceAll("{IMAGE_PLACEHOLDER}", image);
-                        dataHtml += html;
-                      }
-                    }
-                    dataHtml += '''
-                            </table>
-                        ''';
-                    contr.loadUrl(Uri.dataFromString(dataHtml,
-                            mimeType: 'text/html', encoding: utf8)
-                        .toString());
-                  }),
-            )),
-          ]);
-  }
-
+ 
   invoiceGenerate(context) {
     bool isLoading = false;
     var taxSale = dataInformation['TaxType'] == 'T' ? true : false;
-    var invoiceHead =
-        Settings.getValue<String>('key-sales-return-head', defaultValue: 'SALES RETURN');
+     var invoiceHead = Settings.getValue<String>('key-sales-return-head',
+        defaultValue: 'SALES RETURN');
     var ledger = dataLedger[0];
     List<dynamic> itemData = [];
     double subTotalQty = 0,
@@ -910,11 +678,9 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
       "Roundoff": dataInformation['Roundoff'].toString() ?? '0',
       "Time":
           DateUtil.timeHMSA(dataInformation['BTime'].toString()) ?? '00:00:000',
-      "words": ('${(companySettings!.sCurrency!.isEmpty
-                  ? ' Rupees '
-                  : companySettings!.sCurrency)!}${NumberToWord().convertDouble('en',
-                  double.tryParse(dataInformation['GrandTotal'].toString()))}Only') ??
-          ' ',
+      "words":
+          ('${(companySettings!.sCurrency!.isEmpty ? ' Rupees ' : companySettings!.sCurrency)!}${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}Only') ??
+              ' ',
       "deliverynote": ' ',
       "vehicle": ' ',
       "destination": ' ',
@@ -1091,8 +857,8 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
 
   showData() {
     var taxSale = dataInformation['TaxType'] == 'T' ? true : false;
-    var invoiceHead =
-        Settings.getValue<String>('key-sales-return-head', defaultValue: 'SALES RETURN');
+    var invoiceHead = Settings.getValue<String>('key-sales-return-head',
+        defaultValue: 'SALES RETURN');
     return _isLoading
         ? const Loading()
         : taxSale
@@ -1364,153 +1130,12 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                 ));
   }
 
-  _itemHeader(String tType) {
-    var str = '';
-    str += tType == 'INDIA'
-        ? '''
-    <tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>CGST</b></th>
-                            <th width="10%" align="center"><b>SGST</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                            '''
-        : '''<tr>
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>HSN</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Tax%</b></th>
-                            <th width="10%" align="center"><b>Vat</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>''';
-    return str;
-  }
-
-  _itemHeader1() {
-    var str = '';
-    str += isItemSerialNo!
-        ? '''                            <th width="50%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>$labelSerialNo</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        '''
-        : '''
-                            <th width="64%" align="center"><b>Description</b></th>
-                            <th width="8%" align="center"><b>Qty</b></th>
-                            <th width="10%" align="center"><b>Rate</b></th>
-                            <th width="10%" align="center"><b>Total</b></th>
-                        ''';
-    return str;
-  }
-
-  _item(bool taxIn) {
-    var str = '';
-    for (var i = 0; i < dataParticulars.length; i++) {
-      str += taxIn
-          ? companyTaxMode == 'INDIA'
-              ? isItemSerialNo!
-                  ? '''
-                    </tr>
-                      <tr class="item-row">
-                      <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                      <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}</td>
-                      <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                      <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                      <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                    </tr>
-                    '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() !+ ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['CGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['SGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-              : isItemSerialNo!
-                  ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}!</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() !+ ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['IGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                  '''
-                  : '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="50%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="6%" align="left">${dataParticulars[i]['hsncode']}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="3%" align="right">${double.tryParse(dataParticulars[i]['igst'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['IGST'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-          : isItemSerialNo!
-              ? '''
-                  </tr>
-                    <tr class="item-row">
-                    <td width="64%" align="left">${dataParticulars[i]['itemname']}</td>
-                    <td width="10%" align="center">${dataParticulars[i]['serialno'].toString()}</td>
-                    <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                    <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                  </tr>
-                '''
-              : '''
-                </tr>
-                  <tr class="item-row">
-                  <td width="64%" align="left">${dataParticulars[i]['itemname']}</td>
-                  <td width="6%" align="right">${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Rate'].toString())!.toStringAsFixed(decimal)}</td>
-                  <td width="10%" align="right">${double.tryParse(dataParticulars[i]['Total'].toString())!.toStringAsFixed(decimal)}</td>
-                </tr>
-                ''';
-      totalQty += double.tryParse(dataParticulars[i]['Qty'].toString())!;
-      totalRate += double.tryParse(dataParticulars[i]['Rate'].toString())!;
-    }
-    return str;
-  }
-
-  _otherAmount() {
-    var str = ''; //Auto,symbol,LedName,Amount
-    for (var i = 0; i < otherAmount.length; i++) {
-      if (otherAmount[i]['Amount'].toDouble() > 0) {
-        str += '''
-      <tr>
-        <td colspan="3" class="blank"> </td>
-        <td colspan="2" class="total-line" align="right">${otherAmount[i]['LedName']} :</td>
-        <td class="total-value" align="right">${otherAmount[i]['Amount']}</td>
-      </tr>
-      ''';
-      }
-    }
-    return str;
-  }
+  
 
   Future<Uint8List> _captureQr() async {
     // print('inside');
-    RenderRepaintBoundary? boundary = _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
+    RenderRepaintBoundary? boundary =
+        _globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary?;
     ui.Image image = await boundary!.toImage(pixelRatio: 3.0);
     ByteData ?byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     var pngBytes = byteData!.buffer.asUint8List();
@@ -1549,14 +1174,18 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
   }
 
   previewWidget() {
-    var taxSale = dataInformation['TaxType'] == 'T' ? true : false;
-    var invoiceHead =
-        Settings.getValue<String>('key-sales-return-head', defaultValue: 'SALES RETURN');
-    int ?decimal =
-        ComSettings.getValue('DECIMAL', settings!).toString().isNotEmpty
-            ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())
-            : 2;
-    bool isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings!);
+     var taxSale = dataInformation != null
+        ? (dataInformation['TaxType'] == 'T' ? true : false)
+        : false;
+    var invoiceHead = Settings.getValue<String>('key-sales-return-head',
+        defaultValue: 'SALES RETURN');
+    int? decimal = ComSettings.getValue('DECIMAL', settings!)
+            .toString()
+            .isNotEmpty
+        ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())
+        : 2;
+    bool isItemSerialNo =
+        ComSettings.getStatus('KEY ITEM SERIAL NO', settings!);
     var labelSerialNo =
         ComSettings.getValue('KEY ITEM SERIAL NO', settings!).toString();
     labelSerialNo.isNotEmpty ?? 'SerialNo';
@@ -1568,13 +1197,12 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
         0, (total, particular) => total + particular['Net'].toDouble());
     double lineTotal = dataParticulars.fold(
         0, (total, particular) => total + particular['Total'].toDouble());
- double oldBalance = double.tryParse(customerBalance)!.toDouble();
+ double oldBalance =
+        double.tryParse(dataInformation['LedgerBalance'].toString())!
+            .toDouble();
+    double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
 
-    double cBalance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
-    double grandTotal = _isLoading?0:dataInformation['GrandTotal'].toDouble() ?? 0.00;
-    double cashReceived = _isLoading?0:dataInformation['CashReceived'].toDouble() ?? 0.00;
-
-    double balance = cBalance + grandTotal - cashReceived;
+  
     return taxSale
         ? SafeArea(
             child: Padding(
@@ -3021,67 +2649,63 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                                   ),
                                                                 ],
                                                               ),
-                                                             Visibility(
-                                                                 visible:
-                                                                oldBalance >
-                                                                        0 ||
-                                                                    balance > 0,
-                                                               child: Padding(
-                                                                 padding: const EdgeInsets.only(right:10.0),
-                                                                 child: Column(   mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                   children: [
-                                                                     Row(
-                                                                          children: [
-                                                                            const SizedBox(
-                                                                              child:
-                                                                                  Text(
-                                                                                  "OB           : ",
-                                                                                  style:
-                                                                                    TextStyle(fontSize: 6),
-                                                                                ),
+                                                              Visibility(
+                                                                visible:
+                                                                    oldBalance >
+                                                                            0 ||
+                                                                        balance >
+                                                                            0,
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          right:
+                                                                              10.0),
+                                                                  child: Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Row(
+                                                                        children: [
+                                                                          const SizedBox(
+                                                                            child:
+                                                                                Text(
+                                                                              "OB           : ",
+                                                                              style: TextStyle(fontSize: 6),
                                                                             ),
-                                                                            Text(
-                                                                              double.tryParse(
-                                                                                      customerBalance)!
-                                                                                  .toStringAsFixed(
-                                                                                      decimal!),
-                                                                              style: const TextStyle(
-                                                                                  fontSize:
-                                                                                      6),
-                                                                            )
-                                                                          ],
-                                                                        ),
-                                                                            Row(
-                                                                     
-                                                                      children: [
-                                                                        const SizedBox(
-                                                                          child:
-                                                                              Text(
+                                                                             ),
+                                                                          Text(
+                                                                            double.tryParse(dataInformation['LedgerBalance'].toString())!.toStringAsFixed(decimal!),
+                                                                            style:
+                                                                                const TextStyle(fontSize: 6),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                      Row(
+                                                                        children: [
+                                                                          const SizedBox(
+                                                                            child:
+                                                                                Text(
                                                                               "Balance  : ",
                                                                               style:
                                                                                 TextStyle(fontSize: 6),
                                                                             ),
                                                                         ),
-                                                                        Text(
-                                                                          (double.tryParse(customerBalance)! +
-                                                                                  (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!))
-                                                                              .toStringAsFixed(decimal),
-                                                                          style: const TextStyle(
-                                                                              fontSize:
-                                                                                  6),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                             
-                                                                   ],
-                                                                 ),
-                                                               ),
-                                                             ),
+                                                                          Text(
+                                                                            customerBalance,
+                                                                            style:
+                                                                                const TextStyle(fontSize: 6),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
                                                             
                                                             ],
                                                           )),
@@ -4002,7 +3626,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                         FontWeight.bold),
                                               ),
                                               Text(
-                                                "${dataInformation['BalanceAmount'].toStringAsFixed(2)} ",
+                                                "${dataInformation['LedgerBalance'].toStringAsFixed(2)} ",
                                                 style: const TextStyle(
                                                     fontSize: 8,
                                                     fontWeight:
@@ -4055,9 +3679,7 @@ _addOtherAmountNew(List otherAmount) {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          '${otherAmount[i]['LedName'] +
-                              ' : ' +
-                              otherAmount[i]['Amount'].toStringAsFixed(2)}  ',
+                          '${otherAmount[i]['LedName'] + ' : ' + otherAmount[i]['Amount'].toStringAsFixed(2)}  ',
                           style: const TextStyle(
                               fontSize: 5, fontWeight: FontWeight.bold),
                         ),
@@ -4498,9 +4120,10 @@ void printSunmiV1(dataAll) async {
       Settings.getValue<String>('key-sales-return-head', defaultValue: 'SALES RETURN');
   bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
   bool isEsQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-  int? printCopy = Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
-  int ?printerModel =
-      Settings.getValue<int>('key-dropdown-printer-model-view', defaultValue: 0);
+  int? printCopy =
+      Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
+  int? printerModel = Settings.getValue<int>('key-dropdown-printer-model-view',
+      defaultValue: 0);
 
   bool? result = await SunmiPrinter.bindingPrinter();
   if (result!) {
@@ -4511,7 +4134,8 @@ void printSunmiV1(dataAll) async {
       await SunmiPrinter.setCustomFontSize(26);
       await SunmiPrinter.lineWrap(1);
       await SunmiPrinter.printText(firm.add1!);
-      await SunmiPrinter.printText('Tel : ${'${firm.telephone},${firm.mobile!}'}');
+      await SunmiPrinter.printText(
+          'Tel : ${'${firm.telephone},${firm.mobile!}'}');
       await SunmiPrinter.lineWrap(1);
       await SunmiPrinter.printText(companyTaxMode == 'INDIA'
           ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
@@ -4815,7 +4439,7 @@ void printSunmiV1(dataAll) async {
         : '0';
     await SunmiPrinter.lineWrap(1);
     await SunmiPrinter.printText(
-        'Received : ${inf['CashReceived']} / Balance : ${(double.tryParse(balance))! + (double.tryParse(inf['GrandTotal'].toString())! - double.tryParse(inf['CashReceived'].toString())!)}');
+      'Received : ${inf['CashReceived']} / Balance : ${double.tryParse(balance)}');
     await SunmiPrinter.lineWrap(1);
     await SunmiPrinter.setAlignment(SunmiPrintAlign.CENTER);
     await SunmiPrinter.setCustomFontSize(20);
@@ -5024,13 +4648,7 @@ void printUrovo(dataAll) async {
   //   await lineWrap(14, poSunmiPrinter);
   // }
   if (result) {
-    String balance = (double.tryParse(inf['Balance'].toString())! -
-                double.tryParse(inf['GrandTotal'].toString())!) >
-            0
-        ? (double.tryParse(inf['Balance'].toString())! -
-                double.tryParse(inf['GrandTotal'].toString())!)
-            .toString()
-        : '0';
+    String balance = inf['Balance'].toString();
     String qrCode = isQrCodeKSA
         ? taxSale
             ? SaudiConversion.getBase64(
@@ -5144,7 +4762,7 @@ void printUrovo(dataAll) async {
                   double.tryParse(inf["ReturnAmount"].toString()) ?? 0,
               returnNo: inf["ReturnNo"],
               balanceAmount:
-                  double.tryParse(inf["BalanceAmount"].toString()) ?? 0,
+                  double.tryParse(inf["LedgerBalance"].toString()) ?? 0,
               balance: double.tryParse(inf["Balance"].toString()) ?? 0,
               gstno: inf["gstno"])
         ],
@@ -15713,8 +15331,9 @@ _buildEstimateHeader(
   ]);
 }
 
-_buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, dataInformation, customerBalance) {
-   double oldBalance = double.tryParse(customerBalance)!.toDouble();
+_buildFooterr(pw.Context context, bankledger, dataInfo, cSettings,
+    dataInformation, customerBalance) {
+  double oldBalance = double.tryParse(customerBalance)!.toDouble();
 
   double cBalance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
   double grandTotal = dataInformation['GrandTotal'].toDouble() ?? 0.00;
@@ -15794,68 +15413,65 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, dataInformati
                                       style: const pw.TextStyle(fontSize: 7),
                                     ),
                                   ],
-                                ),  
-                                
-                                                                oldBalance >
-                                                                        0 ||
-                                                                    balance > 0?
-                                                             pw.Padding(
-                                                                 padding: const pw. EdgeInsets.only(right:10.0),
-                                                                 child: pw.Column(   mainAxisAlignment:
-                                                                    pw.  MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                     pw. CrossAxisAlignment
-                                                                          .start,
-                                                                   children: [
-                                                                   pw.  Row(
-                                                                          children: [
-                                                                            pw. SizedBox(
-                                                                              child:
-                                                                               pw.   Text(
-                                                                                  "OB           : ",
-                                                                                  style:
-                                                                                   const pw. TextStyle(fontSize: 6),
-                                                                                ),
-                                                                            ),
-                                                                           pw. Text(
-                                                                              double.tryParse(
-                                                                                      customerBalance)!
-                                                                                  .toStringAsFixed(
-                                                                                      2),
-                                                                              style: const pw. TextStyle(
-                                                                                  fontSize:
-                                                                                      6),
-                                                                            )
-                                                                          ],
-                                                                        ),
-                                                                           pw. Row(
-                                                                     
-                                                                      children: [
-                                                                        pw. SizedBox(
-                                                                          child:
-                                                                            pw.  Text(
-                                                                              "Balance  : ",
-                                                                              style:
-                                                                              const pw.  TextStyle(fontSize: 6),
-                                                                            ),
-                                                                        ),
-                                                                      pw.  Text(
-                                                                          (double.tryParse(customerBalance)! +
-                                                                                  (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!))
-                                                                              .toStringAsFixed(2),
-                                                                          style: const pw. TextStyle(
-                                                                              fontSize:
-                                                                                  6),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                             
-                                                                   ],
-                                                                 ),
-                                                               ):pw.Container(),
-                                                             
-
+                                ),
+                                oldBalance > 0 || balance > 0
+                                    ? pw.Padding(
+                                        padding: const pw.EdgeInsets.only(
+                                            right: 10.0),
+                                        child: pw.Column(
+                                          mainAxisAlignment:
+                                              pw.MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              pw.CrossAxisAlignment.start,
+                                          children: [
+                                            pw.Row(
+                                              children: [
+                                                pw.SizedBox(
+                                                  child: pw.Text(
+                                                    "OB           : ",
+                                                    style: const pw.TextStyle(
+                                                        fontSize: 6),
+                                                  ),
+                                                ),
+                                                pw.Text(
+                                                  double.tryParse(
+                                                          customerBalance)!
+                                                      .toStringAsFixed(2),
+                                                  style: const pw.TextStyle(
+                                                      fontSize: 6),
+                                                )
+                                              ],
+                                            ),
+                                            pw.Row(
+                                              children: [
+                                                pw.SizedBox(
+                                                  child: pw.Text(
+                                                    "Balance  : ",
+                                                    style: const pw.TextStyle(
+                                                        fontSize: 6),
+                                                  ),
+                                                ),
+                                                pw.Text(
+                                                  (double.tryParse(
+                                                              customerBalance)! +
+                                                          (double.tryParse(
+                                                                  dataInformation[
+                                                                          'GrandTotal']
+                                                                      .toString())! -
+                                                              double.tryParse(
+                                                                  dataInformation[
+                                                                          'CashReceived']
+                                                                      .toString())!))
+                                                      .toStringAsFixed(2),
+                                                  style: const pw.TextStyle(
+                                                      fontSize: 6),
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : pw.Container(),
                               ],
                             )),
                       ],

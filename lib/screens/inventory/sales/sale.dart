@@ -69,7 +69,7 @@ class _SaleState extends ConsumerState<Sale> {
       isCustomForm = false,
       buttonEvent = false,
       isSerialNoInStockVariant = false;
-  // final bool _autoVariantSelect = true;
+   bool _autoVariantSelect = false;
   DioService api = DioService();
   Size? deviceSize;
   var vehicleData;

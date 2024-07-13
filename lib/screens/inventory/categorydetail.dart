@@ -74,11 +74,6 @@ class _NextPageState extends State<NextPage> {
                               child: SizedBox(
                                 height: 150.0,
                                 child: GridTile(
-                                  child: Container(
-                                    color: Colors.white,
-                                    child: Image.network(
-                                        snapshot.data[index].data['picture']),
-                                  ),
                                   footer: Container(
                                       color: Colors.white,
                                       child: ListTile(
@@ -95,6 +90,11 @@ class _NextPageState extends State<NextPage> {
                                           ),
                                         ),
                                       )),
+                                  child: Container(
+                                    color: Colors.white,
+                                    child: Image.network(
+                                        snapshot.data[index].data['picture']),
+                                  ),
                                 ),
                               )));
                     });
