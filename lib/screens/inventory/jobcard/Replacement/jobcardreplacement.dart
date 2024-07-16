@@ -3969,7 +3969,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
                                             ? UnitSettings.getUnitName(
                                                 _dropDownUnit)
                                             : 'SKU'),
-                                        items: unitList
+                                        items: unitListSettings
                                             .map<DropdownMenuItem<String>>(
                                                 (item) {
                                           return DropdownMenuItem<String>(

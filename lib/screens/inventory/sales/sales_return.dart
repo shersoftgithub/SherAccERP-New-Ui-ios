@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
@@ -57,6 +58,8 @@ class _SalesReturnState extends State<SalesReturn> {
       keyItemsVariantStock = false,
       buttonEvent = false,
       isFreeItem = false,
+      loading = false,
+      newSalesReturn = false,
       productTracking = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
@@ -183,14 +186,15 @@ class _SalesReturnState extends State<SalesReturn> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales Return"),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           actions: [
             TextButton(
-                child: const Text(
-                  "New",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
                 style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -198,7 +202,12 @@ class _SalesReturnState extends State<SalesReturn> {
                   setState(() {
                     widgetID = false;
                   });
-                }),
+                },
+                child: const Text(
+                  "New",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                )),
           ],
         ),
         body: Container(
@@ -209,7 +218,8 @@ class _SalesReturnState extends State<SalesReturn> {
   widgetSuffix() {
     return Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(
+        appBar:newSalesReturn 
+        ? AppBar(
           title: const Text("Sales Return"),
           actions: [
             Visibility(
@@ -309,7 +319,7 @@ class _SalesReturnState extends State<SalesReturn> {
                     },
                     icon: const Icon(Icons.save)),
           ],
-        ),
+        ) : null,
         body: ProgressHUD(
             inAsyncCall: _isLoading, opacity: 0.0, child: selectWidget()));
   }
@@ -361,9 +371,18 @@ class _SalesReturnState extends State<SalesReturn> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Sales Return"),
+              const Text("No items in Sales Return",
+              style: TextStyle(
+                fontFamily: 'poppins',
+              ),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      )
+                    ),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -824,13 +843,52 @@ class _SalesReturnState extends State<SalesReturn> {
     //   }
     // });
   }
+   Future<List<String>> fetchSuggestions(String searchValue) async {
+    setState(() {
+      loading = true;
+    });
+    try {
+      final getCustomer = await dio.getCustomerNameList();
+      final nameList = getCustomer.map((e) => e.name).toList();
+      return nameList.where((name) => name.toLowerCase().contains(searchValue.toLowerCase())).toList();
+    } catch (e) {
+      print("Error fetching customer names: $e");
+      return [];
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+   Future<List<String>> fetchProducts(String searchValue) async {
+    setState(() {
+      loading = true;
+    });
+    try {
+      var getProducts = await dio.fetchAllProductPurchase();
+      setState(() {
+        productModel= getProducts;
+      });
+      final nameList = getProducts.map((e) => e.itemName).toList();
+      return nameList.where((name) => name.toLowerCase().contains(searchValue.toLowerCase())).toList();
+    } catch (e) {
+      print("Error fetching customer names: $e");
+      return [];
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
 
   int nextWidget = 0;
   selectWidget() {
     return nextWidget == 0
-        ? selectLedgerWidget()
+        ? newSalesReturnWidget(newSalesReturn)
+        // selectLedgerWidget()
         : nextWidget == 1
-            ? selectLedgerDetailWidget()
+            ? addItemWidget()
+            // selectLedgerDetailWidget()
             : nextWidget == 2
                 ? selectProductWidget()
                 : nextWidget == 3
@@ -842,6 +900,1122 @@ class _SalesReturnState extends State<SalesReturn> {
                             : nextWidget == 6
                                 ? const Text('No Data 6')
                                 : const Text('No Widget');
+  }
+ String entryNo = '';
+ var itemName;
+  newSalesReturnWidget(newSalesReturn ){
+  if(newSalesReturn){
+    setState(() {
+      newSalesReturn = true;
+    });
+  }
+  return GestureDetector(
+    onTap: () => FocusScope.of(context).unfocus(),
+    child: Scaffold(
+      backgroundColor: bagroundColor,
+      appBar: AppBar(
+        title: const Text("Sales Return"),
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins'
+        ),
+      ),
+      body: Column(
+        children: [
+           Container(
+            color: white,
+            padding:const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8
+            ),
+             child: Row(
+                                  children: [
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill No',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5),
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          height: 35,
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: entryNo.isEmpty
+                                              ? const Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down_rounded,
+                                                    color: grey,
+                                                  ))
+                                              : Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Text(
+                                                    entryNo,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        fontSize: 13),
+                                                  ),
+                                                ),
+                                        )
+                                      ],
+                                    )),
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill Date',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        InkWell(
+                                          onTap: () => _selectDate(),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            height: 35,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  formattedDate!,
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 13),
+                                                ),
+                                                const Icon(
+                                                  Icons.calendar_month,
+                                                  size: 18,
+                                                  color: grey,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ],
+                                ),
+           ),
+           const SizedBox(
+            height: 8,
+           ),
+           Container(
+            color: white,
+            padding:const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 6
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  ' Customer',
+                   style: TextStyle(
+                   fontFamily: 'poppins',
+                   fontSize: 14,
+                   fontWeight: FontWeight.w500),
+                 ),
+                 const SizedBox(
+                  height: 4,
+                 ),
+                 EasyAutocomplete(
+                  inputTextStyle: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14
+                  ),
+                  progressIndicatorBuilder: const CircularProgressIndicator() ,
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 5
+                    ),
+                    border: OutlineInputBorder()
+                  ),
+                  asyncSuggestions: (searchValue) async {
+                    return await fetchSuggestions(searchValue);
+                  // final getCustomer =   dio.getCustomerNameList().then((value) => ledgerModel = value);
+                  // final data = getCustomer;
+                  // final nameList =   getCustomer.then((value) => value.map((e) => e.name).toList());
+                  // return nameList;
+                  },
+                  suggestions: itemName,
+                  onChanged: (text) {
+                    
+                  },
+                  onSubmitted: (p0) {
+                    
+                  },
+                 ),
+                 const SizedBox(
+                  height: 4,
+                 ),
+                  ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: kPrimaryColor,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(3))),
+                                onPressed: () {
+                                  setState(() {
+                                    // editItem = false;
+                                    nextWidget = 1;
+                                  });
+                                },
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // SizedBox(width: 10),
+                                    Text(
+                                      'Add Item',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'poppins',
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+              ],
+            ),
+           )
+        ],
+      ),
+    ),
+  );
+  }
+  
+var selectedItem;
+int? selectedProducteId;
+String? selectedTaxOption = 'With Tax';
+  addItemWidget(){
+    int locationId = lId.toString().trim().isNotEmpty ? lId : 1;
+    
+    List<UnitModel> unitList = [];
+    calculate() {
+      if (enableMULTIUNIT) {
+        if (saleRate > 0) {
+          if (_conversion > 0) {
+            if (_focusNodeRate.hasFocus) {
+              rate = double.tryParse(_rateController.text)!;
+            } else {
+              rate = saleRate * _conversion;
+              _rateController.text = rate.toStringAsFixed(decimal);
+            }
+            pRate = productModelPrize['prate'] * _conversion;
+            rPRate = productModelPrize['realprate'] * _conversion;
+          } else {
+            rate = (_rateController.text.isNotEmpty
+                ? (double.tryParse(_rateController.text))
+                : 0)!;
+          }
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? (double.tryParse(_rateController.text))
+              : 0)!;
+        }
+      } else {
+        if (_focusNodeRate.hasFocus) {
+          rate = double.tryParse(_rateController.text)!;
+        } else if (saleRate > 0) {
+          _rateController.text = saleRate.toStringAsFixed(decimal);
+          rate = saleRate;
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? double.tryParse(_rateController.text)
+              : 0)!;
+        }
+      }
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)!;
+      rRate = taxMethod == 'MINUS'
+          ? cessOnNetAmount
+              ? CommonService.getRound(
+                  4, (100 * rate) / (100 + taxP + kfcP + cessPer))
+              : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
+          : rate;
+      discount = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountController.text)
+          : 0)!;
+      rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(4, ((discount * 100) / (taxP + 100)))
+          : discount;
+      gross = CommonService.getRound(decimal, ((rRate * quantity)));
+      subTotal = CommonService.getRound(decimal, (gross - rDisc));
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        kfc = isKFC
+            ? CommonService.getRound(decimal, ((subTotal * kfcP) / 100))
+            : 0;
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+        csGST = 0;
+        kfc = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        kfc = 0;
+        tax = 0;
+      }
+      if (cessOnNetAmount) {
+        if (cessPer > 0) {
+          cess = CommonService.getRound(decimal, ((subTotal * cessPer) / 100));
+          adCess = CommonService.getRound(decimal, (quantity * adCessPer));
+        } else {
+          cess = 0;
+          adCess = 0;
+        }
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+      total = CommonService.getRound(
+          2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+      if (enableMULTIUNIT && _conversion > 0) {
+        profitPer = pRateBasedProfitInSales
+            ? CommonService.getRound(2,
+                (total - (productModelPrize[0]['prate'] * _conversion * quantity)))
+            : CommonService.getRound(
+                decimal,
+                (total -
+                    (productModelPrize[0]['realprate'] * _conversion * quantity)));
+      } else {
+        profitPer = pRateBasedProfitInSales
+            ? CommonService.getRound(
+                2, (total - (productModelPrize[0]['prate'] * quantity)))
+            : CommonService.getRound(
+                2, (total - (productModelPrize[0]['realprate'] * quantity)));
+      }
+      unitValue = _conversion > 0 ? _conversion : 1;
+    }
+  return GestureDetector(
+    onTap: () => FocusScope.of(context).unfocus(),
+    child: Scaffold(
+      backgroundColor: bagroundColor,
+      appBar: AppBar(
+        title: const Text('Add Item'),
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins',
+        ),
+        leading: IconButton(
+          onPressed: (){
+            setState(() {
+              clearValue();
+              nextWidget = 0;
+            });
+          }, icon: const Icon(Icons.arrow_back)),
+      ),
+      body: Column(
+        children: [
+           Container(
+            padding:const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 6
+            ),
+            color: white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                 const Text(
+                  ' Item Name',
+                   style: TextStyle(
+                   fontFamily: 'poppins',
+                   fontSize: 14,
+                   fontWeight: FontWeight.w500),
+                 ),
+                 const SizedBox(
+                  height: 4,
+                 ),
+                 FutureBuilder(
+                            future: dio.fetchAllProductPurchase(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+                              //  else if (snapshot.connectionState == ConnectionState.waiting){
+                              //    isLoading == true;
+                              // }
+                              else if (!snapshot.hasData) {
+                                return const Text('No data found');
+                              }
+                             
+                              final purchasePr = snapshot.data;
+                          
+                              List<String> prName =
+                                  purchasePr!
+                                  .map((e) => e.itemName)
+                                  .where((element) => element != null)
+                                  .cast<String>()
+                                  .toList();
+                          
+                              return EasyAutocomplete(
+                                inputTextStyle: const TextStyle(fontSize: 13),
+                                decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                    vertical: 5, horizontal: 5),
+                                    border: OutlineInputBorder(),
+                                    ),
+                                // controller: productNameController,
+                                suggestions: prName,
+                                onChanged: (p0) {
+                                 
+                                },
+                                onSubmitted: (value) async {
+                                  clearValue();
+                                  selectedItem =purchasePr.firstWhere(
+                                    (element) => element.itemName == value,
+                                  );
+                                 taxP = selectedItem.tax;
+                                  selectedProducteId = selectedItem.slNo;
+                                  print(selectedProducteId);
+                                  final fetchedPrice = await dio
+                                  .fetchProductPrizeStock(selectedProducteId!, locationId);
+                                 print(fetchedPrice);
+                                  productModelPrize = fetchedPrice.toList();
+                                 pRate = double.tryParse(productModelPrize[0]['prate'].toString())!;
+                                rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
+                                 isTax = taxable;
+                                 taxP = (isTax ? double.tryParse(selectedItem.tax.toString()) : 0)!;
+                                  cess = (isTax ? double.tryParse(selectedItem.cess.toString()) : 0)!;
+                                  cessPer = (isTax ? double.tryParse(selectedItem.cessPer.toString()) : 0)!;
+                                 adCessPer =
+                                 (isTax ? double.tryParse(selectedItem.adCessPer.toString()) : 0)!;
+                                  kfcP = isTax
+                                ? enableKeralaFloodCess
+                                 ? kfcPer
+                                 : 0
+                                 : 0;
+                                 if (rateType == 'RETAIL') {
+                                 saleRate = double.tryParse(productModelPrize[0]['retail'].toString())!;
+                                 } else if (rateType == 'WHOLESALE') {
+                                 saleRate = double.tryParse(productModelPrize[0]['wsrate'].toString())!;
+                                 } else {
+                                 saleRate = double.tryParse(productModelPrize[0]['mrp'].toString())!;
+                                 }
+                                  if (saleRate > 0 &&
+                                 !_focusNodeRate.hasFocus &&
+                                 _rateController.text.isEmpty) {
+                                _rateController.text = saleRate.toStringAsFixed(decimal);
+                                rate = saleRate;
+                                 }
+                                 uniqueCode = productModelPrize[0]['uniquecode'];
+                                },
+                              );
+                            },
+                          ),
+                
+                 const SizedBox(
+                  height: 4,
+                 ),
+                 selectedProducteId == null
+                        ? SizedBox()
+                        :  Row(
+                  children: [
+                    Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(' Quantity',
+                              style: TextStyle(
+                                             fontFamily: 'poppins',
+                                             fontSize: 14,
+                                             fontWeight: FontWeight.w500),),
+                                             const SizedBox(
+                                            height: 2,
+                                           ),
+                              SizedBox(
+                                height: 40,
+                                child: TextFormField(
+                                  controller: _quantityController,
+                                  focusNode: _focusNodeQuantity,
+                                  keyboardType: const TextInputType.numberWithOptions(
+                                      decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 5
+                                    ),
+                                      border: OutlineInputBorder(),),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      calculate();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          )),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                       Visibility(
+                        visible: enableMULTIUNIT,
+                        child: Expanded(
+                          child: FutureBuilder(
+                            future: dio.fetchUnitOf(int.tryParse(
+                                selectedItem.itemCode.toString())!),
+                            builder: (BuildContext context,
+                                AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                unitList.clear();
+                                for (var i = 0;
+                                    i < snapshot.data.length;
+                                    i++) {
+                                  if (defaultUnitID.toString().isNotEmpty) {
+                                    if (snapshot.data[i].id ==
+                                        defaultUnitID! - 1) {
+                                      _dropDownUnit = snapshot.data[i].id;
+                                      _conversion =
+                                          snapshot.data[i].conversion;
+                                    }
+                                  }
+                                  unitList.add(UnitModel(
+                                      id: snapshot.data[i].id,
+                                      itemId: snapshot.data[i].itemId,
+                                      conversion: snapshot.data[i].conversion,
+                                      name: snapshot.data[i].name,
+                                      pUnit: snapshot.data[i].pUnit,
+                                      sUnit: snapshot.data[i].sUnit,
+                                      unit: snapshot.data[i].unit,
+                                      rate: ''));
+                                }
+                              }
+                              return snapshot.hasData
+                                  ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                        const Text(' Unit',
+                                        style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500),),
+                                        const SizedBox(
+                                        height: 2,
+                                        ),
+                                      Container(
+                                        height: 40,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 5
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius: BorderRadius.circular(3)
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                                            isExpanded: true,
+                                              hint: Text(_dropDownUnit > 0
+                                                  ? UnitSettings.getUnitName(
+                                                      _dropDownUnit)
+                                                  : 'SKU'),
+                                              items: snapshot.data
+                                                  .map<DropdownMenuItem<String>>(
+                                                      (item) {
+                                                return DropdownMenuItem<String>(
+                                                  value: item.id.toString(),
+                                                  child: Text(item.name),
+                                                );
+                                              }).toList(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _dropDownUnit =
+                                                      int.tryParse(value!)!;
+                                                  for (var i = 0;
+                                                      i < unitList.length;
+                                                      i++) {
+                                                    UnitModel _unit = unitList[i];
+                                                    if (_unit.unit ==
+                                                        int.tryParse(value)) {
+                                                      _conversion = _unit.conversion!;
+                                                      break;
+                                                    }
+                                                  }
+                                                  calculate();
+                                                });
+                                              },
+                                            ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                  : Container();
+                            },
+                          ),
+                        ),
+                      ),
+                  ],
+                 ),
+                 const SizedBox(
+                        height: 4,
+                      ),
+                  Row(
+                    children: [
+                      Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                  const Text(' Price',
+                            style: TextStyle(
+                   fontFamily: 'poppins',
+                   fontSize: 14,
+                   fontWeight: FontWeight.w500),),
+                   const SizedBox(
+                    height: 2,
+                   ),
+                                TextField(
+                                  controller: _rateController,
+                                  focusNode: _focusNodeRate,
+                                  keyboardType: const TextInputType.numberWithOptions(
+                                      decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsetsDirectional.symmetric(
+                                      horizontal: 5,
+                                      vertical: 5
+                                    ), 
+                                    constraints: BoxConstraints(
+                                      maxHeight: 40
+                                    ),
+                                      border: OutlineInputBorder(),),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      calculate();
+                                    });
+                                  },
+                                ),
+                              ],
+                            )),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            Expanded(child: 
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(' Tax Option',
+                                                        style: TextStyle(
+                                               fontFamily: 'poppins',
+                                               fontSize: 14,
+                                               fontWeight: FontWeight.w500),),
+                                               const SizedBox(
+                                                height: 2,
+                                               ),
+                                                            Container(
+                                                              height: 40,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 5),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3),
+                                                  ),
+                                                  child:
+                                                      DropdownButtonHideUnderline(
+                                                    child: DropdownButton<
+                                                        String>(
+                                                      style: const TextStyle(
+                                                          fontFamily:
+                                                              'poppins',
+                                                          color: black),
+                                                      value:
+                                                          selectedTaxOption,
+                                                      items: const [
+                                                        DropdownMenuItem(
+                                                          value: 'With Tax',
+                                                          child: Text(
+                                                              'With Tax'),
+                                                        ),
+                                                        DropdownMenuItem(
+                                                          // enabled: salesTypeData!
+                                                          //                 .id ==
+                                                          //             1 ||
+                                                          //         salesTypeData!
+                                                          //                 .id ==
+                                                          //             2
+                                                          //     ? false
+                                                          //     : true,
+                                                          value:
+                                                              'Without Tax',
+                                                          child: Text(
+                                                              'Without Tax'),
+                                                        ),
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          selectedTaxOption = value!;
+                                                          value == 'Without Tax' 
+                                                              ? isTax = false
+                                                              : isTax = true;
+                                                          calculate();
+                                                        });
+                                                      },
+                                                      isExpanded: true,
+                                                    ),
+                                                  ),
+                                                ),
+                              ],
+                            )
+                            )
+                    ],
+                  )
+              ],
+            ),
+            
+           ),
+           const SizedBox(
+            height: 8,
+           ),
+           Container(
+                                    width: MediaQuery.of(context).size.width,
+                                    color: white,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 10),
+                                    child: Column(
+                                      children: [
+                                        const Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Text(
+                                            'Totals & Taxes',
+                                            style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 2,
+                                        ),
+                                        const Divider(),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              'Subtotal (Rate x Qty)',
+                                              style: TextStyle(
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            Text(
+                                              '\u20B9 ${gross.toStringAsFixed(3)}',
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                'Discount',
+                                                style: TextStyle(
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              const Spacer(),
+                                              Flexible(
+                                                flex: 2,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.orange),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  height: 35,
+                                                  child: TextField(
+                                                    controller:
+                                                        _discountPercentController,
+                                                    focusNode:
+                                                        _focusNodeDiscountPer,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        calculate();
+                                                      });
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      suffixIcon: Container(
+                                                        decoration: BoxDecoration(
+                                                            color: Colors
+                                                                .orange[100],
+                                                            border: const Border(
+                                                                left: BorderSide(
+                                                                    color: Colors
+                                                                        .orange)),
+                                                            borderRadius: const BorderRadius
+                                                                .only(
+                                                                bottomRight:
+                                                                    Radius
+                                                                        .circular(
+                                                                            3),
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        3))),
+                                                        width: 25,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                            Icons.percent_sharp,
+                                                            color:
+                                                                Colors.orange,
+                                                            size: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              vertical: 6,
+                                                              horizontal: 3),
+                                                      border:
+                                                          const OutlineInputBorder(
+                                                              borderSide:
+                                                                  BorderSide
+                                                                      .none),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                flex: 2,
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  height: 35,
+                                                  child: TextField(
+                                                    focusNode:
+                                                        _focusNodeDiscount,
+                                                    controller:
+                                                        _discountController,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    inputFormatters: [
+                                                      FilteringTextInputFormatter(
+                                                          RegExp(r'[0-9]'),
+                                                          allow: true,
+                                                          replacementString:
+                                                              '.')
+                                                    ],
+                                                    textAlign: TextAlign.right,
+                                                    decoration: InputDecoration(
+                                                      prefixIcon: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Colors.grey[100],
+                                                          border: const Border(
+                                                              right: BorderSide(
+                                                                  color: grey)),
+                                                        ),
+                                                        width: 25,
+                                                        child: const Center(
+                                                          child: Icon(
+                                                            Icons
+                                                                .currency_rupee_outlined,
+                                                            color: Colors.grey,
+                                                            size: 15,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              vertical: 6,
+                                                              horizontal: 3),
+                                                      border:
+                                                          const OutlineInputBorder(
+                                                              borderSide:
+                                                                  BorderSide
+                                                                      .none),
+                                                    ),
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        calculate();
+                                                      });
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        SizedBox(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Row(children: [
+                                            const Text(
+                                              'Tax %      ',
+                                              style: TextStyle(
+                                                  fontFamily: 'poppins'),
+                                            ),
+                                            const Spacer(),
+                                            Flexible(
+                                              flex: 2,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border: Border.all(
+                                                        color: Colors.orange),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                height: 35,
+                                                child: TextField(
+                                                  controller:
+                                                      TextEditingController(
+                                                          text:
+                                                              taxP.toString()),
+                                                  readOnly: true,
+                                                  decoration: InputDecoration(
+                                                    suffixIcon: Container(
+                                                      decoration: BoxDecoration(
+                                                          color: Colors
+                                                              .orange[100],
+                                                          border: const Border(
+                                                              left: BorderSide(
+                                                                  color: Colors
+                                                                      .orange)),
+                                                          borderRadius:
+                                                              const BorderRadius
+                                                                  .only(
+                                                                  bottomRight: Radius
+                                                                      .circular(
+                                                                          3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                      width: 25,
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          Icons.percent_sharp,
+                                                          color: Colors.orange,
+                                                          size: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 6,
+                                                            horizontal: 3),
+                                                    border:
+                                                        const OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide
+                                                                    .none),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              flex: 2,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    border:
+                                                        Border.all(color: grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            3)),
+                                                height: 35,
+                                                child: TextField(
+                                                  controller:
+                                                      TextEditingController(
+                                                          text: tax
+                                                              .toStringAsFixed(
+                                                                  3)),
+                                                  textAlign: TextAlign.right,
+                                                  readOnly: true,
+                                                  decoration: InputDecoration(
+                                                    prefixIcon: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey[100],
+                                                        border: const Border(
+                                                            right: BorderSide(
+                                                                color: grey)),
+                                                      ),
+                                                      width: 20,
+                                                      child: const Center(
+                                                        child: Icon(
+                                                          Icons
+                                                              .currency_rupee_outlined,
+                                                          color: Colors.grey,
+                                                          size: 15,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    contentPadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            vertical: 6,
+                                                            horizontal: 3),
+                                                    border:
+                                                        const OutlineInputBorder(
+                                                            borderSide:
+                                                                BorderSide
+                                                                    .none),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ]),
+                                        ),
+                                        const SizedBox(
+                                          height: 15,
+                                        ),
+                                        SizedBox(
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: Row(
+                                              children: [
+                                                const Text(
+                                                  'Total Amount',
+                                                  style: TextStyle(
+                                                      fontFamily: 'poppins',
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                const Spacer(),
+                                                Container(
+                                                    decoration:
+                                                        const BoxDecoration(),
+                                                    child: Text(
+                                                      "\u20B9  ${total.toStringAsFixed(3)}",
+                                                      style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ))
+                                              ],
+                                            ))
+                                      ],
+                                    ),
+                                  )
+        ],
+      ),
+      bottomNavigationBar: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: 60,
+        child: Row(
+          children: [
+            Expanded(child: 
+            InkWell(
+              onTap: () {
+                
+              },
+              child: Container(
+                          height: 60,
+                          color: Colors.white,
+                          child: Center(
+                            child: Text( 'Save & New',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+            ),
+            ),
+            Expanded(
+              child:
+               InkWell(
+                onTap: () {
+                  
+                },
+                 child: Container(
+                          height: 60,
+                          color: kPrimaryColor,
+                          child:  Center(
+                            child: Text('Save',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+               ),)
+          ],
+        ),
+      ),
+    ),
+  );
   }
 
   bool isData = false;
@@ -1335,6 +2509,7 @@ class _SalesReturnState extends State<SalesReturn> {
     _quantityController.text = '';
     _rateController.text = '';
     _discountController.text = '';
+    _discountPercentController.text = '';
     // _discountPercentController.text = '';
     taxP = 0;
     tax = 0;
@@ -1375,10 +2550,13 @@ class _SalesReturnState extends State<SalesReturn> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
   final TextEditingController _discountController = TextEditingController();
+  final TextEditingController _discountPercentController =
+      TextEditingController();
   // TextEditingController _discountPercentController = TextEditingController();
   FocusNode _focusNodeQuantity = FocusNode();
   FocusNode _focusNodeRate = FocusNode();
   FocusNode _focusNodeDiscount = FocusNode();
+  FocusNode _focusNodeDiscountPer = FocusNode();
 
   final _resetKey = GlobalKey<FormState>();
   String expDate = '2000-01-01';

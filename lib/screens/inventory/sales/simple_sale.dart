@@ -3766,7 +3766,7 @@ class _SimpleSaleState extends State<SimpleSale> {
                                             ? UnitSettings.getUnitName(
                                                 _dropDownUnit)
                                             : 'SKU'),
-                                        items: unitList
+                                        items: unitListSettings
                                             .map<DropdownMenuItem<String>>(
                                                 (item) {
                                           return DropdownMenuItem<String>(

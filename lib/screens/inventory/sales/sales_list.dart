@@ -431,7 +431,9 @@ class _SalesListState extends State<SalesList> {
             if (snapshot.data!.isNotEmpty) {
               var data = snapshot.data;
               var col = data![0].keys.toList();
-              if (classic && statementType != 'P_l_ItemWise_New') {
+              if (classic && 
+                  statementType != 'P_l_ItemWise_New' &&
+                  statementType != 'Sales_QtyTotal' ) {
                 Map<String, dynamic> totalData = {};
                 for (int i = 0; i < col.length; i++) {
                   var cell = '';

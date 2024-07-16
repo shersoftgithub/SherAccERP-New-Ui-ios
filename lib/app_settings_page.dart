@@ -1056,9 +1056,9 @@ class AppSettings extends StatelessWidget {
                                           fontFamily: 'poppins'),
                                       settingKey:
                                           'key-dropdown-item-default-sku-view',
-                                      values: unitList.isNotEmpty
+                                      values: unitListSettings.isNotEmpty
                                           ? {
-                                              for (var e in unitList)
+                                              for (var e in unitListSettings)
                                                 e.key + 1: e.value
                                             }
                                           : {

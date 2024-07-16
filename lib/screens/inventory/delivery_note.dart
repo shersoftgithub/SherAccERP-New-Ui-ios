@@ -3464,7 +3464,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                             ? UnitSettings.getUnitName(
                                                 _dropDownUnit)
                                             : 'SKU'),
-                                        items: unitList
+                                        items: unitListSettings
                                             .map<DropdownMenuItem<String>>(
                                                 (item) {
                                           return DropdownMenuItem<String>(

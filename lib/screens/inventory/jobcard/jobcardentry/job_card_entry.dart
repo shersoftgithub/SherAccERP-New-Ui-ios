@@ -2167,7 +2167,7 @@ class _JobcardentryState extends State<Jobcardentry> {
                                             ? UnitSettings.getUnitName(
                                                 _dropDownUnit)
                                             : 'SKU'),
-                                        items: unitList
+                                        items: unitListSettings
                                             .map<DropdownMenuItem<String>>(
                                                 (item) {
                                           return DropdownMenuItem<String>(

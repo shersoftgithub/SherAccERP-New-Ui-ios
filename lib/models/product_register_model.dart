@@ -303,4 +303,8 @@ class ProductPurchaseModel {
 
   factory ProductPurchaseModel.fromJson(String source) =>
       ProductPurchaseModel.fromMap(json.decode(source));
+
+      static ProductPurchaseModel empty() {
+        return ProductPurchaseModel(slNo: 0, itemCode: '', itemName: '', tax: 0, cess: 0, cessPer: 0, adCessPer: 0, stockValuation: '', typeOfSupply: '', internationalBarcode: '', serialNo: false);
+      }
 }
