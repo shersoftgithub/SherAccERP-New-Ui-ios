@@ -11219,12 +11219,12 @@ void _onTabTapped(int index) {
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-          Navigator.pushReplacementNamed(
-              context,
-              ComSettings.appSettings('bool', 'key-simple-sales', false)
-                  ? '/SimpleSale'
-                  : '/sales',
-              arguments: Sale(thisSale: thisSale, oldSale: true));
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => Sale(
+                thisSale: thisSale, oldSale: false
+                ))
+              );
         },
         onPressedYes: () {
           Navigator.of(context).pop();

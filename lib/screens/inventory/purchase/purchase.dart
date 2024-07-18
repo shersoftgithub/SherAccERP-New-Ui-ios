@@ -6510,20 +6510,20 @@ class _PurchaseState extends State<Purchase> {
                                 } else {
                                   if (!isFreeItem) {
                                     if (quantity <= 0) {
-                                      showWarningAlertBox(
-                                          context,
-                                          'Fill data quantity',
-                                          '0 quantity not allowed');
+                                      Fluttertoast.showToast(
+                              msg: '0 Quantity not allowed',
+                              backgroundColor: red
+                            );
                                     } else if (pRate <= 0) {
-                                      showWarningAlertBox(
-                                          context,
-                                          'Fill data rate',
-                                          '0 rate not allowed');
+                                      Fluttertoast.showToast(
+                              msg: '0 Rate not allowed',
+                              backgroundColor: red
+                            );
                                     } else {
-                                      showWarningAlertBox(
-                                          context,
-                                          'Fill data rate',
-                                          '0 rate not allowed');
+                                      Fluttertoast.showToast(
+                              msg: '0 Rate not allowed',
+                              backgroundColor: red
+                            );
                                     }
                                   }
                                 }
@@ -6842,14 +6842,22 @@ class _PurchaseState extends State<Purchase> {
                       } else {
                         if (!isFreeItem) {
                           if (quantity <= 0) {
-                            showWarningAlertBox(context, 'Fill data quantity',
-                                '0 quantity not allowed');
+                            Fluttertoast.showToast(
+                              msg: '0 quantity not allowed',
+                              backgroundColor: red
+                            );
+                            // showWarningAlertBox(context, 'Fill data quantity',
+                            //     '0 quantity not allowed');
                           } else if (pRate <= 0) {
-                            showWarningAlertBox(context, 'Fill data rate',
-                                '0 rate not allowed');
+                             Fluttertoast.showToast(
+                              msg: '0 rate not allowed',
+                              backgroundColor: red
+                            );
                           } else {
-                            showWarningAlertBox(context, 'Fill data rate',
-                                '0 rate not allowed');
+                            Fluttertoast.showToast(
+                              msg: '0 rate not allowed',
+                              backgroundColor: red
+                            );
                           }
                         }
                       }

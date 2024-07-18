@@ -22,6 +22,7 @@ import 'package:sheraccerp/service/blue_thermal.dart';
 import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
@@ -78,6 +79,7 @@ class _SalesReturnState extends State<SalesReturn> {
   int printerType = 0, printerDevice = 0, printModel = 2;
   String labelSerialNo = 'SerialNo';
   String labelSpRate = 'SpRetail';
+  CartItem? cartModel;
 
   @override
   void initState() {
@@ -183,6 +185,7 @@ class _SalesReturnState extends State<SalesReturn> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales Return"),
@@ -348,21 +351,159 @@ class _SalesReturnState extends State<SalesReturn> {
                   ),
                 );
               } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(
+                height: 5,
+              ),
+              itemCount: dataDisplay.length + 1,
+              shrinkWrap: true,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ),
+                  );
+                } else {
+                  return InkWell(
                     onTap: () {
                       showEditDialog(context, dataDisplay[index]);
                     },
-                  ),
-                );
+                    child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
+          );
+                // Card(
+                //   elevation: 2,
+                //   child: ListTile(
+                //     title: Text(dataDisplay[index]['Name']),
+                //     subtitle: Text('Date: ' +
+                //         dataDisplay[index]['Date'] +
+                //         ' / EntryNo : ' +
+                //         dataDisplay[index]['Id'].toString()),
+                //     trailing: Text(
+                //         'Total : ' + dataDisplay[index]['Total'].toString()),
+                //     onTap: () {
+                //       showEditDialog(context, dataDisplay[index]);
+                //     },
+                //   ),
+                // );
               }
             },
             controller: _scrollController,
@@ -817,14 +958,14 @@ class _SalesReturnState extends State<SalesReturn> {
           builder: (BuildContext context) {
             return Expanded(
               child: AlertDialog(
-                title: const Text('salesReturn Deleted'),
+                title: const Text('SalesReturn Deleted'),
                 actions: [
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                       Navigator.pushNamed(context, '/salesReturn');
                     },
-                    child: const Text('CANCEL'),
+                    child: const Text('OK'),
                   )
                 ],
               ),
@@ -843,6 +984,7 @@ class _SalesReturnState extends State<SalesReturn> {
     //   }
     // });
   }
+  int? selectedCustomerId;
    Future<List<String>> fetchSuggestions(String searchValue) async {
     setState(() {
       loading = true;
@@ -850,6 +992,7 @@ class _SalesReturnState extends State<SalesReturn> {
     try {
       final getCustomer = await dio.getCustomerNameList();
       final nameList = getCustomer.map((e) => e.name).toList();
+      // selectedCustomerId = getCustomer.map((e) => e.id).toList();
       return nameList.where((name) => name.toLowerCase().contains(searchValue.toLowerCase())).toList();
     } catch (e) {
       print("Error fetching customer names: $e");
@@ -901,8 +1044,10 @@ class _SalesReturnState extends State<SalesReturn> {
                                 ? const Text('No Data 6')
                                 : const Text('No Widget');
   }
- String entryNo = '';
+//  String entryNo = '';
  var itemName;
+ int? position;
+ bool editItem = false;
   newSalesReturnWidget(newSalesReturn ){
   if(newSalesReturn){
     setState(() {
@@ -920,79 +1065,31 @@ class _SalesReturnState extends State<SalesReturn> {
           fontFamily: 'poppins'
         ),
       ),
-      body: Column(
-        children: [
-           Container(
-            color: white,
-            padding:const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8
-            ),
-             child: Row(
-                                  children: [
-                                    Expanded(
-                                        child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          ' Bill No',
-                                          style: TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(color: grey),
-                                              borderRadius:
-                                                  BorderRadius.circular(3)),
-                                          child: entryNo.isEmpty
-                                              ? const Align(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  child: Icon(
-                                                    Icons.arrow_drop_down_rounded,
-                                                    color: grey,
-                                                  ))
-                                              : Align(
-                                                  alignment: Alignment.centerLeft,
-                                                  child: Text(
-                                                    entryNo,
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize: 13),
-                                                  ),
-                                                ),
-                                        )
-                                      ],
-                                    )),
-                                    const SizedBox(
-                                      width: 4,
-                                    ),
-                                    Expanded(
-                                        child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          ' Bill Date',
-                                          style: TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                        InkWell(
-                                          onTap: () => _selectDate(),
-                                          child: Container(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+             Container(
+              color: white,
+              padding:const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8
+              ),
+               child: Row(
+                                    children: [
+                                      Expanded(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            ' Bill No',
+                                            style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                          Container(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 5),
                                             width:
@@ -1002,126 +1099,774 @@ class _SalesReturnState extends State<SalesReturn> {
                                                 border: Border.all(color: grey),
                                                 borderRadius:
                                                     BorderRadius.circular(3)),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  formattedDate!,
-                                                  style: const TextStyle(
-                                                      fontWeight: FontWeight.w400,
-                                                      fontSize: 13),
-                                                ),
-                                                const Icon(
-                                                  Icons.calendar_month,
-                                                  size: 18,
-                                                  color: grey,
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        )
-                                      ],
-                                    )),
-                                  ],
-                                ),
-           ),
-           const SizedBox(
-            height: 8,
-           ),
-           Container(
-            color: white,
-            padding:const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 6
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  ' Customer',
-                   style: TextStyle(
-                   fontFamily: 'poppins',
-                   fontSize: 14,
-                   fontWeight: FontWeight.w500),
-                 ),
-                 const SizedBox(
-                  height: 4,
-                 ),
-                 EasyAutocomplete(
-                  inputTextStyle: const TextStyle(
-                    fontFamily: 'poppins',
-                    fontSize: 14
-                  ),
-                  progressIndicatorBuilder: const CircularProgressIndicator() ,
-                  decoration: const InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 5
-                    ),
-                    border: OutlineInputBorder()
-                  ),
-                  asyncSuggestions: (searchValue) async {
-                    return await fetchSuggestions(searchValue);
-                  // final getCustomer =   dio.getCustomerNameList().then((value) => ledgerModel = value);
-                  // final data = getCustomer;
-                  // final nameList =   getCustomer.then((value) => value.map((e) => e.name).toList());
-                  // return nameList;
-                  },
-                  suggestions: itemName,
-                  onChanged: (text) {
-                    
-                  },
-                  onSubmitted: (p0) {
-                    
-                  },
-                 ),
-                 const SizedBox(
-                  height: 4,
-                 ),
-                  ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: kPrimaryColor,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(3))),
-                                onPressed: () {
-                                  setState(() {
-                                    // editItem = false;
-                                    nextWidget = 1;
-                                  });
-                                },
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // SizedBox(width: 10),
-                                    Text(
-                                      'Add Item',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'poppins',
-                                        fontSize: 13,
+                                            child: dataDynamic[0]['EntryNo'].toString().isEmpty
+                                                ? const Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Icon(
+                                                      Icons.arrow_drop_down_rounded,
+                                                      color: grey,
+                                                    ))
+                                                : Align(
+                                                    alignment: Alignment.centerLeft,
+                                                    child: Text(
+                                                      dataDynamic[0]['EntryNo'].toString(),
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w400,
+                                                          fontSize: 13),
+                                                    ),
+                                                  ),
+                                          )
+                                        ],
+                                      )),
+                                      const SizedBox(
+                                        width: 4,
                                       ),
-                                    ),
-                                  ],
+                                      Expanded(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            ' Bill Date',
+                                            style: TextStyle(
+                                                fontFamily: 'poppins',
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                          InkWell(
+                                            onTap: () => _selectDate(),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 5),
+                                              width:
+                                                  MediaQuery.of(context).size.width,
+                                              height: 35,
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(color: grey),
+                                                  borderRadius:
+                                                      BorderRadius.circular(3)),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    formattedDate!,
+                                                    style: const TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 13),
+                                                  ),
+                                                  const Icon(
+                                                    Icons.calendar_month,
+                                                    size: 18,
+                                                    color: grey,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      )),
+                                    ],
+                                  ),
+             ),
+             const SizedBox(
+              height: 8,
+             ),
+             Container(
+              color: white,
+              padding:const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 6
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    ' Customer',
+                     style: TextStyle(
+                     fontFamily: 'poppins',
+                     fontSize: 14,
+                     fontWeight: FontWeight.w500),
+                   ),
+                   const SizedBox(
+                    height: 4,
+                   ),
+                     FutureBuilder<List<dynamic>>(
+                                future: dio.getCustomerNameList(),
+                                builder: (context, snapshot) {
+                                  // if(snapshot.connectionState == ConnectionState.waiting){
+                                  //  return CircularProgressIndicator();
+                                  // }
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData) {
+                                    return const Text('No data found');
+                                  }
+                                    // snapshot.data = ledgerModel;
+                                  final supplierList = snapshot.data;
+
+                                  final names = supplierList!
+                                      .map((e) => e.name)
+                                      .where((name) => name != null)
+                                      .cast<String>()
+                                      .toList();
+
+                                  return EasyAutocomplete(
+                                    progressIndicatorBuilder: const Center(
+                                            child: CircularProgressIndicator())
+                                       ,
+                                       controller: customerNameController,
+                                    // controller: oldBill
+                                    //     ? selectedSupplierId == acId
+                                    //         ? TextEditingController(
+                                    //             text: cashAc)
+                                    //         : supplierController
+                                    //     : supplierController,
+                                    inputTextStyle: const TextStyle(
+                                        fontFamily: 'poppins', fontSize: 14),
+                                    suggestionTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                    suggestions: names,
+                                    onChanged: (value) {
+                                      // setState(() {
+                                      //   query = value.isNotEmpty
+                                      //       ? value.toLowerCase()
+                                      //       : 'a';
+                                      // });
+                                    },
+                                    onSubmitted: (value) {
+                                      setState(() {
+                                        final selectedSupplier =
+                                            supplierList.firstWhere((element) =>
+                                                element.name == value);
+                                        selectedCustomerId =
+                                            selectedSupplier.id;
+                                          // ledgerModel = selectedSupplier ;
+                                        // _isLoading = true;
+                                        dio
+                                            .getCustomerDetail(
+                                                selectedCustomerId!)
+                                            .then((value) {
+                                          setState(() {
+                                            ledgerModel = value;
+                                            _isLoading = false;
+                                          });
+                                        });
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+                  //  EasyAutocomplete(
+                  //   inputTextStyle: const TextStyle(
+                  //     fontFamily: 'poppins',
+                  //     fontSize: 14
+                  //   ),
+                  //   progressIndicatorBuilder: const CircularProgressIndicator() ,
+                  //   decoration: const InputDecoration(
+                  //     contentPadding: EdgeInsets.symmetric(
+                  //       horizontal: 5,
+                  //       vertical: 5
+                  //     ),
+                  //     border: OutlineInputBorder()
+                  //   ),
+                  //   asyncSuggestions: (searchValue) async {
+                  //     return await fetchSuggestions(searchValue);
+                  //   // final getCustomer =   dio.getCustomerNameList().then((value) => ledgerModel = value);
+                  //   // final data = getCustomer;
+                  //   // final nameList =   getCustomer.then((value) => value.map((e) => e.name).toList());
+                  //   // return nameList;
+                  //   },
+                  //   suggestions: itemName,
+                  //   onChanged: (text) {
+                      
+                  //   },
+                  //   onSubmitted: (p0) {
+                      
+                  //   },
+                  //  ),
+                   const SizedBox(
+                    height: 4,
+                   ),
+                    ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: kPrimaryColor,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(3))),
+                                  onPressed: () {
+                                    setState(() {
+                                      editItem = false;
+                                      nextWidget = 1;
+                                    });
+                                  },
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // SizedBox(width: 10),
+                                      Text(
+                                        'Add Item',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'poppins',
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                ],
+              ),
+             ),
+             const SizedBox(
+              height: 8,
+             ),
+              cartItem.isNotEmpty
+                          ? Container(
+                               constraints: BoxConstraints(maxHeight: 300),
+                            // height: 250,
+                              width: MediaQuery.sizeOf(context).width,
+                              color: white,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 4),
+                                child: ListView.separated(
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 4),
+                                  shrinkWrap: true,
+                                  // physics: ClampingScrollPhysics() ,
+                                  itemCount: cartItem.length ,
+                                  // scrollDirection: Axis.vertical,
+                                  itemBuilder: (context, index) {
+                                    return InkWell(
+                                      onTap: () {
+                                       setState(() {
+                                            editItem = true;
+                                        position = index;
+                                        cartModel = cartItem.elementAt(position!);
+                                        selectedProducteId = 
+                                        cartModel!.id;
+                                        productNameController.text =
+                                        cartModel!.itemName!;
+                                        rate = cartModel!.rate!;
+                                        _rateController.text =
+                                            cartModel!.rate.toString();
+                                        _quantityController.text =
+                                            cartModel!.quantity.toString();
+                                            quantity = 
+                                            cartModel!.quantity!;
+                                        _quantityController.text =
+                                            cartModel!.quantity.toString();
+                                        _discountController.text =
+                                            cartModel!.discount.toString();
+                                        _discountPercentController.text =
+                                            cartModel!.discountPercent.toString();
+                                            gross = cartModel!.gross!;
+                                            total = cartModel!.total!;
+                                        // _serialNoController.text =
+                                        //     cartModel.serialNo;
+                                            nextWidget = 1;
+                                       });
+                                        // setState(() {
+                                        //   // editItem = true;
+                                        //   position = index;
+                                        //   cartModel =
+                                        //       cartItem.elementAt(position!);
+                                        //   itemNameControl.text =
+                                        //       cartModel!.itemName.toString();
+                                        //   _rateController.text =
+                                        //       cartModel!.rate!.toString();
+                                        //   _quantityController.text =
+                                        //       cartModel!.quantity!.toString();
+                                        //   _freeQuantityController.text =
+                                        //       cartModel!.free.toString();
+                                        //   _discountController.text =
+                                        //       cartModel!.discount.toString();
+                                        //   _discountPercentController.text =
+                                        //       cartModel!.discountPercent
+                                        //           .toString();
+                                        //   _serialNoController.text =
+                                        //       cartModel!.serialNo!;
+                                        //   _dropDownUnit = cartModel!.unitId!;
+                                        //   taxP = cartModel!.taxP!;
+                                        //   tax = cartModel!.tax!;
+                                        //   gross = cartModel!.gross!;
+                                        //   total = cartModel!.total!;
+                                        //   nextWidget = 2;
+                                        // });
+                                      },
+                                      child: Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: BoxDecoration(
+                                            // boxShadow: [
+                                            //   BoxShadow(
+                                            //     color: Colors.grey.shade400,
+                                            //     blurRadius: 5,
+                                            //     spreadRadius: .8,
+                                            //   )
+                                            // ],
+                                            border: Border.all(
+                                                color: grey, width: .5),
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                            color:
+                                                Colors.grey.withOpacity(.1)),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  Container(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 5),
+                                                      decoration:
+                                                          BoxDecoration(
+                                                              color: white,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                              border:
+                                                                  Border.all(
+                                                                width: .3,
+                                                                color: grey,
+                                                              )),
+                                                      child: Text(
+                                                        '# ${cartItem[index].id}',
+                                                        style:
+                                                            const TextStyle(
+                                                                fontSize: 12),
+                                                      )),
+                                                  Text(
+                                                      ' ${cartItem[index].itemName}',
+                                                      style: const TextStyle(
+                                                          color: black,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontFamily:
+                                                              'poppins')),
+                                                  const Spacer(),
+                                                  
+                                                ]),
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(
+                                                  children: [
+                                                    const Text(
+                                                      'Item Subtotal',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                  width:
+                                                      MediaQuery.of(context)
+                                                          .size
+                                                          .width,
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        'Discount (%): ',
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .orange[700],
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      Text(
+                                                        cartItem[index].discountPercent!
+                                                            .toStringAsFixed(
+                                                                2),
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .orange[700],
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      const Spacer(),
+                                                      Text(
+                                                        '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  )),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  Text(
+                                                    'Tax (%): ${cartItem[index].taxP}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ]),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  const Text(
+                                                    'Total',
+                                                    style: TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                ]),
+                                              ),
+                                             
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              )
-              ],
-            ),
-           )
-        ],
+                              ),
+                            )
+                          : const Center(
+                              child: Text("No items in Cart"),
+                            ),
+                            cartItem.isNotEmpty?
+                             Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 30),
+                              width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                                 const SizedBox(
+                                      height: 5,
+                                    ),
+                               Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        Text('Total Tax Amt : ${CommonService.getRound(decimal, taxTotalCartValue).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Total Item : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                        Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    )
+                            ],),
+                            ): const SizedBox(),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                             Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 20),
+                           child: Column(
+                             children: [
+                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children:[
+                                  const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                  Text('₹   ${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}',style:const 
+                                  TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                                ]
+                               ),
+                             
+                             ],
+                           ),
+                         ),
+                         const SizedBox(
+                          height: 20,
+                         ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          children: [
+             Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            splashColor: Colors.grey,
+                            onTap: () {
+                              oldBill 
+                              ? setState(() {
+                                  if (buttonEvent) {
+                      return;
+                    } else {
+                      if (totalItem > 0) {
+                        if (companyUserData!.deleteData) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          deleteSale();
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Permission denied\ncan`t delete');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      } else {
+                        Fluttertoast.showToast(
+                            msg: 'Please select atleast one bill');
+                        setState(() {
+                          buttonEvent = false;
+                        });
+                      }
+                    }
+                              },)
+                              : setState(() {
+                                
+                              },);
+                            },
+                            child: Container(
+                              height: 60,
+                              color: Colors.white,
+                              child:  Center(
+                                child: Text(
+                                  oldBill ? 'Delete': 'Save & New',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                       Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            splashColor: Colors.grey,
+                            onTap: () {
+                              oldBill ?
+                              setState(() {
+                                 if (buttonEvent) {
+                        return;
+                      } else {
+                        if (totalItem > 0 && selectedProducteId!= null) {
+                          if (companyUserData!.insertData) {
+                            setState(() {
+                              _isLoading = true;
+                              buttonEvent = true;
+                            });
+                            updateSale();
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: 'Permission denied\ncan`t save');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Please add atleast one item');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                              },)
+                            : setState(() {
+                                if (buttonEvent) {
+                        return;
+                      } else {
+                        if (totalItem > 0 && selectedProducteId!= null) {
+                          if (companyUserData!.insertData) {
+                            setState(() {
+                              _isLoading = true;
+                              buttonEvent = true;
+                            });
+                            saveSale();
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: 'Permission denied\ncan`t save');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Please add atleast one item');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                             });
+                            },
+                            child: Container(
+                              height: 60,
+                              color: kPrimaryColor,
+                              child:  Center(
+                                child:Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+          ],
+        ),
       ),
     ),
   );
   }
   
 var selectedItem;
+dynamic productModelPrizee = [
+      {
+        'prate': 0,
+        'realprate':0,
+        'retail':0,
+        'wsrate':0,
+        'mrp':0,
+        'uniquecode':0
+      }
+    ];
 int? selectedProducteId;
 String? selectedTaxOption = 'With Tax';
+var fetchedPrice;
   addItemWidget(){
     int locationId = lId.toString().trim().isNotEmpty ? lId : 1;
     
     List<UnitModel> unitList = [];
+     if (editItem) {
+      productModelPrize = fetchedPrice;
+     }
+    //   productModel = productModel == null
+    //       ? ProductPurchaseModel(
+    //           itemName: cartModel!.itemName!,
+    //           adCessPer: 0,
+    //           cess: cartModel!.cess!,
+    //           cessPer: cartModel!.cess!,
+    //           internationalBarcode: '',
+    //           itemCode: cartModel!.itemId.toString(),
+    //           serialNo: cartModel!.serialNo!.isNotEmpty ? true : false,
+    //           slNo: cartModel!.itemId!,
+    //           stockValuation: '',
+    //           tax: cartModel!.tax!,
+    //           typeOfSupply: '')
+    //       : productModel;
+    //   pRate = double.tryParse(productModelPrize[0]['prate'].toString())!;
+    //   rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
+    //   isTax = taxable;
+    //   taxP = (isTax ? double.tryParse(productModel.tax.toString()) : 0)!;
+    //   cess = (isTax ? double.tryParse(productModel.cess.toString()) : 0)!;
+    //   cessPer = (isTax ? double.tryParse(productModel.cessPer.toString()) : 0)!;
+    //   adCessPer =
+    //       (isTax ? double.tryParse(productModel.adCessPer.toString()) : 0)!;
+    //   kfcP = isTax
+    //       ? enableKeralaFloodCess
+    //           ? kfcPer
+    //           : 0
+    //       : 0;
+    //   if (rateType == 'RETAIL') {
+    //     saleRate = double.tryParse(productModelPrize[0]['retail'].toString())!;
+    //   } else if (rateType == 'WHOLESALE') {
+    //     saleRate = double.tryParse(productModelPrize[0]['wsrate'].toString())!;
+    //   } else {
+    //     saleRate = double.tryParse(productModelPrize[0]['mrp'].toString())!;
+    //   }
+    //   if (saleRate > 0 &&
+    //       !_focusNodeRate.hasFocus &&
+    //       _rateController.text.isEmpty) {
+    //     _rateController.text = saleRate.toStringAsFixed(decimal);
+    //     rate = saleRate;
+    //   }
+    //   uniqueCode = productModelPrize[0]['uniquecode'];
+    //   quantity = cartModel!.quantity!;
+    //   _quantityController.text = cartModel!.quantity!.toString();
+    // }
     calculate() {
       if (enableMULTIUNIT) {
         if (saleRate > 0) {
@@ -1132,8 +1877,8 @@ String? selectedTaxOption = 'With Tax';
               rate = saleRate * _conversion;
               _rateController.text = rate.toStringAsFixed(decimal);
             }
-            pRate = productModelPrize['prate'] * _conversion;
-            rPRate = productModelPrize['realprate'] * _conversion;
+            pRate = productModelPrize[0]['prate'] * _conversion;
+            rPRate = productModelPrize[0]['realprate'] * _conversion;
           } else {
             rate = (_rateController.text.isNotEmpty
                 ? (double.tryParse(_rateController.text))
@@ -1158,21 +1903,50 @@ String? selectedTaxOption = 'With Tax';
       }
       quantity = (_quantityController.text.isNotEmpty
           ? double.tryParse(_quantityController.text)
-          : 0)!;
+          : 0)?? 0;
       rRate = taxMethod == 'MINUS'
           ? cessOnNetAmount
               ? CommonService.getRound(
                   4, (100 * rate) / (100 + taxP + kfcP + cessPer))
               : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
           : rate;
+       discountPercent =  (_discountPercentController.text.isNotEmpty
+          ? double.tryParse(_discountPercentController.text)
+          : 0)!;  
+         
       discount = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountController.text)
           : 0)!;
+              if (_focusNodeDiscountPer.hasFocus) {
+        _discountController.text = _discountPercentController.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? (((quantity * rRate) * discountPercent) / 100).toStringAsFixed(2)
+            : (((quantity * rate) * discountPercent) / 100).toStringAsFixed(2);
+        discount = (_discountController.text.isNotEmpty
+            ? double.tryParse(_discountController.text)
+            : 0)!;
+        discountPercent = double.tryParse(_discountPercentController.text)?? 0;
+      }
+      if (_focusNodeDiscount.hasFocus) {
+        _discountPercentController.text = _discountController.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? ((discount * 100) / (quantity * rRate)).toStringAsFixed(2)
+            : ((discount * 100) / (quantity * rate)).toStringAsFixed(2);
+        discountPercent = (_discountController.text.isNotEmpty
+            ? double.tryParse(_discountPercentController.text)
+            : 0)!;
+        double.tryParse(_discountController.text);
+        
+      }
       rDisc = taxMethod == 'MINUS'
           ? CommonService.getRound(4, ((discount * 100) / (taxP + 100)))
           : discount;
-      gross = CommonService.getRound(decimal, ((rRate * quantity)));
+      gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));    
+      // gross = CommonService.getRound(decimal, ((rRate * quantity)));
       subTotal = CommonService.getRound(decimal, (gross - rDisc));
+      
       if (taxP > 0) {
         tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
       }
@@ -1218,9 +1992,9 @@ String? selectedTaxOption = 'With Tax';
       } else {
         profitPer = pRateBasedProfitInSales
             ? CommonService.getRound(
-                2, (total - (productModelPrize[0]['prate'] * quantity)))
+                2, (total - (productModelPrizee[0]['prate'] * quantity)))
             : CommonService.getRound(
-                2, (total - (productModelPrize[0]['realprate'] * quantity)));
+                2, (total - (productModelPrizee[0]['realprate'] * quantity)))?? 0;
       }
       unitValue = _conversion > 0 ? _conversion : 1;
     }
@@ -1286,13 +2060,14 @@ String? selectedTaxOption = 'With Tax';
                                   .toList();
                           
                               return EasyAutocomplete(
-                                inputTextStyle: const TextStyle(fontSize: 13),
+                                inputTextStyle: const TextStyle(
+                                          fontFamily: 'poppins', fontSize: 14),
                                 decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
                                     vertical: 5, horizontal: 5),
                                     border: OutlineInputBorder(),
                                     ),
-                                // controller: productNameController,
+                                controller: productNameController,
                                 suggestions: prName,
                                 onChanged: (p0) {
                                  
@@ -1302,14 +2077,21 @@ String? selectedTaxOption = 'With Tax';
                                   selectedItem =purchasePr.firstWhere(
                                     (element) => element.itemName == value,
                                   );
+                                  productNameController.text = selectedItem.itemName;
                                  taxP = selectedItem.tax;
                                   selectedProducteId = selectedItem.slNo;
-                                  print(selectedProducteId);
-                                  final fetchedPrice = await dio
+                                   fetchedPrice = await dio
                                   .fetchProductPrizeStock(selectedProducteId!, locationId);
-                                 print(fetchedPrice);
-                                  productModelPrize = fetchedPrice.toList();
-                                 pRate = double.tryParse(productModelPrize[0]['prate'].toString())!;
+                                 if (fetchedPrice.length > 0) {
+                                    if (fetchedPrice.length <= 1 ) {
+                                     productModelPrize = fetchedPrice;
+                                 pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
+                                //  if (pRate > 0 && !_focusNodeRate.hasFocus) {
+                                //   _rateController.text = pRate.toString();
+                                //    }
+                                //    else {
+                                //     _rateController.text = '';
+                                //   }
                                 rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
                                  isTax = taxable;
                                  taxP = (isTax ? double.tryParse(selectedItem.tax.toString()) : 0)!;
@@ -1336,6 +2118,13 @@ String? selectedTaxOption = 'With Tax';
                                 rate = saleRate;
                                  }
                                  uniqueCode = productModelPrize[0]['uniquecode'];
+                                  }
+                                else{
+                                  setState(() {
+                                    fetchedPrice = productModelPrizee;
+                                  });
+                                }
+                                 }
                                 },
                               );
                             },
@@ -1344,9 +2133,11 @@ String? selectedTaxOption = 'With Tax';
                  const SizedBox(
                   height: 4,
                  ),
-                 selectedProducteId == null
-                        ? SizedBox()
-                        :  Row(
+                 selectedProducteId != null 
+                       ?
+                        Column(
+                          children: [
+                             Row(
                   children: [
                     Expanded(
                           child: Column(
@@ -1365,6 +2156,7 @@ String? selectedTaxOption = 'With Tax';
                                 child: TextFormField(
                                   controller: _quantityController,
                                   focusNode: _focusNodeQuantity,
+                                  textAlign: TextAlign.right,
                                   keyboardType: const TextInputType.numberWithOptions(
                                       decimal: true),
                                   inputFormatters: [
@@ -1393,8 +2185,7 @@ String? selectedTaxOption = 'With Tax';
                         visible: enableMULTIUNIT,
                         child: Expanded(
                           child: FutureBuilder(
-                            future: dio.fetchUnitOf(int.tryParse(
-                                selectedItem.itemCode.toString())!),
+                            future: dio.fetchUnitOf(selectedProducteId?? 0),
                             builder: (BuildContext context,
                                 AsyncSnapshot snapshot) {
                               if (snapshot.hasData) {
@@ -1506,6 +2297,7 @@ String? selectedTaxOption = 'With Tax';
                                 TextField(
                                   controller: _rateController,
                                   focusNode: _focusNodeRate,
+                                  textAlign: TextAlign.right,
                                   keyboardType: const TextInputType.numberWithOptions(
                                       decimal: true),
                                   inputFormatters: [
@@ -1536,8 +2328,9 @@ String? selectedTaxOption = 'With Tax';
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(' Tax Option',
-                                                        style: TextStyle(
+                                const Text(
+                                  ' Tax Option',
+                                  style: TextStyle(
                                                fontFamily: 'poppins',
                                                fontSize: 14,
                                                fontWeight: FontWeight.w500),),
@@ -1605,6 +2398,14 @@ String? selectedTaxOption = 'With Tax';
                             )
                     ],
                   )
+                          ],
+                        ) : const Center(
+                          child: Text(
+                            'Select a Item',
+                            style: TextStyle(
+                              fontFamily: 'poppins'
+                            ),
+                            ))
               ],
             ),
             
@@ -1612,7 +2413,8 @@ String? selectedTaxOption = 'With Tax';
            const SizedBox(
             height: 8,
            ),
-           Container(
+           selectedProducteId != null 
+           ? Container(
                                     width: MediaQuery.of(context).size.width,
                                     color: white,
                                     padding: const EdgeInsets.symmetric(
@@ -1679,6 +2481,7 @@ String? selectedTaxOption = 'With Tax';
                                                         _discountPercentController,
                                                     focusNode:
                                                         _focusNodeDiscountPer,
+                                                        textAlign: TextAlign.right,
                                                     keyboardType:
                                                         const TextInputType
                                                             .numberWithOptions(
@@ -1691,6 +2494,11 @@ String? selectedTaxOption = 'With Tax';
                                                               '.')
                                                     ],
                                                     onChanged: (value) {
+                                                      setState(() {
+                                                        calculate();
+                                                      });
+                                                    },
+                                                    onSubmitted: (value) {
                                                       setState(() {
                                                         calculate();
                                                       });
@@ -1801,6 +2609,11 @@ String? selectedTaxOption = 'With Tax';
                                                         calculate();
                                                       });
                                                     },
+                                                    onSubmitted: (value) {
+                                                      setState(() {
+                                                        calculate();
+                                                      });
+                                                    },
                                                   ),
                                                 ),
                                               ),
@@ -1836,6 +2649,7 @@ String? selectedTaxOption = 'With Tax';
                                                           text:
                                                               taxP.toString()),
                                                   readOnly: true,
+                                                  textAlign: TextAlign.right,
                                                   decoration: InputDecoration(
                                                     suffixIcon: Container(
                                                       decoration: BoxDecoration(
@@ -1962,7 +2776,7 @@ String? selectedTaxOption = 'With Tax';
                                             ))
                                       ],
                                     ),
-                                  )
+                                  ) : const SizedBox()
         ],
       ),
       bottomNavigationBar: SizedBox(
@@ -1973,13 +2787,84 @@ String? selectedTaxOption = 'With Tax';
             Expanded(child: 
             InkWell(
               onTap: () {
-                
-              },
+                    if (editItem) {
+                      setState(() {
+                        cartItem.removeAt(position!);
+                        clearValue();
+                        calculateTotal();
+                        nextWidget = 0;
+                      });
+                    }
+                    else{
+                       if (quantity <= 0) {
+                    Fluttertoast.showToast(
+                      msg: '0 Quantity Not Allowed',
+                      backgroundColor: red
+                      );
+                  }
+                  else if (rate <= 0){
+                     Fluttertoast.showToast(
+                      msg: '0 Rate Not Allowed',
+                      backgroundColor: red
+                      );
+                  }
+                   else{  
+                      setState(() {
+                   addProduct(
+                                  CartItem(
+                                      id: totalItem + 1,
+                                      itemId: int.tryParse(
+                                          selectedItem.slNo.toString()),
+                                      itemName:
+                                          selectedItem.itemName.toString(),
+                                      quantity: quantity,
+                                      rate: rate,
+                                      rRate: rRate,
+                                      uniqueCode: uniqueCode,
+                                      gross: gross,
+                                      discount: discount,
+                                      discountPercent: discountPercent,
+                                      rDiscount: rDisc,
+                                      fCess: kfc,
+                                      serialNo: '',
+                                      tax: tax,
+                                      taxP: taxP,
+                                      unitId: _dropDownUnit,
+                                      unitValue: unitValue,
+                                      pRate: pRate,
+                                      rPRate: rPRate,
+                                      barcode: barcode,
+                                      expDate: expDate,
+                                      free: free,
+                                      fUnitId: fUnitId,
+                                      cdPer: cdPer,
+                                      cDisc: cDisc,
+                                      net: subTotal,
+                                      cess: cess,
+                                      total: total,
+                                      profitPer: profitPer,
+                                      fUnitValue: fUnitValue,
+                                      adCess: adCess,
+                                      iGST: iGST,
+                                      cGST: csGST,
+                                      sGST: csGST,
+                                      minimumRate: 0,
+                                      stock: 0),
+                                  -1);
+                              if (totalItem > 0) {
+                                clearValue();
+                              }
+                              
+                            });
+                   }
+                    }
+                  },
+              
               child: Container(
                           height: 60,
                           color: Colors.white,
                           child: Center(
-                            child: Text( 'Save & New',
+                            child: Text(editItem ? 'Delete' :'Save & New',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 16,
@@ -1994,7 +2879,110 @@ String? selectedTaxOption = 'With Tax';
               child:
                InkWell(
                 onTap: () {
-                  
+                  if (quantity <= 0) {
+                    Fluttertoast.showToast(
+                      msg: '0 Quantity Not Allowed',
+                      backgroundColor: red
+                      );
+                  }
+                  else if(rate <= 0){
+                     Fluttertoast.showToast(
+                      msg: '0 Rate Not Allowed',
+                      backgroundColor: red
+                      );
+                  }
+                  else{
+                   setState(() {
+                    if (editItem) {
+                      cartItem[position!].adCess = adCess;
+                                cartItem[position!].quantity = quantity;
+                                cartItem[position!].rate = rate;
+                                cartItem[position!].rate = double.tryParse(_rateController.text);
+                                cartItem[position!].rRate = rRate;
+                                cartItem[position!].uniqueCode = uniqueCode;
+                                cartItem[position!].gross = gross;
+                                cartItem[position!].discount = discount;
+                                cartItem[position!].discountPercent =
+                                    discountPercent;
+                                cartItem[position!].rDiscount = rDisc;
+                                cartItem[position!].fCess = kfc;
+                                // cartItem[position!].serialNo =
+                                //     _serialNoController.text;
+                                cartItem[position!].tax = tax;
+                                cartItem[position!].taxP = taxP;
+                                cartItem[position!].unitId = _dropDownUnit;
+                                cartItem[position!].unitValue = unitValue ?? 1;
+                                cartItem[position!].pRate = pRate;
+                                cartItem[position!].rPRate = rPRate;
+                                cartItem[position!].barcode = barcode;
+                                cartItem[position!].expDate = expDate;
+                                // cartItem[position!].free = freeQty;
+                                cartItem[position!].fUnitId = fUnitId;
+                                cartItem[position!].cdPer = cdPer;
+                                cartItem[position!].cDisc = cDisc;
+                                cartItem[position!].net = subTotal;
+                                cartItem[position!].cess = cess;
+                                cartItem[position!].total = total;
+                                cartItem[position!].profitPer = profitPer;
+                                cartItem[position!].fUnitValue = fUnitValue;
+                                cartItem[position!].adCess = adCess;
+                                cartItem[position!].iGST = iGST;
+                                cartItem[position!].cGST = csGST;
+                                cartItem[position!].sGST = csGST;
+                                cartItem[position!].stock = 0;
+                                editItem = false;
+                                calculateTotal();
+                                clearValue();
+                    }
+                           else{   addProduct(
+                                  CartItem(
+                                      id: totalItem + 1,
+                                      itemId: int.tryParse(
+                                          selectedItem.slNo.toString()),
+                                      itemName:
+                                          selectedItem.itemName.toString(),
+                                      quantity: quantity,
+                                      rate: rate,
+                                      rRate: rRate,
+                                      uniqueCode: uniqueCode,
+                                      gross: gross,
+                                      discount: discount,
+                                      discountPercent: discountPercent,
+                                      rDiscount: rDisc,
+                                      fCess: kfc,
+                                      serialNo: '',
+                                      tax: tax,
+                                      taxP: taxP,
+                                      unitId: _dropDownUnit,
+                                      unitValue: unitValue,
+                                      pRate: pRate,
+                                      rPRate: rPRate,
+                                      barcode: barcode,
+                                      expDate: expDate,
+                                      free: free,
+                                      fUnitId: fUnitId,
+                                      cdPer: cdPer,
+                                      cDisc: cDisc,
+                                      net: subTotal,
+                                      cess: cess,
+                                      total: total,
+                                      profitPer: profitPer,
+                                      fUnitValue: fUnitValue,
+                                      adCess: adCess,
+                                      iGST: iGST,
+                                      cGST: csGST,
+                                      sGST: csGST,
+                                      minimumRate: 0,
+                                      stock: 0),
+                                  -1);
+                           }
+                              if (totalItem > 0) {
+                                clearValue();
+                                calculateTotal();
+                                nextWidget = 0;
+                              }
+                            });
+                  }
                 },
                  child: Container(
                           height: 60,
@@ -2510,6 +3498,7 @@ String? selectedTaxOption = 'With Tax';
     _rateController.text = '';
     _discountController.text = '';
     _discountPercentController.text = '';
+    productNameController.text = '';
     // _discountPercentController.text = '';
     taxP = 0;
     tax = 0;
@@ -2548,6 +3537,8 @@ String? selectedTaxOption = 'With Tax';
   }
 
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController productNameController = TextEditingController();
+  final TextEditingController customerNameController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
   final TextEditingController _discountController = TextEditingController();
   final TextEditingController _discountPercentController =
@@ -4017,6 +5008,7 @@ String? selectedTaxOption = 'With Tax';
             taxNumber: information['gstno'],
             remarks: '',
             pinNo: '');
+            customerNameController.text = cModel.name!;
         ledgerModel = cModel;
         ScopedModel.of<MainModel>(context).addCustomer(cModel);
         for (var product in particulars) {
@@ -4072,7 +5064,7 @@ String? selectedTaxOption = 'With Tax';
         widgetID = false;
         grandTotal = billTotal;
         _narration = narration;
-        nextWidget = 4;
+        nextWidget = 0;
         oldBill = true;
       });
       // Navigator.pushReplacementNamed(context, '/preview_show',
