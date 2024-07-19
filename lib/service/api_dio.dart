@@ -4087,7 +4087,7 @@ class DioService {
             'id': id,
             'statement': type,
             'fyId': currentFinancialYear!.id,
-            'frmId': 8
+            'frmId': frmId
           });
       if (response.statusCode == 200) {
         var jsonResponse = response.data;

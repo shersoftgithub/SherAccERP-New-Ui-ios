@@ -2504,7 +2504,12 @@ class _PurchaseState extends State<Purchase> {
                                         setState(() {
                                           _isLoading = true;
                                         });
-                                        delete(context);
+                                        // delete(context);
+                                        deleteData();
+                                        Fluttertoast.showToast(
+                                                backgroundColor: green,
+                                                msg: 'Purchase Bill Deleted');
+                                              Navigator.pushReplacementNamed(context, '/purchase');
                                       } else {
                                         showInSnackBar(
                                             'No items found on bill');
@@ -2543,8 +2548,7 @@ class _PurchaseState extends State<Purchase> {
                                               _isLoading = true;
                                               buttonEvent = true;
                                             });
-                                            var inf = '[' +
-                                                json.encode({
+                                            var inf = '[${json.encode({
                                                   'id': ledgerModel!.id,
                                                   'name': ledgerModel!.name,
                                                   'invNo': invNoController
@@ -2553,15 +2557,13 @@ class _PurchaseState extends State<Purchase> {
                                                       : '0',
                                                   'invDate':
                                                       DateUtil.dateYMD(invDate)
-                                                }) +
-                                                ']';
+                                                })}]';
                                             var jsonItem =
                                                 CartItemP.encodeCartToJson(
                                                     cartItem);
                                             var items = json.encode(jsonItem);
                                             var stType = 'P_Update';
-                                            var data = '[' +
-                                                json.encode({
+                                            var data = '[${json.encode({
                                                   'entryNo': dataDynamic[0]
                                                       ['EntryNo'],
                                                   'date': DateUtil.dateYMD(
@@ -2608,8 +2610,7 @@ class _PurchaseState extends State<Purchase> {
                                                   'fyId':
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id
-                                                }) +
-                                                ']';
+                                                })}]';
 
                                             final body = {
                                               'information': inf,
@@ -2626,7 +2627,11 @@ class _PurchaseState extends State<Purchase> {
                                             });
                                             if (_state) {
                                               cartItem.clear();
-                                              showMore(context, 'Edited');
+                                               Fluttertoast.showToast(
+                                                backgroundColor: green,
+                                                msg: 'Purchase Bill Edited');
+                                              Navigator.pushReplacementNamed(context, '/purchase');
+                                              // showMore(context, 'Edited');
                                             } else {
                                               showInSnackBar(
                                                   'Error enter data correctly');
@@ -2741,34 +2746,36 @@ class _PurchaseState extends State<Purchase> {
                                             });
                                             if (_state) {
                                               cartItem.clear();
-                                              showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return Expanded(
-                                                    child: AlertDialog(
-                                                      title: const Text(
-                                                          'Purchase Saved'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () {
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                            Navigator
-                                                                .pushReplacementNamed(
-                                                                    context,
-                                                                    '/purchase');
-                                                          },
-                                                          child:
-                                                              const Text('Ok'),
-                                                        )
-                                                      ],
-                                                    ),
-                                                  );
-                                                },
-                                              );
+                                              // showDialog(
+                                              //   context: context,
+                                              //   builder:
+                                              //       (BuildContext context) {
+                                              //     return AlertDialog(
+                                              //       title: const Text(
+                                              //           'Purchase Saved'),
+                                              //       actions: [
+                                              //         TextButton(
+                                              //           onPressed: () {
+                                              //             Navigator.of(
+                                              //                     context)
+                                              //                 .pop();
+                                              //             Navigator
+                                              //                 .pushReplacementNamed(
+                                              //                     context,
+                                              //                     '/purchase');
+                                              //           },
+                                              //           child:
+                                              //               const Text('Ok'),
+                                              //         )
+                                              //       ],
+                                              //     );
+                                              //   },
+                                              // );
                                               // showMore(context, 'Saved');
+                                              Fluttertoast.showToast(
+                                                backgroundColor: green,
+                                                msg: 'Purchase Bill Saved');
+                                              Navigator.pushReplacementNamed(context, '/purchase');
                                             } else {
                                               showInSnackBar(
                                                   'Error enter data correctly');
@@ -3800,30 +3807,34 @@ class _PurchaseState extends State<Purchase> {
                                       });
                                       if (_state) {
                                         cartItem.clear();
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return Expanded(
-                                              child: AlertDialog(
-                                                title: const Text(
-                                                    'Purchase Saved'),
-                                                actions: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                      Navigator
-                                                          .pushReplacementNamed(
-                                                              context,
-                                                              '/purchase');
-                                                    },
-                                                    child: const Text('Ok'),
-                                                  )
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
+                                        // showDialog(
+                                        //   context: context,
+                                        //   builder: (BuildContext context) {
+                                        //     return Expanded(
+                                        //       child: AlertDialog(
+                                        //         title: const Text(
+                                        //             'Purchase Saved'),
+                                        //         actions: [
+                                        //           TextButton(
+                                        //             onPressed: () {
+                                        //               Navigator.of(context)
+                                        //                   .pop();
+                                        //               Navigator
+                                        //                   .pushReplacementNamed(
+                                        //                       context,
+                                        //                       '/purchase');
+                                        //             },
+                                        //             child: const Text('Ok'),
+                                        //           )
+                                        //         ],
+                                        //       ),
+                                        //     );
+                                        //   },
+                                        // );
+                                        Fluttertoast.showToast(
+                                                backgroundColor: green,
+                                                msg: 'Purchase Bill Saved');
+                                              Navigator.pushReplacementNamed(context, '/purchase');
                                         // showMore(context, 'Saved');
                                       } else {
                                         showInSnackBar(
@@ -10272,25 +10283,25 @@ class _PurchaseState extends State<Purchase> {
       if (value) {
         cartItem.clear();
         clearValue();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Expanded(
-              child: AlertDialog(
-                title: const Text('Purchase Deleted'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacementNamed(context, '/purchase');
-                    },
-                    child: const Text('Ok'),
-                  )
-                ],
-              ),
-            );
-          },
-        );
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return Expanded(
+        //       child: AlertDialog(
+        //         title: const Text('Purchase Deleted'),
+        //         actions: [
+        //           TextButton(
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.pushReplacementNamed(context, '/purchase');
+        //             },
+        //             child: const Text('Ok'),
+        //           )
+        //         ],
+        //       ),
+        //     );
+        //   },
+        // );
       }
     });
   }

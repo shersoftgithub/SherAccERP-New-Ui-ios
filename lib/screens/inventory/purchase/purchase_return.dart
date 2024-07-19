@@ -20,6 +20,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
@@ -64,6 +65,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
   List<dynamic> ledgerDisplay = [];
   List<dynamic> _ledger = [];
   List<SerialNOModel> serialNoData = [];
+  CartItemP? cartModel;
   bool enableMULTIUNIT = false,
       cessOnNetAmount = false,
       enableKeralaFloodCess = false,
@@ -325,6 +327,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           actions: [
@@ -487,7 +490,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                                 : Align(
                                                     alignment: Alignment.centerLeft,
                                                     child: Text(
-                                                      dataDynamic[0]['EntryNo'].toString(),
+                                                      oldBill?
+                                                      dataDynamic[0]['EntryNo'].toString(): '',
                                                       style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.w400,
@@ -664,7 +668,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                     height: 4,
                    ),
                      FutureBuilder<List<dynamic>>(
-                                future: dio.getCustomerNameList(),
+                                future: dio.getSalesListData('', 'sales_list/supplier'),
                                 builder: (context, snapshot) {
                                   // if(snapshot.connectionState == ConnectionState.waiting){
                                   //  return CircularProgressIndicator();
@@ -717,7 +721,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                                 element.name == value);
                                         selectedCustomerId =
                                             selectedSupplier.id;
-                                          // ledgerModel = selectedSupplier ;
+                                          ledgerModel = selectedSupplier ;
                                         // _isLoading = true;
                                         dio
                                             .getCustomerDetail(
@@ -816,38 +820,38 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                   itemBuilder: (context, index) {
                                     return InkWell(
                                       onTap: () {
-                                         setState(() {
-                                           editItem = true;
-                                         position = index;
-                                         nextWidget = 1;
-                                         });
-                                      //  setState(() {
-                                      //       editItem = true;
-                                      //   position = index;
-                                      //   cartModel = cartItem.elementAt(position!);
-                                      //   selectedProducteId = 
-                                      //   cartModel!.id;
-                                      //   productNameController.text =
-                                      //   cartModel!.itemName!;
-                                      //   rate = cartModel!.rate!;
-                                      //   _rateController.text =
-                                      //       cartModel!.rate.toString();
-                                      //   _quantityController.text =
-                                      //       cartModel!.quantity.toString();
-                                      //       quantity = 
-                                      //       cartModel!.quantity!;
-                                      //   _quantityController.text =
-                                      //       cartModel!.quantity.toString();
-                                      //   _discountController.text =
-                                      //       cartModel!.discount.toString();
-                                      //   _discountPercentController.text =
-                                      //       cartModel!.discountPercent.toString();
-                                      //       gross = cartModel!.gross!;
-                                      //       total = cartModel!.total!;
-                                      //   // _serialNoController.text =
-                                      //   //     cartModel.serialNo;
-                                      //       nextWidget = 1;
-                                      //  });
+                                        //  setState(() {
+                                        //    editItem = true;
+                                        //  position = index;
+                                        //  nextWidget = 1;
+                                        //  });
+                                       setState(() {
+                                            editItem = true;
+                                        position = index;
+                                        cartModel = cartItem.elementAt(position!);
+                                        selectedProducteId = 
+                                        cartModel!.id;
+                                        productNameController.text =
+                                        cartModel!.itemName;
+                                        rate = cartModel!.rate;
+                                        controllerRate.text =
+                                            cartModel!.rate.toString();
+                                        controllerQuantity.text =
+                                            cartModel!.quantity.toString();
+                                            quantity = 
+                                            cartModel!.quantity;
+                                        controllerQuantity.text =
+                                            cartModel!.quantity.toString();
+                                        controllerDiscount.text =
+                                            cartModel!.discount.toString();
+                                        controllerDiscountPer.text =
+                                            cartModel!.discountPercent.toString();
+                                            gross = cartModel!.gross;
+                                            total = cartModel!.total;
+                                        // _serialNoController.text =
+                                        //     cartModel.serialNo;
+                                            nextWidget = 1;
+                                       });
                                       
                                       },
                                       child: Container(
@@ -896,7 +900,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                                                 color: grey,
                                                               )),
                                                       child: Text(
-                                                        '# ${cartItem[index].id}',
+                                                        '# ${index +1}',
                                                         style:
                                                             const TextStyle(
                                                                 fontSize: 12),
@@ -1114,38 +1118,86 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                           color: Colors.transparent,
                           child: InkWell(
                             splashColor: Colors.grey,
-                            onTap: () {
-                    //           oldBill 
-                    //           ? setState(() {
-                    //               if (buttonEvent) {
-                    //   return;
-                    // } else {
-                    //   if (totalItem > 0) {
-                    //     if (companyUserData!.deleteData) {
-                    //       setState(() {
-                    //         _isLoading = true;
-                    //       });
-                    //       deleteSale();
-                    //     } else {
-                    //       Fluttertoast.showToast(
-                    //           msg: 'Permission denied\ncan`t delete');
-                    //       setState(() {
-                    //         buttonEvent = false;
-                    //       });
-                    //     }
-                    //   } else {
-                    //     Fluttertoast.showToast(
-                    //         msg: 'Please select atleast one bill');
-                    //     setState(() {
-                    //       buttonEvent = false;
-                    //     });
-                    //   }
-                    // }
-                    //           },)
-                    //           : setState(() {
-                                
-                    //           },);
-                            },
+                            onTap:
+                            oldBill ? () {
+                                 if (cartItem.isNotEmpty) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    delete(context);
+                  } else {
+                    showInSnackBar('No items found on bill');
+                  } 
+                    }
+                    :() async{
+                       if (totalItem > 0 && selectedCustomerId != null) {
+                              setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'Pr_Insert';
+                    var data = '[${json.encode({
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PR',
+                          'cashPaid': '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                     if (_state) {
+                      cartItem.clear();
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: 'Bill Saved');
+                      // showMore(context, 'Saved');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                    }else{
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg:selectedCustomerId == null ?'Select Supplier' :"Can't Save without any Product" );
+                    }
+                    },
                             child: Container(
                               height: 60,
                               color: Colors.white,
@@ -1168,8 +1220,71 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                           color: Colors.transparent,
                           child: InkWell(
                             splashColor: Colors.grey,
-                            onTap: () {
-                            
+                            onTap: () async{
+                              if (totalItem > 0 && selectedCustomerId != null) {
+                              setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'Pr_Insert';
+                    var data = '[${json.encode({
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PR',
+                          'cashPaid': '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                     if (_state) {
+                      cartItem.clear();
+                      showMore(context, 'Saved');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                    }else{
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg:selectedCustomerId == null ?'Select Supplier' :"Can't Save without any Product" );
+                    }
                             },
                             child: Container(
                               height: 60,
@@ -2114,53 +2229,59 @@ const SizedBox(
                           ? double.tryParse(controllerQuantity.text)
                           : quantity)!;
 
-                      if (selectedItem.quantity! >= quantity) {
+                      // if (selectedItem.quantity! >= quantity) {
                         if (editItem) {
-                          cartItem[position!].adCess = adCess;
-                          cartItem[position!].barcode = barcode;
-                          cartItem[position!].branch = branch;
-                          cartItem[position!].branchPer = branchPer;
-                          cartItem[position!].cDisc = cDisc;
-                          cartItem[position!].cGST = csGST;
-                          cartItem[position!].cdPer = cdPer;
-                          cartItem[position!].cess = cess;
-                          cartItem[position!].discount = discount;
-                          cartItem[position!].discountPercent = discountPer;
-                          // cartItem[position!].expDate = expDate;
-                          // cartItem[position!].expense = expense;
-                          cartItem[position!].fCess = fCess;
-                          cartItem[position!].fUnitId = fUnitId;
-                          cartItem[position!].fUnitValue = fUnitValue;
-                          cartItem[position!].free = free;
-                          cartItem[position!].gross = subTotal;
-                          cartItem[position!].iGST = iGST;
-                          // cartItem[position!].id = cartItem.length + 1;
-                          // cartItem[position!].itemId = productModel['slno'];
-                          // cartItem[position!].itemName = productModel['itemname'];
-                          // cartItem[position!].location = locationId;
-                          cartItem[position!].mrp = mrp;
-                          cartItem[position!].mrpPer = mrpPer;
-                          cartItem[position!].net = net;
-                          cartItem[position!].profitPer = profitPer;
-                          cartItem[position!].quantity = quantity;
-                          cartItem[position!].rRate = rRate;
-                          cartItem[position!].rate = rate;
-                          cartItem[position!].retail = retail;
-                          cartItem[position!].retailPer = retailPer;
-                          cartItem[position!].sGST = csGST;
-                          cartItem[position!].serialNo = serialNo;
-                          cartItem[position!].spRetail = spRetail;
-                          cartItem[position!].spRetailPer = spRetailPer;
-                          cartItem[position!].tax = tax;
-                          cartItem[position!].taxP = taxP;
-                          cartItem[position!].total = total;
-                          cartItem[position!].uniqueCode = uniqueCode;
-                          // cartItem[position!].unitId = unit.id;
-                          // cartItem[position!].unitName = unit.name;
-                          cartItem[position!].unitValue = unitValue;
-                          cartItem[position!].wholesale = wholeSale;
-                          cartItem[position!].wholesalePer = wholesalePer;
-                        } else {
+                          setState(() {
+                      cartItem.removeAt(position!);
+                      calculateTotal();
+                      nextWidget = 0;
+                    });
+                          // cartItem[position!].adCess = adCess;
+                          // cartItem[position!].barcode = barcode;
+                          // cartItem[position!].branch = branch;
+                          // cartItem[position!].branchPer = branchPer;
+                          // cartItem[position!].cDisc = cDisc;
+                          // cartItem[position!].cGST = csGST;
+                          // cartItem[position!].cdPer = cdPer;
+                          // cartItem[position!].cess = cess;
+                          // cartItem[position!].discount = discount;
+                          // cartItem[position!].discountPercent = discountPer;
+                          // // cartItem[position!].expDate = expDate;
+                          // // cartItem[position!].expense = expense;
+                          // cartItem[position!].fCess = fCess;
+                          // cartItem[position!].fUnitId = fUnitId;
+                          // cartItem[position!].fUnitValue = fUnitValue;
+                          // cartItem[position!].free = free;
+                          // cartItem[position!].gross = subTotal;
+                          // cartItem[position!].iGST = iGST;
+                          // // cartItem[position!].id = cartItem.length + 1;
+                          // // cartItem[position!].itemId = productModel['slno'];
+                          // // cartItem[position!].itemName = productModel['itemname'];
+                          // // cartItem[position!].location = locationId;
+                          // cartItem[position!].mrp = mrp;
+                          // cartItem[position!].mrpPer = mrpPer;
+                          // cartItem[position!].net = net;
+                          // cartItem[position!].profitPer = profitPer;
+                          // cartItem[position!].quantity = quantity;
+                          // cartItem[position!].rRate = rRate;
+                          // cartItem[position!].rate = rate;
+                          // cartItem[position!].retail = retail;
+                          // cartItem[position!].retailPer = retailPer;
+                          // cartItem[position!].sGST = csGST;
+                          // cartItem[position!].serialNo = serialNo;
+                          // cartItem[position!].spRetail = spRetail;
+                          // cartItem[position!].spRetailPer = spRetailPer;
+                          // cartItem[position!].tax = tax;
+                          // cartItem[position!].taxP = taxP;
+                          // cartItem[position!].total = total;
+                          // cartItem[position!].uniqueCode = uniqueCode;
+                          // // cartItem[position!].unitId = unit.id;
+                          // // cartItem[position!].unitName = unit.name;
+                          // cartItem[position!].unitValue = unitValue;
+                          // cartItem[position!].wholesale = wholeSale;
+                          // cartItem[position!].wholesalePer = wholesalePer;
+                        } else
+                         {
                           cartItem.add(CartItemP(
                               adCess: adCess,
                               barcode: barcode,
@@ -2219,7 +2340,7 @@ const SizedBox(
                           clearValue();
                           calculateTotal();
                         }
-                      } else {
+                     else {
                         showInSnackBar('Available Qty is ${selectedItem.quantity}');
                       }
                     });
@@ -2390,7 +2511,7 @@ const SizedBox(
                   child: Container(
                             height: 60,
                             color: kPrimaryColor,
-                            child:  Center(
+                            child:  const Center(
                               child: Text('Save',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
@@ -2418,38 +2539,142 @@ const SizedBox(
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(
+                height: 5,
+              ),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                  );
+                } else {
+                  return InkWell(
                     onTap: () {
                       showEditDialog(context, dataDisplay[index]);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
+                    child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
           )
         : Center(
             child: Column(
@@ -4717,7 +4942,9 @@ const SizedBox(
     double billTotal = 0, billCash = 0;
     String narration = ' ';
 
-    api.fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find',voucherTypeData!.id).then((value) {
+    api
+        .fetchPurchaseInvoiceSp(data['Id'], 'Pr_Find', voucherTypeData!.id)
+        .then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -4741,6 +4968,8 @@ const SizedBox(
         DataJson cModel =
             DataJson(id: information['Supplier'], name: information['FromSup']);
         ledgerModel = cModel;
+        customerNameController.text = cModel.name!;
+            selectedCustomerId = cModel.id;
         cartItem.clear();
         for (var product in particulars) {
           cartItem.add(CartItemP(
@@ -4804,8 +5033,9 @@ const SizedBox(
           // cashPaidController.text = billCash.toStringAsFixed(decimal);
         }
         _narration = narration;
-        nextWidget = 4;
+        nextWidget = 0;
         oldBill = true;
+        calculateTotal();
       });
     });
   }
@@ -4873,8 +5103,8 @@ showMore(context, purchaseState) {
       buttonColorForYes: Colors.green,
       icon: Icons.check,
       onPressedNo: () {
-        // Navigator.of(context).pop();
-        Navigator.pushReplacementNamed(context, '/purchaseReturn');
+        Navigator.of(context).pop();
+       Navigator.of(context).pushReplacementNamed('/purchaseReturn');
       },
       onPressedYes: () {
         Navigator.of(context).pop();

@@ -337,28 +337,13 @@ class _SalesReturnState extends State<SalesReturn> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
-                    ),
-                  ),
-                );
-              } else {
-                return Padding(
+        ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ListView.separated(
               separatorBuilder: (context, index) => const SizedBox(
                 height: 5,
               ),
               itemCount: dataDisplay.length + 1,
-              shrinkWrap: true,
               itemBuilder: (BuildContext context, int index) {
                 if (index == dataDisplay.length) {
                   return Padding(
@@ -488,25 +473,6 @@ class _SalesReturnState extends State<SalesReturn> {
               },
               controller: _scrollController,
             ),
-          );
-                // Card(
-                //   elevation: 2,
-                //   child: ListTile(
-                //     title: Text(dataDisplay[index]['Name']),
-                //     subtitle: Text('Date: ' +
-                //         dataDisplay[index]['Date'] +
-                //         ' / EntryNo : ' +
-                //         dataDisplay[index]['Id'].toString()),
-                //     trailing: Text(
-                //         'Total : ' + dataDisplay[index]['Total'].toString()),
-                //     onTap: () {
-                //       showEditDialog(context, dataDisplay[index]);
-                //     },
-                //   ),
-                // );
-              }
-            },
-            controller: _scrollController,
           )
         : Center(
             child: Column(
@@ -767,7 +733,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'Type': 1
               }
             ];
-            // clearCart();
+            clearCart();
             showMore(context);
           });
         }
@@ -919,7 +885,7 @@ class _SalesReturnState extends State<SalesReturn> {
                     ? grandTotal
                     : grandTotal.roundToDouble();
           }
-          // clearCart();
+          clearCart();
           showMore(context);
         }
       });
@@ -1374,33 +1340,6 @@ class _SalesReturnState extends State<SalesReturn> {
                                         //     cartModel.serialNo;
                                             nextWidget = 1;
                                        });
-                                        // setState(() {
-                                        //   // editItem = true;
-                                        //   position = index;
-                                        //   cartModel =
-                                        //       cartItem.elementAt(position!);
-                                        //   itemNameControl.text =
-                                        //       cartModel!.itemName.toString();
-                                        //   _rateController.text =
-                                        //       cartModel!.rate!.toString();
-                                        //   _quantityController.text =
-                                        //       cartModel!.quantity!.toString();
-                                        //   _freeQuantityController.text =
-                                        //       cartModel!.free.toString();
-                                        //   _discountController.text =
-                                        //       cartModel!.discount.toString();
-                                        //   _discountPercentController.text =
-                                        //       cartModel!.discountPercent
-                                        //           .toString();
-                                        //   _serialNoController.text =
-                                        //       cartModel!.serialNo!;
-                                        //   _dropDownUnit = cartModel!.unitId!;
-                                        //   taxP = cartModel!.taxP!;
-                                        //   tax = cartModel!.tax!;
-                                        //   gross = cartModel!.gross!;
-                                        //   total = cartModel!.total!;
-                                        //   nextWidget = 2;
-                                        // });
                                       },
                                       child: Container(
                                         width:
@@ -1726,7 +1665,7 @@ class _SalesReturnState extends State<SalesReturn> {
                                  if (buttonEvent) {
                         return;
                       } else {
-                        if (totalItem > 0 && selectedProducteId!= null) {
+                        if (totalItem > 0 && selectedCustomerId!= null) {
                           if (companyUserData!.insertData) {
                             setState(() {
                               _isLoading = true;
@@ -1735,14 +1674,14 @@ class _SalesReturnState extends State<SalesReturn> {
                             updateSale();
                           } else {
                             Fluttertoast.showToast(
-                                msg: 'Permission denied\ncan`t save');
+                                msg:'Permission denied\ncan`t save');
                             setState(() {
                               buttonEvent = false;
                             });
                           }
                         } else {
                           Fluttertoast.showToast(
-                              msg: 'Please add atleast one item');
+                              msg:selectedCustomerId == null ? 'Select Customer' : 'Please add atleast one item');
                           setState(() {
                             buttonEvent = false;
                           });
@@ -1753,13 +1692,14 @@ class _SalesReturnState extends State<SalesReturn> {
                                 if (buttonEvent) {
                         return;
                       } else {
-                        if (totalItem > 0 && selectedProducteId!= null) {
+                        if (totalItem > 0 && selectedCustomerId!= null) {
                           if (companyUserData!.insertData) {
                             setState(() {
                               _isLoading = true;
                               buttonEvent = true;
                             });
                             saveSale();
+
                           } else {
                             Fluttertoast.showToast(
                                 msg: 'Permission denied\ncan`t save');
@@ -1769,7 +1709,8 @@ class _SalesReturnState extends State<SalesReturn> {
                           }
                         } else {
                           Fluttertoast.showToast(
-                              msg: 'Please add atleast one item');
+                            backgroundColor: red,
+                              msg:selectedCustomerId == null ? 'Select Customer' : 'Please add atleast one item');
                           setState(() {
                             buttonEvent = false;
                           });
@@ -4863,7 +4804,8 @@ var fetchedPrice;
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-          Navigator.pushNamed(context, '/salesReturn');
+          Navigator.of(context).pushReplacementNamed('/salesReturn');
+          // Navigator.pushNamed(context, '/salesReturn');
         },
         onPressedYes: () {
           Navigator.of(context).pop();
@@ -5009,6 +4951,7 @@ var fetchedPrice;
             remarks: '',
             pinNo: '');
             customerNameController.text = cModel.name!;
+            selectedCustomerId = cModel.id;
         ledgerModel = cModel;
         ScopedModel.of<MainModel>(context).addCustomer(cModel);
         for (var product in particulars) {
@@ -5064,7 +5007,7 @@ var fetchedPrice;
         widgetID = false;
         grandTotal = billTotal;
         _narration = narration;
-        nextWidget = 0;
+        // nextWidget = 0;
         oldBill = true;
       });
       // Navigator.pushReplacementNamed(context, '/preview_show',
