@@ -4374,7 +4374,7 @@ void _onTabTapped(int index) {
                 ),
               ),
                bottomNavigationBar:
-                Container(
+                SizedBox(
                   width: MediaQuery.of(context).size.width,
                   // decoration: const BoxDecoration(
                   //   boxShadow: [
@@ -4390,7 +4390,420 @@ void _onTabTapped(int index) {
                           color: Colors.transparent,
                           child: InkWell(
                             splashColor: Colors.grey,
-                            onTap: () {},
+                            onTap: () {
+  //                              setState(() {
+  //                               // selectedCustomerId = acId;
+  //                             if (buttonEvent) {
+  //                               return;
+  //                             } else {
+  //                               if (companyUserData!.insertData) {
+  //                                 if (!daysBefore) {
+  //                                   if (totalItem > 0) {
+  //                                     setState(() {
+  //                                       _isLoading = true;
+  //                                       buttonEvent = true;
+  //                                       billingNameController.text.isNotEmpty ? 
+  //                                       ledgerModel!.name = billingNameController.text
+  //                                       :
+  //                                       ledgerModel!.name; 
+                                        
+  //                                     });
+  //                                     _insert(
+  //                                         'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
+  //                                         0);
+  //                                     // saveSale();
+  //                                      List<CustomerModel> ledger = [];
+  //   ledger.add(CustomerModel(
+  //       address1: addressControl.text,
+  //       address2: siteNameControl.text,
+  //       address3: '',
+  //       address4: ledgerModel!.address4 ?? '',
+  //       balance: ledgerModel!.balance,
+  //       city: ledgerModel!.city,
+  //       email: ledgerModel!.email,
+  //       id: ledgerModel!.id,
+  //       name: ledgerModel!.name,
+  //       phone: ledgerModel!.phone,
+  //       remarks: ledgerModel!.remarks,
+  //       route: ledgerModel!.route,
+  //       state: ledgerModel!.state,
+  //       stateCode: ledgerModel!.stateCode,
+  //       taxNumber: ledgerModel!.taxNumber));
+
+  //   var locationId =
+  //       lId.toString().trim().isNotEmpty ? lId : salesTypeData!.location;
+  //   invoiceNo =
+  //       invoiceNoController.text.isNotEmpty ? invoiceNoController.text : '0';
+
+  //   Order order = Order(
+  //       customerModel: ledger,
+  //       lineItems: cartItem,
+  //       grossValue: totalGrossValue.toString(),
+  //       discount: totalDiscount.toString(),
+  //       rDiscount: totalRDiscount.toString(),
+  //       net: totalNet.toString(),
+  //       cGST: totalCgST.toString(),
+  //       sGST: totalSgST.toString(),
+  //       iGST: totalIgST.toString(),
+  //       cess: totalCess.toString(),
+  //       adCess: totalAdCess.toString(),
+  //       fCess: totalFCess.toString(),
+  //       total: totalCartValue.toString(),
+  //       grandTotal:
+  //           grandTotal > 0 ? grandTotal.toString() : totalCartValue.toString(),
+  //       profit: totalProfit.toString(),
+  //       cashReceived: controllerCashReceived.text.isNotEmpty
+  //           ? controllerCashReceived.text
+  //           : '0',
+  //       otherDiscount: '0',
+  //       loadingCharge: '0',
+  //       otherCharges: '0',
+  //       labourCharge: '0',
+  //       discountPer: '0',
+  //       balanceAmount: _balance > 0
+  //           ? _balance.toStringAsFixed(decimal)
+  //           : controllerCashReceived.text.isNotEmpty
+  //               ? grandTotal > 0
+  //                   ? ComSettings.appSettings(
+  //                           'bool', 'key-round-off-amount', false)
+  //                       ? (grandTotal -
+  //                               double.tryParse(controllerCashReceived.text)!)
+  //                           .toStringAsFixed(decimal)
+  //                       : (grandTotal -
+  //                               double.tryParse(controllerCashReceived.text)!)
+  //                           .roundToDouble()
+  //                           .toString()
+  //                   : ComSettings.appSettings(
+  //                           'bool', 'key-round-off-amount', false)
+  //                       ? ((totalCartValue) -
+  //                               double.tryParse(controllerCashReceived.text)!)
+  //                           .toStringAsFixed(decimal)
+  //                       : ((totalCartValue) -
+  //                               double.tryParse(controllerCashReceived.text)!)
+  //                           .roundToDouble()
+  //                           .toString()
+  //               : grandTotal > 0
+  //                   ? ComSettings.appSettings(
+  //                           'bool', 'key-round-off-amount', false)
+  //                       ? grandTotal.toStringAsFixed(decimal)
+  //                       : grandTotal.roundToDouble().toString()
+  //                   : ComSettings.appSettings(
+  //                           'bool', 'key-round-off-amount', false)
+  //                       ? totalCartValue.toStringAsFixed(decimal)
+  //                       : totalCartValue.roundToDouble().toString(),
+  //       creditPeriod: '0',
+  //       narration:
+  //           controllerNarration.text.isNotEmpty ? controllerNarration.text : '',
+  //       takeUser: userIdC.toString(),
+  //       location: locationId.toString(),
+  //       billType: companyTaxMode == 'GULF' ? '2' : '0',
+  //       roundOff: '0',
+  //       salesMan: salesManId.toString(),
+  //       sType: salesTypeData!.rateType,
+  //       dated: DateUtil.dateYMD(formattedDate),
+  //       cashAC: acId.toString(),
+  //       otherAmountData: otherAmountList);
+  //   if (order.lineItems.isNotEmpty) {
+  //     var jsonLedger = CustomerModel.encodeCustomerToJson(order.customerModel);
+  //     var jsonItem = CartItem.encodeCartToJson(order.lineItems);
+  //     var items = json.encode(jsonItem);
+  //     var ledger = json.encode(jsonLedger);
+  //     var otherAmount = json.encode(order.otherAmountData);
+  //     var saleFormId = salesTypeData!.id;
+  //     var saleFormType = salesTypeData!.type;
+  //     var taxType = salesTypeData!.tax ? 'T' : 'NT';
+  //     var salesRateTypeId =
+  //         rateTypeItem != null ? rateTypeItem!.id.toString() : '1';
+  //     var saleAccountId = saleAccount > 0 ? saleAccount.toString() : '0';
+  //     var checkKFC = isKFC ? '1' : '0';
+  //     double grandTotal = double.tryParse(order.grandTotal)! > 0
+  //         ? (CommonService.getRound(
+  //                 decimal, double.tryParse(order.grandTotal)!) +
+  //             CommonService.getRound(
+  //                 decimal, double.tryParse(order.loadingCharge)!) +
+  //             CommonService.getRound(
+  //                 decimal, double.tryParse(order.otherCharges)!) +
+  //             CommonService.getRound(decimal, double.tryParse(order.adCess)!) +
+  //             CommonService.getRound(
+  //                 decimal, double.tryParse(order.labourCharge)!) -
+  //             CommonService.getRound(
+  //                 decimal, double.tryParse(order.otherDiscount)!))
+  //         : 0;
+  //     double roundOff = 0, different = 0;
+  //     if (!ComSettings.appSettings('bool', 'key-round-off-amount', false)) {
+  //       different = grandTotal - grandTotal.round();
+  //       if (different < 0.5) {
+  //         roundOff = CommonService.getRound(decimal, (different * -1));
+  //       } else {
+  //         roundOff = CommonService.getRound(1, (1 - different));
+  //       }
+  //     }
+  //     var data = '[${json.encode({
+  //           'statement': 'SalesInsert',
+  //           'entryNo': 0,
+  //           'invoiceNo': manualInvoiceNumberInSales ? invoiceNo : '0',
+  //           'saleFormId': saleFormId,
+  //           'saleFormType': saleFormType,
+  //           'taxType': taxType,
+  //           'date': order.dated,
+  //           'time':
+  //               '1900-01-01 ${DateFormat("H:m:s:S").format(DateTime.now())}', //1900-01-01 19:27:23.930
+  //           'sType': salesRateTypeId,
+  //           'saleAccountId': saleAccountId,
+  //           'grossValue': order.grossValue,
+  //           'discPercent': order.discountPer,
+  //           'discount': order.discount,
+  //           'rDiscount': order.rDiscount,
+  //           'net': order.net,
+  //           'cess': order.cess,
+  //           'total': order.total,
+  //           'profit': order.profit,
+  //           'cGST': order.cGST,
+  //           'sGST': order.sGST,
+  //           'iGST': order.iGST,
+  //           'addCess': order.adCess,
+  //           'fCess': order.fCess,
+  //           'otherDiscount': order.otherDiscount,
+  //           'otherCharges': order.otherCharges,
+  //           'loadingCharge': order.loadingCharge,
+  //           'balanceAmount': ComSettings.appSettings(
+  //                   'bool', 'key-round-off-amount', false)
+  //               ? double.parse(order.balanceAmount).toStringAsFixed(decimal)
+  //               : double.parse(order.balanceAmount).roundToDouble().toString(),
+  //           'labourCharge': order.labourCharge,
+  //           'grandTotal':
+  //               ComSettings.appSettings('bool', 'key-round-off-amount', false)
+  //                   ? grandTotal.toStringAsFixed(decimal)
+  //                   : grandTotal.roundToDouble().toString(),
+  //           'creditPeriod': order.creditPeriod,
+  //           'takeUser': order.takeUser,
+  //           'narration': order.narration,
+  //           'cashReceived': order.cashReceived,
+  //           'cashAC': order.cashAC,
+  //           'check_kFC': checkKFC,
+  //           'salesMan': order.salesMan,
+  //           'location': order.location,
+  //           'roundOff': roundOff,
+  //           'billType': order.billType,
+  //           'returnNo': returnBillId,
+  //           'returnAmount': returnAmount,
+  //           'otherAmount': _otherAmountTotal(order.otherAmountData),
+  //           'fyId': currentFinancialYear!.id,
+  //           'commissionAccount': commissionAccount ?? 0,
+  //           'commissionAmount': commissionAmountController.text.isEmpty
+  //               ? 0
+  //               : commissionAmountController.text,
+  //           'bankName': bankLedgerName ?? '',
+  //           'bankAmount': bankAmountController.text.isEmpty
+  //               ? 0
+  //               : bankAmountController.text,
+  //           'eVehicleNo': vehicleNameControl.text
+  //         })}]';
+
+  //     final body = {
+  //       'information': ledger,
+  //       'data': data,
+  //       'particular': items,
+  //       'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
+  //     };
+  //     if (saleAccountId != '0') {
+  //       if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
+  //         if (manualInvoiceNumberInSales) {
+  //           api.checkManualInvoiceNoStatus(invoiceNo).then((value) {
+  //             if (!value) {
+  //               postSale(body, otherAmount, order, saleFormType, saleFormId);
+  //             } else {
+  //               showErrorDialog(context, 'Duplicate Invoice No');
+  //               setState(() {
+  //                 _isLoading = false;
+  //                 buttonEvent = false;
+  //               });
+  //             }
+  //           });
+  //         } else {
+  //            postSale(body, otherAmount, Order order, saleFormType, saleFormId) {
+  //   api.addSale(body).then((result) {
+  //     if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
+  //       final bodyJsonAmount = {
+  //         'statement': 'SalesInsert',
+  //         'entryNo': int.tryParse(result.toString()),
+  //         'data': otherAmount,
+  //         'date': order.dated.toString(),
+  //         'saleFormType': saleFormType,
+  //         'narration': order.narration,
+  //         'location': order.location.toString(),
+  //         'id': order.customerModel[0].id.toString(),
+  //         'fyId': currentFinancialYear!.id
+  //       };
+  //       if (salesTypeData!.accounts) {
+  //         api.addOtherAmount(bodyJsonAmount).then((ret) {
+  //           if (ret) {
+  //             final bodyJson = {
+  //               'statement': 'CheckPrint',
+  //               'entryNo': int.tryParse(result.toString()),
+  //               'sType': saleFormId.toString(),
+  //               'grandTotal': ComSettings.appSettings(
+  //                       'bool', 'key-round-off-amount', false)
+  //                   ? grandTotal.toStringAsFixed(decimal)
+  //                   : grandTotal.roundToDouble().toString()
+  //             };
+  //             api.checkBill(bodyJson).then((data) {
+  //               if (data) {
+  //                 dataDynamic = [
+  //                   {
+  //                     'RealEntryNo': int.tryParse(result.toString()),
+  //                     'EntryNo': int.tryParse(result.toString()),
+  //                     'InvoiceNo': int.tryParse(result.toString()),
+  //                     'Type': saleFormId
+  //                   }
+  //                 ];
+  //                 if (ComSettings.appSettings(
+  //                     'bool', 'key-sms-customer', false)) {
+  //                   var billName = salesTypeData!.name == "Sales Order Entry"
+  //                       ? "Order"
+  //                       : "Bill";
+  //                   var ob = ledgerModel!.balance.toString().split(' ');
+  //                   var ob1 = ob[0];
+  //                   var ob2 = ob[1];
+  //                   var amt = salesTypeData!.name == "Sales Order Entry"
+  //                       ? ledgerModel!.balance
+  //                       : ob2 == 'Dr'
+  //                           ? double.tryParse(ob1)! +
+  //                               double.tryParse(order.balanceAmount)!
+  //                           : double.tryParse(order.balanceAmount)! -
+  //                               double.tryParse(ob1)!;
+  //                   String smsBody =
+  //                       "Dear ${ledgerModel!.name},\nYour Sales $billName ${result.toString()}, Dated : $formattedDate for the Amount of ${order.grandTotal}/- \nBalance:$amt /- has been confirmed  \n${companySettings!.name}";
+  //                   if (ledgerModel!.phone.toString().isNotEmpty) {
+  //                     sendSms(ledgerModel!.phone, smsBody);
+  //                   }
+  //                 }
+  //                 if (ComSettings.getStatus('ENABLE SMS OPTION', settings!)) {
+  //                   //
+  //                 }
+  //                 clearCart();
+  //                 Fluttertoast.showToast(
+  //                   backgroundColor: green,
+  //                   msg: 'Bill Saved');
+  //                 // showMore(context, true);
+  //               }
+  //             });
+  //           }
+  //         });
+  //       } else {
+  //         final bodyJson = {
+  //           'statement': 'CheckPrint',
+  //           'entryNo': int.tryParse(result.toString()),
+  //           'sType': saleFormId.toString(),
+  //           'grandTotal':
+  //               ComSettings.appSettings('bool', 'key-round-off-amount', false)
+  //                   ? grandTotal.toStringAsFixed(decimal)
+  //                   : grandTotal.roundToDouble().toString()
+  //         };
+  //         api.checkBill(bodyJson).then((data) {
+  //           if (data) {
+  //             dataDynamic = [
+  //               {
+  //                 'RealEntryNo': int.tryParse(result.toString()),
+  //                 'EntryNo': int.tryParse(result.toString()),
+  //                 'InvoiceNo': int.tryParse(result.toString()),
+  //                 'Type': saleFormId
+  //               }
+  //             ];
+  //             if (ComSettings.appSettings('bool', 'key-sms-customer', false)) {
+  //               var billName = salesTypeData!.name == "Sales Order Entry"
+  //                   ? "Order"
+  //                   : "Bill";
+  //               var ob = ledgerModel!.balance.toString().split(' ');
+  //               var ob1 = ob[0];
+  //               var ob2 = ob[1];
+  //               var amt = salesTypeData!.name == "Sales Order Entry"
+  //                   ? ledgerModel!.balance
+  //                   : ob2 == 'Dr'
+  //                       ? double.tryParse(ob1)! +
+  //                           double.tryParse(order.balanceAmount)!
+  //                       : double.tryParse(order.balanceAmount)! -
+  //                           double.tryParse(ob1)!;
+  //               String smsBody =
+  //                   "Dear ${ledgerModel!.name},\nYour Sales $billName ${result.toString()}, Dated : $formattedDate for the Amount of ${order.grandTotal}/- \nBalance:$amt /- has been confirmed  \n${companySettings!.name}";
+  //               if (ledgerModel!.phone.toString().isNotEmpty) {
+  //                 sendSms(ledgerModel!.phone, smsBody);
+  //               }
+  //             }
+  //             if (ComSettings.getStatus('ENABLE SMS OPTION', settings!)) {
+  //               //
+  //             }
+  //             clearCart();
+  //             Fluttertoast.showToast(
+  //                   backgroundColor: green,
+  //                   msg: 'Bill Saved');
+  //             // showMore(context, true);
+  //           }
+  //         });
+  //       }
+  //       setState(() {
+  //         _isLoading = false;
+  //       });
+  //     } else {
+  //       showErrorDialog(context, result.toString());
+  //     }
+  //   }).catchError((e) {
+  //     showErrorDialog(context, e.toString());
+  //   });
+  // }
+  //         }
+  //       } else {
+  //         showErrorDialog(
+  //             context, "Date Is Incompatible With This Financial Year");
+
+  //         setState(() {
+  //           _isLoading = false;
+  //           buttonEvent = false;
+  //         });
+  //       }
+  //     } else {
+  //       Fluttertoast.showToast(msg: "select SalesAccount");
+
+  //       setState(() {
+  //         _isLoading = false;
+  //         buttonEvent = false;
+  //       });
+  //     }
+  //   } else {
+  //     Fluttertoast.showToast(msg: "Add item");
+
+  //     setState(() {
+  //       _isLoading = false;
+  //       buttonEvent = false;
+  //     });
+  //   }
+  //                                     print('id ===== $selectedCustomerId');
+  //                                   } else {
+  //                                     Fluttertoast.showToast(
+  //                                         msg:
+  //                                             'Please add at least one item');
+  //                                     setState(() {
+  //                                       buttonEvent = false;
+  //                                     });
+  //                                   }
+  //                                 } else {
+  //                                   Fluttertoast.showToast(
+  //                                       msg:
+  //                                           'Invoice Date not equal\ncan`t save');
+  //                                   setState(() {
+  //                                     buttonEvent = false;
+  //                                   });
+  //                                 }
+  //                               } else {
+  //                                 Fluttertoast.showToast(
+  //                                     msg: 'Permission denied\ncan`t save');
+  //                                 setState(() {
+  //                                   buttonEvent = false;
+  //                                 });
+  //                               }
+  //                             }
+  //                            });
+                            },
                             child: Container(
                               height: 60,
                               color: Colors.white,
@@ -4638,19 +5051,22 @@ void _onTabTapped(int index) {
                                       },
                                     ),
                                   ),
-                                   Flexible(
-                          // flex: 1,
-                          child: Visibility(
-                            visible: itemCodeVise,
-                            child: Checkbox(
-                            activeColor: kPrimaryColor,
-                            value: itemCodeViseChek,
-                            onChanged: (value) {
-                           setState(() {
-                            itemCodeViseChek = value!;
-                           });
-                            },),
-                          )),
+                                   Visibility(
+                                    visible: itemCodeVise,
+                                     child: Flexible(
+                                                               // flex: 1,
+                                                               child: Visibility(
+                                                                 visible: itemCodeVise,
+                                                                 child: Checkbox(
+                                                                 activeColor: kPrimaryColor,
+                                                                 value: itemCodeViseChek,
+                                                                 onChanged: (value) {
+                                                                setState(() {
+                                                                 itemCodeViseChek = value!;
+                                                                });
+                                                                 },),
+                                                               )),
+                                   ),
                                 ],
                               ),
                               const SizedBox(
@@ -4972,7 +5388,8 @@ void _onTabTapped(int index) {
                                                                             : 'Unit',
                                                                             style: const TextStyle(
                                                                               fontFamily: 'poppins',
-                                                                              color: red,
+                                                                              color: black,
+                                                                              fontSize: 12,
                                                                               fontWeight: FontWeight.w400
                                                                             ),
                                                                             ),

@@ -166,6 +166,7 @@ class InventoryReportMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Sales Return Report',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -198,6 +199,7 @@ class InventoryReportMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Damage Report',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,

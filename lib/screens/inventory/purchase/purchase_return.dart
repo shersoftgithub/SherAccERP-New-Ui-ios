@@ -470,35 +470,70 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                                 fontWeight: FontWeight.w500),
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 5),
-                                            width:
-                                                MediaQuery.of(context).size.width,
-                                            height: 35,
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color: grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            child: dataDynamic[0]['EntryNo'].toString().isEmpty
-                                                ? const Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Icon(
-                                                      Icons.arrow_drop_down_rounded,
-                                                      color: grey,
-                                                    ))
-                                                : Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: Text(
-                                                      oldBill?
-                                                      dataDynamic[0]['EntryNo'].toString(): '',
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize: 13),
-                                                    ),
-                                                  ),
-                                          )
+  padding: const EdgeInsets.symmetric(horizontal: 5),
+  width: MediaQuery.of(context).size.width,
+  height: 35,
+  decoration: BoxDecoration(
+    border: Border.all(color: grey),
+    borderRadius: BorderRadius.circular(3),
+  ),
+  child: dataDynamic.isEmpty
+      ? const Align(
+          alignment: Alignment.centerRight,
+          child: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: grey,
+          ))
+      : dataDynamic[0]['EntryNo'].toString().isEmpty
+          ? const Align(
+              alignment: Alignment.centerRight,
+              child: Icon(
+                Icons.arrow_drop_down_rounded,
+                color: grey,
+              ))
+          : Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                !oldBill
+                ? (int.parse(dataDynamic[0]['EntryNo'].toString()) + 1).toString()
+                : dataDynamic[0]['EntryNo'].toString(),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13),
+              ),
+            ),
+)
+
+                                          // Container(
+                                          //   padding: const EdgeInsets.symmetric(
+                                          //       horizontal: 5),
+                                          //   width:
+                                          //       MediaQuery.of(context).size.width,
+                                          //   height: 35,
+                                          //   decoration: BoxDecoration(
+                                          //       border: Border.all(color: grey),
+                                          //       borderRadius:
+                                          //           BorderRadius.circular(3)),
+                                          //   child: dataDynamic[0]['EntryNo'].toString().isEmpty
+                                          //       ? const Align(
+                                          //           alignment:
+                                          //               Alignment.centerRight,
+                                          //           child: Icon(
+                                          //             Icons.arrow_drop_down_rounded,
+                                          //             color: grey,
+                                          //           ))
+                                          //       : Align(
+                                          //           alignment: Alignment.centerLeft,
+                                          //           child: Text(
+                                          //             oldBill?
+                                          //             dataDynamic[0]['EntryNo'].toString(): '',
+                                          //             style: const TextStyle(
+                                          //                 fontWeight:
+                                          //                     FontWeight.w400,
+                                          //                 fontSize: 13),
+                                          //           ),
+                                          //         ),
+                                          // )
                                         ],
                                       )),
                                       const SizedBox(
@@ -1186,8 +1221,10 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                      if (_state) {
                       cartItem.clear();
                       Fluttertoast.showToast(
-                        backgroundColor: red,
+                        backgroundColor: green,
                         msg: 'Bill Saved');
+                        selectedCustomerId = 0;
+            customerNameController.text = '';
                       // showMore(context, 'Saved');
                     } else {
                       showInSnackBar('Error enter data correctly');
@@ -5109,14 +5146,12 @@ showMore(context, purchaseState) {
       onPressedYes: () {
         Navigator.of(context).pop();
         rateType = '1';
-        var data = '[' +
-            json.encode({
+        var data = '[${json.encode({
               'statement': 'PurchaseReturnFind',
               'entryNo': dataDynamic[0]['EntryNo'].toString(),
               'saleFormId': 1,
               'fyId': currentFinancialYear!.id
-            }) +
-            ']';
+            })}]';
         final body = {
           'information': '[{}]',
           'data': data,

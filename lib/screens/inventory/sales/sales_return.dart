@@ -1056,34 +1056,69 @@ class _SalesReturnState extends State<SalesReturn> {
                                                 fontWeight: FontWeight.w500),
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 5),
-                                            width:
-                                                MediaQuery.of(context).size.width,
-                                            height: 35,
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color: grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            child: dataDynamic[0]['EntryNo'].toString().isEmpty
-                                                ? const Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Icon(
-                                                      Icons.arrow_drop_down_rounded,
-                                                      color: grey,
-                                                    ))
-                                                : Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: Text(
-                                                      dataDynamic[0]['EntryNo'].toString(),
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize: 13),
-                                                    ),
-                                                  ),
-                                          )
+  padding: const EdgeInsets.symmetric(horizontal: 5),
+  width: MediaQuery.of(context).size.width,
+  height: 35,
+  decoration: BoxDecoration(
+    border: Border.all(color: grey),
+    borderRadius: BorderRadius.circular(3),
+  ),
+  child: dataDynamic.isEmpty
+      ? const Align(
+          alignment: Alignment.centerRight,
+          child: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: grey,
+          ))
+      : dataDynamic[0]['EntryNo'].toString().isEmpty
+          ? const Align(
+              alignment: Alignment.centerRight,
+              child: Icon(
+                Icons.arrow_drop_down_rounded,
+                color: grey,
+              ))
+          : Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                !oldBill
+                ? (int.parse(dataDynamic[0]['EntryNo'].toString()) + 1).toString()
+                : dataDynamic[0]['EntryNo'].toString(),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 13),
+              ),
+            ),
+)
+
+                                          // Container(
+                                          //   padding: const EdgeInsets.symmetric(
+                                          //       horizontal: 5),
+                                          //   width:
+                                          //       MediaQuery.of(context).size.width,
+                                          //   height: 35,
+                                          //   decoration: BoxDecoration(
+                                          //       border: Border.all(color: grey),
+                                          //       borderRadius:
+                                          //           BorderRadius.circular(3)),
+                                          //   child: dataDynamic[0]['EntryNo'].toString().isEmpty
+                                          //       ? const Align(
+                                          //           alignment:
+                                          //               Alignment.centerRight,
+                                          //           child: Icon(
+                                          //             Icons.arrow_drop_down_rounded,
+                                          //             color: grey,
+                                          //           ))
+                                          //       : Align(
+                                          //           alignment: Alignment.centerLeft,
+                                          //           child: Text(
+                                          //             dataDynamic[0]['EntryNo'].toString(),
+                                          //             style: const TextStyle(
+                                          //                 fontWeight:
+                                          //                     FontWeight.w400,
+                                          //                 fontSize: 13),
+                                          //           ),
+                                          //         ),
+                                          // )
                                         ],
                                       )),
                                       const SizedBox(
@@ -1634,8 +1669,217 @@ class _SalesReturnState extends State<SalesReturn> {
                     }
                               },)
                               : setState(() {
-                                
-                              },);
+                                if (buttonEvent) {
+                        return;
+                      } else {
+                        if (totalItem > 0 && selectedCustomerId!= null) {
+                          if (companyUserData!.insertData) {
+                            setState(() {
+                              _isLoading = true;
+                              buttonEvent = true;
+                            });
+                             List<CustomerModel> ledger = [];
+    ledger.add(ledgerModel);
+    var locationId = lId.toString().trim().isNotEmpty ? lId : 1;
+
+    Order order = Order(
+        customerModel: ledger,
+        lineItems: cartItem,
+        grossValue: totalGrossValue.toString(),
+        discount: totalDiscount.toString(),
+        rDiscount: totalRDiscount.toString(),
+        net: totalNet.toString(),
+        cGST: totalCgST.toString(),
+        sGST: totalSgST.toString(),
+        iGST: totalIgST.toString(),
+        cess: totalCess.toString(),
+        adCess: totalAdCess.toString(),
+        fCess: totalFCess.toString(),
+        total: totalCartValue.toString(),
+        grandTotal:
+            grandTotal > 0 ? grandTotal.toString() : totalCartValue.toString(),
+        profit: totalProfit.toString(),
+        cashReceived: '0',
+        otherDiscount: '0',
+        loadingCharge: '0',
+        otherCharges: '0',
+        labourCharge: '0',
+        discountPer: '0',
+        balanceAmount: '0',
+        creditPeriod: '0',
+        narration: _narration!.isNotEmpty ? _narration! : '',
+        takeUser: userIdC.toString(),
+        location: locationId.toString(),
+        billType: companyTaxMode == 'GULF' ? '2' : '0',
+        roundOff: '0',
+        salesMan: salesManId.toString(),
+        sType: rateType,
+        dated: DateUtil.dateYMD(formattedDate),
+        cashAC: acId.toString(),
+        otherAmountData: otherAmountList);
+    if (order.lineItems.isNotEmpty) {
+      var jsonLedger = CustomerModel.encodeCustomerToJson(order.customerModel);
+      var jsonItem = CartItem.encodeCartToJson(order.lineItems);
+      var items = json.encode(jsonItem);
+      var ledger = json.encode(jsonLedger);
+      var otherAmount = json.encode(order.otherAmountData);
+      var taxType = isTax ? 'T' : 'NT';
+      var salesRateTypeId = rateType.isNotEmpty ? rateType : '1';
+      var saleAccountId = saleAccount > 0 ? saleAccount.toString() : '0';
+      var checkKFC = isKFC ? '1' : '0';
+      double grandTotal = double.tryParse(order.grandTotal)! > 0
+          ? (CommonService.getRound(
+                  decimal, double.tryParse(order.grandTotal)!) +
+              CommonService.getRound(
+                  decimal, double.tryParse(order.loadingCharge)!) +
+              CommonService.getRound(
+                  decimal, double.tryParse(order.otherCharges)!) +
+              CommonService.getRound(decimal, double.tryParse(order.adCess)!) +
+              CommonService.getRound(
+                  decimal, double.tryParse(order.labourCharge)!) -
+              CommonService.getRound(
+                  decimal, double.tryParse(order.otherDiscount)!))
+          : 0;
+      double roundOff = 0, different = 0;
+      if (!ComSettings.appSettings('bool', 'key-round-off-amount', false)) {
+        different = grandTotal - grandTotal.round();
+        if (different < 0.5) {
+          roundOff = CommonService.getRound(decimal, (different * -1));
+        } else {
+          roundOff = CommonService.getRound(1, (1 - different));
+        }
+      }
+      var data = '[${json.encode({
+            'statement': 'SalesReturnInsert',
+            'entryNo': 0,
+            'invoiceNo': '0',
+            'saleFormId': saleFormId,
+            'saleFormType': '',
+            'taxType': taxType,
+            'date': order.dated,
+            'sType': salesRateTypeId,
+            'saleAccountId': saleAccountId,
+            'grossValue': order.grossValue,
+            'discPercent': order.discountPer,
+            'discount': order.discount,
+            'rDiscount': order.rDiscount,
+            'net': order.net,
+            'cess': order.cess,
+            'total': order.total,
+            'profit': order.profit,
+            'cGST': order.cGST,
+            'sGST': order.sGST,
+            'iGST': order.iGST,
+            'addCess': order.adCess,
+            'fCess': order.fCess,
+            'otherDiscount': order.otherDiscount,
+            'otherCharges': order.otherCharges,
+            'loadingCharge': order.loadingCharge,
+            'balanceAmount': ComSettings.appSettings(
+                    'bool', 'key-round-off-amount', false)
+                ? double.parse(order.balanceAmount).toStringAsFixed(decimal)
+                : double.parse(order.balanceAmount).roundToDouble().toString(),
+            'labourCharge': order.labourCharge,
+            'grandTotal':
+                ComSettings.appSettings('bool', 'key-round-off-amount', false)
+                    ? grandTotal.toStringAsFixed(decimal)
+                    : grandTotal.roundToDouble().toString(),
+            'creditPeriod': order.creditPeriod,
+            'takeUser': order.takeUser,
+            'narration': order.narration,
+            'cashReceived': order.cashReceived,
+            'cashAC': order.cashAC,
+            'check_kFC': checkKFC,
+            'salesMan': order.salesMan,
+            'location': order.location,
+            'roundOff': roundOff,
+            'billType': order.billType,
+            'returnNo': 0,
+            'returnAmount': 0,
+            'otherAmount': '0',
+            'fyId': currentFinancialYear!.id,
+            'commissionAccount': 0,
+            'commissionAmount': 0,
+            'bankName': '',
+            'bankAmount': 0
+          })}]';
+
+      final body = {
+        'information': ledger,
+        'data': data,
+        'particular': items,
+        'otherAmount': otherAmount,
+        'fyId': currentFinancialYear!.id
+      };
+
+      dio.spSale(body).then((value0) {
+        setState(() {
+          _isLoading = false;
+        });
+        if (value0 > 0) {
+          var data = '[${json.encode({
+                'statement': 'SREntryNo',
+                'entryNo': 0,
+                'invoiceNo': 0,
+                'saleFormId': saleFormId,
+                'billType': order.billType,
+                'returnNo': 0,
+                'returnAmount': 0,
+                'fyId': currentFinancialYear!.id
+              })}]';
+
+          final body1 = {
+            'information': ledger,
+            'data': data,
+            'particular': items,
+            'otherAmount': otherAmount
+          };
+          dio.spSale(body1).then((value1) {
+            if (widget.fromSale!) {
+              setReturnBillNo = value1;
+              setReturnBillAmount =
+                  ComSettings.appSettings('bool', 'key-round-off-amount', false)
+                      ? grandTotal
+                      : grandTotal.roundToDouble();
+            }
+            dataDynamic = [
+              {
+                'RealEntryNo': value1,
+                'EntryNo': value1,
+                'InvoiceNo': value1.toString(),
+                'Type': 1
+              }
+            ];
+            clearCart();
+            Fluttertoast.showToast(
+                        backgroundColor: green,
+                        msg: 'Bill Saved');
+            selectedCustomerId = 0;
+            customerNameController.text = '';
+            // dataDynamic[0]['EntryNo'] = 0;
+            // showMore(context);
+          });
+        }
+      });
+    }
+
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: 'Permission denied\ncan`t save');
+                            setState(() {
+                              buttonEvent = false;
+                            });
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                            backgroundColor: red,
+                              msg:selectedCustomerId == null ? 'Select Customer' : 'Please add atleast one item');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                             });
                             },
                             child: Container(
                               height: 60,

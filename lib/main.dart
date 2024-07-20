@@ -128,7 +128,7 @@ Future<void> _initializeFirebase() async {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
   } else {
     await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
-  }
+  } 
 }
 
 class MyApp extends StatelessWidget {

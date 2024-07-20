@@ -39,6 +39,7 @@ class RecordListMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Ledger List',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -85,6 +86,7 @@ class RecordListMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Employee List',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -131,6 +133,7 @@ class RecordListMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Customer Card List',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -177,6 +180,7 @@ class RecordListMenu extends StatelessWidget {
                     ),
                     const Text(
                       'About',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,

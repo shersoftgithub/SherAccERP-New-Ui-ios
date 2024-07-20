@@ -45,6 +45,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Closing Report',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -78,6 +79,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Sales Daily',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -111,6 +113,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Sales BillWise',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -144,6 +147,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Sales ItemWise',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -177,6 +181,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Bill By Bill',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -215,6 +220,7 @@ class Report extends StatelessWidget {
                       ),
                       const Text(
                         'Monthly Sales',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontFamily: 'poppins',
                             fontSize: 15,
@@ -246,6 +252,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'Monthly Purchase',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
@@ -314,6 +321,7 @@ class Report extends StatelessWidget {
                     ),
                     const Text(
                       'User Activity',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,

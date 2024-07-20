@@ -40,6 +40,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Product',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -73,6 +74,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Opening Stock',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -178,6 +180,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Purchase Return',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -211,6 +214,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Sale Return',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -244,6 +248,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Job Card',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -277,6 +282,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Damage',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -310,6 +316,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Purchase Order',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -343,6 +350,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Stock Trasfer',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -376,6 +384,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Product Management',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -409,6 +418,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Alignment Entry',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -442,6 +452,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Service Entry',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -475,6 +486,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'Stock Management',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,
@@ -508,6 +520,7 @@ class InventoryMenu extends StatelessWidget {
                     ),
                     const Text(
                       'DeliveryNote',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 15,

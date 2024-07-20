@@ -578,6 +578,26 @@ class _ProductRegisterState extends State<ProductRegister> {
                                   controller: hsnController,
                                 ),
                                 headTxt: 'HSN Code')),
+                                 const SizedBox(
+                      width: 4,
+                    ),
+                                Expanded(child: ContainerFieldWidget(
+                        widget: SimpleAutoCompleteTextField(
+                          key: keyItemCode,
+                          controller: itemCodeController,
+                          clearOnSubmit: false,
+                          suggestions: itemCodeList,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          textSubmitted: (data) {
+                            pItemCode = data;
+                            if (pItemCode.isNotEmpty) {
+                              findProductByCode(pItemCode);
+                            }
+                          },
+                        ),
+                        headTxt: 'Item Code'),),
                         Column(
                           children: [
                             const SizedBox(
@@ -621,26 +641,6 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                       ],
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          key: keyItemCode,
-                          controller: itemCodeController,
-                          clearOnSubmit: false,
-                          suggestions: itemCodeList,
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                          textSubmitted: (data) {
-                            pItemCode = data;
-                            if (pItemCode.isNotEmpty) {
-                              findProductByCode(pItemCode);
-                            }
-                          },
-                        ),
-                        headTxt: 'Item Code'),
                     const SizedBox(
                       height: 10,
                     ),

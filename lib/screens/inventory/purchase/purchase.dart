@@ -4704,22 +4704,22 @@ class _PurchaseState extends State<Purchase> {
                             },
                           ),
                         ),
-                        Flexible(
-                          // flex: 1,
-                          child: Visibility(
-                            visible: itemCodeVise,
+                        Visibility(
+                          visible: itemCodeVise,
+                          child: Flexible(
+                            // flex: 1,
                             child: Checkbox(
                             activeColor: kPrimaryColor,
                             value: itemCodeViseChek,
                             onChanged: (value) {
-                           setState(() {
+                                                         setState(() {
                             itemCodeViseChek = value!;
-                           });
-                            },),
-                          )),
+                                                         });
+                            },)),
+                        ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                     selectedProducteId == null

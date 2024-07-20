@@ -44,16 +44,11 @@ class _PurchaseListState extends State<PurchaseList> {
     {'id': 3, 'name': 'Order'}
   ];
   List<TypeItem> dropdownItemsType = [
-    TypeItem(1, 'All Summary'),
-    TypeItem(2, 'Daily'),
-    TypeItem(3, 'Purchase Summary'),
-    TypeItem(4, 'Return Summary'),
-    TypeItem(5, 'Order Summary'),
-    TypeItem(6, 'ItemWise'),
-    TypeItem(7, 'Return ItemWise'),
-    TypeItem(8, 'Order ItemWise'),
-    TypeItem(9, 'UnRegistered Summery'),
-    TypeItem(10, 'UnRegistered ItemWise')
+    TypeItem(1, 'Summery'),
+    TypeItem(2, 'ItemWise'),
+    TypeItem(3, 'Capital Summery'),
+    TypeItem(4, 'Expense Summery'),
+    TypeItem(5, 'ItemWise Comaprison Stock Rate'),
   ];
   int valueType = 1;
   DioService api = DioService();
@@ -156,27 +151,52 @@ class _PurchaseListState extends State<PurchaseList> {
         .where((TypeItem element) => element.id == valueType)
         .map((e) => e.name)
         .first;
-    var statementType = statement == 'All Summary'
-        ? 'All_Summery'
-        : statement == 'Purchase Summary'
-            ? 'P_Summery'
-            : statement == 'Return Summary'
-                ? 'Pr_Summery'
-                : statement == 'Order Summary'
-                    ? 'PO_Summery'
-                    : statement == 'ItemWise'
-                        ? 'P_ItemWise'
-                        : statement == 'Return ItemWise'
-                            ? 'Pr_ItemWise'
-                            : statement == 'Order ItemWise'
-                                ? 'PO_ItemWise'
-                                : statement == 'UnRegistered Summery'
-                                    ? 'UnP_Summery'
-                                    : statement == 'UnRegistered ItemWise'
-                                        ? 'UnP_ItemWise'
-                                        : statement == 'Daily'
-                                            ? 'P_Summery'
-                                            : 'All_Summery';
+    var statementType = statement == 'Summery'
+        ? 'P_Summery'
+        : statement == 'ItemWise'
+            ? 'P_ItemWise'
+            : statement == 'Capital Summery'
+                ? 'Capital_Summery'
+                : statement == 'Expense Summery'
+                    ? 'Expense_Summery'
+                    : statement == 'ItemWise Comparison Stock Rate'
+                        ? 'ItemWise Comparison Stock Rate'
+                        : 'P_Summery';
+
+    //  StatementType = "All_Summery";
+    //                 else if (rb_Purchase.Checked)
+    //                     StatementType = "P_Summery";
+    //                 else if (rb_Pr.Checked)
+    //                     StatementType = "Pr_Summery";
+    //                 else if (rb_Po.Checked)
+    //                     StatementType = "PO_Summery";
+    //                 else if (rbUnrP.Checked)
+    //                     StatementType = "UnP_Summery";
+    //                 //else if (rbCapital.Checked )
+    //                 //    StatementType = "Capital_Summery";
+    //                 //else if (rbExpense.Checked )
+    //                 //    StatementType = "Expense_Summery";
+    //             }
+    //             else if (CmbReportType.Text == "ItemWise")
+    //             {
+    //                 if (rb_All.Checked)
+    //                     StatementType = "All_Summery";
+    //                 else if (rb_Purchase.Checked)
+    //                     StatementType = "P_ItemWise";
+    //                 else if (rb_Pr.Checked)
+    //                     StatementType = "Pr_ItemWise";
+    //                 else if (rb_Po.Checked)
+    //                     StatementType = "PO_ItemWise";
+    //                 else if (rbUnrP.Checked)
+    //                     StatementType = "UnP_ItemWise";
+    //             }
+    //             else if (CmbReportType.Text =="Capital Summery" ) 
+    //                 StatementType = "Capital_Summery";
+    //             else if (CmbReportType.Text == "Expense Summery")
+    //                 StatementType = "Expense_Summery";
+    //             else if (CmbReportType.Text == "ItemWise Comparison Stock Rate")
+    //                 StatementType = "ItemWise Comparison Stock Rate";
+
     var sDate = fromDate!.isEmpty ? '2021-01-011' : formatYMD(fromDate);
     var eDate = toDate!.isEmpty ? '2021-01-011' : formatYMD(toDate);
     var itemsId = itemId != null ? itemId['id'] : '0';

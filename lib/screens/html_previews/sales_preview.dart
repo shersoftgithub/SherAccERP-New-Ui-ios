@@ -1484,7 +1484,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                     child: Column(
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.all(10),
+                                          padding: const EdgeInsets.all(8),
                                           height: 115,
                                           width:
                                               MediaQuery.of(context).size.width,
@@ -1498,82 +1498,81 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.center,
                                             children: [
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 5),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      companySettings!.name,
-                                                      style: const TextStyle(
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                      companySettings!.add1!,
-                                                      style: const TextStyle(
-                                                          fontSize: 8),
-                                                    ),
-                                                    Text(
-                                                      companySettings!.add2!,
-                                                      style: const TextStyle(
-                                                          fontSize: 8),
-                                                    ),
-                                                      Visibility(
-                                                      visible: companySettings!
-                                                          .add3!.isNotEmpty,
-                                                      child: Text(
-                                                        companySettings!.add3!,
-                                                        style: const TextStyle(
-                                                            fontSize: 8),
-                                                      ),
-                                                    ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    companySettings!.name,
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  Text(
+                                                    companySettings!.add1!,
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                        fontSize: 8),
+                                                  ),
+                                                  Text(
+                                                    companySettings!.add2!,
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                        fontSize: 8),
+                                                  ),
                                                     Visibility(
-                                                        visible:
-                                                            companySettings!
-                                                                .add4!
-                                                                .isNotEmpty,
-                                                        child: Text(
+                                                    visible: companySettings!
+                                                        .add3!.isNotEmpty,
+                                                    child: Text(
+                                                      companySettings!.add3!,
+                                                      style: const TextStyle(
+                                                          fontSize: 8),
+                                                    ),
+                                                  ),
+                                                  Visibility(
+                                                      visible:
                                                           companySettings!
-                                                              .add4!,
-                                                          style:
-                                                              const TextStyle(
-                                                                  fontSize: 8),
-                                                        )),
-                                                    Visibility(
-                                                      visible: companySettings!
-                                                          .email!.isNotEmpty,
-                                                      child: Text(
-                                                        companySettings!.email!,
-                                                        style: const TextStyle(
-                                                            fontSize: 8),
-                                                      ),
-                                                    ),
-                                                    Visibility(
-                                                      visible: companySettings!
-                                                          .mobile!.isNotEmpty,
+                                                              .add4!
+                                                              .isNotEmpty,
                                                       child: Text(
                                                         companySettings!
-                                                            .mobile!,
-                                                        style: const TextStyle(
-                                                            fontSize: 8),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      "GST No : $companyTaxNo",
+                                                            .add4!,
+                                                        style:
+                                                            const TextStyle(
+                                                                fontSize: 8),
+                                                      )),
+                                                  Visibility(
+                                                    visible: companySettings!
+                                                        .email!.isNotEmpty,
+                                                    child: Text(
+                                                      companySettings!.email!,
                                                       style: const TextStyle(
                                                           fontSize: 8),
                                                     ),
-                                                    Text(
-                                                      "State      : $companyState       $companyStateCode",
+                                                  ),
+                                                  Visibility(
+                                                    visible: companySettings!
+                                                        .mobile!.isNotEmpty,
+                                                    child: Text(
+                                                      companySettings!
+                                                          .mobile!,
                                                       style: const TextStyle(
                                                           fontSize: 8),
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                  Text(
+                                                    "GST No : $companyTaxNo",
+                                                    style: const TextStyle(
+                                                        fontSize: 7),
+                                                  ),
+                                                  Text(
+                                                    "State      : $companyState       $companyStateCode",
+                                                    style: const TextStyle(
+                                                        fontSize: 8),
+                                                  ),
+                                                ],
                                               ),
                                             
                                             ],
