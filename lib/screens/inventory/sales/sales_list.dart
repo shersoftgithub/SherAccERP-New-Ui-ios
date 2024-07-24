@@ -253,6 +253,7 @@ class _SalesListState extends State<SalesList> {
   reportView(title) {
     controller.addListener(onScroll);
     List<dynamic> dataSType = [];
+    
     if (isType) {
       title = dropdownItemsType
           .where((TypeItem element) => element.id == valueType)

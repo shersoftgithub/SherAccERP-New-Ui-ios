@@ -190,9 +190,8 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                   settingsDisplayList = _settingsList;
                 });
               },
-              iconSecondPath: const Icon(
-                Icons.save,
-                color: white,
+              iconSecondPath: Image.asset('assets/icons/Save instagram@2x.png',
+              scale: 1.6,
               ),
               onTapSecond: () {
                 setState(() {
@@ -295,15 +294,31 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                         flex: 1,
                         child: TabBarView(children: [
                           Padding(
-                            padding: const EdgeInsets.all(1.0),
-                            child: ListView.builder(
-                                itemCount: settingsDisplayList.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return index == 0
-                                      ? _searchBar()
-                                      : _listItem(index - 1);
-                                }),
-                          ),
+      padding: const EdgeInsets.all(1.0),
+      child: Column(
+        children: [
+          _searchBar(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: settingsDisplayList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _listItem(index);
+              },
+            ),
+          ),
+        ],
+      ),
+    ),
+                          // Padding(
+                          //   padding: const EdgeInsets.all(1.0),
+                          //   child: ListView.builder(
+                          //       itemCount: settingsDisplayList.length,
+                          //       itemBuilder: (BuildContext context, int index) {
+                          //         return index == 0
+                          //             ? _searchBar()
+                          //             : _listItem(index - 1);
+                          //       }),
+                          // ),
                           ListView(children: [
                             const SizedBox(
                               height: 10,

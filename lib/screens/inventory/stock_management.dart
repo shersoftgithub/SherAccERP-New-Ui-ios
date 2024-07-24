@@ -14,6 +14,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class StockManagement extends StatefulWidget {
   const StockManagement({Key? key}) : super(key: key);
@@ -201,115 +202,220 @@ class _StockManagementState extends State<StockManagement> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Stock Management'),
-      ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ElevatedButton(
-                onPressed: (() {
-                  if (cartItem.isNotEmpty) {
-                    _updateStockItem();
-                  } else {
-                    Fluttertoast.showToast(msg: 'add data');
-                  }
-                }),
-                child: Text(isEdit ? 'Edit' : 'Save'),
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.navigate_before_rounded),
-                onPressed: (() {
-                  _previousEntry();
-                }),
-                label: const Text(''),
-              ),
-              Text(entryNo),
-              ElevatedButton.icon(
-                onPressed: (() {
-                  _nextEntry();
-                }),
-                icon: const Icon(Icons.navigate_next_rounded),
-                label: const Text(''),
-              ),
-              ElevatedButton(
-                onPressed: isEdit ? _deleteStockItem : null,
-                child: const Text('Delete'),
-              ),
-            ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+        appBar: AppBar(
+          title: const Text('Stock Management'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
           ),
-          Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text(
-                  'Date : ',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                InkWell(
-                  child: Text(
-                    formattedDate!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 16,
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3)
+                      )
+                    ),
+                    onPressed: (() {
+                      if (cartItem.isNotEmpty) {
+                        _updateStockItem();
+                      } else {
+                        Fluttertoast.showToast(msg: 'add data');
+                      }
+                    }),
+                    child: Text(isEdit ? 'Edit' : 'Save',
+                    style: TextStyle(
+                    fontFamily: 'poppins',
+                    color: white
                   ),
-                  onTap: () => _selectDate(),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text(
-                  'Branch',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 40,
-                    width: 130,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButton<int>(
-                            hint: const Text('Select Branch'),
-                            value: locationFromId,
-                            items: locationData
-                                .map<DropdownMenuItem<int>>((value) {
-                              return DropdownMenuItem<int>(
-                                value: value.key,
-                                child: Text(value.value),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                locationFromId = value!;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-              onPressed: isEditItem
-                  ? null
-                  : () {
-                      setState(() {
-                        nextWidget = 1;
-                      });
+                  InkWell(
+                    onTap: (() {
+                      _previousEntry();
+                    }),
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(50)),
+                      child: const Center(
+                        child: Icon(Icons.navigate_before_rounded,
+                        )),
+                    ),
+                  ),
+                  
+                  // ElevatedButton.icon(
+                  //   icon: const Icon(Icons.navigate_before_rounded),
+                  //   onPressed: (() {
+                  //     _previousEntry();
+                  //   }),
+                  //   label: const Text(''),
+                  // ),
+                  Text(entryNo,
+                  style: const TextStyle(
+                    color: black,
+                    fontWeight: FontWeight.w500
+                  ),
+                  ),
+                   InkWell(
+                    onTap: (() {
+                      _nextEntry();
+                    }),
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(50)),
+                      child: const Center(
+                        child: Icon(Icons.navigate_next_rounded,
+                        )),
+                    ),
+                  ),
+                  // ElevatedButton.icon(
+                  //   onPressed: (() {
+                  //     _nextEntry();
+                  //   }),
+                  //   icon: const Icon(Icons.navigate_next_rounded),
+                  //   label: const Text(''),
+                  // ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3)
+                      )
+                    ),
+                    onPressed: isEdit ? _deleteStockItem : () {
+                      
                     },
-              child: const Text('Add New Item')),
-          selectWidget()
-        ],
+                    child: const Text('Delete',
+                    style: TextStyle(
+                    fontFamily: 'poppins',
+                    color: white
+                  ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width,
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                   
+                    const Text(
+                      'Date : ',
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.w500, fontSize: 15),
+                    ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: grey,
+                          ),
+                          borderRadius: BorderRadius.circular(3)
+                        ),
+                        child: Text(
+                          formattedDate!,
+                           style: const TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500, fontSize: 15),
+                        ),
+                      ),
+                      onTap: () => _selectDate(),
+                    ),
+                    const Spacer(),
+                    // const SizedBox(
+                    //   width: 10,
+                    // ),
+                    const Text(
+                      'Branch  ',
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.w500, fontSize: 15),
+                    ),
+                    Container(
+                      height: 35,
+                      padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: grey,
+                                      ),
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          hint: const Text('Select Branch'),
+                          value: locationFromId,
+                          items: locationData
+                              .map<DropdownMenuItem<int>>((value) {
+                            return DropdownMenuItem<int>(
+                              value: value.key,
+                              child: Text(value.value),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              locationFromId = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      )
+                    ),
+                  onPressed: isEditItem
+                      ? () {
+                        
+                      }
+                      : () {
+                          setState(() {
+                            nextWidget = 1;
+                          });
+                        },
+                  child: const Text('Add New Item',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    color: white
+                  ),
+                  )),
+              selectWidget()
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -530,12 +636,22 @@ class _StockManagementState extends State<StockManagement> {
   detailWidget() {
     return Column(
       children: [
+        const SizedBox(
+          height: 2,
+        ),
         SimpleAutoCompleteTextField(
           key: keyItemCode,
           controller: itemCodeController,
           clearOnSubmit: false,
           suggestions: itemCodeList,
           decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
               border: OutlineInputBorder(), labelText: 'Item Code'),
           textSubmitted: (data) {
             pItemCode = data;
@@ -545,7 +661,7 @@ class _StockManagementState extends State<StockManagement> {
           },
         ),
         const SizedBox(
-          height: 10,
+          height: 8,
         ),
         SimpleAutoCompleteTextField(
           key: keyItemName,
@@ -553,6 +669,13 @@ class _StockManagementState extends State<StockManagement> {
           clearOnSubmit: false,
           suggestions: itemNameList,
           decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
               border: OutlineInputBorder(), labelText: 'Item Name'),
           textSubmitted: (data) {
             pItemName = data;
@@ -562,7 +685,7 @@ class _StockManagementState extends State<StockManagement> {
           },
         ),
         const SizedBox(
-          height: 10,
+          height: 8,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -571,6 +694,13 @@ class _StockManagementState extends State<StockManagement> {
               child: TextField(
                 controller: _quantityController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'Quantity', border: OutlineInputBorder()),
               ),
             ),
@@ -581,6 +711,13 @@ class _StockManagementState extends State<StockManagement> {
               child: TextField(
                 controller: _addQuantityController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'Add', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -593,6 +730,13 @@ class _StockManagementState extends State<StockManagement> {
               child: TextField(
                 controller: _lessQuantityController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'Less', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -601,7 +745,7 @@ class _StockManagementState extends State<StockManagement> {
           ],
         ),
         const SizedBox(
-          height: 10,
+          height: 8,
         ),
         Row(
           children: [
@@ -610,6 +754,13 @@ class _StockManagementState extends State<StockManagement> {
                 readOnly: true,
                 controller: _prateController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'Prate', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -623,6 +774,13 @@ class _StockManagementState extends State<StockManagement> {
                 readOnly: true,
                 controller: _rPrateController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'RPrate', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -631,7 +789,7 @@ class _StockManagementState extends State<StockManagement> {
           ],
         ),
         const SizedBox(
-          height: 10,
+          height: 8,
         ),
         Row(
           children: [
@@ -640,6 +798,13 @@ class _StockManagementState extends State<StockManagement> {
                 readOnly: true,
                 controller: _mrpController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'MRP', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -653,6 +818,13 @@ class _StockManagementState extends State<StockManagement> {
                 readOnly: true,
                 controller: _retailController,
                 decoration: const InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(
+              vertical: 10,
+              horizontal: 8
+            ),
+            labelStyle: TextStyle(
+              fontFamily: 'poppins'
+            ),
                     labelText: 'Retail', border: OutlineInputBorder()),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
@@ -660,14 +832,28 @@ class _StockManagementState extends State<StockManagement> {
             ),
           ],
         ),
+        const SizedBox(
+          height: 6,
+        ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kPrimaryColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5)
+            )
+          ),
             onPressed: () {
               setState(() {
                 isEditItem ? updateProduct() : _addStockItem();
                 nextWidget = 2;
               });
             },
-            child: const Text('Add'))
+            child: const Text('Add',
+            style: TextStyle(
+              fontFamily: 'poppins',
+              color: white
+            ),
+            ))
       ],
     );
   }
@@ -676,102 +862,128 @@ class _StockManagementState extends State<StockManagement> {
     return cartItem.isNotEmpty
         ? Expanded(
             child: ListView.separated(
+              shrinkWrap: true,
               itemCount: cartItem.length,
               separatorBuilder: (BuildContext context, int index) =>
-                  const Divider(),
+                  const SizedBox(
+                    height: 4,
+                  ),
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(cartItem[index].itemName!),
-                  subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Qty",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(cartItem[index].stock.toString(),
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
-                      const Text("Add",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(cartItem[index].aQty.toString(),
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 12)),
-                      const Text("Less",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(cartItem[index].lQty.toString(),
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: Card(
-                          color: Colors.green[200],
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.edit,
-                              color: Colors.black,
-                              size: 18,
+                return Container(
+                  decoration: BoxDecoration(
+                    color: white,
+                    border: Border.all(color: grey),
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                  child: ListTile(
+                    title: Text(cartItem[index].itemName!,
+                    style: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
+                    ),
+                    subtitle: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Qty ",
+                               style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),),
+                          Text(cartItem[index].stock.toString(),
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500)),
+                                  Spacer(),
+                          const Text("Add ",
+                                    style: TextStyle(
+                        fontFamily: 'poppins'
+                      )),
+                          Text(cartItem[index].aQty.toString(),
+                              style: const TextStyle(
+                                  color: Colors.black, fontWeight: FontWeight.w500)),
+                                  const Spacer(),
+                          const Text("Less ",
+                                    style: TextStyle(
+                        fontFamily: 'poppins'
+                      )),
+                          Text(cartItem[index].lQty.toString(),
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500)),
+                                  const Spacer(),
+                          SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: Card(
+                              color: kPrimaryColor,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: white,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isEditItem = true;
+                                    _slno = cartItem[index].id!;
+                                    itemCodeController.text =
+                                        cartItem[index].itemCode.toString();
+                                    itemNameController.text =
+                                        cartItem[index].itemName!;
+                                    pItemCode = cartItem[index].itemCode.toString();
+                                    pItemName = cartItem[index].itemName!;
+                                    _addQuantityController.text =
+                                        cartItem[index].aQty.toString();
+                                    _lessQuantityController.text =
+                                        cartItem[index].lQty.toString();
+                                    fillData(StockProduct(
+                                        adCessPer: 0,
+                                        branch: cartItem[index].branch,
+                                        buyingPrice: cartItem[index].pRate,
+                                        buyingPriceReal: cartItem[index].rPRate,
+                                        cess: 0,
+                                        cessPer: 0,
+                                        hsnCode: '',
+                                        itemId: cartItem[index].itemId,
+                                        minimumRate: 0,
+                                        name: cartItem[index].itemName,
+                                        productId: cartItem[index].id,
+                                        quantity: cartItem[index].stock,
+                                        retailPrice: cartItem[index].retail,
+                                        sellingPrice: cartItem[index].mrp,
+                                        spRetailPrice: cartItem[index].spRetail,
+                                        stockValuation: '',
+                                        tax: 0,
+                                        wholeSalePrice: cartItem[index].wholesale));
+                                    nextWidget = 1;
+                                  });
+                                },
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isEditItem = true;
-                                _slno = cartItem[index].id!;
-                                itemCodeController.text =
-                                    cartItem[index].itemCode.toString();
-                                itemNameController.text =
-                                    cartItem[index].itemName!;
-                                pItemCode = cartItem[index].itemCode.toString();
-                                pItemName = cartItem[index].itemName!;
-                                _addQuantityController.text =
-                                    cartItem[index].aQty.toString();
-                                _lessQuantityController.text =
-                                    cartItem[index].lQty.toString();
-                                fillData(StockProduct(
-                                    adCessPer: 0,
-                                    branch: cartItem[index].branch,
-                                    buyingPrice: cartItem[index].pRate,
-                                    buyingPriceReal: cartItem[index].rPRate,
-                                    cess: 0,
-                                    cessPer: 0,
-                                    hsnCode: '',
-                                    itemId: cartItem[index].itemId,
-                                    minimumRate: 0,
-                                    name: cartItem[index].itemName,
-                                    productId: cartItem[index].id,
-                                    quantity: cartItem[index].stock,
-                                    retailPrice: cartItem[index].retail,
-                                    sellingPrice: cartItem[index].mrp,
-                                    spRetailPrice: cartItem[index].spRetail,
-                                    stockValuation: '',
-                                    tax: 0,
-                                    wholeSalePrice: cartItem[index].wholesale));
-                                nextWidget = 1;
-                              });
-                            },
                           ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: Card(
-                          color: Colors.red[200],
-                          child: IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Colors.black,
-                              size: 18,
+                          SizedBox(
+                            height: 40,
+                            width: 40,
+                            child: Card(
+                              color: kPrimaryColor,
+                              child: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: white,
+                                  size: 18,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    removeProduct(index);
+                                  });
+                                },
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                removeProduct(index);
-                              });
-                            },
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 );
               },

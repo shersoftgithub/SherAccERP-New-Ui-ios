@@ -2570,7 +2570,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                             ),
                                             child: Padding(
                                               padding: const EdgeInsets.only(
-                                                  left: 5.0, top: 5),
+                                                  left: 5.0, top: 2),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
@@ -2603,7 +2603,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                   Column(
                                                     children: [
                                                       SizedBox(
-                                                          height: 40,
+                                                          // height: 40,
                                                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                             children: [
                                                               Column(
@@ -2711,7 +2711,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                           )),
                                                     ],
                                                   ), const SizedBox(
-                                                        height: 20,
+                                                        height: 10,
                                                       ),
                                                   const Text(
                                                     "Certified that the particular given above are true and Correct",

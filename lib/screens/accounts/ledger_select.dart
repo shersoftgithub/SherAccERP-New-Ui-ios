@@ -318,13 +318,31 @@ var _ledger, _id, locationId, _dropDownBranchId;
   }
 
   _loadLedger() {
-    return ListView.builder(
-      // shrinkWrap: true,
-      itemBuilder: (context, index) {
-        return index == 0 ? _searchBar() : _listItem(index - 1);
-      },
-      itemCount: itemDisplay.length + 1,
-    );
+        return Column(
+    children: [
+      ClipRRect(
+        clipBehavior: Clip.antiAlias,
+        child: _searchBar(),
+      ),
+      Expanded(
+        child: ListView.builder(
+          itemBuilder: (context, index) {
+            return _listItem(index);
+          },
+          itemCount: itemDisplay.length,
+        ),
+      ),
+    ],
+  );
+    // return ListView.builder(
+    //   // shrinkWrap: true,
+    //   itemBuilder: (context, index) {
+    //     return index == 0 ? ClipRRect(
+    //       clipBehavior: Clip.antiAlias,
+    //       child: _searchBar(),) : _listItem(index - 1);
+    //   },
+    //   itemCount: itemDisplay.length + 1,
+    // );
   }
 
   var stmtType = 'Closing Report';

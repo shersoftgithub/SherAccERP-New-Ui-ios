@@ -315,6 +315,10 @@ class _PrintSettingsState extends State<PrintSettings> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins'
+        ),
         title: const Text('Test Print'),
       ),
       body: ListView.builder(

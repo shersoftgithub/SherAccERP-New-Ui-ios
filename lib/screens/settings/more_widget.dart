@@ -175,7 +175,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 4,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -231,7 +231,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 5.0,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -264,7 +264,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 5.0,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -296,7 +296,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 5.0,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -330,7 +330,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 5.0,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -364,7 +364,7 @@ class SettingsMenu extends StatelessWidget {
             GestureDetector(
               child: Card(
                 color: white,
-                // elevation: 5.0,
+                elevation: 1,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(

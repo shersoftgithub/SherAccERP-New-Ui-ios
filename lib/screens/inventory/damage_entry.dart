@@ -17,6 +17,7 @@ import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class DamageEntry extends StatefulWidget {
@@ -100,17 +101,20 @@ class _DamageEntryState extends State<DamageEntry> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           title: const Text("Damage"),
           actions: [
             TextButton(
-                child: const Text(
-                  "New",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
                 style: TextButton.styleFrom(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -118,7 +122,12 @@ class _DamageEntryState extends State<DamageEntry> {
                   setState(() {
                     widgetID = false;
                   });
-                }),
+                },
+                child: const Text(
+                  "New",
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                )),
           ],
         ),
         body: Container(
@@ -128,26 +137,36 @@ class _DamageEntryState extends State<DamageEntry> {
 
   widgetSuffix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
+           titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           title: const Text("Damage"),
           actions: [
-            TextButton(
-                child: const Text(
-                  "Save",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue[700],
-                ),
-                onPressed: () async {
+            IconButton(onPressed: () async {
                   setState(() {
                     _isLoading = true;
                   });
                   saveSale();
-                }),
+                }, icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,))
+            // TextButton(
+            //     style: TextButton.styleFrom(
+            //       foregroundColor: Colors.white,
+            //       backgroundColor: Colors.blue[700],
+            //     ),
+            //     onPressed: () async {
+            //       setState(() {
+            //         _isLoading = true;
+            //       });
+            //       saveSale();
+            //     },
+            //     child: const Text(
+            //       "Save",
+            //       style: TextStyle(
+            //           color: Colors.white, fontWeight: FontWeight.bold),
+            //     )),
           ],
         ),
         body: ProgressHUD(
@@ -198,9 +217,18 @@ class _DamageEntryState extends State<DamageEntry> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in Damage"),
+              const Text("No items in Damage",
+               style: TextStyle(
+            fontFamily: 'poppins'
+          ),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      )
+                    ),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -212,7 +240,11 @@ class _DamageEntryState extends State<DamageEntry> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New Damage'))
+                  label: const Text('Take New Damage',
+                    style: TextStyle(
+            fontFamily: 'poppins'
+          ),
+                  ))
             ],
           ));
   }
@@ -334,240 +366,526 @@ class _DamageEntryState extends State<DamageEntry> {
   bool isData = false;
 
   selectLedgerWidget() {
-    setState(() {
-      if (_ledger.isNotEmpty) isData = true;
-    });
-    return FutureBuilder<List<dynamic>>(
-      future: dio.getLedgerListByType('SelectExpenceOnly'),
-      builder: (ctx, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data!.isNotEmpty) {
-            var data = snapshot.data;
-            if (!isData) {
-              ledgerDisplay = data!;
-              _ledger = data;
-            }
-            return ListView.builder(
-              // shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return index == 0
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Flexible(
-                              child: TextField(
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  label: Text('Search...'),
-                                ),
-                                onChanged: (text) {
-                                  text = text.toLowerCase();
-                                  setState(() {
-                                    ledgerDisplay = _ledger.where((item) {
-                                       var itemName =
-                                          item['LedName'].toLowerCase();
-                                      return itemName.contains(text);
-                                    }).toList();
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : InkWell(
-                        child: Card(
+  setState(() {
+    if (_ledger.isNotEmpty) isData = true;
+  });
+  return FutureBuilder<List<dynamic>>(
+    future: dio.getLedgerListByType('SelectExpenceOnly'),
+    builder: (ctx, snapshot) {
+      if (snapshot.hasData) {
+        if (snapshot.data!.isNotEmpty) {
+          var data = snapshot.data;
+          if (!isData) {
+            ledgerDisplay = data!;
+            _ledger = data;
+          }
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,
+                ),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8
+                    ),
+                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
+                    label: Text('Search...'),
+                  ),
+                  onChanged: (text) {
+                    text = text.toLowerCase();
+                    setState(() {
+                      ledgerDisplay = _ledger.where((item) {
+                        var itemName = item['LedName'].toLowerCase();
+                        return itemName.contains(text);
+                      }).toList();
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  separatorBuilder: (context, index) => const SizedBox(
+                    height: 6,
+                  ),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: white,
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)
+                          ),
                           child: ListTile(
-                              title: Text(ledgerDisplay[index - 1]['LedName'])),
+                            title: Text(ledgerDisplay[index]['LedName']),
+                          ),
                         ),
                         onTap: () {
                           setState(() {
-                            ledgerModel = ledgerDisplay[index - 1];
+                            ledgerModel = ledgerDisplay[index];
                             nextWidget = 1;
                             isData = false;
                           });
                         },
-                      );
-              },
-              itemCount: ledgerDisplay.length + 1,
-            );
-          } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
-                  SizedBox(height: 20),
-                  Text('No Data Found..')
-                ],
-              ),
-            );
-          }
-        } else if (snapshot.hasError) {
-          return AlertDialog(
-            title: const Text(
-              'An Error Occurred!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.redAccent,
-              ),
-            ),
-            content: Text(
-              "${snapshot.error}",
-              style: const TextStyle(
-                color: Colors.blueAccent,
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text(
-                  'Go Back',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                  ),
+                      ),
+                    );
+                  },
+                  itemCount: ledgerDisplay.length,
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
+              ),
             ],
           );
+        } else {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                SizedBox(height: 20),
+                Text('No Data Found..')
+              ],
+            ),
+          );
         }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('This may take some time..')
-            ],
+      } else if (snapshot.hasError) {
+        return AlertDialog(
+          title: const Text(
+            'An Error Occurred!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.redAccent,
+            ),
           ),
+          content: Text(
+            "${snapshot.error}",
+            style: const TextStyle(
+              color: Colors.blueAccent,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'Go Back',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
         );
-      },
-    );
-  }
+      }
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('This may take some time..')
+          ],
+        ),
+      );
+    },
+  );
+}
+
+
+  // selectLedgerWidget() {
+  //   setState(() {
+  //     if (_ledger.isNotEmpty) isData = true;
+  //   });
+  //   return FutureBuilder<List<dynamic>>(
+  //     future: dio.getLedgerListByType('SelectExpenceOnly'),
+  //     builder: (ctx, snapshot) {
+  //       if (snapshot.hasData) {
+  //         if (snapshot.data!.isNotEmpty) {
+  //           var data = snapshot.data;
+  //           if (!isData) {
+  //             ledgerDisplay = data!;
+  //             _ledger = data;
+  //           }
+  //           return ListView.builder(
+  //             // shrinkWrap: true,
+  //             itemBuilder: (context, index) {
+  //               return index == 0
+  //                   ? Padding(
+  //                       padding: const EdgeInsets.all(8.0),
+  //                       child: Row(
+  //                         children: [
+  //                           Flexible(
+  //                             child: TextField(
+  //                               decoration: const InputDecoration(
+  //                                 border: OutlineInputBorder(),
+  //                                 label: Text('Search...'),
+  //                               ),
+  //                               onChanged: (text) {
+  //                                 text = text.toLowerCase();
+  //                                 setState(() {
+  //                                   ledgerDisplay = _ledger.where((item) {
+  //                                      var itemName =
+  //                                         item['LedName'].toLowerCase();
+  //                                     return itemName.contains(text);
+  //                                   }).toList();
+  //                                 });
+  //                               },
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     )
+  //                   : InkWell(
+  //                       child: Card(
+  //                         child: ListTile(
+  //                             title: Text(ledgerDisplay[index - 1]['LedName'])),
+  //                       ),
+  //                       onTap: () {
+  //                         setState(() {
+  //                           ledgerModel = ledgerDisplay[index - 1];
+  //                           nextWidget = 1;
+  //                           isData = false;
+  //                         });
+  //                       },
+  //                     );
+  //             },
+  //             itemCount: ledgerDisplay.length + 1,
+  //           );
+  //         } else {
+  //           return Center(
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: const <Widget>[
+  //                 SizedBox(height: 20),
+  //                 Text('No Data Found..')
+  //               ],
+  //             ),
+  //           );
+  //         }
+  //       } else if (snapshot.hasError) {
+  //         return AlertDialog(
+  //           title: const Text(
+  //             'An Error Occurred!',
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(
+  //               color: Colors.redAccent,
+  //             ),
+  //           ),
+  //           content: Text(
+  //             "${snapshot.error}",
+  //             style: const TextStyle(
+  //               color: Colors.blueAccent,
+  //             ),
+  //           ),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: const Text(
+  //                 'Go Back',
+  //                 style: TextStyle(
+  //                   color: Colors.redAccent,
+  //                 ),
+  //               ),
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //             )
+  //           ],
+  //         );
+  //       }
+  //       return Center(
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: const <Widget>[
+  //             CircularProgressIndicator(),
+  //             SizedBox(height: 20),
+  //             Text('This may take some time..')
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   bool isItemData = false;
 
   selectProductWidget() {
-    setState(() {
-      if (items.isNotEmpty) isItemData = true;
-    });
-    return FutureBuilder<List<StockItem>>(
-      future: dio.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate)),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data!.isNotEmpty) {
-            var data = snapshot.data;
-            if (!isItemData) {
-              itemDisplay = data!;
-              items = data;
-            }
-            return ListView.builder(
-              // shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return index == 0
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextField(
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              label: Text('Search...')),
-                          onChanged: (text) {
-                            text = text.toLowerCase();
-                            setState(() {
-                              itemDisplay = items.where((item) {
-                                var itemName = item.name.toLowerCase();
-                                return itemName.contains(text);
-                              }).toList();
-                            });
-                          },
-                        ),
-                      )
-                    : InkWell(
-                        child: Card(
+  setState(() {
+    if (items.isNotEmpty) isItemData = true;
+  });
+  return FutureBuilder<List<StockItem>>(
+    future: dio.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate)),
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        if (snapshot.data!.isNotEmpty) {
+          var data = snapshot.data;
+          if (!isItemData) {
+            itemDisplay = data!;
+            items = data;
+          }
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 16,),
+                child: TextField(
+                  decoration: const InputDecoration(
+                       contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8
+                    ),
+                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
+                      label: Text('Search...')),
+                  onChanged: (text) {
+                    text = text.toLowerCase();
+                    setState(() {
+                      itemDisplay = items.where((item) {
+                        var itemName = item.name.toLowerCase();
+                        return itemName.contains(text);
+                      }).toList();
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  separatorBuilder: (context, index) => const SizedBox(
+                    height: 6,
+                  ),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16
+                      ),
+                      child: InkWell(
+                        child: Container(
+                           decoration: BoxDecoration(
+                              color: white,
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)
+                            ),
                           child: ListTile(
-                            title:
-                                Text('Name : ${itemDisplay[index - 1].name}'),
+                            title: Text('Name : ${itemDisplay[index].name}'),
                             subtitle: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Qty :${itemDisplay[index - 1].quantity}'),
+                                Text('Qty :${itemDisplay[index].quantity}'),
                                 TextButton(
-                                    onPressed: () {
-                                      Fluttertoast.showToast(
-                                          msg: 'Not Available');
-                                    },
-                                    child: const Card(child: Text('ADD')))
+                                  onPressed: () {
+                                    Fluttertoast.showToast(msg: 'Not Available');
+                                  },
+                                  child: const Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(3))
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(2.0),
+                                      child: Text('ADD'),
+                                    )),
+                                ),
                               ],
                             ),
                           ),
                         ),
                         onTap: () {
                           setState(() {
-                            productModel = itemDisplay[index - 1];
+                            productModel = itemDisplay[index];
                             nextWidget = 2;
                             isItemData = false;
                           });
                         },
-                      );
-              },
-              itemCount: itemDisplay.length + 1,
-            );
-          } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
-                  SizedBox(height: 20),
-                  Text('No Data Found..')
-                ],
-              ),
-            );
-          }
-        } else if (snapshot.hasError) {
-          return AlertDialog(
-            title: const Text(
-              'An Error Occurred!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.redAccent,
-              ),
-            ),
-            content: Text(
-              "${snapshot.error}",
-              style: const TextStyle(
-                color: Colors.blueAccent,
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text(
-                  'Go Back',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                  ),
+                      ),
+                    );
+                  },
+                  itemCount: itemDisplay.length,
                 ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
+              ),
             ],
           );
+        } else {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                SizedBox(height: 20),
+                Text('No Data Found..'),
+              ],
+            ),
+          );
         }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('This may take some time..')
-            ],
+      } else if (snapshot.hasError) {
+        return AlertDialog(
+          title: const Text(
+            'An Error Occurred!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.redAccent,
+            ),
           ),
+          content: Text(
+            "${snapshot.error}",
+            style: const TextStyle(
+              color: Colors.blueAccent,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text(
+                'Go Back',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
         );
-      },
-    );
-  }
+      }
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text('This may take some time..'),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+  // selectProductWidget() {
+  //   setState(() {
+  //     if (items.isNotEmpty) isItemData = true;
+  //   });
+  //   return FutureBuilder<List<StockItem>>(
+  //     future: dio.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate)),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.hasData) {
+  //         if (snapshot.data!.isNotEmpty) {
+  //           var data = snapshot.data;
+  //           if (!isItemData) {
+  //             itemDisplay = data!;
+  //             items = data;
+  //           }
+  //           return ListView.builder(
+  //             // shrinkWrap: true,
+  //             itemBuilder: (context, index) {
+  //               return index == 0
+  //                   ? Padding(
+  //                       padding: const EdgeInsets.all(8.0),
+  //                       child: TextField(
+  //                         decoration: const InputDecoration(
+  //                             border: OutlineInputBorder(),
+  //                             label: Text('Search...')),
+  //                         onChanged: (text) {
+  //                           text = text.toLowerCase();
+  //                           setState(() {
+  //                             itemDisplay = items.where((item) {
+  //                               var itemName = item.name.toLowerCase();
+  //                               return itemName.contains(text);
+  //                             }).toList();
+  //                           });
+  //                         },
+  //                       ),
+  //                     )
+  //                   : InkWell(
+  //                       child: Card(
+  //                         child: ListTile(
+  //                           title:
+  //                               Text('Name : ${itemDisplay[index - 1].name}'),
+  //                           subtitle: Row(
+  //                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                             children: [
+  //                               Text('Qty :${itemDisplay[index - 1].quantity}'),
+  //                               TextButton(
+  //                                   onPressed: () {
+  //                                     Fluttertoast.showToast(
+  //                                         msg: 'Not Available');
+  //                                   },
+  //                                   child: const Card(child: Text('ADD')))
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       onTap: () {
+  //                         setState(() {
+  //                           productModel = itemDisplay[index - 1];
+  //                           nextWidget = 2;
+  //                           isItemData = false;
+  //                         });
+  //                       },
+  //                     );
+  //             },
+  //             itemCount: itemDisplay.length + 1,
+  //           );
+  //         } else {
+  //           return Center(
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: const <Widget>[
+  //                 SizedBox(height: 20),
+  //                 Text('No Data Found..')
+  //               ],
+  //             ),
+  //           );
+  //         }
+  //       } else if (snapshot.hasError) {
+  //         return AlertDialog(
+  //           title: const Text(
+  //             'An Error Occurred!',
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(
+  //               color: Colors.redAccent,
+  //             ),
+  //           ),
+  //           content: Text(
+  //             "${snapshot.error}",
+  //             style: const TextStyle(
+  //               color: Colors.blueAccent,
+  //             ),
+  //           ),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: const Text(
+  //                 'Go Back',
+  //                 style: TextStyle(
+  //                   color: Colors.redAccent,
+  //                 ),
+  //               ),
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //             )
+  //           ],
+  //         );
+  //       }
+  //       return Center(
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: const <Widget>[
+  //             CircularProgressIndicator(),
+  //             SizedBox(height: 20),
+  //             Text('This may take some time..')
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   itemDetailWidget() {
     return productModel!.hasVariant!
@@ -832,10 +1150,22 @@ class _DamageEntryState extends State<DamageEntry> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8
+      ),
       child: ListView(
         children: [
-          Text(product.name!),
+          Text(product.name!,
+          style: const TextStyle(
+            fontFamily: 'poppins',
+            fontSize: 15,
+            fontWeight: FontWeight.w500
+          ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
           SingleChildScrollView(
             child: Form(
               key: _resetKey,
@@ -844,99 +1174,156 @@ class _DamageEntryState extends State<DamageEntry> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                          child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: TextFormField(
-                          controller: _quantityController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          inputFormatters: [
-                            FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                allow: true, replacementString: '.')
-                          ],
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'quantity',
-                              hintText: '0.0'),
-                          onChanged: (value) {
-                            setState(() {
-                              calculate();
-                            });
-                          },
-                        ),
-                      )),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                               const Text(' Quantity',
+                              style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500
+                              ),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                               TextFormField(
+                            controller: _quantityController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                  allow: true, replacementString: '.')
+                            ],
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
+                                border: OutlineInputBorder(),
+                                hintText: '0.0'),
+                            onChanged: (value) {
+                              setState(() {
+                                calculate();
+                              });
+                            },
+                          ),
+                            ],
+                          )
+                          ),
+                          const SizedBox(
+                            width: 4,
+                          ),
                       Visibility(
                         visible: enableMULTIUNIT,
                         child: Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: FutureBuilder(
-                              future: dio.fetchUnitOf(product.itemId!),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot snapshot) {
-                                if (snapshot.hasData) {
-                                  unitList.clear();
-                                  for (var i = 0;
-                                      i < snapshot.data.length;
-                                      i++) {
-                                    if (defaultUnitID.toString().isNotEmpty) {
-                                      if (snapshot.data[i].id ==
-                                          defaultUnitID! - 1) {
-                                        _dropDownUnit = snapshot.data[i].id;
-                                        _conversion =
-                                            snapshot.data[i].conversion;
-                                      }
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(' Unit',
+                              style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500
+                              ),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                              FutureBuilder(
+                            future: dio.fetchUnitOf(product.itemId!),
+                            builder: (BuildContext context,
+                                AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                unitList.clear();
+                                for (var i = 0;
+                                    i < snapshot.data.length;
+                                    i++) {
+                                  if (defaultUnitID.toString().isNotEmpty) {
+                                    if (snapshot.data[i].id ==
+                                        defaultUnitID! - 1) {
+                                      _dropDownUnit = snapshot.data[i].id;
+                                      _conversion =
+                                          snapshot.data[i].conversion;
                                     }
-                                    unitList.add(UnitModel(
-                                        id: snapshot.data[i].id,
-                                        itemId: snapshot.data[i].itemId,
-                                        conversion: snapshot.data[i].conversion,
-                                        name: snapshot.data[i].name,
-                                        pUnit: snapshot.data[i].pUnit,
-                                        sUnit: snapshot.data[i].sUnit,
-                                        unit: snapshot.data[i].unit,
-                                        rate: ''));
                                   }
+                                  unitList.add(UnitModel(
+                                      id: snapshot.data[i].id,
+                                      itemId: snapshot.data[i].itemId,
+                                      conversion: snapshot.data[i].conversion,
+                                      name: snapshot.data[i].name,
+                                      pUnit: snapshot.data[i].pUnit,
+                                      sUnit: snapshot.data[i].sUnit,
+                                      unit: snapshot.data[i].unit,
+                                      rate: ''));
                                 }
-                                return snapshot.hasData
-                                    ? DropdownButton<String>(
-                                        hint: Text(_dropDownUnit > 0
-                                            ? UnitSettings.getUnitName(
-                                                _dropDownUnit)
-                                            : 'SKU'),
-                                        items: snapshot.data
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.id.toString(),
-                                            child: Text(item.name),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _dropDownUnit =
-                                                int.tryParse(value!)!;
-                                            for (var i = 0;
-                                                i < unitList.length;
-                                                i++) {
-                                              UnitModel _unit = unitList[i];
-                                              if (_unit.unit ==
-                                                  int.tryParse(value)) {
-                                                _conversion = _unit.conversion!;
-                                                break;
+                              }
+                              return snapshot.hasData
+                                  ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5
+                                    ),
+                                    width: MediaQuery.of(context).size.width,
+                                    height: 47,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        isExpanded: true,
+                                          hint: Text(_dropDownUnit > 0
+                                              ? UnitSettings.getUnitName(
+                                                  _dropDownUnit)
+                                              : 'SKU',
+                                              style: const TextStyle(
+                                                fontFamily: 'poppins',
+                                                color: black,
+                                                fontSize: 14
+                                              ),
+                                              ),
+                                          items: snapshot.data
+                                              .map<DropdownMenuItem<String>>(
+                                                  (item) {
+                                            return DropdownMenuItem<String>(
+                                              value: item.id.toString(),
+                                              child: Text(item.name,
+                                               style: const TextStyle(
+                                                fontFamily: 'poppins',
+                                                color: black,
+                                                fontSize: 14
+                                              ),
+                                              ),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _dropDownUnit =
+                                                  int.tryParse(value!)!;
+                                              for (var i = 0;
+                                                  i < unitList.length;
+                                                  i++) {
+                                                UnitModel _unit = unitList[i];
+                                                if (_unit.unit ==
+                                                    int.tryParse(value)) {
+                                                  _conversion = _unit.conversion!;
+                                                  break;
+                                                }
                                               }
-                                            }
-                                            calculate();
-                                          });
-                                        },
-                                      )
-                                    : Container();
-                              },
-                            ),
+                                              calculate();
+                                            });
+                                          },
+                                        ),
+                                    ),
+                                  )
+                                  : Container();
+                            },
                           ),
+                            ],
+                          )
                         ),
                       ),
                       Visibility(
@@ -953,60 +1340,98 @@ class _DamageEntryState extends State<DamageEntry> {
                       ),
                     ],
                   ),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                            child: Padding(
-                          padding: const EdgeInsets.all(2.0),
-                          child: TextField(
-                            controller: _rateController,
-                            // autofocus: true,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true),
-                            inputFormatters: [
-                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                  allow: true, replacementString: '.')
-                            ],
-                            decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'price',
-                                hintText: '0.0'),
-                            onChanged: (value) {
-                              setState(() {
-                                rateEdited = _rateController.text.isNotEmpty
-                                    ? true
-                                    : false;
-                                calculate();
-                              });
-                            },
-                          ),
-                        )),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(' Price',
+                              style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500
+                              ),
+                              ),
+                              const SizedBox(
+                                height: 2,
+                              ),
+                                TextField(
+                              controller: _rateController,
+                              // autofocus: true,
+                              keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                    allow: true, replacementString: '.')
+                              ],
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
+                                  border: OutlineInputBorder(),
+                                  hintText: '0.0'),
+                              onChanged: (value) {
+                                setState(() {
+                                  rateEdited = _rateController.text.isNotEmpty
+                                      ? true
+                                      : false;
+                                  calculate();
+                                });
+                              },
+                            )
+                              ],
+                            )
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
                         Visibility(
                           visible: taxMethod == 'MINUS',
-                          child: Text(
-                            '$rRate',
-                            style: const TextStyle(color: Colors.red),
+                          child: Column(
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Text(
+                                '$rRate',
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
                           ),
                         )
                       ]),
+                      const SizedBox(
+                        height: 10,
+                      ),
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     const Padding(
                       padding: EdgeInsets.all(2.0),
-                      child: Text('SubTotal : '),
+                      child: Text('SubTotal : ',
+                      style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(2.0),
                       child: Text(subTotal.toStringAsFixed(2)),
                     ),
                   ]),
-                  const Divider(),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     const Padding(
                       padding: EdgeInsets.all(2.0),
                       child: Text(
                         'Total : ',
-                        style: TextStyle(fontSize: 20),
+                        style: TextStyle(fontSize: 20,fontFamily: 'poppins'),
                       ),
                     ),
                     Padding(
@@ -1017,26 +1442,38 @@ class _DamageEntryState extends State<DamageEntry> {
                       ),
                     ),
                   ]),
-                  const Divider(),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         MaterialButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3)
+                          ),
                           onPressed: () {
                             setState(() {
                               nextWidget = 3;
                               clearValue();
                             });
                           },
-                          child: const Text("CANCEL"),
-                          color: blue[400],
+                          color: kPrimaryColor,
+                          child: const Text("CANCEL",
+                           style: TextStyle(
+                        fontFamily: 'poppins',
+                        color: white
+                      ),
+                          ),
                         ),
                         const SizedBox(
                           width: 2,
                         ),
                         MaterialButton(
-                          child: const Text("ADD"),
-                          color: blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3)
+                          ),
+                          color: kPrimaryColor,
                           onPressed: () {
                             setState(() {
                               addProduct(CartItem(
@@ -1080,6 +1517,12 @@ class _DamageEntryState extends State<DamageEntry> {
                               }
                             });
                           },
+                          child: const Text("ADD",
+                           style: TextStyle(
+                        fontFamily: 'poppins',
+                        color: white
+                      ),
+                          ),
                         ),
                       ])
                 ],
@@ -1358,57 +1801,87 @@ class _DamageEntryState extends State<DamageEntry> {
 
   salesHeaderWidget() {
     return Center(
-        child: Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            const SizedBox(
-              width: 10,
-            ),
-            const Text(
-              'Date : ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            InkWell(
-              child: Text(
-                formattedDate!,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+          child: Column(
+                children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const SizedBox(
+                width: 10,
               ),
-              onTap: () => _selectDate(),
-            ),
-          ],
-        ),
-        ListTile(
-          title: Text(ledgerModel['LedName'],
-              style: const TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold)),
-          subtitle: const Text(''),
-        ),
-        InkWell(
-            child: const SizedBox(
-              height: 20,
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Text(
-                      'Item Add',
-                      style: TextStyle(
-                          color: blue,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
+              const Text(
+                'Date : ',
+                style: TextStyle(
+                  fontFamily: 'poppins',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15),
+              ),
+              InkWell(
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: grey
                     ),
-                  )),
-            ),
-            onTap: () {
-              setState(() {
-                nextWidget = 2;
-              });
-            }),
-      ],
-    ));
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        formattedDate!,
+                         style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15),
+                      ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                      const Icon(Icons.calendar_month,
+                      color: grey,
+                      size: 18,
+                      )
+                    ],
+                  ),
+                ),
+                onTap: () => _selectDate(),
+              ),
+            ],
+          ),
+          ListTile(
+            title: Text(ledgerModel['LedName'],
+                 style: const TextStyle(
+                  fontFamily: 'poppins',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15),),
+            subtitle: const Text(''),
+          ),
+          InkWell(
+              child: const SizedBox(
+                height: 20,
+                child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        'Item Add',
+                        style: TextStyle(
+                            color: blue,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )),
+              ),
+              onTap: () {
+                setState(() {
+                  nextWidget = 2;
+                });
+              }),
+                ],
+              ),
+        ));
   }
 
   footerWidget() {

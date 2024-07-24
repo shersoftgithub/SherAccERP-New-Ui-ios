@@ -54,10 +54,11 @@ class _TaxRegistrationState extends State<TaxRegistration> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(actions: [
           IconButton(
             color: white,
-            iconSize: 40,
+            iconSize: 30,
             onPressed: () {
               clear();
             },
@@ -88,210 +89,315 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                   saveData();
                 }
               },
-              icon: isExist ? const Icon(Icons.edit) : const Icon(Icons.save)),
-        ], title: const Text('TaxGroupRegister')),
-        body: ProgressHUD(
-            inAsyncCall: isLoading,
-            opacity: 0.0,
-            child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(children: [
-                  SimpleAutoCompleteTextField(
-                    key: keyName,
-                    controller: nameControl,
-                    clearOnSubmit: false,
-                    suggestions: groupNameListDisplay,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), labelText: 'Group Name'),
-                    textSubmitted: (data) {
-                      var lName = data;
-                      if (lName.isNotEmpty) {
-                        findTaxData();
-                      }
-                    },
-                  ),
-                  const Divider(),
-                  SimpleAutoCompleteTextField(
-                    key: keySchedule,
-                    controller: scheduleControl,
-                    clearOnSubmit: false,
-                    suggestions: taxScheduleListDisplay,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Schedule Name'),
-                    textSubmitted: (data) {
-                      var lName = data;
-                      if (lName.isNotEmpty) {
-                        findTaxData();
-                      }
-                    },
-                  ),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
+              icon: isExist ? const Icon(Icons.edit) : 
+               Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+        ], titleTextStyle: TextStyle(fontFamily: 'poppins'),
+        title: const Text('Tax Group Register')),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: ProgressHUD(
+              inAsyncCall: isLoading,
+              opacity: 0.0,
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 16),
+                  child: Column(children: [
+                    SimpleAutoCompleteTextField(
+                      key: keyName,
+                      controller: nameControl,
+                      clearOnSubmit: false,
+                      suggestions: groupNameListDisplay,
+                      decoration: const InputDecoration(
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 45
+                        // ),
+                        // contentPadding: EdgeInsets.symmetric(
+                        //   horizontal: 5,
+                        //   vertical: 8
+                        // ),
+                        labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                          border: OutlineInputBorder(), labelText: 'Group Name'),
+                      textSubmitted: (data) {
+                        var lName = data;
+                        if (lName.isNotEmpty) {
+                          findTaxData();
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    SimpleAutoCompleteTextField(
+                      key: keySchedule,
+                      controller: scheduleControl,
+                      clearOnSubmit: false,
+                      suggestions: taxScheduleListDisplay,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                          labelText: 'Schedule Name'),
+                      textSubmitted: (data) {
+                        var lName = data;
+                        if (lName.isNotEmpty) {
+                          findTaxData();
+                        }
+                      },
+                    ),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: gstPControl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                              labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                                border: OutlineInputBorder(), labelText: 'GST %'),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 3,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: sGstControl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                              labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                                border: OutlineInputBorder(), labelText: 'SGST'),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 3,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: cGstControl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                              labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                                border: OutlineInputBorder(), labelText: 'CGST'),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 3,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: iGstControl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                                decimal: true),
+                            decoration: const InputDecoration(
+                              labelStyle: TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                                border: OutlineInputBorder(), labelText: 'IGST'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Visibility(
+                        visible: isFloodCess,
                         child: TextField(
-                          controller: gstPControl,
+                          controller: kfcControl,
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           decoration: const InputDecoration(
-                              border: OutlineInputBorder(), labelText: 'GST %'),
+                            labelStyle: TextStyle(
+                          fontFamily: 'poppins'
                         ),
-                      ),
-                      const SizedBox(
-                        width: 2,
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: sGstControl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(), labelText: 'SGST'),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 2,
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: cGstControl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(), labelText: 'CGST'),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 2,
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: iGstControl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(), labelText: 'IGST'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Visibility(
-                      child: TextField(
-                        controller: kfcControl,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(), labelText: 'KFC'),
-                      ),
-                      visible: isFloodCess),
-                  const Divider(),
-                  Card(
-                    elevation: 5,
-                    child: SizedBox(
+                              border: OutlineInputBorder(), labelText: 'KFC'),
+                        )),
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    SizedBox(
                       height: 50,
+                      width: MediaQuery.sizeOf(context).width,
                       child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Start Date'),
+                            const Text('Start Date',
+                            style: TextStyle(
+                              fontFamily: 'poppins'
+                            ),
+                            ),
+                            const SizedBox(
+                                      width: 4,
+                                    ),
                             InkWell(
-                              child: Text(
-                                fromDate,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  border:Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      fromDate,
+                                      style: const TextStyle(
+                                        fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500, fontSize: 13),
+                                    ),
+                                    const SizedBox(
+                                      width: 3,
+                                    ),
+                                    const Icon(
+                                      Icons.calendar_month,
+                                      color: grey,
+                                      size: 18,)
+                                  ],
+                                ),
                               ),
                               onTap: () => _selectDateFrom(),
                             ),
-                            const Text('End Date'),
+                            const Spacer(),
+                            const Text('End Date',
+                             style: TextStyle(
+                              fontFamily: 'poppins'
+                            ),
+                            ),
+                              const SizedBox(
+                                      width: 3,
+                                    ),
                             InkWell(
-                              child: Text(
-                                toDate,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 15),
+                              child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  border:Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      toDate,
+                                      style: const TextStyle(
+                                        fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500, fontSize: 13),
+                                    ),
+                                     const SizedBox(
+                                      width: 4,
+                                    ),
+                                    const Icon(
+                                      Icons.calendar_month,
+                                      color: grey,
+                                      size: 18,)
+                                  ],
+                                ),
                               ),
                               onTap: () => _selectDateTo(),
                             ),
                           ]),
                     ),
-                  ),
-                  Expanded(
-                    child: taxGroupList.isNotEmpty
-                        ? ListView.builder(
-                            itemCount: taxGroupList.length,
-                            itemBuilder: (context, index) => Card(
-                                  child: ListTile(
-                                    title: Text(
-                                      '${taxGroupList[index].name} / ${taxGroupList[index].schedule}',
-                                      style: const TextStyle(fontSize: 15),
+                    Expanded(
+                      child: taxGroupList.isNotEmpty
+                          ? ListView.separated(
+                            separatorBuilder: (context, index) => const SizedBox(
+                              height: 8,
+                            ),
+                              itemCount: taxGroupList.length,
+                              itemBuilder: (context, index) => 
+                              Container(
+                                  // padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(boxShadow: const[
+                                  BoxShadow(
+                                    blurRadius: 3,
+                                    spreadRadius: .1,
+                                    color: grey)
+                                ],
+                                  // border:Border.all(color: grey),
+                                   color: white,
+                                  borderRadius: BorderRadius.circular(3)
+                                ),
+                                    child: ListTile(
+                                      title: Text(
+                                        '${taxGroupList[index].name} / ${taxGroupList[index].schedule}',
+                                        style: const TextStyle(fontSize: 15),
+                                      ),
+                                      subtitle: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'GST% : ${taxGroupList[index].gst}',
+                                            style: const TextStyle(fontSize: 10),
+                                          ),
+                                          Text(
+                                            'CGST : ${taxGroupList[index].cGst}',
+                                            style: const TextStyle(fontSize: 10),
+                                          ),
+                                          Text(
+                                            'SGST : ${taxGroupList[index].sGst}',
+                                            style: const TextStyle(fontSize: 10),
+                                          ),
+                                          Text(
+                                            'IGST : ${taxGroupList[index].iGst}',
+                                            style: const TextStyle(fontSize: 10),
+                                          ),
+                                          Text(
+                                            'KFC : ${taxGroupList[index].fCess}',
+                                            style: const TextStyle(fontSize: 10),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(DateUtil.dateDMY(
+                                              taxGroupList[index].sDate)),
+                                          Text(DateUtil.dateDMY(
+                                              taxGroupList[index].eDate))
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        TaxGroupModel dataModel =
+                                            taxGroupList[index];
+                                        setState(() {
+                                          cGstControl.text =
+                                              dataModel.cGst.toStringAsFixed(2);
+                                          kfcControl.text =
+                                              dataModel.fCess.toStringAsFixed(2);
+                                          iGstControl.text =
+                                              dataModel.iGst.toStringAsFixed(2);
+                                          gstPControl.text =
+                                              dataModel.iGst.toStringAsFixed(2);
+                                          nameControl.text = dataModel.name;
+                                          sGstControl.text =
+                                              dataModel.sGst.toStringAsFixed(2);
+                                          scheduleControl.text =
+                                              dataModel.schedule;
+                                          id = dataModel.id.toString();
+                                          fromDate =
+                                              DateUtil.dateDMY(dataModel.sDate);
+                                          toDate =
+                                              DateUtil.dateDMY(dataModel.eDate);
+                                          isExist =
+                                              dataModel.id > 0 ? true : false;
+                                        });
+                                      },
                                     ),
-                                    subtitle: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'GST% : ${taxGroupList[index].gst}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        Text(
-                                          'CGST : ${taxGroupList[index].cGst}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        Text(
-                                          'SGST : ${taxGroupList[index].sGst}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        Text(
-                                          'IGST : ${taxGroupList[index].iGst}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        Text(
-                                          'KFC : ${taxGroupList[index].fCess}',
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(DateUtil.dateDMY(
-                                            taxGroupList[index].sDate)),
-                                        Text(DateUtil.dateDMY(
-                                            taxGroupList[index].eDate))
-                                      ],
-                                    ),
-                                    onTap: () {
-                                      TaxGroupModel dataModel =
-                                          taxGroupList[index];
-                                      setState(() {
-                                        cGstControl.text =
-                                            dataModel.cGst.toStringAsFixed(2);
-                                        kfcControl.text =
-                                            dataModel.fCess.toStringAsFixed(2);
-                                        iGstControl.text =
-                                            dataModel.iGst.toStringAsFixed(2);
-                                        gstPControl.text =
-                                            dataModel.iGst.toStringAsFixed(2);
-                                        nameControl.text = dataModel.name;
-                                        sGstControl.text =
-                                            dataModel.sGst.toStringAsFixed(2);
-                                        scheduleControl.text =
-                                            dataModel.schedule;
-                                        id = dataModel.id.toString();
-                                        fromDate =
-                                            DateUtil.dateDMY(dataModel.sDate);
-                                        toDate =
-                                            DateUtil.dateDMY(dataModel.eDate);
-                                        isExist =
-                                            dataModel.id > 0 ? true : false;
-                                      });
-                                    },
-                                  ),
-                                ))
-                        : const Loading(),
-                  )
-                ]))));
+                                  ))
+                          : const Loading(),
+                    )
+                  ]))),
+        ));
   }
 
   saveData() {

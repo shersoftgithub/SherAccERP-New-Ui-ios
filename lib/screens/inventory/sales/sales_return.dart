@@ -1371,6 +1371,10 @@ class _SalesReturnState extends State<SalesReturn> {
                                             cartModel!.discountPercent.toString();
                                             gross = cartModel!.gross!;
                                             total = cartModel!.total!;
+                                            // unitValue = cartModel!.unitValue!;
+                                            _dropDownUnit = cartModel!.unitId!;
+                                            taxP = cartModel!.taxP!;
+                                        tax = cartModel!.tax!;
                                         // _serialNoController.text =
                                         //     cartModel.serialNo;
                                             nextWidget = 1;
@@ -2405,6 +2409,7 @@ var fetchedPrice;
                                         style: TextStyle(
                                         fontFamily: 'poppins',
                                         fontSize: 14,
+                                        color: black,
                                         fontWeight: FontWeight.w500),),
                                         const SizedBox(
                                         height: 2,
@@ -2424,13 +2429,23 @@ var fetchedPrice;
                                               hint: Text(_dropDownUnit > 0
                                                   ? UnitSettings.getUnitName(
                                                       _dropDownUnit)
-                                                  : 'SKU'),
+                                                  : 'SKU',
+                                                    style: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14,
+                                        color: black,
+                                        fontWeight: FontWeight.w500)
+                                                  ),
                                               items: snapshot.data
                                                   .map<DropdownMenuItem<String>>(
                                                       (item) {
                                                 return DropdownMenuItem<String>(
                                                   value: item.id.toString(),
-                                                  child: Text(item.name),
+                                                  child: Text(item.name,  style: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14,
+                                        color: black,
+                                        fontWeight: FontWeight.w500)),
                                                 );
                                               }).toList(),
                                               onChanged: (value) {

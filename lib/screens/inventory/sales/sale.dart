@@ -4976,7 +4976,15 @@ void _onTabTapped(int index) {
                                           fontFamily: 'poppins', fontSize: 14),
                                       suggestionTextStyle:
                                           const TextStyle(fontFamily: 'poppins'),
-                                      decoration: const InputDecoration(
+                                      decoration:  InputDecoration(
+                          //               suffixIcon:  Visibility(
+                          //   visible: enableBarcode,
+                          //   child: IconButton(
+                          //       onPressed: () {
+                          //         searchProductBarcode();
+                          //       },
+                          //       icon: const Icon(Icons.document_scanner)),
+                          // ),
                                         contentPadding: EdgeInsets.symmetric(
                                             vertical: 10, horizontal: 5),
                                         border: OutlineInputBorder(),

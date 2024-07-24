@@ -41,6 +41,7 @@ class AppSettings extends StatelessWidget {
                         // subtitle: 'General Settings',
                         child: SettingsScreen(
                           title: 'General Settings',
+                          
                           children: [
                             Container(
                               width: MediaQuery.sizeOf(context).width,
@@ -2081,7 +2082,7 @@ class AppSettings extends StatelessWidget {
                         TextButton.icon(
                             style: ButtonStyle(
                               shape: MaterialStatePropertyAll(
-                                  BeveledRectangleBorder(
+                                  RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5))),
                               backgroundColor: MaterialStateProperty.all<Color>(
                                   kPrimaryColor),

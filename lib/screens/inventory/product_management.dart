@@ -41,29 +41,39 @@ class _ProductManagementState extends State<ProductManagement> {
   @override
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () async {
-              var result = await showSearch<List<DataJson>>(
-                context: context,
-                delegate: CustomDelegateProduct(productList),
-              );
-
-              setState(() {
-                _result = result![0].name;
-                productId = result[0].id.toString();
-                if (productId.isNotEmpty) {
-                  findProductDetails(productId);
-                }
-              });
-            },
-          ),
-        ]),
-        body: ProgressHUD(
-            inAsyncCall: _isLoading, opacity: 0.0, child: formWidget()));
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+          key: _scaffoldKey,
+          appBar: AppBar(
+            title: const Text('Product Management'),
+            titleTextStyle: const TextStyle(
+              fontFamily: 'poppins'
+            ),
+            actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () async {
+                var result = await showSearch<List<DataJson>>(
+                  context: context,
+                  delegate: CustomDelegateProduct(productList),
+                );
+      
+                setState(() {
+                  _result = result![0].name;
+                  productId = result[0].id.toString();
+                  if (productId.isNotEmpty) {
+                    findProductDetails(productId);
+                  }
+                });
+              },
+            ),
+            
+          ]),
+          body: ProgressHUD(
+              inAsyncCall: _isLoading, opacity: 0.0, child: formWidget())),
+    );
   }
 
   int nextWidget = 0;
@@ -90,7 +100,11 @@ class _ProductManagementState extends State<ProductManagement> {
   formWidget() {
     return nextWidget == 0
         ? const Center(
-            child: Text('Select Product'),
+            child: Text('Select Product',
+            style: TextStyle(
+              fontFamily: 'poppins'
+            ),
+            ),
           )
         : nextWidget == 1
             ? productData.isEmpty
@@ -102,7 +116,24 @@ class _ProductManagementState extends State<ProductManagement> {
                     itemCount: productData.length,
                     itemBuilder: (context, index) {
                       return InkWell(
-                        child: Card(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8
+                          ),
+                          decoration: BoxDecoration(
+                            boxShadow: const[
+                              BoxShadow(
+                                blurRadius: .2,
+                                spreadRadius: .2,
+                                color: grey
+                              )
+                            ],
+                            color: white,
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(
+                            color: grey
+                          )),
                           child: ListTile(
                               title: Text(
                                   '${productData[index].uniquecode} $_result')),
@@ -129,44 +160,72 @@ class _ProductManagementState extends State<ProductManagement> {
                     })
             : nextWidget == 2
                 ? Container(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
                           Align(
                               alignment: Alignment.centerLeft,
-                              child: Text('Item : $_result')),
+                              child: Text('Item : $_result',
+                              style: const TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500
+                              ),
+                              )),
                           Row(
                             children: [
                               Expanded(
                                   child: MaterialButton(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
                                 onPressed: () {
                                   setState(() {
                                     nextWidget = 1;
                                     clearValue();
                                   });
                                 },
-                                child: const Text("Back"),
-                                color: blue[400],
+                                color: kPrimaryColor,
+                                child: const Text("Back",
+                                style: TextStyle(
+                                  fontFamily: 'poppins',
+                                  color: white
+                                ),
+                                ),
                               )),
                               const SizedBox(
-                                width: 2,
+                                width: 4,
                               ),
                               Expanded(
                                   child: MaterialButton(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
                                 onPressed: () {
                                   setState(() {
                                     nextWidget = 0;
                                   });
                                 },
-                                child: const Text("Cancel"),
-                                color: blue[400],
+                                child: const Text("Cancel",
+                                style: TextStyle(
+                                  fontFamily: 'poppins',
+                                  color: white
+                                ),
+                                ),
+                                color: kPrimaryColor,
                               )),
                               const SizedBox(
-                                width: 2,
+                                width: 4,
                               ),
                               Expanded(
                                   child: MaterialButton(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
                                 onPressed: () {
                                   setState(() {
                                     oBarcode =
@@ -212,15 +271,30 @@ class _ProductManagementState extends State<ProductManagement> {
                                     }
                                   });
                                 },
-                                child: const Text("Add"),
-                                color: blue,
+                                color: kPrimaryColor,
+                                child: const Text("Add",
+                                style: TextStyle(
+                                  fontFamily: 'poppins',
+                                  color: white
+                                ),
+                                ),
                               )),
                             ],
+                          ),
+                          const SizedBox(
+                            height: 8,
                           ),
                           TextField(
                             controller: controllerOBarcode,
                             decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
                                 border: OutlineInputBorder(),
+                                labelStyle: TextStyle(
+                                  fontFamily: 'poppins',
+                                ),
                                 label: Text('Old Barcode')),
                             onChanged: (value) {
                               setState(() {
@@ -229,37 +303,70 @@ class _ProductManagementState extends State<ProductManagement> {
                               });
                             },
                           ),
-                          const Divider(),
+                          const SizedBox(
+                            height: 10,
+                          ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              const Text('Mrp'),
-                              SizedBox(
-                                height: 30,
-                                width: 100,
-                                child: TextField(
-                                  controller: controllerMrp,
-                                  decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      label: Text('MRP')),
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                          decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter(
-                                        RegExp(r'[0-9]'),
-                                        allow: true,
-                                        replacementString: '.')
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      // editableMrp = true;
-                                      mrp = double.tryParse(value)!;
-                                    });
-                                  },
+                              Expanded(
+                                child: SizedBox(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                        const Text('Mrp',
+                                  style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),
+                                  ),
+                                SizedBox(
+                                  height: 30,
+                                  width: 100,
+                                  child: TextField(
+                                    controller: controllerMrp,
+                                    decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),
+                                        border: OutlineInputBorder(),),
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                            decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(
+                                          RegExp(r'[0-9]'),
+                                          allow: true,
+                                          replacementString: '.')
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        // editableMrp = true;
+                                        mrp = double.tryParse(value)!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              const Text('Retail'),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              Expanded(child: 
+                               Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Retail',
+                               style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),
+                              ),
                               SizedBox(
                                 height: 30,
                                 width: 100,
@@ -267,7 +374,10 @@ class _ProductManagementState extends State<ProductManagement> {
                                   controller: controllerRetail,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
-                                      label: Text('Retail')),
+                                       contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),),
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
@@ -288,13 +398,28 @@ class _ProductManagementState extends State<ProductManagement> {
                               ),
                             ],
                           ),
+                              )
+                            ],
+                          ),
+                         
                           const SizedBox(
-                            height: 2,
+                            height: 4,
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              const Text('WholeSale'),
+                              Expanded(
+                                child: SizedBox(
+                                  width: MediaQuery.sizeOf(context).width,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                       const Text('WholeSale',
+                                          style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),
+                                       ),
                               SizedBox(
                                 height: 30,
                                 width: 100,
@@ -302,7 +427,10 @@ class _ProductManagementState extends State<ProductManagement> {
                                   controller: controllerWholeSale,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
-                                      label: Text('WholeSale')),
+                                       contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),),
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
@@ -321,7 +449,26 @@ class _ProductManagementState extends State<ProductManagement> {
                                   },
                                 ),
                               ),
-                              const Text('Branch'),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              Expanded(child: 
+                              SizedBox(
+                                width: MediaQuery.sizeOf(context).width,
+                                child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Branch',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500
+                                  ),
+                              ),
                               SizedBox(
                                 height: 30,
                                 width: 100,
@@ -329,7 +476,10 @@ class _ProductManagementState extends State<ProductManagement> {
                                   controller: controllerBranch,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
-                                      label: Text('Branch')),
+                                       contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),),
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                           decimal: true),
@@ -350,6 +500,11 @@ class _ProductManagementState extends State<ProductManagement> {
                               ),
                             ],
                           ),
+                              )
+                              )
+                            ],
+                          ),
+                          
                         ],
                       ),
                     ),

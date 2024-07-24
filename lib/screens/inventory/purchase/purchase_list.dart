@@ -35,7 +35,8 @@ class _PurchaseListState extends State<PurchaseList> {
   String? toDate;
   var _data;
   int menuId = 0;
-  bool loadReport = false;
+  bool loadReport = false,
+  newMode = false;
   DateTime now = DateTime.now();
   List<dynamic> purchaseTypeList = [
     {'id': 0, 'name': 'All'},
@@ -163,40 +164,6 @@ class _PurchaseListState extends State<PurchaseList> {
                         ? 'ItemWise Comparison Stock Rate'
                         : 'P_Summery';
 
-    //  StatementType = "All_Summery";
-    //                 else if (rb_Purchase.Checked)
-    //                     StatementType = "P_Summery";
-    //                 else if (rb_Pr.Checked)
-    //                     StatementType = "Pr_Summery";
-    //                 else if (rb_Po.Checked)
-    //                     StatementType = "PO_Summery";
-    //                 else if (rbUnrP.Checked)
-    //                     StatementType = "UnP_Summery";
-    //                 //else if (rbCapital.Checked )
-    //                 //    StatementType = "Capital_Summery";
-    //                 //else if (rbExpense.Checked )
-    //                 //    StatementType = "Expense_Summery";
-    //             }
-    //             else if (CmbReportType.Text == "ItemWise")
-    //             {
-    //                 if (rb_All.Checked)
-    //                     StatementType = "All_Summery";
-    //                 else if (rb_Purchase.Checked)
-    //                     StatementType = "P_ItemWise";
-    //                 else if (rb_Pr.Checked)
-    //                     StatementType = "Pr_ItemWise";
-    //                 else if (rb_Po.Checked)
-    //                     StatementType = "PO_ItemWise";
-    //                 else if (rbUnrP.Checked)
-    //                     StatementType = "UnP_ItemWise";
-    //             }
-    //             else if (CmbReportType.Text =="Capital Summery" ) 
-    //                 StatementType = "Capital_Summery";
-    //             else if (CmbReportType.Text == "Expense Summery")
-    //                 StatementType = "Expense_Summery";
-    //             else if (CmbReportType.Text == "ItemWise Comparison Stock Rate")
-    //                 StatementType = "ItemWise Comparison Stock Rate";
-
     var sDate = fromDate!.isEmpty ? '2021-01-011' : formatYMD(fromDate);
     var eDate = toDate!.isEmpty ? '2021-01-011' : formatYMD(toDate);
     var itemsId = itemId != null ? itemId['id'] : '0';
@@ -209,7 +176,11 @@ class _PurchaseListState extends State<PurchaseList> {
     var salesManId = salesMan != null ? salesMan['id'] : '0';
     var taxGroupId = taxGroup != null ? taxGroup['id'] : '0';
 
-    if (statement == 'Daily') {
+    //  for (var data in purchaseTypeList) {
+    //   if (data.stock) dataSType.add({'id': data.id});
+    // }
+
+    if (title == 'Summery') {
       _purchaseListData(
           locationsId,
           statementType,
