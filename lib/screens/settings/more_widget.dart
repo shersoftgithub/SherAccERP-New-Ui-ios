@@ -185,11 +185,15 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_general.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),
                       ),
-                      Text(
+                      const Text(
                         'General',
                         style: TextStyle(
                             fontFamily: 'poppins',
@@ -241,6 +245,10 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_printer.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),
@@ -274,6 +282,10 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_other.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),
@@ -306,6 +318,10 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_salesman.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),
@@ -340,6 +356,10 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_user_new.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),
@@ -374,6 +394,10 @@ class SettingsMenu extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_tax_group.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: kPrimaryColor),
                         // child: Image.asset(iconsUrl),

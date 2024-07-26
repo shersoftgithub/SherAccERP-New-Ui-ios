@@ -237,6 +237,16 @@ class _DashPageState extends State<DashPage> {
       ' No. Customers',
       'Repeat Customers No.'
     ];
+    List imageList = [
+      'assets/icons/ic_total_sales.png',
+      'assets/icons/ic_total_no_sales.png',
+      'assets/icons/ic_total_cash_sales.png',
+      'assets/icons/ic_total_no_cash_sales.png',
+      'assets/icons/ic_total_credit_sales.png',
+      'assets/icons/ic_no_of_credit_sales.png',
+      'assets/icons/ic_customer.png',
+      'assets/icons/ic_repeat customers_no.png'
+    ];
     List<String> summuryValues = [
       totalSales,
       totalNoSales,
@@ -346,12 +356,24 @@ class _DashPageState extends State<DashPage> {
                       ),
                       child: Stack(
                         children: [
-                          const Positioned(
-                              right: -60,
-                              top: -61,
-                              child: CircleAvatar(
-                                radius: 50,
-                                backgroundColor: Color(0xff0008B3),
+                          
+                           Positioned(
+                              right: -30,
+                              top: -31,
+                              child: Container(
+                                width: 70,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage(imageList[index]),
+                                    scale: 3.1,
+                                    alignment: Alignment.lerp(Alignment.bottomLeft, Alignment.center, .5)?? Alignment.center
+                                    ),
+                                  color: kPrimaryColor,
+                                  borderRadius: BorderRadius.circular(50)),
+                                // backgroundImage: AssetImage(imageList[index]),
+                                // radius: 50,
+                                // backgroundColor: Color(0xff0008B3),
                               )),
                           // Positioned(
                           //     top: 8,

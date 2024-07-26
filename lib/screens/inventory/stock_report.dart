@@ -9,6 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/models/company.dart';
+import 'package:sheraccerp/models/other_registrations.dart';
+import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
@@ -27,13 +31,13 @@ class StockReport extends StatefulWidget {
 }
 
 class _StockReportState extends State<StockReport> {
-  bool isPageMode = true;
+  bool isPageMode = false;
   String? fromDate;
   String? toDate;
   var _data;
-  int menuId = 0;
+  int locationId = 1, menuId = 0;
   bool loadReport = false;
-  bool stockValuation = false;
+  bool stockValuation = false, lockItemOptions = false, isAdminUser = false;
   DateTime now = DateTime.now();
   DioService api = DioService();
   DataJson? itemId,
@@ -54,6 +58,8 @@ class _StockReportState extends State<StockReport> {
   DataJson? dropdownValueLedgerReportType;
   String title = '';
   List<String> tableColumn = [];
+    List<CompanySettings>? settings;
+  List<ReportDesign>? reportDesign;
 
   @override
   void initState() {
@@ -64,6 +70,40 @@ class _StockReportState extends State<StockReport> {
     dropdownValueReportType = reportTypeList.first;
     dropdownValueLedgerReportType = reportTypeLedgerList.first;
     location = DataJson(id: 1, name: defaultLocation);
+       settings = ScopedModel.of<MainModel>(context).getSettings();
+    reportDesign = ScopedModel.of<MainModel>(context).getReportDesign();
+
+    lockItemOptions =
+        ComSettings.getStatus('KEY LOCK STOCK REPORT ITEM ONLY', settings!);
+    lockItemOptions = companyUserData!.userType.toUpperCase() == 'SALESMAN'
+        ? lockItemOptions
+        : false;
+
+    isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
+    if (!isAdminUser) {
+      locationId = ComSettings.appSettings(
+              'int', 'key-dropdown-default-location-view', 2) -
+          1;
+      OtherRegistrationModel otherData = otherRegLocationList.firstWhere(
+          (element) => element.id == locationId,
+          orElse: () => OtherRegistrationModel(
+              add1: '',
+              add2: '',
+              add3: '',
+              description: '',
+              email: '',
+              id: locationId,
+              name: defaultLocation,
+              type: ''));
+      location = DataJson(id: otherData.id, name: otherData.name);
+    }
+
+    loadDesignColumns('SimpleSummery');
+  }
+
+  loadDesignColumns(String formName) {
+    api.getReportDesignByName(formName).then((value) => reportDesign = value);
   }
 
   @override
@@ -77,7 +117,9 @@ class _StockReportState extends State<StockReport> {
                     onPressed: () {
                       setState(() {
                         loadReport = false;
-                        location = DataJson(id: 1, name: defaultLocation);
+                        location = isAdminUser
+                            ? DataJson(id: 1, name: defaultLocation)
+                            : location;
                         itemId = null;
                         itemName = null;
                         supplier = null;
@@ -105,44 +147,25 @@ class _StockReportState extends State<StockReport> {
                       // debugPrint(menuId.toString());
                       if (menuId == 1) {
                         Future.delayed(const Duration(milliseconds: 1000), () {
-                          _createPDF(title +
-                                  ' Date :' +
-                                  fromDate! +
-                                  ' - ' +
-                                  toDate!)
+                           _createPDF('$title Date :${fromDate!} - ${toDate!}')
                               .then((value) =>
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (_) => PDFScreen(
                                             pathPDF: value,
-                                            subject: title +
-                                                ' Date :' +
-                                                fromDate! +
-                                                ' - ' +
-                                                toDate!,
-                                            text: 'this is ' +
-                                                title +
-                                                ' Date :' +
-                                                fromDate! +
-                                                ' - ' +
-                                                toDate!,
+                                             subject:
+                                                '$title Date :${fromDate!} - ${toDate!}',
+                                            text:
+                                                'this is $title Date :${fromDate!} - ${toDate!}',
                                           ))));
                         });
                       } else if (menuId == 2) {
                         Future.delayed(const Duration(milliseconds: 1000), () {
-                          _createCSV(title +
-                                  ' Date :' +
-                                  fromDate! +
-                                  ' - ' +
-                                  toDate!)
+                          _createCSV('$title Date :${fromDate!} - ${toDate!}')
                               .then((value) {
-                            var text = 'this is ' +
-                                title +
-                                ' Date :' +
-                                fromDate! +
-                                ' - ' +
-                                toDate!;
+                             var text =
+                                'this is $title Date :${fromDate!} - ${toDate!}';
                             var subject =
-                                title + ' Date :' + fromDate! + ' - ' + toDate!;
+                                '$title Date :${fromDate!} - ${toDate!}';
                             List<String> paths = [];
                             paths.add(value);
                             urlFileShare(context, text, subject, paths);
@@ -153,7 +176,7 @@ class _StockReportState extends State<StockReport> {
                   },
                 )
               ],
-              title: Text(title + ' Report'),
+              title: Text('$title Report'),
             ),
             body: reportView(title))
         : DefaultTabController(
@@ -253,7 +276,7 @@ class _StockReportState extends State<StockReport> {
                             reportTypeLedgerList[6].id
                         ? 'StockLedger_Wop'
                         : 'StockLedger_Summery';
-    var _location = '',
+    var _location = '0',
         _itemCode = '',
         _itemName = '',
         _supplier = '',
@@ -356,6 +379,15 @@ class _StockReportState extends State<StockReport> {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
             var data = snapshot.data;
+            var filterItems = data;
+            for (ReportDesign design in reportDesign!) {
+              if (!design.visibility) {
+                for (var item in filterItems!) {
+                  item.remove(design.caption.replaceAll(' ', '').trim());
+                }
+              }
+            }
+            data = filterItems;
             tableColumn = data![0].keys.toList();
             var col = tableColumn;
             Map<String, dynamic> totalData = {};
@@ -422,7 +454,7 @@ class _StockReportState extends State<StockReport> {
                 ? SingleChildScrollView(
                     child: PaginatedDataTable(
                     header: Text(
-                      'Date: From ' + fromDate! + ' To ' + toDate!,
+                      'Date: From ${fromDate!} To ${toDate!}',
                       style: const TextStyle(fontSize: 14),
                     ),
                     rowsPerPage: 100,
@@ -464,10 +496,7 @@ class _StockReportState extends State<StockReport> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Center(
-                              child: Text('Date: From ' +
-                                  fromDate! +
-                                  ' To ' +
-                                  toDate!)),
+                              child: Text('Date: From ${fromDate!} To ${toDate!}')),
                           const SizedBox(
                             height: 10,
                           ),
@@ -644,25 +673,28 @@ class _StockReportState extends State<StockReport> {
             const SizedBox(
               height: 10,
             ),
-            ContainerFieldWidget(
-                widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
-                      showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
-                  asyncItems: (String filter) =>
-                      api.getSalesListData(filter, 'sales_list/location'),
-                  dropdownDecoratorProps: const DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
+            Visibility(
+              visible: isAdminUser,
+              child: ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>(
+                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        showSearchBox: true,
+                        constraints: BoxConstraints(
+                          maxHeight: 300,
+                        )),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/location'),
+                    dropdownDecoratorProps: const DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          label: Text('Select Branch')),
                     ),
+                    onChanged: (dynamic data) {
+                      location = data;
+                    },
                   ),
-                  onChanged: (dynamic data) {
-                    location = data;
-                  },
-                ),
-                headTxt: 'Select Branch'),
+                  headTxt: 'Select Branch'),
+            ),
             const SizedBox(
               height: 10,
             ),
@@ -1025,8 +1057,10 @@ class _StockReportState extends State<StockReport> {
               const SizedBox(
                 height: 10,
               ),
-              ContainerFieldWidget(
-                  widget: DropdownSearch<dynamic>(
+              Visibility(
+                visible: isAdminUser,
+                child: ContainerFieldWidget(
+                    widget: DropdownSearch<dynamic>(
                     popupProps: const PopupPropsMultiSelection.modalBottomSheet(
                         showSearchBox: true,
                         constraints: BoxConstraints(
@@ -1036,14 +1070,15 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
+                          border: OutlineInputBorder(),
+                          label: Text("Select Branch")),
                     ),
                     onChanged: (dynamic data) {
                       location = data;
                     },
-                  ),
-                  headTxt: 'Select Branch'),
+                    ),
+                    headTxt: 'Select Branch'),
+              ),
               const SizedBox(
                 height: 10,
               ),
@@ -1341,6 +1376,21 @@ class _StockReportState extends State<StockReport> {
               onChanged: (DataJson? data) {
                 setState(() {
                   dropdownValueLedgerReportType = data;
+
+                String formName = dropdownValueLedgerReportType!.id ==
+                        reportTypeLedgerList[0].id
+                    ? 'StockLedger_Summery'
+                    : dropdownValueLedgerReportType!.id ==
+                            reportTypeLedgerList[1].id
+                        ? 'StockLedger_BatchWise'
+                        : dropdownValueLedgerReportType!.id ==
+                                reportTypeLedgerList[2].id
+                            ? 'StockLedger_Summery_Daily'
+                            : dropdownValueLedgerReportType!.id ==
+                                    reportTypeLedgerList[6].id
+                                ? 'StockLedger_Wop'
+                                : 'StockLedger_Summery';
+                loadDesignColumns(formName);
                 });
               },
               items: reportTypeLedgerList
@@ -1372,6 +1422,32 @@ class _StockReportState extends State<StockReport> {
               onChanged: (DataJson? data) {
                 setState(() {
                   dropdownValueReportType = data;
+                   var fName = stockValuation
+                    ? 'LastRate_StockValuation'
+                    : dropdownValueReportType!.id == reportTypeList[0].id
+                        ? 'SimpleSummery'
+                        : dropdownValueReportType!.id == reportTypeList[1].id
+                            ? 'Stock Profit'
+                            : dropdownValueReportType!.id ==
+                                    reportTypeList[2].id
+                                ? 'Category_Wise'
+                                : dropdownValueReportType!.id ==
+                                        reportTypeList[3].id
+                                    ? 'ZeroStockItems'
+                                    : dropdownValueReportType!.id ==
+                                            reportTypeList[4].id
+                                        ? 'Stock_Ageing'
+                                        : dropdownValueReportType!.id ==
+                                                reportTypeList[5].id
+                                            ? 'LocationComparison'
+                                            : dropdownValueReportType!.id ==
+                                                    reportTypeList[6].id
+                                                ? 'SerialNo Report'
+                                                : dropdownValueReportType!.id ==
+                                                        reportTypeList[7].id
+                                                    ? 'ReOrderLevelList'
+                                                    : 'SimpleSummery';
+                loadDesignColumns(fName);
                 });
               },
               items: reportTypeList

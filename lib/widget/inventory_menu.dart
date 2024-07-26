@@ -34,9 +34,12 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_product.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
-                      child: Image.asset('assets/icons/product_icon.png'),
                     ),
                     const Text(
                       'Product',
@@ -68,9 +71,12 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_opening_stock.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
-                      child: Image.asset('assets/icons/product_icon.png'),
                     ),
                     const Text(
                       'Opening Stock',
@@ -102,9 +108,18 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_new_purchase.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
-                      // child: Image.asset(iconsUrl),
+                      // child: Image.asset('assets/icons/ic_purchase.png',
+                      // color: white,
+                      // height: 30,
+                      // width: 30,
+                      // fit: BoxFit.contain,
+                      // ),
                     ),
                     const Text(
                       'Purchase',
@@ -135,6 +150,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_sales_new.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -174,6 +193,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_purchase_return.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -208,6 +231,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_sales_returns.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -242,6 +269,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_jobcard.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -276,6 +307,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_damage.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -310,6 +345,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_purchase_order.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -344,6 +383,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_stock_transfer.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -378,6 +421,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_product_management.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -412,6 +459,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_algnment_entry.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -446,6 +497,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_service_entry.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -480,6 +535,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_stock_management.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),
@@ -514,6 +573,10 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_delivery-note.png',),
+                          scale: 1.8,
+                          ),
                           borderRadius: BorderRadius.circular(50),
                           color: kPrimaryColor),
                       // child: Image.asset(iconsUrl),

@@ -320,9 +320,13 @@ class _DeliveryNoteState extends State<DeliveryNote> {
 
   widgetSuffix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("DeliveryNote"),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           actions: [
             Visibility(
               visible: enableBarcode,
@@ -430,7 +434,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                         }
                       }
                     },
-                    icon: const Icon(Icons.save)),
+                    icon:Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
         ),
         body: ProgressHUD(
@@ -439,19 +443,21 @@ class _DeliveryNoteState extends State<DeliveryNote> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Delivery Note"),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           actions: [
             Visibility(
               visible: previewData,
               child: TextButton(
-                  child: const Text(
-                    'New Delivery Note',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
                   style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3)
+                    ),
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.blue[700],
                   ),
@@ -459,7 +465,12 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                     setState(() {
                       widgetID = false;
                     });
-                  }),
+                  },
+                  child: const Text(
+                    'New Delivery Note',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  )),
             ),
           ],
         ),
@@ -684,9 +695,16 @@ class _DeliveryNoteState extends State<DeliveryNote> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No items in DeliveryNote"),
+              const Text("No items in Delivery Note",
+              style: TextStyle(
+                fontFamily: 'poppins'
+              ),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll( RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)
+                    ),),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -698,7 +716,11 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New DeliveryNote'))
+                  label: const Text('Take New DeliveryNote',
+                   style: TextStyle(
+                fontFamily: 'poppins'
+              ),
+                  ))
             ],
           ));
   }
@@ -1271,7 +1293,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
               itemBuilder: (context, index) {
                 return index == 0
                     ? Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8
+                        ),
                         child: Row(
                           children: [
                             Visibility(
@@ -1290,7 +1315,14 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                             Flexible(
                               child: TextField(
                                 decoration: const InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 8
+                                  ),
                                   border: OutlineInputBorder(),
+                                  labelStyle: TextStyle(
+                                    fontFamily: 'poppins'
+                                  ),
                                   label: Text('Search...'),
                                 ),
                                 onChanged: (text) {
@@ -1306,9 +1338,17 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                               ),
                             ),
                             IconButton(
+                              style: const ButtonStyle(
+                                shape: MaterialStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(3))
+                                  )
+                                ),
+                                backgroundColor: MaterialStatePropertyAll(kPrimaryColor)
+                              ),
                               icon: const Icon(
-                                Icons.add_circle,
-                                color: kPrimaryColor,
+                                Icons.add,
+                                color: white,
                               ),
                               onPressed: () {
                                 Navigator.pushNamed(context, '/ledger',
@@ -1318,18 +1358,35 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           ],
                         ),
                       )
-                    : InkWell(
-                        child: Card(
-                          child: ListTile(title: Text(data![index - 1].name)),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            ledgerModel = data[index - 1];
-                            nextWidget = 1;
-                            isData = false;
-                          });
-                        },
-                      );
+                    : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          InkWell(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: white,
+                                  border: Border.all(
+                                    color: grey
+                                  ),
+                                  borderRadius: BorderRadius.circular(3)
+                                ),
+                                child: ListTile(title: Text(data![index - 1].name)),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  ledgerModel = data[index - 1];
+                                  nextWidget = 1;
+                                  isData = false;
+                                });
+                              },
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            )
+                        ],
+                      ),
+                    );
               },
               itemCount: data!.length + 1,
             );
@@ -2050,7 +2107,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                 itemBuilder: (context, index) {
                   return index == 0
                       ? Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8
+                          ),
                           child: TextField(
                             decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
@@ -2212,15 +2272,26 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                 itemDisplay = data!;
                 items = data;
               }
-              return ListView.builder(
+              return ListView.separated(
+                separatorBuilder: (context, index) => const SizedBox(height: 6,),
                 // shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return index == 0
                       ? Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8
+                          ),
                           child: TextField(
                             decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 8
+                              ),
                                 border: OutlineInputBorder(),
+                                labelStyle: TextStyle(
+                                  fontFamily: 'poppins'
+                                ),
                                 label: Text('Search...')),
                             onChanged: (text) {
                               text = text.toLowerCase();
@@ -2237,75 +2308,86 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                             },
                           ),
                         )
-                      : InkWell(
-                          child: Card(
-                            child: ListTile(
-                              title: Text(
-                                  'Name : ${itemCodeVise ? itemDisplay[index - 1].code.toString() + ' ' + itemDisplay[index - 1].name : itemDisplay[index - 1].name}'),
-                              subtitle: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                      'Qty :${itemDisplay[index - 1].quantity}'),
-                                  // TextButton(
-                                  //     onPressed: () {
-                                  // if (singleProduct) {
-                                  //   addProduct(CartItem(
-                                  // id: totalAdd Item 1,
-                                  // itemId: product.itemId,
-                                  // itemName: product.name,
-                                  // quantity: 1,
-                                  // rate: rate,
-                                  // rRate: rRate,
-                                  // uniqueCode: uniqueCode,
-                                  // gross: gross,
-                                  // discount: discount,
-                                  // discountPercent: discountPercent,
-                                  // rDiscount: rDisc,
-                                  // fCess: kfc,
-                                  // serialNo: '',
-                                  // tax: tax,
-                                  // taxP: taxP,
-                                  // unitId: _dropDownUnit,
-                                  // unitValue: unitValue,
-                                  // pRate: pRate,
-                                  // rPRate: rPRate,
-                                  // barcode: barcode,
-                                  // expDate: expDate,
-                                  // free: free,
-                                  // fUnitId: fUnitId,
-                                  // cdPer: cdPer,
-                                  // cDisc: cDisc,
-                                  // net: subTotal,
-                                  // cess: cess,
-                                  // total: total,
-                                  // profitPer: profitPer,
-                                  // fUnitValue: fUnitValue,
-                                  // adCess: adCess,
-                                  // iGST: iGST,
-                                  // cGST: csGST,
-                                  // sGST: csGST));
-                                  // } else {
-                                  // Fluttertoast.showToast(
-                                  // msg: 'this is not Completed');
-                                  // }
-                                  // },
-                                  // child: const Card(
-                                  //     child: Text(' + ',
-                                  //         style: TextStyle(
-                                  //             fontSize: 25, color: blue))))
-                                ],
+                      : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16
+                        ),
+                        child: InkWell(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: white,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(
+                                  color: grey
+                                )),
+                              child: ListTile(
+                                title: Text(
+                                    'Name : ${itemCodeVise ? itemDisplay[index - 1].code.toString() + ' ' + itemDisplay[index - 1].name : itemDisplay[index - 1].name}'),
+                                subtitle: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        'Qty :${itemDisplay[index - 1].quantity}'),
+                                    // TextButton(
+                                    //     onPressed: () {
+                                    // if (singleProduct) {
+                                    //   addProduct(CartItem(
+                                    // id: totalAdd Item 1,
+                                    // itemId: product.itemId,
+                                    // itemName: product.name,
+                                    // quantity: 1,
+                                    // rate: rate,
+                                    // rRate: rRate,
+                                    // uniqueCode: uniqueCode,
+                                    // gross: gross,
+                                    // discount: discount,
+                                    // discountPercent: discountPercent,
+                                    // rDiscount: rDisc,
+                                    // fCess: kfc,
+                                    // serialNo: '',
+                                    // tax: tax,
+                                    // taxP: taxP,
+                                    // unitId: _dropDownUnit,
+                                    // unitValue: unitValue,
+                                    // pRate: pRate,
+                                    // rPRate: rPRate,
+                                    // barcode: barcode,
+                                    // expDate: expDate,
+                                    // free: free,
+                                    // fUnitId: fUnitId,
+                                    // cdPer: cdPer,
+                                    // cDisc: cDisc,
+                                    // net: subTotal,
+                                    // cess: cess,
+                                    // total: total,
+                                    // profitPer: profitPer,
+                                    // fUnitValue: fUnitValue,
+                                    // adCess: adCess,
+                                    // iGST: iGST,
+                                    // cGST: csGST,
+                                    // sGST: csGST));
+                                    // } else {
+                                    // Fluttertoast.showToast(
+                                    // msg: 'this is not Completed');
+                                    // }
+                                    // },
+                                    // child: const Card(
+                                    //     child: Text(' + ',
+                                    //         style: TextStyle(
+                                    //             fontSize: 25, color: blue))))
+                                  ],
+                                ),
                               ),
                             ),
+                            onTap: () {
+                              setState(() {
+                                productModel = itemDisplay[index - 1];
+                                nextWidget = 3;
+                              });
+                            },
                           ),
-                          onTap: () {
-                            setState(() {
-                              productModel = itemDisplay[index - 1];
-                              nextWidget = 3;
-                            });
-                          },
-                        );
+                      );
                 },
                 itemCount: itemDisplay.length + 1,
               );
@@ -2988,7 +3070,13 @@ class _DeliveryNoteState extends State<DeliveryNote> {
       padding: const EdgeInsets.all(8.0),
       child: ListView(
         children: [
-          Text(product.name!),
+          Text(product.name!,
+          style: const TextStyle(
+            fontFamily: 'poppins',
+            fontSize: 15,
+            fontWeight: FontWeight.w500
+          ),
+          ),
           SingleChildScrollView(
             child: Form(
               key: _resetKey,
@@ -3000,6 +3088,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         MaterialButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3)
+                          ),
                           onPressed: () {
                             setState(() {
                               nextWidget = 2;
@@ -3007,13 +3098,21 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                               clearValue();
                             });
                           },
-                          child: const Text("BACK"),
-                          color: blue[400],
+                          color: kPrimaryColor,
+                          child: const Text("BACK",
+                          style: TextStyle(
+                            fontFamily: 'poppins',
+                            color: white
+                          ),
+                          ),
                         ),
                         const SizedBox(
                           width: 2,
                         ),
                         MaterialButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3)
+                          ),
                           onPressed: () {
                             setState(() {
                               isVariantSelected = false;
@@ -3021,15 +3120,22 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                               clearValue();
                             });
                           },
-                          child: const Text("CANCEL"),
-                          color: blue[400],
+                          color: kPrimaryColor,
+                          child: const Text("CANCEL",
+                          style: TextStyle(
+                            fontFamily: 'poppins',
+                            color: white
+                          ),
+                          ),
                         ),
                         const SizedBox(
                           width: 2,
                         ),
                         MaterialButton(
-                          child: const Text("ADD"),
-                          color: blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3)
+                          ),
+                          color: kPrimaryColor,
                           onPressed: () {
                             calculate(product);
                             setState(() {
@@ -3162,9 +3268,17 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                               }
                             });
                           },
+                          child: const Text("ADD",
+                          style: TextStyle(
+                            fontFamily: 'poppins',
+                            color: white
+                          ),
+                          ),
                         ),
                       ]),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -3188,6 +3302,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                 allow: true, replacementString: '.')
                           ],
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 8
+                            ),
                               labelText: 'Quantity',
                               hintText: '0.0',
                               border: OutlineInputBorder()),
@@ -3338,158 +3456,208 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                         pUnit: snapshot.data[i].pUnit,
                                         sUnit: snapshot.data[i].sUnit,
                                         unit: snapshot.data[i].unit,
-                                        rate: snapshot.data[i].pRate));
+                                        rate: snapshot.data[i].rate));
                                   }
                                 }
                                 return snapshot.data != null &&
                                         snapshot.data.length > 0
-                                    ? DropdownButton<String>(
-                                        hint: Text(_dropDownUnit > 0
-                                            ? UnitSettings.getUnitName(
-                                                _dropDownUnit)
-                                            : 'SKU'),
-                                        items: snapshot.data
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.id.toString(),
-                                            child: Text(item.name),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            bool cartQ = false;
-                                            _dropDownUnit =
-                                                int.tryParse(value!)!;
-                                            for (var i = 0;
-                                                i < unitListData.length;
-                                                i++) {
-                                              UnitModel _unit = unitListData[i];
-                                              if (_unit.unit ==
-                                                  int.tryParse(value)) {
-                                                double? _rate = _unit.rate ==
-                                                        'MRP'
-                                                    ? product.sellingPrice
-                                                    : _unit.rate == 'WHOLESALE'
-                                                        ? product.wholeSalePrice
-                                                        : _unit.rate == 'RETAIL'
-                                                            ? product
-                                                                .retailPrice
-                                                            : _unit.rate ==
-                                                                    'SPRETAIL'
+                                    ? Container(
+                                      height: 48,
+                                       padding: const EdgeInsets.symmetric(
+                                        horizontal: 5
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                            hint: Text(_dropDownUnit > 0
+                                                ? UnitSettings.getUnitName(
+                                                    _dropDownUnit)
+                                                : 'SKU',
+                                                style: const TextStyle(
+                                                  fontFamily: 'poppins',
+                                                  color: black,
+                                                  fontSize: 14
+                                                ),
+                                                ),
+                                            items: snapshot.data
+                                                .map<DropdownMenuItem<String>>(
+                                                    (item) {
+                                              return DropdownMenuItem<String>(
+                                                value: item.id.toString(),
+                                                child: Text(item.name,
+                                                style: const TextStyle(
+                                                  fontFamily: 'poppins',
+                                                  color: black,
+                                                  fontSize: 14
+                                                ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                bool cartQ = false;
+                                                _dropDownUnit =
+                                                    int.tryParse(value!)!;
+                                                for (var i = 0;
+                                                    i < unitListData.length;
+                                                    i++) {
+                                                  UnitModel _unit = unitListData[i];
+                                                  if (_unit.unit ==
+                                                      int.tryParse(value)) {
+                                                    double? _rate = _unit.rate ==
+                                                            'MRP'
+                                                        ? product.sellingPrice
+                                                        : _unit.rate == 'WHOLESALE'
+                                                            ? product.wholeSalePrice
+                                                            : _unit.rate == 'RETAIL'
                                                                 ? product
-                                                                    .spRetailPrice
-                                                                : rateType ==
-                                                                        '1'
+                                                                    .retailPrice
+                                                                : _unit.rate ==
+                                                                        'SPRETAIL'
                                                                     ? product
-                                                                        .sellingPrice
+                                                                        .spRetailPrice
                                                                     : rateType ==
-                                                                            '2'
+                                                                            '1'
                                                                         ? product
-                                                                            .retailPrice
+                                                                            .sellingPrice
                                                                         : rateType ==
-                                                                                '3'
-                                                                            ? product.wholeSalePrice
-                                                                            : 0;
-                                                if (_unit.rate!.isNotEmpty) {
-                                                  rateTypeItem = rateTypeList
-                                                      .firstWhere((element) =>
-                                                          element.name ==
-                                                          _unit.rate);
-                                                }
-                                                rate = _rate!;
-                                                saleRate = _rate;
-                                                _rateController.text =
-                                                    saleRate > 0
-                                                        ? saleRate
-                                                            .toStringAsFixed(2)
-                                                        : '';
-                                                _conversion = _unit.conversion!;
-                                                if (quantity > 0 ||
-                                                    freeQty > 0) {
-                                                  if (totalItem > 0) {
-                                                    double cartS = 0,
-                                                        cartQt = 0;
-                                                    for (var element
-                                                        in cartItem) {
-                                                      if (element.uniqueCode ==
-                                                          product.productId) {
-                                                        cartQt +=
-                                                            element.quantity! +
-                                                                element.free!;
-                                                        cartS = element.stock!;
-                                                      }
+                                                                                '2'
+                                                                            ? product
+                                                                                .retailPrice
+                                                                            : rateType ==
+                                                                                    '3'
+                                                                                ? product.wholeSalePrice
+                                                                                : 0;
+                                                    if (_unit.rate!.isNotEmpty) {
+                                                      rateTypeItem = rateTypeList
+                                                          .firstWhere((element) =>
+                                                              element.name ==
+                                                              _unit.rate);
                                                     }
-                                                    if (cartS > 0) {
-                                                      if (cartS <
-                                                          cartQt +
-                                                              quantity +
-                                                              freeQty) {
-                                                        cartQ = true;
+                                                    rate = _rate!;
+                                                    saleRate = _rate;
+                                                    _rateController.text =
+                                                        saleRate > 0
+                                                            ? saleRate
+                                                                .toStringAsFixed(2)
+                                                            : '';
+                                                    _conversion = _unit.conversion!;
+                                                    if (quantity > 0 ||
+                                                        freeQty > 0) {
+                                                      if (totalItem > 0) {
+                                                        double cartS = 0,
+                                                            cartQt = 0;
+                                                        for (var element
+                                                            in cartItem) {
+                                                          if (element.uniqueCode ==
+                                                              product.productId) {
+                                                            cartQt +=
+                                                                element.quantity! +
+                                                                    element.free!;
+                                                            cartS = element.stock!;
+                                                          }
+                                                        }
+                                                        if (cartS > 0) {
+                                                          if (cartS <
+                                                              cartQt +
+                                                                  quantity +
+                                                                  freeQty) {
+                                                            cartQ = true;
+                                                          }
+                                                        }
+                                                      } else {
+                                                        cartQ = false;
                                                       }
-                                                    }
-                                                  } else {
-                                                    cartQ = false;
-                                                  }
-                                                  outOfStock =
-                                                      isLockQtyOnlyInSales
-                                                          ? ((quantity * _conversion) +
-                                                                      freeQty) >
-                                                                  product
-                                                                      .quantity!
-                                                              ? true
-                                                              : cartQ
-                                                                  ? true
-                                                                  : false
-                                                          : negativeStock
-                                                              ? false
-                                                              : ((quantity * _conversion) +
+                                                      outOfStock =
+                                                          isLockQtyOnlyInSales
+                                                              ? ((quantity * _conversion) +
                                                                           freeQty) >
                                                                       product
                                                                           .quantity!
                                                                   ? true
                                                                   : cartQ
                                                                       ? true
-                                                                      : false;
+                                                                      : false
+                                                              : negativeStock
+                                                                  ? false
+                                                                  : ((quantity * _conversion) +
+                                                                              freeQty) >
+                                                                          product
+                                                                              .quantity!
+                                                                      ? true
+                                                                      : cartQ
+                                                                          ? true
+                                                                          : false;
+                                                    }
+                                                    break;
+                                                  }
                                                 }
-                                                break;
-                                              }
-                                            }
-                                            calculate(product);
-                                          });
-                                        },
-                                      )
-                                    : DropdownButton<String>(
-                                        hint: Text(_dropDownUnit > 0
-                                            ? UnitSettings.getUnitName(
-                                                _dropDownUnit)
-                                            : 'SKU'),
-                                        items: unitListSettings
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.key.toString(),
-                                            child: Text(item.value),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _dropDownUnit =
-                                                int.tryParse(value!)!;
-                                            // for (var i = 0;
-                                            //     i < unitListData.length;
-                                            //     i++) {
-                                            //   UnitModel _unit = unitListData[i];
-                                            //   if (_unit.unit ==
-                                            //       int.tryParse(value)) {
-                                            //     _conversion = _unit.conversion;
-                                            //     break;
-                                            //   }
-                                            // }
-                                            // calculate();
-                                          });
-                                        },
-                                      );
+                                                calculate(product);
+                                              });
+                                            },
+                                          ),
+                                      ),
+                                    )
+                                    : Container(
+                                      height: 48,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: grey),
+                                        borderRadius: BorderRadius.circular(3)
+                                      ),
+                                      child: DropdownButtonHideUnderline(
+                                        child: DropdownButton<String>(
+                                          isExpanded: true,
+                                            hint: Text(_dropDownUnit > 0
+                                                ? UnitSettings.getUnitName(
+                                                    _dropDownUnit)
+                                                : 'SKU',
+                                                style: const TextStyle(
+                                                  fontFamily: 'poppins',
+                                                  color: black,
+                                                  fontSize: 14
+                                                ),
+                                                ),
+                                            items: unitListSettings
+                                                .map<DropdownMenuItem<String>>(
+                                                    (item) {
+                                              return DropdownMenuItem<String>(
+                                                value: item.key.toString(),
+                                                child: Text(item.value,
+                                                style: const TextStyle(
+                                                  fontFamily: 'poppins',
+                                                  color: black,
+                                                  fontSize: 14
+                                                ),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _dropDownUnit =
+                                                    int.tryParse(value!)!;
+                                                // for (var i = 0;
+                                                //     i < unitListData.length;
+                                                //     i++) {
+                                                //   UnitModel _unit = unitListData[i];
+                                                //   if (_unit.unit ==
+                                                //       int.tryParse(value)) {
+                                                //     _conversion = _unit.conversion;
+                                                //     break;
+                                                //   }
+                                                // }
+                                                // calculate();
+                                              });
+                                            },
+                                          ),
+                                      ),
+                                    );
                               },
                             ),
                           ),
@@ -3509,7 +3677,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       ),
                     ],
                   ),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -3527,6 +3697,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                   allow: true, replacementString: '.')
                             ],
                             decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
                                 border: OutlineInputBorder(),
                                 labelText: 'Price',
                                 hintText: '0.0'),
@@ -3676,7 +3850,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           ),
                         )
                       ]),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Visibility(
                     visible: !isItemDiscountEditLocked,
                     child: Row(
@@ -3694,6 +3870,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                   allow: true, replacementString: '.')
                             ],
                             decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
                                 border: OutlineInputBorder(),
                                 labelText: 'Discount % ',
                                 hintText: '0.0'),
@@ -3717,6 +3897,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                   allow: true, replacementString: '.')
                             ],
                             decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
                                 border: OutlineInputBorder(),
                                 labelText: 'Discount',
                                 hintText: '0.0'),
@@ -3730,7 +3914,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       ],
                     ),
                   ),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Visibility(
                     visible: isItemSerialNo,
                     child: Row(
@@ -3741,6 +3927,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           child: TextField(
                             controller: _serialNoController,
                             decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 8
+                              ),
                                 border: const OutlineInputBorder(),
                                 labelText: labelSerialNo.isNotEmpty
                                     ? labelSerialNo
@@ -3755,7 +3945,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       ],
                     ),
                   ),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     Visibility(
                       visible: isTax,
@@ -3773,7 +3965,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       child: Text(subTotal.toStringAsFixed(decimal)),
                     ),
                   ]),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Visibility(
                     visible: isTax,
                     child: Row(
@@ -3789,7 +3983,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           ),
                         ]),
                   ),
-                  const Divider(),
+                  const SizedBox(
+                    height: 8,
+                  ),
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
                     const Padding(
                       padding: EdgeInsets.all(2.0),

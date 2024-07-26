@@ -1413,6 +1413,7 @@ class DioService {
       taxGroup) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
+    List<dynamic> dataPType = [];
     dataBase = isEstimateDataBase
         ? (pref.getString('DBName') ?? "cSharp")
         : (pref.getString('DBNameT') ?? "cSharp");
@@ -1431,7 +1432,12 @@ class DioService {
             'category': category,
             'subcategory': subcategory,
             'salesman': salesman,
-            'taxGroup': taxGroup
+            'taxGroup': taxGroup,
+            'type': '',
+            'taxType': '',
+            'purchaseType': dataPType != null
+                ? jsonEncode(dataPType)
+                : jsonEncode({'id': 0}),
           });
       if (response.statusCode == 200) {
         List<dynamic> data = response.data;
@@ -1447,6 +1453,31 @@ class DioService {
       return [];
     }
   }
+   
+  // Future<List<dynamic>> getPurchaseReport(data) async {
+  //   SharedPreferences pref = await SharedPreferences.getInstance();
+  //   String dataBase = 'cSharp';
+  //   dataBase = isEstimateDataBase
+  //       ? (pref.getString('DBName') ?? "cSharp")
+  //       : (pref.getString('DBNameT') ?? "cSharp");
+  //   try {
+  //     final response = await dio.post(
+  //         '${pref.getString('api' ?? '127.0.0.1:80/api/')}${apiV}purchase_report/$dataBase',
+  //         data: data,
+  //         options: Options(headers: {'Content-Type': 'application/json'}));
+  //     if (response.statusCode == 200) {
+  //       List<dynamic> data = response.data;
+  //       return data;
+  //     } else {
+  //       debugPrint('Failed to load data');
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     final errorMessage =  DioExceptions.fromDioError('$e' as DioError).toString();
+  //     debugPrint(errorMessage.toString());
+  //     return [];
+  //   }
+  // }
 
   Future<List<dynamic>> getMonthlyPurchaseReport(branchId) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -4091,6 +4122,7 @@ class DioService {
           });
       if (response.statusCode == 200) {
         var jsonResponse = response.data;
+        // print(jsonResponse);
 
         _items = jsonResponse;
       } else {

@@ -31,8 +31,15 @@ class AccountsMenu extends StatelessWidget {
                       height: 77,
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_payment_new.png'),
+                            scale: 1.9
+                            ),
                           color: const Color(0xff0008B3)),
-                      // child: Image.asset(iconsUrl),
+                      // child: Image.asset('assets/icons/ic_payment_new.png',
+                      // height: 20,
+                      // width: 20,
+                      // ),
                     ),
                     const Text(
                       'Payment',
@@ -62,6 +69,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_receipt.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -94,6 +105,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_customer.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -127,6 +142,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_supplier.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -160,6 +179,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_ledger.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -193,6 +216,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_group.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -225,6 +252,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_journal.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -257,6 +288,10 @@ class AccountsMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_contra.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),

@@ -85,6 +85,7 @@ class _BankVoucherState extends State<BankVoucher> {
       }
       setState(() {
         cashBankACList.addAll(_dataTemp);
+        
       });
     });
 
@@ -119,7 +120,7 @@ class _BankVoucherState extends State<BankVoucher> {
   @override
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
-    final routes = (ModalRoute.of(context)!.settings.arguments) != null
+      final routes = (ModalRoute.of(context)!.settings.arguments) != null
         ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
         : {'voucher': ''};
     var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';

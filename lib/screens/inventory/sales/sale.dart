@@ -225,12 +225,12 @@ class _SaleState extends ConsumerState<Sale> {
     // });
 
     loadSettings();
-    api.fetchDetailAmount().then((value) {
-      otherAmountList = value;
-      setState(() {
-        otherAmountLoaded = true;
-      });
-    });
+    // api.fetchDetailAmount().then((value) {
+    //   otherAmountList = value;
+    //   setState(() {
+    //     otherAmountLoaded = true;
+    //   });
+    // });
     api.getUnregisteredNameList().then((value) => unregisteredNameList = value);
     salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
@@ -294,6 +294,13 @@ class _SaleState extends ConsumerState<Sale> {
       }
       setState(() {
         cashBankACList.addAll(_dataTemp);
+        if (bankLedgerData != null) {
+          bankLedgerData = cashBankACList.firstWhere(
+            (element) => element.name.toLowerCase() == bankLedgerName,
+            orElse: () => LedgerModel(id: 0, name: bankLedgerData.name),
+             );
+             bankLedgerName = bankLedgerData.name;
+        }
       });
     });
   }
@@ -384,6 +391,14 @@ class _SaleState extends ConsumerState<Sale> {
       _isLoading = true;
       fetchSale(context, dataDynamic[0]);
       _isLoading = false;
+    }
+    else{
+      api.fetchDetailAmount().then((value) {
+      otherAmountList = value;
+      setState(() {
+        otherAmountLoaded = true;
+      });
+      });
     }
 
     api.getVehicleNameList().then((value) {
@@ -1725,31 +1740,41 @@ class _SaleState extends ConsumerState<Sale> {
         });
         clearCart();
         cartItem.clear();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Expanded(
-              child: AlertDialog(
-                title: const Text('Sale Deleted'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacementNamed(
+         Navigator.pushReplacementNamed(
                           context,
                           ComSettings.appSettings(
                                   'bool', 'key-simple-sales', false)
                               ? '/SimpleSale'
                               : '/sales',
                           arguments: Sale(thisSale: thisSale, oldSale: true));
-                    },
-                    child: const Text('CANCEL'),
-                  )
-                ],
-              ),
-            );
-          },
-        );
+        Fluttertoast.showToast(
+          backgroundColor: green,
+          msg: 'Sale Bill Deleted');                  
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return Expanded(
+        //       child: AlertDialog(
+        //         title: const Text('Sale Deleted'),
+        //         actions: [
+        //           TextButton(
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.pushReplacementNamed(
+        //                   context,
+        //                   ComSettings.appSettings(
+        //                           'bool', 'key-simple-sales', false)
+        //                       ? '/SimpleSale'
+        //                       : '/sales',
+        //                   arguments: Sale(thisSale: thisSale, oldSale: true));
+        //             },
+        //             child: const Text('CANCEL'),
+        //           )
+        //         ],
+        //       ),
+        //     );
+        //   },
+        // );
       }
     });
   }
@@ -2416,6 +2441,7 @@ void _onTabTapped(int index) {
                                         ? const CircularProgressIndicator()
                                         : null,
                                     controller: nameControl,
+                                    
                                     inputTextStyle: const TextStyle(
                                         fontFamily: 'poppins', fontSize: 14),
                                     suggestionTextStyle:
@@ -3584,7 +3610,8 @@ void _onTabTapped(int index) {
                                   _insert(
                                       'Delete DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${ledgerModel!.id} ${CartItem.encodeCartToJson(cartItem)}',
                                       0);
-                                  deleteSale(context);
+                                      deleteSaleData();
+                                  // deleteSale(context);
                                 } else {
                                   Fluttertoast.showToast(
                                       msg: 'Please select at least one bill');

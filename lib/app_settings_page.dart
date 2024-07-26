@@ -2066,6 +2066,10 @@ class AppSettings extends StatelessWidget {
                         width: 33,
                         height: 33,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_settings.png'),
+                            scale: 3.3
+                            ),
                             borderRadius: BorderRadius.circular(100),
                             color: kPrimaryColor),
                       ),

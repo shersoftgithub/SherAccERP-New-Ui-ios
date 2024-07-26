@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:intl/intl.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/screens/inventory/purchase/purchase.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_list.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -38,17 +39,18 @@ class _PurchaseListState extends State<PurchaseList> {
   bool loadReport = false,
   newMode = false;
   DateTime now = DateTime.now();
-  List<dynamic> purchaseTypeList = [
-    {'id': 0, 'name': 'All'},
-    {'id': 1, 'name': 'Purchase'},
-    {'id': 2, 'name': 'Return'},
-    {'id': 3, 'name': 'Order'}
-  ];
+  // List<dynamic> purchaseTypeList = [
+  //   {'id': 0, 'name': 'All'},
+  //   {'id': 1, 'name': 'Purchase'},
+  //   {'id': 2, 'name': 'Return'},
+  //   {'id': 3, 'name': 'Order'}
+  // ];
   List<TypeItem> dropdownItemsType = [
-    TypeItem(1, 'Summery'),
-    TypeItem(2, 'ItemWise'),
-    TypeItem(3, 'Capital Summery'),
-    TypeItem(4, 'Expense Summery'),
+    TypeItem(1, 'Daily'),
+    TypeItem(2, 'Summery'),
+    TypeItem(3, 'ItemWise'),
+    TypeItem(4, 'Capital Summery'),
+    TypeItem(5, 'Expense Summery'),
     TypeItem(5, 'ItemWise Comaprison Stock Rate'),
   ];
   int valueType = 1;
@@ -146,7 +148,11 @@ class _PurchaseListState extends State<PurchaseList> {
 
   reportView(statement) {
     controller.addListener(onScroll);
-    List<dynamic> dataSType = [];
+    List<dynamic> dataPType = [];
+
+     VoucherType voucherTypeData = voucherTypeList
+        .firstWhere((element) => element.voucher.toLowerCase() == 'purchase');
+    dataPType.add({'id': voucherTypeData.id});
 
     statement = dropdownItemsType
         .where((TypeItem element) => element.id == valueType)
@@ -180,7 +186,7 @@ class _PurchaseListState extends State<PurchaseList> {
     //   if (data.stock) dataSType.add({'id': data.id});
     // }
 
-    if (title == 'Summery') {
+    if (title == 'Daily') {
       _purchaseListData(
           locationsId,
           statementType,
@@ -194,8 +200,27 @@ class _PurchaseListState extends State<PurchaseList> {
           subcategoryId,
           salesManId,
           taxGroupId,
-          dataSType);
+          dataPType);
     } else {
+      // var dataJson = '[${json.encode({
+      //       'sDate': sDate,
+      //       'eDate': eDate,
+      //       'branchId': locationsId,
+      //       'statementType': statementType,
+      //       'supplierId': supplierId,
+      //       'project': projectId,
+      //       'itemId': itemsId,
+      //       'mfr': mfrId,
+      //       'category': categoryId,
+      //       'subcategory': subcategoryId,
+      //       'salesman': salesManId,
+      //       'taxGroup': taxGroupId,
+      //       'type': '',
+      //       'taxType': '',
+      //       'purchaseType': dataPType != null
+      //           ? jsonEncode(dataPType)
+      //           : jsonEncode({'id': 0}),
+      //     })}]';
       return FutureBuilder<List<dynamic>>(
         future: api.getPurchaseReport(
             locationsId,

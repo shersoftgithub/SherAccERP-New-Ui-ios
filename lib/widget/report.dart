@@ -39,6 +39,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_closing_report.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -73,6 +77,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_sales_daily.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -107,6 +115,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_sales_billwise.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -141,6 +153,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_sales_itemwise.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -175,6 +191,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_bill_by_bill.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -214,6 +234,10 @@ class Report extends StatelessWidget {
                         width: 77,
                         height: 77,
                         decoration: BoxDecoration(
+                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_monthly_sales.png'),
+                            scale: 1.9
+                            ),
                             borderRadius: BorderRadius.circular(50),
                             color: const Color(0xff0008B3)),
                         // child: Image.asset(iconsUrl),
@@ -246,6 +270,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_monthly_purchase.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -279,6 +307,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_cheque._new.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -315,6 +347,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_user_activity.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),
@@ -369,6 +405,10 @@ class Report extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_pending_fcs.png'),
+                            scale: 1.9
+                            ),
                           borderRadius: BorderRadius.circular(50),
                           color: const Color(0xff0008B3)),
                       // child: Image.asset(iconsUrl),

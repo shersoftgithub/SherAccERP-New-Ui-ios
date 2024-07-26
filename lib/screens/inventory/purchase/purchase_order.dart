@@ -5,6 +5,7 @@ import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/cart_item.dart';
@@ -17,6 +18,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
@@ -52,6 +54,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       newPurchaseOrder = false,
       lastRecord = false;
   List<CartItemP> cartItem = [];
+  CartItemP? cartModel;
   int page = 1, pageTotal = 0, totalRecords = 0,_dropDownUnit = 0;
   List<ProductPurchaseModel> itemDisplay = [];
   List<ProductPurchaseModel> items = [];
@@ -108,6 +111,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     decimal = (ComSettings.getValue('DECIMAL', settings).toString().isNotEmpty
         ? int.tryParse(ComSettings.getValue('DECIMAL', settings).toString())
         : 2)!;
+        voucherTypeData = voucherTypeList.firstWhere(
+        (element) => element.voucher.toLowerCase() == 'purchase order');
   }
 
   @override
@@ -318,6 +323,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           actions: [
@@ -767,6 +773,321 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                   ],
                 ),
                ),
+                 const SizedBox(
+              height: 8,
+             ),
+              cartItem.isNotEmpty
+                          ? Container(
+                               constraints: BoxConstraints(maxHeight: 300),
+                            // height: 250,
+                              width: MediaQuery.sizeOf(context).width,
+                              color: white,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 4),
+                                child: ListView.separated(
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 4),
+                                  shrinkWrap: true,
+                                  // physics: ClampingScrollPhysics() ,
+                                  itemCount: cartItem.length ,
+                                  // scrollDirection: Axis.vertical,
+                                  itemBuilder: (context, index) {
+                                    return InkWell(
+                                      onTap: () {
+                                       setState(() {
+                                            editItem = true;
+                                        position = index;
+                                        cartModel = cartItem.elementAt(position!);
+                                        selectedProducteId = 
+                                        cartModel!.id;
+                                        productNameController.text =
+                                        cartModel!.itemName;
+                                        rate = cartModel!.rate;
+                                        controllerRate.text =
+                                            cartModel!.rate.toString();
+                                        controllerQuantity.text =
+                                            cartModel!.quantity.toString();
+                                            quantity = 
+                                            cartModel!.quantity;
+                                        controllerQuantity.text =
+                                            cartModel!.quantity.toString();
+                                        controllerDiscount.text =
+                                            cartModel!.discount.toString();
+                                        controllerDiscountPer.text =
+                                            cartModel!.discountPercent.toString();
+                                        controllerMrp.text = 
+                                            cartModel!.mrp.toString();
+                                        controllerBranch.text = 
+                                            cartModel!.branch.toString();
+                                        controllerRetail.text = 
+                                            cartModel!.retail.toString();
+                                        controllerWholeSale.text = 
+                                            cartModel!.wholesale.toString();      
+                                            subTotal = cartModel!.net;
+                                            net = cartModel!.net;
+                                            tax = cartModel!.tax;
+                                            taxP = cartModel!.taxP;
+                                            total = cartModel!.total;
+                                            
+                                        // _serialNoController.text =
+                                        //     cartModel.serialNo;
+                                            nextWidget = 1;
+                                       });
+                                      
+                                      },
+                                      child: Container(
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: BoxDecoration(
+                                            // boxShadow: [
+                                            //   BoxShadow(
+                                            //     color: Colors.grey.shade400,
+                                            //     blurRadius: 5,
+                                            //     spreadRadius: .8,
+                                            //   )
+                                            // ],
+                                            border: Border.all(
+                                                color: grey, width: .5),
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                            color:
+                                                Colors.grey.withOpacity(.1)),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(6.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  Container(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 5),
+                                                      decoration:
+                                                          BoxDecoration(
+                                                              color: white,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          3),
+                                                              border:
+                                                                  Border.all(
+                                                                width: .3,
+                                                                color: grey,
+                                                              )),
+                                                      child: Text(
+                                                        '# ${index +1}',
+                                                        style:
+                                                            const TextStyle(
+                                                                fontSize: 12),
+                                                      )),
+                                                  Text(
+                                                      ' ${cartItem[index].itemName}',
+                                                      style: const TextStyle(
+                                                          color: black,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontFamily:
+                                                              'poppins')),
+                                                  const Spacer(),
+                                                  
+                                                ]),
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(
+                                                  children: [
+                                                    const Text(
+                                                      'Item Subtotal',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),
+                                                    ),
+                                                    const Spacer(),
+                                                    Text(
+                                                      "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${('selectedTaxOption' == 'With Tax' ? cartItem[index].rate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                  width:
+                                                      MediaQuery.of(context)
+                                                          .size
+                                                          .width,
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        'Discount (%): ',
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .orange[700],
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      Text(
+                                                        cartItem[index].discountPercent!
+                                                            .toStringAsFixed(
+                                                                2),
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .orange[700],
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      const Spacer(),
+                                                      Text(
+                                                        '₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  )),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  Text(
+                                                    'Tax (%): ${cartItem[index].taxP}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ]),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: Row(children: [
+                                                  const Text(
+                                                    'Total',
+                                                    style: TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    '₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                    style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                ]),
+                                              ),
+                                             
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Text("No items in Cart"),
+                            ),
+                            cartItem.isNotEmpty?
+                             Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 30),
+                              width: MediaQuery.of(context).size.width,color: white,child: Column(children: [
+                                 const SizedBox(
+                                      height: 5,
+                                    ),
+                               Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Total Disc : ${CommonService.getRound(decimal, totalDiscount).toStringAsFixed(decimal)}',
+                                          style: const TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: 'poppins'),
+                                        ),
+                                        Text('Total Tax Amt : ${CommonService.getRound(decimal, taxTotalCartValue).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Total Item : ${CommonService.getRound(decimal, double.parse(totalItem.toString())).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                        Text('Subtotal: ${CommonService.getRound(decimal, totalGrossValue).toStringAsFixed(decimal)}',
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: 'poppins')),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    )
+                            ],),
+                            ): const SizedBox(),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                             Padding(
+                           padding: const EdgeInsets.symmetric(horizontal: 20),
+                           child: Column(
+                             children: [
+                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children:[
+                                  const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
+                                  Text('₹   ${CommonService.getRound(decimal, totalCartTotal).toStringAsFixed(decimal)}',style:const 
+                                  TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                                ]
+                               ),
+                             
+                             ],
+                           ),
+                         ),
+                         const SizedBox(
+                          height: 20,
+                         ),
           ],
         ),
       ),
@@ -777,39 +1098,268 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
             Expanded(
               child: Material(
                 color: Colors.transparent,
-                child: Container(
-                              height: 60,
-                              color: Colors.white,
-                              child:  Center(
-                                child: Text(
-                                  oldBill ? 'Delete': 'Save & New',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                child: InkWell(
+                  onTap: oldBill
+                  ?() {
+                    if (cartItem.isNotEmpty) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    delete(context);
+                  } else {
+                    showInSnackBar('No items found on bill');
+                  }
+                  }
+                  :()async {
+                    if (totalItem > 0 &&  selectedCustomerId != null) {
+                       setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'PO_Insert';
+                    var data = '[${json.encode({
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PO',
+                          'cashPaid': cashPaidController.text.isNotEmpty
+                              ? cashPaidController.text
+                              : '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (_state) {
+                      cartItem.clear();
+                      selectedCustomerId = 0;
+                      supplierNameController.text = '';
+                      clearValue();
+                      totalCartTotal = 0;
+                      // Navigator.pushReplacementNamed(context, '/purchaseOrder');
+                      Fluttertoast.showToast(
+                        backgroundColor: green,
+                        msg:'Bill Saved');
+                      // showMore(context, 'Saved');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                    }
+                    else {
+                       Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg:selectedCustomerId == null ?'Select Supplier' :"Can't Save without any Product" );
+                    }
+                  },
+                  child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: Text(
+                                    oldBill ? 'Delete': 'Save & New',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                ),
               )),
               Expanded(child: 
               Material(
                 color: Colors.transparent,
-                child: Container(
-                              height: 60,
-                              color: kPrimaryColor,
-                              child:  Center(
-                                child:Text(
-                                  'Save',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
+                child: InkWell(
+                  onTap: oldBill 
+                  ? () async {
+                     setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'PO_Update';
+                    var data = '[${json.encode({
+                          'entryNo': dataDynamic[0]['EntryNo'],
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PO',
+                          'cashPaid': cashPaidController.text.isNotEmpty
+                              ? cashPaidController.text
+                              : '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (_state) {
+                      cartItem.clear();
+                      showMore(context, 'Edited');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                  }
+                  :()async {
+                    if (totalItem > 0 &&  selectedCustomerId != null) {
+                       setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'PO_Insert';
+                    var data = '[${json.encode({
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PO',
+                          'cashPaid': cashPaidController.text.isNotEmpty
+                              ? cashPaidController.text
+                              : '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (_state) {
+                      cartItem.clear();
+                      Navigator.pushReplacementNamed(context, '/purchaseOrder');
+                      Fluttertoast.showToast(
+                        backgroundColor: green,
+                        msg:'Bill Saved');
+                      // showMore(context, 'Saved');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                    }
+                    else {
+                       Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg:selectedCustomerId == null ?'Select Supplier' :"Can't Save without any Product" );
+                    }
+                  },
+                  child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  Center(
+                                  child:Text(
+                                    oldBill? 'Edit' :'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                ),
               )
               )
         ]),
@@ -915,12 +1465,68 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       rate = (controllerRate.text.isNotEmpty
           ? double.tryParse(controllerRate.text)
           : 0)!;
-      discount = (controllerDiscount.text.isNotEmpty
-          ? double.tryParse(controllerDiscount.text)
-          : 0)!;
-      discountPer = (controllerDiscountPer.text.isNotEmpty
-          ? double.tryParse(controllerDiscountPer.text)
-          : 0)!;
+           if (enableMULTIUNIT) {
+        if (currentRate > 0) {
+          if (conversion > 0 ) {
+            if (focusNodeRate.hasFocus ) {
+              rate = double.tryParse(controllerRate.text)?? 0;
+              // rate = double.tryParse(_rateController.text) * _conversion;
+              // lastRateStatus = false;
+            } else {
+              rate =  (currentRate * conversion);
+              // rate = saleRate; // * _conversion;
+              controllerRate.text = rate.toStringAsFixed(decimal);
+            }
+            
+          } else {
+            rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+          }
+        }
+       else {
+        rate = (controllerRate.text.isNotEmpty
+            ? double.tryParse(controllerRate.text)
+            : 0) ?? 0;
+      }
+      }
+      else{
+        if (focusNodeRate.hasFocus) {
+         rate =  double.tryParse(controllerRate.text) ?? 0 ; 
+        } else if (currentRate > 0){
+          controllerRate.text = currentRate.toStringAsFixed(decimal);
+          rate = currentRate;
+        } else{
+           rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+        }
+      }
+      if (focusNodeDiscountPer.hasFocus) {
+        controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
+            ? (((quantity * rate) * discountPer) / 100).toStringAsFixed(2)
+            : '';
+        discount = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        discountPer = (double.tryParse(controllerDiscountPer.text))?? 0;
+      }
+
+      if (focusNodeDiscount.hasFocus) {
+        controllerDiscountPer.text = controllerDiscount.text.isNotEmpty
+            ? ((discount * 100) / (quantity * rate)).toStringAsFixed(2)
+            : '';
+        discountPer = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        double.tryParse(controllerDiscount.text);
+      }
+      // discount = (controllerDiscount.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscount.text)
+      //     : 0)!;
+      // discountPer = (controllerDiscountPer.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscountPer.text)
+      //     : 0)!;
       rRate = taxMethod == 'MINUS'
           ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
           : rate;
@@ -1060,7 +1666,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   .toList();
                           
                               return EasyAutocomplete(
-                                inputTextStyle: const TextStyle(fontSize: 13),
+                                inputTextStyle: const TextStyle(fontSize: 14),
                                 decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
                                     vertical: 5, horizontal: 5),
@@ -1114,6 +1720,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       if (rate > 0 && !editableRate) {
         controllerRate.text = rate.toString();
       }
+      currentRate = rate;
       if (double.tryParse(productModelPrize[0]['realprate'].toString())! > 0) {
         rRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
       }
@@ -1396,7 +2003,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                    ),
                                 TextField(
                                   controller: controllerRate,
-                                  // focusNode: _focusNodeRate,
+                                  focusNode: focusNodeRate,
                                   textAlign: TextAlign.right,
                                   keyboardType: const TextInputType.numberWithOptions(
                                       decimal: true),
@@ -1639,9 +2246,10 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   borderRadius: BorderRadius.circular(3)),
                               height: 35,
                               child: TextField(
+                                textAlign: TextAlign.right,
                                 style: const TextStyle(fontSize: 13),
                                 controller: controllerDiscountPer,
-                                // focusNode: focusNodeDiscountPer,
+                                focusNode: focusNodeDiscountPer,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
                                         decimal: true),
@@ -1691,7 +2299,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   borderRadius: BorderRadius.circular(3)),
                               height: 35,
                               child: TextField(
-                                // focusNode: focusNodeDiscount,
+                                focusNode: focusNodeDiscount,
                                 style: const TextStyle(fontSize: 13),
                                 controller: controllerDiscount,
                                 keyboardType:
@@ -1827,6 +2435,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                     borderRadius: BorderRadius.circular(3)),
                                 height: 35,
                                 child: TextField(
+                                  textAlign: TextAlign.right,
                                   style: const TextStyle(fontSize: 13),
                                   readOnly: true,
                                   controller: TextEditingController(
@@ -2486,39 +3095,332 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
             Expanded(
               child: Material(
                 color: Colors.transparent,
-                child: Container(
-                              height: 60,
-                              color: Colors.white,
-                              child:  Center(
-                                child: Text(
-                                  oldBill ? 'Delete': 'Save & New',
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                child: InkWell(
+                  onTap:editItem ? () {
+                     setState(() {
+                      cartItem.removeAt(position!);
+                      clearValue();
+                      calculateTotal();
+                      nextWidget = 0;
+                    });
+                  } :() {
+                      if (quantity <= 0) {
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: '0 Quantity Not Allowed');
+                    }
+                    else if(rate <= 0){
+                       Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: '0 Rate Not Allowed');
+                    }
+                    else {
+                     setState(() {
+                      unit ??= DataJson(id: 0, name: '');
+                      rate = (controllerRate.text.isNotEmpty
+                          ? double.tryParse(controllerRate.text)
+                          : rate)!;
+                      mrp = (controllerMrp.text.isNotEmpty
+                          ? double.tryParse(controllerMrp.text)
+                          : mrp)!;
+                      retail = (controllerRetail.text.isNotEmpty
+                          ? double.tryParse(controllerRetail.text)
+                          : retail)!;
+                      wholeSale = (controllerWholeSale.text.isNotEmpty
+                          ? double.tryParse(controllerWholeSale.text)
+                          : wholeSale)!;
+                      // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                      branch = (controllerBranch.text.isNotEmpty
+                          ? double.tryParse(controllerBranch.text)
+                          : branch)!;
+                      quantity = (controllerQuantity.text.isNotEmpty
+                          ? double.tryParse(controllerQuantity.text)
+                          : quantity)!;
+
+                      // if (editItem) {
+                      //   cartItem[position!].adCess = adCess;
+                      //   cartItem[position!].barcode = barcode;
+                      //   cartItem[position!].branch = branch;
+                      //   cartItem[position!].branchPer = branchPer;
+                      //   cartItem[position!].cDisc = cDisc;
+                      //   cartItem[position!].cGST = csGST;
+                      //   cartItem[position!].cdPer = cdPer;
+                      //   cartItem[position!].cess = cess;
+                      //   cartItem[position!].discount = discount;
+                      //   cartItem[position!].discountPercent = discountPer;
+                      //   // cartItem[position!].expDate = expDate;
+                      //   // cartItem[position!].expense = expense;
+                      //   cartItem[position!].fCess = fCess;
+                      //   cartItem[position!].fUnitId = fUnitId;
+                      //   cartItem[position!].fUnitValue = fUnitValue;
+                      //   cartItem[position!].free = free;
+                      //   cartItem[position!].gross = subTotal;
+                      //   cartItem[position!].iGST = iGST;
+                      //   // cartItem[position!].id = cartItem.length + 1;
+                      //   // cartItem[position!].itemId = productModel['slno'];
+                      //   // cartItem[position!].itemName = productModel['itemname'];
+                      //   // cartItem[position!].location = locationId;
+                      //   cartItem[position!].mrp = mrp;
+                      //   cartItem[position!].mrpPer = mrpPer;
+                      //   cartItem[position!].net = net;
+                      //   cartItem[position!].profitPer = profitPer;
+                      //   cartItem[position!].quantity = quantity;
+                      //   cartItem[position!].rRate = rRate;
+                      //   cartItem[position!].rate = rate;
+                      //   cartItem[position!].retail = retail;
+                      //   cartItem[position!].retailPer = retailPer;
+                      //   cartItem[position!].sGST = csGST;
+                      //   cartItem[position!].serialNo = serialNo;
+                      //   cartItem[position!].spRetail = spRetail;
+                      //   cartItem[position!].spRetailPer = spRetailPer;
+                      //   cartItem[position!].tax = tax;
+                      //   cartItem[position!].taxP = taxP;
+                      //   cartItem[position!].total = total;
+                      //   cartItem[position!].uniqueCode = uniqueCode;
+                      //   // cartItem[position!].unitId = unit.id;
+                      //   // cartItem[position!].unitName = unit.name;
+                      //   cartItem[position!].unitValue = unitValue;
+                      //   cartItem[position!].wholesale = wholeSale;
+                      //   cartItem[position!].wholesalePer = wholesalePer;
+                      // } else {
+                        cartItem.add(CartItemP(
+                            adCess: adCess,
+                            barcode: barcode,
+                            branch: branch,
+                            branchPer: branchPer,
+                            cDisc: cDisc,
+                            cGST: csGST,
+                            cdPer: cdPer,
+                            cess: cess,
+                            discount: discount,
+                            discountPercent: discountPer,
+                            expDate: expDate,
+                            expense: expense,
+                            fCess: fCess,
+                            fUnitId: fUnitId,
+                            fUnitValue: fUnitValue,
+                            free: free,
+                            gross: subTotal,
+                            iGST: iGST,
+                            id: cartItem.length + 1,
+                            itemId: selectedItem.slNo,
+                            itemName: selectedItem.itemName,
+                            location: locationId,
+                            mrp: mrp,
+                            mrpPer: mrpPer,
+                            net: net,
+                            profitPer: profitPer,
+                            quantity: quantity,
+                            rRate: rRate,
+                            rate: rate,
+                            retail: retail,
+                            retailPer: retailPer,
+                            sGST: csGST,
+                            serialNo: serialNo,
+                            spRetail: spRetail,
+                            spRetailPer: spRetailPer,
+                            tax: tax,
+                            taxP: taxP,
+                            total: total,
+                            uniqueCode: uniqueCode,
+                            unitId: unit.id,
+                            unitName: unit.name,
+                            unitValue: unitValue,
+                            wholesale: wholeSale,
+                            wholesalePer: wholesalePer,
+                            estUniqueCode: 0,
+                            brand: 0,
+                            company: 0,
+                            size: 0,
+                            color: 0,
+                            expenseQty: 0));
+                      // }
+                      if (cartItem.isNotEmpty) {
+                        editItem = false;
+                        // nextWidget = 0;
+                        clearValue();
+                        calculateTotal();
+                      }
+                    });
+                  }
+                  },
+                  child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  Center(
+                                  child: Text(
+                                    editItem ? 'Delete': 'Save & New',
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                ),
               )),
               Expanded(child: 
               Material(
                 color: Colors.transparent,
-                child: Container(
-                              height: 60,
-                              color: kPrimaryColor,
-                              child:  const Center(
-                                child:Text(
-                                  'Save',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
+                child: InkWell(
+                  onTap: () {
+                       if (quantity <= 0) {
+                      Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: '0 Quantity Not Allowed');
+                    }
+                    else if(rate <= 0){
+                       Fluttertoast.showToast(
+                        backgroundColor: red,
+                        msg: '0 Rate Not Allowed');
+                    }
+                    else {
+                     setState(() {
+                      unit ??= DataJson(id: 0, name: '');
+                      rate = (controllerRate.text.isNotEmpty
+                          ? double.tryParse(controllerRate.text)
+                          : rate)!;
+                      mrp = (controllerMrp.text.isNotEmpty
+                          ? double.tryParse(controllerMrp.text)
+                          : mrp)!;
+                      retail = (controllerRetail.text.isNotEmpty
+                          ? double.tryParse(controllerRetail.text)
+                          : retail)!;
+                      wholeSale = (controllerWholeSale.text.isNotEmpty
+                          ? double.tryParse(controllerWholeSale.text)
+                          : wholeSale)!;
+                      // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                      branch = (controllerBranch.text.isNotEmpty
+                          ? double.tryParse(controllerBranch.text)
+                          : branch)!;
+                      quantity = (controllerQuantity.text.isNotEmpty
+                          ? double.tryParse(controllerQuantity.text)
+                          : quantity)!;
+
+                      if (editItem) {
+                        cartItem[position!].adCess = adCess;
+                        cartItem[position!].barcode = barcode;
+                        cartItem[position!].branch = branch;
+                        cartItem[position!].branchPer = branchPer;
+                        cartItem[position!].cDisc = cDisc;
+                        cartItem[position!].cGST = csGST;
+                        cartItem[position!].cdPer = cdPer;
+                        cartItem[position!].cess = cess;
+                        cartItem[position!].discount = discount;
+                        cartItem[position!].discountPercent = discountPer;
+                        // cartItem[position!].expDate = expDate;
+                        // cartItem[position!].expense = expense;
+                        cartItem[position!].fCess = fCess;
+                        cartItem[position!].fUnitId = fUnitId;
+                        cartItem[position!].fUnitValue = fUnitValue;
+                        cartItem[position!].free = free;
+                        cartItem[position!].gross = subTotal;
+                        cartItem[position!].iGST = iGST;
+                        // cartItem[position!].id = cartItem.length + 1;
+                        // cartItem[position!].itemId = productModel['slno'];
+                        // cartItem[position!].itemName = productModel['itemname'];
+                        // cartItem[position!].location = locationId;
+                        cartItem[position!].mrp = mrp;
+                        cartItem[position!].mrpPer = mrpPer;
+                        cartItem[position!].net = net;
+                        cartItem[position!].profitPer = profitPer;
+                        cartItem[position!].quantity = quantity;
+                        cartItem[position!].rRate = rRate;
+                        cartItem[position!].rate = rate;
+                        cartItem[position!].retail = retail;
+                        cartItem[position!].retailPer = retailPer;
+                        cartItem[position!].sGST = csGST;
+                        cartItem[position!].serialNo = serialNo;
+                        cartItem[position!].spRetail = spRetail;
+                        cartItem[position!].spRetailPer = spRetailPer;
+                        cartItem[position!].tax = tax;
+                        cartItem[position!].taxP = taxP;
+                        cartItem[position!].total = total;
+                        cartItem[position!].uniqueCode = uniqueCode;
+                        // cartItem[position!].unitId = unit.id;
+                        // cartItem[position!].unitName = unit.name;
+                        cartItem[position!].unitValue = unitValue;
+                        cartItem[position!].wholesale = wholeSale;
+                        cartItem[position!].wholesalePer = wholesalePer;
+                      } else {
+                        cartItem.add(CartItemP(
+                            adCess: adCess,
+                            barcode: barcode,
+                            branch: branch,
+                            branchPer: branchPer,
+                            cDisc: cDisc,
+                            cGST: csGST,
+                            cdPer: cdPer,
+                            cess: cess,
+                            discount: discount,
+                            discountPercent: discountPer,
+                            expDate: expDate,
+                            expense: expense,
+                            fCess: fCess,
+                            fUnitId: fUnitId,
+                            fUnitValue: fUnitValue,
+                            free: free,
+                            gross: subTotal,
+                            iGST: iGST,
+                            id: cartItem.length + 1,
+                            itemId: selectedItem.slNo,
+                            itemName: selectedItem.itemName,
+                            location: locationId,
+                            mrp: mrp,
+                            mrpPer: mrpPer,
+                            net: net,
+                            profitPer: profitPer,
+                            quantity: quantity,
+                            rRate: rRate,
+                            rate: rate,
+                            retail: retail,
+                            retailPer: retailPer,
+                            sGST: csGST,
+                            serialNo: serialNo,
+                            spRetail: spRetail,
+                            spRetailPer: spRetailPer,
+                            tax: tax,
+                            taxP: taxP,
+                            total: total,
+                            uniqueCode: uniqueCode,
+                            unitId: unit.id,
+                            unitName: unit.name,
+                            unitValue: unitValue,
+                            wholesale: wholeSale,
+                            wholesalePer: wholesalePer,
+                            estUniqueCode: 0,
+                            brand: 0,
+                            company: 0,
+                            size: 0,
+                            color: 0,
+                            expenseQty: 0));
+                      }
+                      if (cartItem.isNotEmpty ) {
+                        editItem = false;
+                        nextWidget = 0;
+                        clearValue();
+                        calculateTotal();
+                      }
+                    });
+                    }
+                  },
+                  child: Container(
+                                height: 60,
+                                color: kPrimaryColor,
+                                child:  const Center(
+                                  child:Text(
+                                    'Save',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                ),
               )
               )
         ]),
@@ -2537,39 +3439,176 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(
+                height: 5,
+              ),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                  );
+                } else {
+                  return InkWell(
                     onTap: () {
                       showEditDialog(context, dataDisplay[index]);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
+                    child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
           )
+        // ListView.builder(
+        //     itemCount: dataDisplay.length + 1,
+        //     itemBuilder: (BuildContext context, int index) {
+        //       if (index == dataDisplay.length) {
+        //         return Padding(
+        //           padding: const EdgeInsets.all(8.0),
+        //           child: Center(
+        //             child: Opacity(
+        //               opacity: isLoadingData ? 1.0 : 00,
+        //               child: const CircularProgressIndicator(),
+        //             ),
+        //           ),
+        //         );
+        //       } else {
+        //         return Card(
+        //           elevation: 2,
+        //           child: ListTile(
+        //             title: Text(dataDisplay[index]['Name']),
+        //             subtitle: Text('Date: ' +
+        //                 dataDisplay[index]['Date'] +
+        //                 ' / EntryNo : ' +
+        //                 dataDisplay[index]['Id'].toString()),
+        //             trailing: Text(
+        //                 'Total : ' + dataDisplay[index]['Total'].toString()),
+        //             onTap: () {
+        //               showEditDialog(context, dataDisplay[index]);
+        //             },
+        //           ),
+        //         );
+        //       }
+        //     },
+        //     controller: _scrollController,
+        //   )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -3122,9 +4161,13 @@ selectLedgerWidget() {
   TextEditingController controllerRetail = TextEditingController();
   TextEditingController controllerWholeSale = TextEditingController();
   TextEditingController controllerBranch = TextEditingController();
+  FocusNode focusNodeRate = FocusNode();
+  FocusNode focusNodeDiscountPer = FocusNode();
+  FocusNode focusNodeDiscount = FocusNode();
 
   double quantity = 0,
       rate = 0,
+      currentRate = 0,
       subTotal = 0,
       discount = 0,
       discountPer = 0,
@@ -3952,6 +4995,7 @@ selectLedgerWidget() {
       taxTotalCartValue = 0,
       totalCartTotal = 0,
       totalProfit = 0;
+      int get totalItem => cartItem.length;
   calculateTotal() {
     totalGrossValue = 0;
     totalDiscount = 0;
@@ -3997,6 +5041,18 @@ selectLedgerWidget() {
     controllerMrp.text = '';
     controllerRetail.text = '';
     controllerWholeSale.text = '';
+    productNameController.text = '';
+    selectedProducteId = 0;
+    taxP = 0;
+    tax = 0;
+    mrp = 0;
+    branch = 0;
+    wholeSale = 0;
+    retail = 0;
+    subTotal = 0;
+    net = 0 ;
+    total = 0;
+    _dropDownUnit = 0;
     editableQuantity = false;
     editableMrp = false;
     editableRetail = false;
@@ -4054,7 +5110,10 @@ selectLedgerWidget() {
         var particulars = value['Particulars'];
         // var serialNO = value['SerialNO'];
         // var deliveryNoteDetails = value['DeliveryNote'];
-        otherAmountList = value['otherAmount'];
+        if (value['otherAmount'] != null) {
+          otherAmountList = value['otherAmount'];
+        }
+        // otherAmountList = value['otherAmount'];
 
         formattedDate = DateUtil.dateDMY(information['DDate']);
 
@@ -4072,6 +5131,8 @@ selectLedgerWidget() {
         DataJson cModel =
             DataJson(id: information['Supplier'], name: information['FromSup']);
         ledgerModel = cModel;
+        selectedCustomerId = cModel.id;
+        supplierNameController.text = cModel.name.toString();
         cartItem.clear();
         for (var product in particulars) {
           cartItem.add(CartItemP(
@@ -4135,7 +5196,7 @@ selectLedgerWidget() {
           cashPaidController.text = billCash.toStringAsFixed(decimal);
         }
         _narration = narration;
-        nextWidget = 4;
+        // nextWidget = 4;
         oldBill = true;
       });
     });

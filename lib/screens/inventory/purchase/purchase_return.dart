@@ -1159,7 +1159,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                     setState(() {
                       _isLoading = true;
                     });
-                    delete(context);
+                    deleteData();
+                    // delete(context);
                   } else {
                     showInSnackBar('No items found on bill');
                   } 
@@ -2243,7 +2244,7 @@ const SizedBox(
                         backgroundColor: red,
                         msg: '0 Rate Not Allowed');
                     }
-                    else{
+                    else {
                        setState(() {
                       unit ??= DataJson(id: 0, name: '');
                       rate = (controllerRate.text.isNotEmpty
@@ -5107,25 +5108,29 @@ const SizedBox(
       if (value) {
         cartItem.clear();
         clearValue();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Expanded(
-              child: AlertDialog(
-                title: const Text('Purchase Return Deleted'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushNamed(context, '/purchaseReturn');
-                    },
-                    child: const Text('CANCEL'),
-                  )
-                ],
-              ),
-            );
-          },
-        );
+        Navigator.pushReplacementNamed(context, '/purchaseReturn');
+        Fluttertoast.showToast(
+          backgroundColor: green,
+          msg: 'Purchase Return Deleted');  
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return Expanded(
+        //       child: AlertDialog(
+        //         title: const Text('Purchase Return Deleted'),
+        //         actions: [
+        //           TextButton(
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.pushReplacementNamed(context, '/purchaseReturn');
+        //             },
+        //             child: const Text('CANCEL'),
+        //           )
+        //         ],
+        //       ),
+        //     );
+        //   },
+        // );
       }
     });
   }

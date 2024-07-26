@@ -61,13 +61,17 @@ class _SalesReturnState extends State<SalesReturn> {
       isFreeItem = false,
       loading = false,
       newSalesReturn = false,
-      productTracking = false;
+      productTracking = false,
+      keyEditAndDeleteAdminOnlyDaysBefore = false,
+      daysBefore = false,
+      isFreeQty = false,
+      manualInvoiceNumberInSales = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
   String? formattedDate, _narration = '';
   final double _balance = 0;
   double grandTotal = 0;
-  int page = 1, pageTotal = 0, totalRecords = 0, decimal = 2;
+  int page = 1, pageTotal = 0, totalRecords = 0, decimal = 2,valueDaysBefore = 0;
   List<dynamic> ledgerDisplay = [];
   List<dynamic> _ledger = [];
   List<ProductPurchaseModel> itemDisplay = [];
@@ -139,6 +143,8 @@ class _SalesReturnState extends State<SalesReturn> {
 
     String cashAc =
         ComSettings.getValue('CASH A/C', settings!).toString().trim() ?? 'CASH';
+         acId = mainAccount
+        .firstWhere((element) => element['LedName'] == cashAc)['LedCode'];
     int cashId =
         ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
     acId = cashId > 0
@@ -168,13 +174,40 @@ class _SalesReturnState extends State<SalesReturn> {
 
     isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings!);
     isFreeItem = ComSettings.getStatus('KEY FREE ITEM', settings!);
+    isFreeQty = ComSettings.getStatus('KEY FREE QTY IN SALE', settings!);
     labelSerialNo =
         ComSettings.getValue('KEY ITEM SERIAL NO', settings!).toString();
     labelSpRate =
         ComSettings.getValue('KEY ITEM SP RATE TITLE', settings!).toString();
     labelSerialNo = labelSerialNo.isEmpty ? 'Remark' : labelSerialNo;
     labelSpRate = labelSpRate.isEmpty ? 'SpRetail' : labelSpRate;
+    keyEditAndDeleteAdminOnlyDaysBefore = ComSettings.getStatus(
+        'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!);
+    valueDaysBefore = int.tryParse(ComSettings.getValue(
+            'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!)
+        .toString())!;
+    manualInvoiceNumberInSales =
+        ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
     loadAsset();
+       userDateCheck(DateUtil.dateYMD(formattedDate!));
+  }
+
+  userDateCheck(String date) {
+    if (keyEditAndDeleteAdminOnlyDaysBefore) {
+      DateTime date1 =
+          DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.parse(date)));
+      DateTime date2 = DateTime.parse(DateFormat('yyyy-MM-dd').format(now));
+      if (DateUtil.compareDate(
+          date1: date1, date2: date2, days: valueDaysBefore)) {
+        if (companyUserData!.userType.toUpperCase() != 'ADMIN') {
+          daysBefore = true;
+        } else {
+          daysBefore = false;
+        }
+      } else {
+        daysBefore = false;
+      }
+    }
   }
 
   @override
@@ -628,8 +661,7 @@ class _SalesReturnState extends State<SalesReturn> {
           roundOff = CommonService.getRound(1, (1 - different));
         }
       }
-      var data = '[' +
-          json.encode({
+      var data = '[${json.encode({
             'statement': 'SalesReturnInsert',
             'entryNo': 0,
             'invoiceNo': '0',
@@ -682,8 +714,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'commissionAmount': 0,
             'bankName': '',
             'bankAmount': 0
-          }) +
-          ']';
+          })}]';
 
       final body = {
         'information': ledger,
@@ -698,8 +729,7 @@ class _SalesReturnState extends State<SalesReturn> {
           _isLoading = false;
         });
         if (value0 > 0) {
-          var data = '[' +
-              json.encode({
+          var data = '[${json.encode({
                 'statement': 'SREntryNo',
                 'entryNo': 0,
                 'invoiceNo': 0,
@@ -708,8 +738,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'returnNo': 0,
                 'returnAmount': 0,
                 'fyId': currentFinancialYear!.id
-              }) +
-              ']';
+              })}]';
 
           final body1 = {
             'information': ledger,
@@ -813,8 +842,7 @@ class _SalesReturnState extends State<SalesReturn> {
           roundOff = CommonService.getRound(1, (1 - different));
         }
       }
-      var data = '[' +
-          json.encode({
+      var data = '[${json.encode({
             'statement': 'SalesReturnUpdate',
             'entryNo': dataDynamic[0]['EntryNo'],
             'invoiceNo': dataDynamic[0]['InvoiceNo'],
@@ -862,8 +890,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'returnNo': 0,
             'returnAmount': 0,
             'fyId': currentFinancialYear!.id
-          }) +
-          ']';
+          })}]';
 
       final body = {
         'information': ledger,
@@ -893,15 +920,13 @@ class _SalesReturnState extends State<SalesReturn> {
   }
 
   deleteSale() {
-    var data = '[' +
-        json.encode({
+    var data = '[${json.encode({
           'statement': 'SalesReturnDelete',
           'entryNo': dataDynamic[0]['EntryNo'],
           'invoiceNo': dataDynamic[0]['InvoiceNo'],
           'saleFormId': saleFormId,
           'fyId': currentFinancialYear!.id
-        }) +
-        ']';
+        })}]';
     final body = {
       'information': '[{}]',
       'data': data,
@@ -919,25 +944,32 @@ class _SalesReturnState extends State<SalesReturn> {
           setReturnBillAmount = 0;
         }
         clearCart();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Expanded(
-              child: AlertDialog(
-                title: const Text('SalesReturn Deleted'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushNamed(context, '/salesReturn');
-                    },
-                    child: const Text('OK'),
-                  )
-                ],
-              ),
-            );
-          },
-        );
+        Navigator.pushReplacementNamed(context, '/salesReturn');
+        Fluttertoast.showToast(
+          backgroundColor: green,
+          msg: 'Sale Return Bill Deleted');  
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return Expanded(
+        //       child: AlertDialog(
+        //         title: const Text('Bill Deleted'),
+        //         titleTextStyle: const TextStyle(
+        //           fontFamily: 'poppins'
+        //         ),
+        //         actions: [
+        //           TextButton(
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.pushReplacementNamed(context, '/salesReturn');
+        //             },
+        //             child: const Text('OK'),
+        //           )
+        //         ],
+        //       ),
+        //     );
+        //   },
+        // );
       }
     });
     // dio.deleteSale(dataDynamic[0]['EntryNo'], saleFormId, '').then((value) {
@@ -2061,7 +2093,7 @@ var fetchedPrice;
         if (saleRate > 0) {
           if (_conversion > 0) {
             if (_focusNodeRate.hasFocus) {
-              rate = double.tryParse(_rateController.text)!;
+              rate = double.tryParse(_rateController.text)?? 0;
             } else {
               rate = saleRate * _conversion;
               _rateController.text = rate.toStringAsFixed(decimal);
