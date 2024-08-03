@@ -202,8 +202,8 @@ class _DashPageState extends State<DashPage> {
       charts.Series<ChartSales, String>(
         id: 'Sales',
         colorFn: (_, __) =>
-            // charts.ColorUtil.fromDartColor(kPrimaryColor),
-            charts.MaterialPalette.blue.shadeDefault,
+            charts.ColorUtil.fromDartColor(kPrimaryColor),
+            // charts.MaterialPalette.blue.shadeDefault,
         domainFn: (ChartSales sales, _) => sales.ddate!,
         measureFn: (ChartSales sales, _) => sales.amount,
         data: _salesData,

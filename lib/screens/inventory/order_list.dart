@@ -54,6 +54,7 @@ class _OrderListState extends State<OrderList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -105,6 +106,9 @@ class _OrderListState extends State<OrderList> {
           ],
           // ignore: prefer_const_constructors
           title: const Text('Order Report'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: loadReport
             ? reportView('Order Report')
@@ -134,7 +138,10 @@ class _OrderListState extends State<OrderList> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
           child: Column(
             children: [
               Card(

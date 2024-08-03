@@ -101,7 +101,10 @@ class _SerialNoListState extends State<SerialNoList> {
               },
             )
           ],
-          title: const Text('SerialNo List'),
+          title: const Text('Serial No List'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: loadReport ? reportView() : selectData());
   }
@@ -256,8 +259,12 @@ class _SerialNoListState extends State<SerialNoList> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -268,51 +275,109 @@ class _SerialNoListState extends State<SerialNoList> {
                         loadReport = true;
                       });
                     },
-                    child: const Text('Show'),
                     style: ButtonStyle(
+                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      )),
                       backgroundColor:
                           MaterialStateProperty.all<Color>(kPrimaryColor),
                       foregroundColor:
                           MaterialStateProperty.all<Color>(Colors.white),
                     ),
+                    child: const Text('Show'),
                   ),
                 ],
               ),
-              const Divider(),
-              DropdownButton<String>(
-                hint: const Text('Report Type'),
-                value: dropDownType,
-                items: reportType.map<DropdownMenuItem<String>>((value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    dropDownType = value;
-                  });
-                },
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(' Report Type',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 3,
+                  ),
+                   Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5
+                ),
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: grey
+                  ),
+                  borderRadius: BorderRadius.circular(3)
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    style: const TextStyle(
+                      fontFamily: 'poppins',
+                      color: black
+                    ),
+                    isExpanded: true,
+                    value: dropDownType,
+                    items: reportType.map<DropdownMenuItem<String>>((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        dropDownType = value;
+                      });
+                    },
+                  ),
+                ),
+              ),
+                ],
+              ),
+             
+              const SizedBox(
+                height: 8,
+              ),
+              Text(' Serial No',style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),),
+                  const SizedBox(
+                    height: 3,
+                  ),
               TextField(
                 controller: serialNoController,
                 decoration: const InputDecoration(
-                    border: OutlineInputBorder(), label: Text('Serial No')),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 8
+                  ),
+                  
+                    border: OutlineInputBorder(), ),
               ),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
+              const Text(" Select Item Name",style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),),
+              const SizedBox(
+                height: 3,
+              ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                 popupProps: PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
                 asyncItems: (String filter) =>
                     api.getSalesListData(filter, 'sales_list/itemName'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text("Select Item Name")),
+                    border: OutlineInputBorder(),),
                               ),
               
                 onChanged: (dynamic data) {
@@ -320,19 +385,27 @@ class _SerialNoListState extends State<SerialNoList> {
                 },
                
               ),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
+              Text(" Select Item MFR",style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),),
+                  const SizedBox(
+                    height: 3,
+                  ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                 popupProps: PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
                 asyncItems: (String filter) =>
                     api.getSalesListData(filter, 'sales_list/manufacture'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text("Select Item MFR")),
+                    border: OutlineInputBorder(),),
                               ),
                
                 onChanged: (dynamic data) {
@@ -340,19 +413,27 @@ class _SerialNoListState extends State<SerialNoList> {
                 },
              
               ),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
+              Text(" Select Category",style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),),
+                  const SizedBox(
+                    height: 3,
+                  ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                 popupProps: PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
                 asyncItems: (String filter) =>
                     api.getSalesListData(filter, 'sales_list/category'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text("Select Category")),
+                    border: OutlineInputBorder(), ),
                               ),
              
                 onChanged: (dynamic data) {
@@ -360,19 +441,27 @@ class _SerialNoListState extends State<SerialNoList> {
                 },
                 
               ),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
+              Text(" Select SubCategory",style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),),
+                  const SizedBox(
+                    height: 3,
+                  ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                 popupProps: PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
-                    constraints: BoxConstraints(
-                      maxHeight: 300,
-                    )),
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
                 asyncItems: (String filter) =>
                     api.getSalesListData(filter, 'sales_list/subCategory'),
                 dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text("Select SubCategory")),
+                    border: OutlineInputBorder(),),
                               ),
                
                 onChanged: (dynamic data) {
@@ -380,7 +469,7 @@ class _SerialNoListState extends State<SerialNoList> {
                 },
                 
               ),
-              const Divider(),
+              // const Divider(),
             ],
           ),
         ),

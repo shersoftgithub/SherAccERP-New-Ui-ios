@@ -23,6 +23,7 @@ class InventoryMenu extends StatelessWidget {
         children: [
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -60,6 +61,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -97,6 +99,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -139,6 +142,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -182,6 +186,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -220,6 +225,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -258,6 +264,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -296,6 +303,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -334,6 +342,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -372,6 +381,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -410,6 +420,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -448,6 +459,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -486,6 +498,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 2,
               child: Container(
@@ -524,6 +537,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -562,6 +576,7 @@ class InventoryMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(

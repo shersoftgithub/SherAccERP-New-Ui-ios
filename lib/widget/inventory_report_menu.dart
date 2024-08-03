@@ -19,6 +19,7 @@ class InventoryReportMenu extends StatelessWidget {
         children: <Widget>[
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -57,6 +58,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -93,6 +95,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -129,6 +132,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -165,6 +169,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -202,6 +207,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -239,6 +245,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -275,6 +282,7 @@ class InventoryReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(

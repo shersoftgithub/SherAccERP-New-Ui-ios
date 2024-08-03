@@ -1159,8 +1159,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                     setState(() {
                       _isLoading = true;
                     });
-                    deleteData();
-                    // delete(context);
+                    // deleteData();
+                    delete(context);
                   } else {
                     showInSnackBar('No items found on bill');
                   } 

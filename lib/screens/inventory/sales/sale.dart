@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_async_autocomplete/flutter_async_autocomplete.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -3610,8 +3609,8 @@ void _onTabTapped(int index) {
                                   _insert(
                                       'Delete DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${ledgerModel!.id} ${CartItem.encodeCartToJson(cartItem)}',
                                       0);
-                                      deleteSaleData();
-                                  // deleteSale(context);
+                                      // deleteSaleData();
+                                  deleteSale(context);
                                 } else {
                                   Fluttertoast.showToast(
                                       msg: 'Please select at least one bill');

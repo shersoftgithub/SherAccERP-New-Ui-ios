@@ -60,6 +60,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -331,22 +332,19 @@ class _SalesReturnListState extends State<SalesReturnList> {
               const SizedBox(
                 height: 10,
               ),
-              Card(
-                elevation: 2,
-                child: DropDownSettingsTile<int>(
-                  title: 'Branch',
-                  settingKey: 'key-dropdown-default-location-view',
-                  values: locationList.isNotEmpty
-                      ? {for (var e in locationList) e.key + 1: e.value}
-                      : {
-                          2: '',
-                        },
-                  selected: 2,
-                  onChange: (value) {
-                    debugPrint('key-dropdown-default-location-view: $value');
-                    dropDownBranchId = value - 1;
-                  },
-                ),
+              DropDownSettingsTile<int>(
+                title: 'Branch',
+                settingKey: 'key-dropdown-default-location-view',
+                values: locationList.isNotEmpty
+                    ? {for (var e in locationList) e.key + 1: e.value}
+                    : {
+                        2: '',
+                      },
+                selected: 2,
+                onChange: (value) {
+                  debugPrint('key-dropdown-default-location-view: $value');
+                  dropDownBranchId = value - 1;
+                },
               ),
               const SizedBox(
                 height: 10,
@@ -407,11 +405,13 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -429,11 +429,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -451,11 +452,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/customer'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -473,11 +475,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/manufacture'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -495,11 +498,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/category'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -517,11 +521,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -539,11 +544,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/salesMan'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -561,11 +567,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/project'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -583,11 +590,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(

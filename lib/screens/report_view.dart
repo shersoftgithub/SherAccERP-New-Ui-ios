@@ -55,6 +55,7 @@ class ReportView extends StatefulWidget {
 }
 
 class _ReportViewState extends State<ReportView> {
+  late Size size;
   var recdset;
   List<dynamic> displayedData = [];
   DioService api = DioService();
@@ -69,6 +70,7 @@ class _ReportViewState extends State<ReportView> {
   ];
 
   List<CompanySettings>? settings;
+  List<ReportDesign>? reportDesignList;
   List<ReportDesign>? reportDesign;
   CompanyInformation? companySettings;
   List<String> tableColumn = [];
@@ -100,8 +102,13 @@ class _ReportViewState extends State<ReportView> {
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
-    reportDesign = ScopedModel.of<MainModel>(context).getReportDesign();
+    reportDesignList = ScopedModel.of<MainModel>(context).getReportDesign();
     companyTaxNo = ComSettings.getValue('GST-NO', settings!);
+
+    var form = widget.type == 'ledger'
+        ? 'Ledger Report'
+        : widget.statement; //'ReceivblesDebitOnly';
+    api.getReportDesignByName(form).then((value) => reportDesign = value);
   }
 
   @override
@@ -120,6 +127,7 @@ class _ReportViewState extends State<ReportView> {
 
   @override
   Widget build(BuildContext context) {
+    size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
           actions: [
@@ -351,7 +359,7 @@ class _ReportViewState extends State<ReportView> {
           ],
           // title: Text(widget.type),
           title: Text(
-            'Ledger Report of ${tempLedgerData?.name ?? ''}',
+            'Ledger Report of ${(tempLedgerData != null ? tempLedgerData!.name : "")}',
             style: const TextStyle(fontSize: 12),
           ),
         ),
@@ -839,71 +847,82 @@ class _ReportViewState extends State<ReportView> {
                     const SizedBox(
                       height: 10,
                     ),
-                    // Expanded(
-                    //   child: SfDataGridTheme(
-                    //     data: SfDataGridThemeData(
-                    //       headerColor: Colors.blue
-                    //       ,gridLineColor:Colors.blue,
-                    //       filterIconColor:Colors.white
-                    //     ),
-                    //     child: SfDataGrid(
-                    //       headerRowHeight: 25,
-                    //       gridLinesVisibility: GridLinesVisibility.both,
-                    //       headerGridLinesVisibility: GridLinesVisibility.both,
-                    //       source: EmployeeDataSource(recdset),
-                    //       // allowSorting: true,
+                     Padding(
+                      padding: const EdgeInsets.only(left: 15.0, right: 10),
+                      child: Expanded(
+                        child: SfDataGridTheme(
+                          data: SfDataGridThemeData(
+                              headerColor: Colors.blue,
+                              gridLineColor: Colors.blue,
+                              filterIconColor: Colors.white),
+                          child: SfDataGrid(
+                            headerRowHeight: 25,
+                            gridLinesVisibility: GridLinesVisibility.both,
+                            headerGridLinesVisibility: GridLinesVisibility.both,
+                            source: EmployeeDataSource(recdset),
+                            // allowSorting: true,
 
-                    //       allowFiltering: true,
-                    //       columns: [
-                    //         GridColumn(
-                    //             width: 60,
-                    //             columnName: 'Date',
-                    //             label: const Text(
-                    //               ' Date',
-                    //               style: TextStyle(fontSize: 6,color: Colors.white),
-                    //             )),
-                    //         GridColumn(
-                    //             width: 100,
-                    //             columnName: 'Description',
-                    //             label: const Text(' Description',
-                    //                 style: TextStyle(fontSize: 6,color: Colors.white))),
-                    //         GridColumn(
-                    //             filterIconPadding: const EdgeInsets.all(0),
-                    //             width: 58,
-                    //             columnName: 'Debit',
-                    //             label:  Row(
-                    //               mainAxisAlignment: MainAxisAlignment.end,
-                    //               children: [
-                    //                 Text(
-                    //                   'Debit',
-                    //                   style: TextStyle(fontSize: 6,color: Colors.white),
-                    //                 ),
-                    //               ],
-                    //             )),
-                    //         GridColumn(
-                    //             filterIconPadding: const EdgeInsets.all(0),
-                    //             width: 58,
-                    //             columnName: 'Credit',
-                    //             label:  Row(
-                    //               mainAxisAlignment: MainAxisAlignment.end,
-                    //               children: [
-                    //                 Text('Credit', style: TextStyle(fontSize: 6,color: Colors.white)),
-                    //               ],
-                    //             )),
-                    //         GridColumn(
-                    //             filterIconPadding: const EdgeInsets.all(0),
-                    //             width: 70,
-                    //             columnName: 'Balance',
-                    //             label:  Row(
-                    //               mainAxisAlignment: MainAxisAlignment.end,
-                    //               children: [
-                    //                 Text('Balance', style: TextStyle(fontSize: 6,color: Colors.white)),
-                    //               ],
-                    //             )),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
+                     allowFiltering: true,
+                            columns: [
+                              GridColumn(
+                                  width: size.width * 0.2,
+                                  columnName: 'Date',
+                                  label: const Text(
+                                    ' Date',
+                                    style: TextStyle(
+                                        fontSize: 6, color: Colors.white),
+                                  )),
+                              GridColumn(
+                                  width: 100,
+                                  columnName: 'Description',
+                                  label: const Text(' Description',
+                                      style: TextStyle(
+                                          fontSize: 6, color: Colors.white))),
+                              GridColumn(
+                                  filterIconPadding: const EdgeInsets.all(0),
+                                  width: 58,
+                                  columnName: 'Debit',
+                                  label: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Debit',
+                                        style: TextStyle(
+                                            fontSize: 6, color: Colors.white),
+                                      ),
+                                    ],
+                                  )),
+                              GridColumn(
+                                  filterIconPadding: const EdgeInsets.all(0),
+                                  width: 58,
+                                  columnName: 'Credit',
+                                  label: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text('Credit',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              color: Colors.white)),
+                                    ],
+                                  )),
+                              GridColumn(
+                                  filterIconPadding: const EdgeInsets.all(0),
+                                  width: 70,
+                                  columnName: 'Balance',
+                                  label: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Text('Balance',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              color: Colors.white)),
+                                    ],
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               }
@@ -919,7 +938,7 @@ class _ReportViewState extends State<ReportView> {
               var data = snapshot.data;
               if (widget.statement == 'Ledger_Report_Qty') {
                 var filterItems = data;
-                for (ReportDesign design in reportDesign!) {
+                for (ReportDesign design in reportDesignList!) {
                   if (!design.visibility) {
                     for (var item in filterItems!) {
                       item.remove(design.caption.trim());
@@ -931,6 +950,15 @@ class _ReportViewState extends State<ReportView> {
                 //     (element) => element.keys. =>  == singleItem.keys.first);
                 debugPrint(filterItems.toString());
                 data = filterItems;
+                   } else {
+                var filterItems = data;
+                for (ReportDesign design in reportDesign!) {
+                  if (!design.visibility) {
+                    for (var item in filterItems!) {
+                      item.remove(design.caption.replaceAll(' ', '').trim());
+                    }
+                  }
+                }
               }
               tableColumn = data![0].keys.toList();
               if (widget.type == 'Invoice Wise Balance Customers' ||
@@ -1054,13 +1082,10 @@ class _ReportViewState extends State<ReportView> {
                 ),
               );
             } else {
-              return Center(
+              return const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    SizedBox(height: 20),
-                    Text('No Data Found..')
-                  ],
+                     children: [SizedBox(height: 20), Text('No Data Found..')],
                 ),
               );
             }
@@ -2102,9 +2127,9 @@ class _ReportViewState extends State<ReportView> {
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
                         headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
+                            (states) => kPrimaryColor),
                         border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                            TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -2116,7 +2141,7 @@ class _ReportViewState extends State<ReportView> {
                                 child: Text(
                                   tableColumn[i],
                                   style: const TextStyle(
-                                      // color: Colors.black,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
@@ -2735,9 +2760,9 @@ class _ReportViewState extends State<ReportView> {
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
                         headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
+                            (states) => kPrimaryColor),
                         border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                            TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -3153,9 +3178,10 @@ class _ReportViewState extends State<ReportView> {
                               child: Column(
                                 children: [
                                   DataTable(
+                                    headingRowColor: MaterialStatePropertyAll(kPrimaryColor),
                                     border: TableBorder.all(
                                         width: 1.0,
-                                        color: black,
+                                        color: grey,
                                         style: BorderStyle.solid),
                                     columnSpacing: 12,
                                     dataRowHeight: 20,
@@ -3268,9 +3294,10 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumnIncome.isEmpty
                                       ? const Center()
                                       : DataTable(
+                                        headingRowColor: MaterialStatePropertyAll(kPrimaryColor),
                                           border: TableBorder.all(
                                               width: 1.0,
-                                              color: black,
+                                              color: grey,
                                               style: BorderStyle.solid),
                                           columnSpacing: 12,
                                           dataRowHeight: 20,
@@ -3334,9 +3361,10 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumnExpense.isEmpty
                                       ? const Center()
                                       : DataTable(
+                                        headingRowColor: MaterialStatePropertyAll(kPrimaryColor),
                                           border: TableBorder.all(
                                               width: 1.0,
-                                              color: black,
+                                              color: grey,
                                               style: BorderStyle.solid),
                                           columnSpacing: 12,
                                           dataRowHeight: 20,
@@ -3400,9 +3428,10 @@ class _ReportViewState extends State<ReportView> {
                                   tableColumnTotal.isEmpty
                                       ? const Center()
                                       : DataTable(
+                                        headingRowColor: MaterialStatePropertyAll(kPrimaryColor),
                                           border: TableBorder.all(
                                               width: 1.0,
-                                              color: black,
+                                              color: grey,
                                               style: BorderStyle.solid),
                                           columnSpacing: 12,
                                           dataRowHeight: 20,
@@ -3464,6 +3493,7 @@ class _ReportViewState extends State<ReportView> {
                                       height: 30,
                                       width: 350),
                                   DataTable(
+                                    headingRowColor: MaterialStatePropertyAll(kPrimaryColor),
                                     border: TableBorder.all(
                                         width: 0.5,
                                         color: grey,
@@ -3533,9 +3563,9 @@ class _ReportViewState extends State<ReportView> {
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
                               headingRowColor: MaterialStateColor.resolveWith(
-                                  (states) => Colors.grey.shade200),
+                                  (states) => kPrimaryColor),
                               border: TableBorder.all(
-                                  width: 1.0, color: Colors.black),
+                                  width: 1.0, color: grey),
                               columnSpacing: 12,
                               dataRowHeight: 20,
                               headingRowHeight: 30,
@@ -3547,8 +3577,9 @@ class _ReportViewState extends State<ReportView> {
                                       child: Text(
                                         tableColumn[i],
                                         style: const TextStyle(
-                                            // color: Colors.black,
-                                            fontWeight: FontWeight.bold),
+                                            color: Colors.white,
+                                            fontFamily: 'poppins'
+                                        ),
                                         textAlign: TextAlign.center,
                                       ),
                                     ),
@@ -4976,22 +5007,22 @@ class EmployeeDataSource extends DataGridSource {
 
   void buildDataGridRows() {
     dataGridRows = _employees!.map<DataGridRow>((e) {
-      var showDetails = e.particulars == 'Opening Balance' ||
-              e.particulars == 'Closing Balance'
-          ? ' ${e.particulars}'
-          : e.particulars.isNotEmpty
-              ? ' Voucher:${e.voucher}\n No:${e.entryNo}\n ${e.particulars}'
+      var showDetails = e['Particulars'] == 'Opening Balance' ||
+              e['Particulars'] == 'Closing Balance'
+          ? ' ${e['Particulars']}'
+          : e['Particulars'].isNotEmpty
+              ? ' Voucher:${e['Voucher']}\n No:${e['EntryNo']}\n ${e['Particulars']}'
               : '';
 
       return DataGridRow(cells: [
         DataGridCell<String>(
           columnName: 'Date',
-          value: ' ${e.date}',
+          value: ' ${e['Date']}',
         ),
         DataGridCell<String>(columnName: 'Description', value: showDetails),
-        DataGridCell<String>(columnName: 'Debit', value: '${e.debit} '),
-        DataGridCell<String>(columnName: 'Credit', value: '${e.credit} '),
-        DataGridCell<String>(columnName: 'Balance', value: '${e.balance} '),
+         DataGridCell<String>(columnName: 'Debit', value: '${e['Debit']} '),
+        DataGridCell<String>(columnName: 'Credit', value: '${e['Credit']} '),
+        DataGridCell<String>(columnName: 'Balance', value: '${e['Balance']} '),
       ]);
     }).toList();
   }

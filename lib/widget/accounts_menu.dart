@@ -19,6 +19,7 @@ class AccountsMenu extends StatelessWidget {
         children: <Widget>[
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -58,6 +59,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -94,6 +96,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -131,6 +134,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -168,6 +172,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -205,6 +210,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -241,6 +247,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -277,6 +284,7 @@ class AccountsMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(

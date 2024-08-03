@@ -20,6 +20,7 @@ class AccountsReportMenu extends StatelessWidget {
         children: <Widget>[
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -60,6 +61,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -100,6 +102,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -140,6 +143,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -180,6 +184,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -220,6 +225,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -260,6 +266,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -297,6 +304,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -337,6 +345,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -390,6 +399,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -443,6 +453,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -483,6 +494,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -524,6 +536,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -564,6 +577,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -604,6 +618,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -657,6 +672,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -696,6 +712,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -737,6 +754,7 @@ class AccountsReportMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -774,6 +792,90 @@ class AccountsReportMenu extends StatelessWidget {
                 context,
                 '/select_ledger',
               );
+            },
+          ),
+          GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_salesman_report.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Salesman Report',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              argumentsPass = '';
+              Navigator.pushNamed(
+                context,
+                '/salesManReport',
+              );
+            },
+          ),
+          GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_verify_cashbook.png'),
+                            scale: 1.7
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Verify Cash Book',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              // argumentsPass = {'mode': 'InvoiceWiseBalanceSuppliers'};
+            // Navigator.pushNamed(
+            //   context,
+            //   '/select_ledger',
+            // );
             },
           ),
         ],

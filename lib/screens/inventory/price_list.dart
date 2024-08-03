@@ -93,6 +93,9 @@ class _PriceListState extends State<PriceList> {
                   );
                 }),
           ],
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           title: const Text('Price List'),
         ),
         body: loadReport ? report() : const Loading());
@@ -115,10 +118,15 @@ class _PriceListState extends State<PriceList> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(6.0),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 5
+                  ),
+                  border: const OutlineInputBorder(),
                   labelText: 'Search by name',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
@@ -141,8 +149,8 @@ class _PriceListState extends State<PriceList> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 headingRowColor: MaterialStateColor.resolveWith(
-                    (states) => Colors.grey.shade200),
-                border: TableBorder.all(width: 1.0, color: Colors.black),
+                    (states) => kPrimaryColor),
+                border: TableBorder.all(width: 1.0, color: grey),
                 columnSpacing: 12,
                 dataRowHeight: 20,
                 headingRowHeight: 30,
@@ -153,7 +161,10 @@ class _PriceListState extends State<PriceList> {
                         alignment: Alignment.center,
                         child: Text(
                           col[i],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: white,
+                            fontFamily: 'poppins'
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),

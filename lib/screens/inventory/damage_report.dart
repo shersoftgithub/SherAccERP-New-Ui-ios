@@ -54,6 +54,7 @@ class _DamageReportState extends State<DamageReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -327,8 +328,7 @@ class _DamageReportState extends State<DamageReport> {
               const SizedBox(
                 height: 10,
               ),
-              Card(
-                elevation: 2,
+              DropdownButtonHideUnderline(
                 child: DropDownSettingsTile<int>(
                   title: 'Branch',
                   settingKey: 'key-dropdown-default-location-view',
@@ -403,11 +403,12 @@ class _DamageReportState extends State<DamageReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -425,11 +426,12 @@ class _DamageReportState extends State<DamageReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(

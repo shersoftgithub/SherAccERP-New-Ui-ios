@@ -93,6 +93,7 @@ class _SalesManReportState extends State<SalesManReport> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -106,12 +107,12 @@ class _SalesManReportState extends State<SalesManReport> {
               icon: const Icon(Icons.share_rounded),
               itemBuilder: (context) => [
                 const PopupMenuItem(
-                  child: Text('PDF'),
                   value: 1,
+                  child: Text('PDF'),
                 ),
                 const PopupMenuItem(
-                  child: Text('CSV'),
                   value: 2,
+                  child: Text('CSV'),
                 ),
               ],
               onSelected: (menuId) {
@@ -147,7 +148,7 @@ class _SalesManReportState extends State<SalesManReport> {
               },
             )
           ],
-          title: Text(title),
+          title: Text(title ?? 'Salesman Report'),
         ),
         body: loadReport ? reportView(title) : selectData(title));
   }
@@ -249,9 +250,9 @@ class _SalesManReportState extends State<SalesManReport> {
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
                         headingRowColor: MaterialStateColor.resolveWith(
-                            (states) => Colors.grey.shade200),
+                            (states) => kPrimaryColor),
                         border:
-                            TableBorder.all(width: 1.0, color: Colors.black),
+                            TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
                         dataRowHeight: 20,
                         headingRowHeight: 30,
@@ -263,7 +264,9 @@ class _SalesManReportState extends State<SalesManReport> {
                                 child: Text(
                                   col[i],
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                    fontFamily: 'poppins',
+                                    color: white,
+                                      ),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -361,115 +364,200 @@ class _SalesManReportState extends State<SalesManReport> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
           child: Column(
             children: [
-              Card(
-                elevation: 0.5,
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     const Text(
-                      ' From : ',
+                      ' From  ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
                     ),
-                    InkWell(
-                      child: Text(
-                        fromDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)
                       ),
-                      onTap: () => _selectDate('f'),
+                      child: InkWell(
+                        child: Row(
+                          children: [
+                            Text(
+                              fromDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500, 
+                                  fontSize: 15),
+                            ),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            const Icon(
+                              Icons.calendar_month,
+                              color: grey,
+                              size: 18,)
+                          ],
+                        ),
+                        onTap: () => _selectDate('f'),
+                      ),
                     ),
+                    const Spacer(),
                     const Text(
                       ' To : ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
                     ),
-                    InkWell(
-                      child: Text(
-                        toDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)
                       ),
-                      onTap: () => _selectDate('t'),
+                      child: InkWell(
+                        child: Row(
+                          children: [
+                            Text(
+                              toDate!,
+                              style: const TextStyle(
+                                      fontWeight: FontWeight.w500, 
+                                      fontSize: 15),
+                            ),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            const Icon(
+                              Icons.calendar_month,
+                              color: grey,
+                              size: 18,)
+                          ],
+                        ),
+                        onTap: () => _selectDate('t'),
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Divider(),
-              Card(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    const Text('Report Type'),
-                    DropdownButton(
-                      value: voucherType,
-                      items: dropdownFormType.map((TypeItem item) {
-                        return DropdownMenuItem<int>(
-                          child: Text(item.name),
-                          value: item.id,
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          voucherType = int.parse(value.toString());
-                        });
-                        var form = voucherType == 1
-                            ? 'Employee List'
-                            : voucherType == 2
-                                ? 'Collection Report'
-                                : voucherType == 3
-                                    ? 'Balance Report'
-                                    : voucherType == 4
-                                        ? 'Sales And Receipt Age Wise'
-                                        : voucherType == 5
-                                            ? 'All Collection Report'
-                                            : voucherType == 6
-                                                ? 'SalesMan Proficiency'
-                                                : voucherType == 7
-                                                    ? 'PT Based Commision Report'
-                                                    : voucherType == 8
-                                                        ? 'E-Commerce Employee Commision'
-                                                        : voucherType == 9
-                                                            ? 'Total Collection'
-                                                            : '';
-                        api
-                            .getReportDesignByName(form)
-                            .then((value) => reportDesign = value);
-                      },
-                    ),
-                  ],
-                ),
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(' Report Type',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(color: grey)
+                          ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        isExpanded: true,
+                        value: voucherType,
+                        items: dropdownFormType.map((TypeItem item) {
+                          return DropdownMenuItem<int>(
+                            child: Text(item.name),
+                            value: item.id,
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            voucherType = int.parse(value.toString());
+                          });
+                          var form = voucherType == 1
+                              ? 'Employee List'
+                              : voucherType == 2
+                                  ? 'Collection Report'
+                                  : voucherType == 3
+                                      ? 'Balance Report'
+                                      : voucherType == 4
+                                          ? 'Sales And Receipt Age Wise'
+                                          : voucherType == 5
+                                              ? 'All Collection Report'
+                                              : voucherType == 6
+                                                  ? 'SalesMan Proficiency'
+                                                  : voucherType == 7
+                                                      ? 'PT Based Commision Report'
+                                                      : voucherType == 8
+                                                          ? 'E-Commerce Employee Commision'
+                                                          : voucherType == 9
+                                                              ? 'Total Collection'
+                                                              : '';
+                          api
+                              .getReportDesignByName(form)
+                              .then((value) => reportDesign = value);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 8,
+              ),
               argPass.isEmpty
-                  ? DropdownSearch<dynamic>(
-                      popupProps:
-                          const PopupPropsMultiSelection.modalBottomSheet(
-                        showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300),
+                  ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(' Select Salesman',
+                      style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
                       ),
-                      asyncItems: (String? filter) =>
-                          api.getSalesListData(filter, 'sales_list/salesMan'),
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                          dropdownSearchDecoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: "Select SalesMan")),
-                      onChanged: (dynamic data) {
-                        salesMan = int.parse(data.id.toString());
-                      },
-                    )
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      DropdownSearch<dynamic>(
+                          popupProps:
+                              const PopupPropsMultiSelection.dialog(
+                            showSearchBox: true,
+                            // constraints: BoxConstraints(maxHeight: 300),
+                          ),
+                          asyncItems: (String? filter) =>
+                              api.getSalesListData(filter, 'sales_list/salesMan'),
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  )),
+                          onChanged: (dynamic data) {
+                            salesMan = int.parse(data.id.toString());
+                          },
+                        ),
+                    ],
+                  )
                   : Container(),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
               areaDataList.isNotEmpty
                   ? ExpansionTile(
                       title: const Text('Area List'),
                       children: _getChildren(areaDataList),
                     )
                   : Container(),
-              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
               TextButton(
                 onPressed: () {
                   if (voucherType > 0) {
@@ -482,15 +570,18 @@ class _SalesManReportState extends State<SalesManReport> {
                         const SnackBar(content: Text('Select Report Type')));
                   }
                 },
-                child: const Text('Show'),
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  )),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                 ),
+                child: const Text('Show'),
               ),
-              const Divider()
+              // const Divider()
             ],
           ),
         ),

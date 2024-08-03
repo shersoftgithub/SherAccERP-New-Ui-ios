@@ -918,6 +918,27 @@ class _SalesReturnState extends State<SalesReturn> {
       });
     }
   }
+  delete(context) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+          setState(() {
+            _isLoading = false;
+          });
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          deleteSale();
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage: 'Do you want to Delete',
+        title: 'Delete Bill',
+        context: context);
+  }
 
   deleteSale() {
     var data = '[${json.encode({
@@ -1687,7 +1708,8 @@ class _SalesReturnState extends State<SalesReturn> {
                           setState(() {
                             _isLoading = true;
                           });
-                          deleteSale();
+                          delete(context);
+                          // deleteSale();
                         } else {
                           Fluttertoast.showToast(
                               msg: 'Permission denied\ncan`t delete');

@@ -110,6 +110,7 @@ class _StockReportState extends State<StockReport> {
   Widget build(BuildContext context) {
     return loadReport
         ? Scaffold(
+          backgroundColor: bagroundColor,
             appBar: AppBar(
               actions: [
                 IconButton(
@@ -677,11 +678,12 @@ class _StockReportState extends State<StockReport> {
               visible: isAdminUser,
               child: ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -758,11 +760,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/ItemCode'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -780,11 +783,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/itemName'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -802,11 +806,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/manufacture'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -824,11 +829,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/category'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -846,11 +852,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/subCategory'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -868,11 +875,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/rack'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -890,11 +898,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/taxGroup'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -912,11 +921,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/supplier'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -934,11 +944,12 @@ class _StockReportState extends State<StockReport> {
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
-                  popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       showSearchBox: true,
-                      constraints: BoxConstraints(
-                        maxHeight: 300,
-                      )),
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 300,
+                      // )
+                      ),
                   asyncItems: (String filter) =>
                       api.getSalesListData(filter, 'sales_list/unit'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1061,11 +1072,12 @@ class _StockReportState extends State<StockReport> {
                 visible: isAdminUser,
                 child: ContainerFieldWidget(
                     widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1134,11 +1146,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1156,11 +1169,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1178,11 +1192,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/manufacture'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1200,11 +1215,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/category'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1222,11 +1238,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1244,11 +1261,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/rack'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1266,11 +1284,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -1288,11 +1307,12 @@ class _StockReportState extends State<StockReport> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(
-                          maxHeight: 300,
-                        )),
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 300,
+                        // )
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/supplier'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(

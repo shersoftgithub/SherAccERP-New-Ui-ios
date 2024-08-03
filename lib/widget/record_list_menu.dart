@@ -22,6 +22,7 @@ class RecordListMenu extends StatelessWidget {
         children: <Widget>[
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -73,6 +74,7 @@ class RecordListMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -124,6 +126,7 @@ class RecordListMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(
@@ -175,6 +178,7 @@ class RecordListMenu extends StatelessWidget {
           ),
           GestureDetector(
             child: Card(
+              surfaceTintColor: grey,
               color: white,
               elevation: 4,
               child: Container(

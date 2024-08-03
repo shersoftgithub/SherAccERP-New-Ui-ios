@@ -81,6 +81,7 @@ class _PurchaseListState extends State<PurchaseList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -138,7 +139,6 @@ class _PurchaseListState extends State<PurchaseList> {
           title: const Text(
             'Purchase Report',
             style: TextStyle(
-                fontWeight: FontWeight.w500,
                 // fontSize: 15,
                 fontFamily: 'poppins'),
           ),
@@ -501,9 +501,10 @@ class _PurchaseListState extends State<PurchaseList> {
               // ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -592,9 +593,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -612,9 +614,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -632,9 +635,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/supplier'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -652,9 +656,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/manufacture'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -672,9 +677,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/category'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -692,9 +698,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -712,9 +719,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/salesMan'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -732,9 +740,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/project'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -752,9 +761,10 @@ class _PurchaseListState extends State<PurchaseList> {
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                    popupProps: const PopupPropsMultiSelection.dialog(
                         showSearchBox: true,
-                        constraints: BoxConstraints(maxHeight: 300)),
+                        // constraints: BoxConstraints(maxHeight: 300)
+                        ),
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(

@@ -5232,25 +5232,29 @@ selectLedgerWidget() {
       if (value) {
         cartItem.clear();
         clearValue();
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Expanded(
-              child: AlertDialog(
-                title: const Text('Purchase Order Deleted'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacementNamed(context, '/purchaseOrder');
-                    },
-                    child: const Text('CANCEL'),
-                  )
-                ],
-              ),
-            );
-          },
-        );
+        Navigator.pushReplacementNamed(context, '/purchaseOrder');
+         Fluttertoast.showToast(
+          backgroundColor: green,
+          msg: 'Sale Bill Deleted'); 
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     return Expanded(
+        //       child: AlertDialog(
+        //         title: const Text('Purchase Order Deleted'),
+        //         actions: [
+        //           TextButton(
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.pushReplacementNamed(context, '/purchaseOrder');
+        //             },
+        //             child: const Text('CANCEL'),
+        //           )
+        //         ],
+        //       ),
+        //     );
+        //   },
+        // );
       }
     });
   }

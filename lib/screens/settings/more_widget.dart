@@ -174,8 +174,9 @@ class SettingsMenu extends StatelessWidget {
           children: <Widget>[
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -234,8 +235,9 @@ class SettingsMenu extends StatelessWidget {
             // ),
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -271,8 +273,9 @@ class SettingsMenu extends StatelessWidget {
             ),
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -307,8 +310,9 @@ class SettingsMenu extends StatelessWidget {
             ),
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -345,8 +349,9 @@ class SettingsMenu extends StatelessWidget {
             ),
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(
@@ -383,8 +388,9 @@ class SettingsMenu extends StatelessWidget {
             ),
             GestureDetector(
               child: Card(
+                surfaceTintColor: grey,
                 color: white,
-                elevation: 1,
+                elevation: 4,
                 child: Container(
                   padding: const EdgeInsets.all(0),
                   child: Column(

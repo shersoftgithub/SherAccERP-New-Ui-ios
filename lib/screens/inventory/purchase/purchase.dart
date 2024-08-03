@@ -2504,12 +2504,12 @@ class _PurchaseState extends State<Purchase> {
                                         setState(() {
                                           _isLoading = true;
                                         });
-                                        // delete(context);
-                                        deleteData();
-                                        Fluttertoast.showToast(
-                                                backgroundColor: green,
-                                                msg: 'Purchase Bill Deleted');
-                                              Navigator.pushReplacementNamed(context, '/purchase');
+                                        delete(context);
+                                        // deleteData();
+                                        // Fluttertoast.showToast(
+                                        //         backgroundColor: green,
+                                        //         msg: 'Purchase Bill Deleted');
+                                        //       Navigator.pushReplacementNamed(context, '/purchase');
                                       } else {
                                         showInSnackBar(
                                             'No items found on bill');
@@ -10283,6 +10283,10 @@ class _PurchaseState extends State<Purchase> {
       if (value) {
         cartItem.clear();
         clearValue();
+        Navigator.pushReplacementNamed(context, '/purchase');
+        Fluttertoast.showToast(
+          backgroundColor: green,
+          msg: 'Sale Bill Deleted'); 
         // showDialog(
         //   context: context,
         //   builder: (BuildContext context) {

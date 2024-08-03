@@ -1,10 +1,12 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_parent.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
+import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/screens/report_view.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -46,6 +48,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
   @override
   void initState() {
     super.initState();
+    settings = ScopedModel.of<MainModel>(context).getSettings();
     fromDate = DateUtil.datePickerDMY(now);
     toDate = DateUtil.datePickerDMY(now);
     Map arguments = argumentsPass;
@@ -260,6 +263,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
       appBar: AppBar(
         actions: [
           IconButton(
@@ -355,7 +359,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _ledger,
+                  _ledger, 
                   style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       color: kPrimaryColor,
@@ -2189,13 +2193,14 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         widget: DropdownSearch<
                                                             dynamic>(
                                                           popupProps: const PopupPropsMultiSelection
-                                                              .modalBottomSheet(
+                                                              .dialog(
                                                               showSearchBox:
                                                                   true,
-                                                              constraints:
-                                                                  BoxConstraints(
-                                                                maxHeight: 300,
-                                                              )),
+                                                              // constraints:
+                                                              //     BoxConstraints(
+                                                              //   maxHeight: 300,
+                                                              // )
+                                                              ),
                                                           asyncItems: (String
                                                                   filter) =>
                                                               api.getSalesListData(
@@ -3496,7 +3501,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           },
                                                                         ),
                                                                         headTxt:
-                                                                            'Select Branc'),
+                                                                            'Select Branch'),
                                                                     const SizedBox(
                                                                       height:
                                                                           10,
