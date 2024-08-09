@@ -54,6 +54,7 @@ class _BillListState extends State<BillList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             IconButton(
@@ -105,6 +106,9 @@ class _BillListState extends State<BillList> {
           ],
           // ignore: prefer_const_constructors
           title: const Text('Order Report'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: loadReport
             ? reportView('Order Report')
@@ -133,37 +137,95 @@ class _BillListState extends State<BillList> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10
+          ),
           child: Column(
             children: [
-              Card(
-                elevation: 0.5,
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     const Text(
-                      'From : ',
+                      'From  ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500
+                          ),
                     ),
                     InkWell(
-                      child: Text(
-                        fromDate,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: grey)
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              fromDate,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'poppins',
+                                   fontSize: 14),
+                            ),
+                            const SizedBox(
+                              width: 3,
+                            ),
+                            const Icon(Icons.calendar_month,
+                            color: grey,
+                            size: 18,
+                            )
+                          ],
+                        ),
                       ),
                       onTap: () => _selectDate('f'),
                     ),
+                    const Spacer(),
                     const Text(
-                      'To : ',
+                      'To  ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500
+                          ),
                     ),
                     InkWell(
-                      child: Text(
-                        toDate,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: grey)
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              toDate,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: 'poppins',
+                                   fontSize: 14),
+                            ),
+                            const SizedBox(
+                              width: 3,
+                            ),
+                            const Icon(Icons.calendar_month,
+                            color: grey,
+                            size: 18,
+                            )
+                          ],
+                        ),
                       ),
                       onTap: () => _selectDate('t'),
                     ),
@@ -171,7 +233,9 @@ class _BillListState extends State<BillList> {
                 ),
               ),
 
-              const Divider(),
+              const SizedBox(
+                height: 10,
+              ),
               // Card(
               // elevation: 2,
               // child: DropDownSettingsTile<int>(
@@ -196,13 +260,18 @@ class _BillListState extends State<BillList> {
                     loadReport = true;
                   });
                 },
-                child: const Text('Show'),
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)
+                    )
+                  ),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:
                       MaterialStateProperty.all<Color>(Colors.white),
                 ),
+                child: const Text('Show'),
               ),
             ],
           ),

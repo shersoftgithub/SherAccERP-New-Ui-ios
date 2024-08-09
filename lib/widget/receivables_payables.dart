@@ -9,10 +9,11 @@ import 'package:sheraccerp/widget/loading.dart';
 import 'package:easy_pie_chart/easy_pie_chart.dart';
 import 'package:intl/intl.dart';
 class ReceivablesAndPayables extends StatelessWidget {
+  final bool isAppbar;
   DioService api = DioService();
   var dropDownBranchId;
 
-  ReceivablesAndPayables({Key? key}) : super(key: key);
+  ReceivablesAndPayables({Key? key, required this.isAppbar}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +25,14 @@ class ReceivablesAndPayables extends StatelessWidget {
     }
     return Scaffold(
       backgroundColor: bagroundColor,
-      appBar: PreferredSize(
+      appBar:isAppbar ? PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: AppbarWidgget(
             headTxt: 'Recivable & Payable',
             onPressed: () {
               Navigator.pop(context);
             },
-          )),
+          )): null,
       body:
       FutureBuilder(
     future: api.fetchReceivableAndPayable('2000-01-01', '2000-01-01', dropDownBranchId),

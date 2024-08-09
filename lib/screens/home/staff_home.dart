@@ -182,7 +182,8 @@ class _StaffHomeState extends State<StaffHome> with TickerProviderStateMixin {
         length: 7,
         child: Scaffold(
           appBar: AppBar(
-            // title: Text(""),
+            titleSpacing: -30,
+            toolbarHeight: 80,
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -192,24 +193,108 @@ class _StaffHomeState extends State<StaffHome> with TickerProviderStateMixin {
               )
             ],
             elevation: .1,
-            title: const TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.dashboard), text: "Today"),
-                Tab(icon: Icon(Icons.inventory), text: "Inventory"),
-                Tab(icon: Icon(Icons.account_balance), text: "Accounts"),
-                Tab(
-                    icon: Icon(Icons.assignment_outlined),
-                    text: "Account Report"),
-                Tab(
-                    icon: Icon(Icons.assignment_outlined),
-                    text: "Inventory Report"),
-                Tab(icon: Icon(Icons.assignment_outlined), text: "Record List"),
-                Tab(
-                    icon: Icon(Icons.settings_applications_outlined),
-                    text: "Settings"),
-              ],
-              isScrollable: true,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold),
+            title: Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child:  TabBar(
+                dividerColor: kPrimaryColor,
+                    indicator: const BoxDecoration(color: kPrimaryColor),
+                tabs: [
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/today_icon.png'),
+                        const Text(
+                          'Today',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Inventory_icon.png'),
+                        const Text(
+                          'Inventory',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/accounts_icon.png'),
+                        const Text(
+                          'Accounts',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(
+                       child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/accounts_report_icon.png'),
+                        const Text(
+                          'Account Report',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab( child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Inventory_report_icon.png'),
+                        const Text(
+                          'Inventory Report',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab( child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/record_icon.png'),
+                        const Text(
+                          'Record List',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Settings_icon.png'),
+                        const Text(
+                          'Settings',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                ],
+                isScrollable: true,
+                labelStyle: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           body: TabBarView(

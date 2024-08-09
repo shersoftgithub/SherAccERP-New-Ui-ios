@@ -190,7 +190,7 @@ class _ProductRegisterState extends State<ProductRegister> {
     }
     deviceSize = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: white,
+      backgroundColor: bagroundColor,
       key: _scaffoldKey,
       appBar: AppBar(
         actions: [
@@ -255,7 +255,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                     }
                   }
                 },
-                icon: const Icon(Icons.delete_forever)),
+                icon: Image.asset('assets/icons/ic_delete.png',scale: 3.3,)),
           ),
           isExist
               ? IconButton(
@@ -381,7 +381,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       showInSnackBar(result.toString());
                     }
                   },
-                  icon: const Icon(Icons.edit))
+                  icon: Image.asset('assets/icons/ic_edit.png',scale: 3.3,))
               : IconButton(
                   color: white,
                   iconSize: 40,
@@ -506,9 +506,12 @@ class _ProductRegisterState extends State<ProductRegister> {
                       showInSnackBar(result.toString());
                     }
                   },
-                  icon: const Icon(Icons.save)),
+                  icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
         ],
         title: const Text('Product Register'),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins'
+        ),
       ),
       body: ProgressHUD(
           inAsyncCall: _isLoading, opacity: 0.0, child: formWidget()),

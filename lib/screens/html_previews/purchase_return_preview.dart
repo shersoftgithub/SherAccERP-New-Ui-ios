@@ -2745,7 +2745,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
                                                   Column(
                                                     children: [
                                                       SizedBox(
-                                                          height: 40,
+                                                          // height: 40,
                                                           child: Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
@@ -2852,6 +2852,7 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
                                                           )),
                                                     ],
                                                   ),
+                                                  Spacer(),
                                                   const Text(
                                                     "Certified that the particular given above are true and Correct",
                                                     style: TextStyle(

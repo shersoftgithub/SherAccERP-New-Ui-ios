@@ -18,6 +18,7 @@ import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/screens/html_previews/purchase_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -519,8 +520,14 @@ class _PurchaseState extends State<Purchase> {
           ],
           title: const Text('Purchase'),
         ),
-        body: Container(
-          child: previousBill(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
         ));
   }
 
@@ -636,142 +643,149 @@ class _PurchaseState extends State<Purchase> {
     });
 
     return dataDisplay.isNotEmpty
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListView.separated(
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 5,
-              ),
-              itemCount: dataDisplay.length + 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == dataDisplay.length) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Opacity(
-                        opacity: isLoadingData ? 1.0 : 00,
-                        child: const CircularProgressIndicator(),
-                      ),
+        ? ListView.builder(
+            itemCount: dataDisplay.length + 1,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == dataDisplay.length) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Opacity(
+                      opacity: isLoadingData ? 1.0 : 00,
+                      child: const CircularProgressIndicator(),
                     ),
-                  );
-                } else {
-                  return InkWell(
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(0, 5),
-                              blurRadius: 6,
-                              color: const Color(0xff000000).withOpacity(0.06),
-                            ),
-                          ],
+                  ),
+                );
+              } else {
+                return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
                         ),
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
-                                        ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                        // ListTile(
-                        //   title: Text(dataDisplay[index]['Name']),
-                        //   subtitle: Text('Date: ' +
-                        //       dataDisplay[index]['Date'] +
-                        //       ' / EntryNo : ' +
-                        //       dataDisplay[index]['Id'].toString()),
-                        //   trailing: Text(
-                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
-                        //   onTap: () {
-                        //     showEditDialog(context, dataDisplay[index]);
-                        //   },
-                        // ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index]);
+                            },
+                          ),
                         ),
-                  );
-                }
-              },
-              controller: _scrollController,
-            ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showDetails(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                      ],
+                    ));
+                // return Card(
+                //   elevation: 3,
+                //   clipBehavior: Clip.hardEdge,
+                //   margin: EdgeInsets.all(2),
+                //   child: ListTile(
+                //     title: Text(dataDisplay[index]['Name']),
+                //     subtitle: Text('Date: ' +
+                //         dataDisplay[index]['Date'] +
+                //         ' / EntryNo : ' +
+                //         dataDisplay[index]['Id'].toString()),
+                //     trailing: Text(
+                //         'Total : ' + dataDisplay[index]['Total'].toString()),
+                //     onTap: () {
+                //       if (userRole == 'SALESMAN') {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       } else {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       }
+                //     },
+                //   ),
+                // );
+              }
+            },
+            controller: _scrollController,
           )
         : Center(
             child: Column(
@@ -1962,13 +1976,16 @@ class _PurchaseState extends State<Purchase> {
                                     itemBuilder: (context, index) {
                                       return InkWell(
                                         onTap: () {
+                                         
                                           setState(() {
                                             editItem = true;
+                                            clearValue();
                                             position = index;
                                             cartModel =
                                                 cartItem.elementAt(position!);
                                                 double rates = cartModel!.rate / cartModel!.unitValue;
                                                 currentRate = rates;
+                                                selectedProducteId = cartModel!.itemId;
                                             productNameController.text =
                                                 cartModel!.itemName;
                                             controllerRate.text =
@@ -2003,10 +2020,11 @@ class _PurchaseState extends State<Purchase> {
                                             controllerSPRetail.text =
                                                 cartModel!.spRetail.toString();     
                                             controllerSPRetailPercentage.text = 
-                                                cartModel!.spRetailPer.toString();    
+                                                cartModel!.spRetailPer.toString(); 
                                             unitValue = cartModel!.unitValue;
                                             _dropDownUnit = cartModel!.unitId;
-                                            _conversion = cartModel!.unitValue;
+                                            // _conversion = cartModel!.unitValue;
+                                            
                                             net = cartModel!.net;
                                             total = cartModel!.total;
                                             taxP = cartModel!.taxP;
@@ -2474,6 +2492,7 @@ class _PurchaseState extends State<Purchase> {
                                               cartItem.clear();
                                               supplierController.clear();
                                               invNoController.clear();
+                                              
                                               Fluttertoast.showToast(
                                                   msg: 'Successfully Saved');
                                             } else {
@@ -2627,10 +2646,11 @@ class _PurchaseState extends State<Purchase> {
                                             });
                                             if (_state) {
                                               cartItem.clear();
-                                               Fluttertoast.showToast(
-                                                backgroundColor: green,
-                                                msg: 'Purchase Bill Edited');
-                                              Navigator.pushReplacementNamed(context, '/purchase');
+                                              showMoreN(context, false);
+                                              //  Fluttertoast.showToast(
+                                              //   backgroundColor: green,
+                                              //   msg: 'Purchase Bill Edited');
+                                              // Navigator.pushReplacementNamed(context, '/purchase');
                                               // showMore(context, 'Edited');
                                             } else {
                                               showInSnackBar(
@@ -2772,10 +2792,12 @@ class _PurchaseState extends State<Purchase> {
                                               //   },
                                               // );
                                               // showMore(context, 'Saved');
-                                              Fluttertoast.showToast(
-                                                backgroundColor: green,
-                                                msg: 'Purchase Bill Saved');
-                                              Navigator.pushReplacementNamed(context, '/purchase');
+                                              showMoreN(context, true);
+                                              
+                                              // Fluttertoast.showToast(
+                                              //   backgroundColor: green,
+                                              //   msg: 'Purchase Bill Saved');
+                                              // Navigator.pushReplacementNamed(context, '/purchase');
                                             } else {
                                               showInSnackBar(
                                                   'Error enter data correctly');
@@ -3890,15 +3912,21 @@ class _PurchaseState extends State<Purchase> {
   List<UnitModel> unitListData = [];
   addItemWidget() {
     if (editItem) {
+      cartModel = cartItem.elementAt(position!);
       taxP = isTax ? cartItem.elementAt(position!).taxP : 0;
       tax = isTax ? cartItem.elementAt(position!).tax : 0;
       kfcP = (isTax
           ? double.tryParse(cartItem.elementAt(position!).fCess.toString())
           : 0)!;
-      // adCessPer = isTax ? double.tryParse(productModel['adcessper'].toString());
+      // adCessPer = isTax ? double.tryParse(productModel['adcessper'].toString()); 
       // cessPer = isTax ? double.tryParse(productModel['cessper'].toString());
       // defaultUnitID = cartItem[position!].unitId;
       uniqueCode = cartItem[position!].uniqueCode;
+      unitValue = cartModel!.unitValue;
+        unit = DataJson(
+                                              id: cartModel!.unitId,
+                                              name: cartModel!.unitName,
+                                            );
 
       calculateTotal();
     } else if (selectedItem != null) {
@@ -5151,12 +5179,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Discount  ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                           SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                             child: const Text('Discount',
+                                                       textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                           ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -5262,70 +5294,74 @@ class _PurchaseState extends State<Purchase> {
                     const SizedBox(
                       height: 6,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Expanded(
-                          flex: 1,
-                          child: Text('Net ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            height: 35,
-                            child: TextField(
-                              style: const TextStyle(fontSize: 13),
-                              controller: TextEditingController(
-                                  text: net.toStringAsFixed(decimal)),
-                              readOnly: true,
-                              // keyboardType:
-                              //     const TextInputType
-                              //         .numberWithOptions(
-                              //         decimal: true),
-                              // inputFormatters: [
-                              //   FilteringTextInputFormatter(
-                              //       RegExp(r'[0-9]'),
-                              //       allow: true,
-                              //       replacementString:
-                              //           '.')
-                              // ],
-                              textAlign: TextAlign.right,
-                              decoration: InputDecoration(
-                                prefixIcon: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    border: const Border(
-                                        right: BorderSide(color: grey)),
-                                  ),
-                                  width: 25,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.currency_rupee_outlined,
-                                      color: Colors.grey,
-                                      size: 15,
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Net',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
+                          Expanded(
+                            flex: 3,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)),
+                              height: 35,
+                              child: TextField(
+                                style: const TextStyle(fontSize: 13),
+                                controller: TextEditingController(
+                                    text: net.toStringAsFixed(decimal)),
+                                readOnly: true,
+                                // keyboardType:
+                                //     const TextInputType
+                                //         .numberWithOptions(
+                                //         decimal: true),
+                                // inputFormatters: [
+                                //   FilteringTextInputFormatter(
+                                //       RegExp(r'[0-9]'),
+                                //       allow: true,
+                                //       replacementString:
+                                //           '.')
+                                // ],
+                                textAlign: TextAlign.right,
+                                decoration: InputDecoration(
+                                  prefixIcon: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      border: const Border(
+                                          right: BorderSide(color: grey)),
+                                    ),
+                                    width: 25,
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.currency_rupee_outlined,
+                                        color: Colors.grey,
+                                        size: 15,
+                                      ),
                                     ),
                                   ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 3),
+                                  border: const OutlineInputBorder(
+                                      borderSide: BorderSide.none),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 3),
-                                border: const OutlineInputBorder(
-                                    borderSide: BorderSide.none),
+                                onChanged: (value) {
+                                  setState(() {});
+                                },
                               ),
-                              onChanged: (value) {
-                                setState(() {});
-                              },
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(
                       height: 6,
@@ -5336,13 +5372,17 @@ class _PurchaseState extends State<Purchase> {
                         width: MediaQuery.of(context).size.width,
                         child: Row(
                           children: [
-                            Text(
-                                '${(companyTaxMode == 'INDIA' ? 'GST ' : companyTaxMode == 'GULF' ? 'VAT ' : 'Tax ')}          ',
-                                style: const TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                            const Spacer(),
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: Text(
+                                  '${(companyTaxMode == 'INDIA' ? 'GST' : companyTaxMode == 'GULF' ? 'VAT' : 'Tax')}',
+                                  textScaler: const TextScaler.linear(1),
+                                  style: const TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
                             Flexible(
                               flex: 2,
                               child: Container(
@@ -5464,17 +5504,18 @@ class _PurchaseState extends State<Purchase> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Expanded(
-                          flex: 1,
-                          child: Text('Total    ',
+                        SizedBox(
+                          width: MediaQuery.sizeOf(context).width/3.5,
+                          child: const Text('Total',
+                          textScaler: TextScaler.linear(1),
                               style: TextStyle(
                                   fontFamily: 'poppins',
-                                  fontSize: 13,
+                                  // fontSize: 13,
                                   fontWeight: FontWeight.w400)),
                         ),
-                        const SizedBox(width: 4),
+                        // const SizedBox(width: 4),
                         Expanded(
-                          flex: 2,
+                          flex: 3,
                           child: Container(
                             decoration: BoxDecoration(
                                 border: Border.all(color: grey),
@@ -5593,12 +5634,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('MRP           ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('MRP',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -5710,12 +5755,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Retail        ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Retail',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -5827,12 +5876,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Wholesale',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w300)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Wholesale',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 12.5,
+                                    fontWeight: FontWeight.w300)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -5945,12 +5998,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Branch     ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Branch',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -6062,12 +6119,16 @@ class _PurchaseState extends State<Purchase> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Special\nRetail        ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('SP Retail',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -10120,6 +10181,17 @@ class _PurchaseState extends State<Purchase> {
         title: 'Update',
         context: context);
   }
+   showDetails(context, data) {
+    dataDynamic = [
+      {
+        'RealEntryNo': data['Id'],
+        'EntryNo': data['Id'],
+        'InvoiceNo': data['Id'],
+        'Type': '0'
+      }
+    ];
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchasePreviewShow(),));
+  }
 
   fetchPurchase(context, data) {
     DioService api = DioService();
@@ -10179,7 +10251,7 @@ class _PurchaseState extends State<Purchase> {
         invNoController.text = dataDynamic[0]['InvoiceNo'];
         entryNo = dataDynamic[0]['EntryNo'].toString();
         cartItem.clear();
-        for (var product in particulars) {
+        for (var product in particulars)  {
           cartItem.add(CartItemP(
             adCess: double.tryParse(product['adcess'].toString())!,
             barcode: barcode,
@@ -11269,6 +11341,26 @@ class _PurchaseState extends State<Purchase> {
     }
   }
 }
+showMoreN(context, bool newBill) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+         Navigator.pushReplacementNamed(context, '/purchase');
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchasePreviewShow(),));
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage:
+            'Do you want to Preview\nEntryNo : ${dataDynamic[0]['EntryNo']}',
+        title: newBill ? 'SAVED' : 'EDITED',
+        context: context);
+  }
 
 showMore(context, purchaseState) {
   ConfirmAlertBox(

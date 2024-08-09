@@ -14,7 +14,8 @@ import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/statement_list_view.dart';
 
 class Statement extends StatefulWidget {
-  const Statement({Key? key}) : super(key: key);
+  final bool isAppbar;
+  const Statement({Key? key, required this.isAppbar}) : super(key: key);
 
   @override
   State<Statement> createState() => _StatementState();
@@ -52,6 +53,7 @@ class _StatementState extends State<Statement> {
         id: 6, party: "Closing Balance", debit: "0.00 DR", credit: "0.00 CR")
   ];
   List<StatementListItemModel> lItems = [];
+  
 
   @override
   void initState() {
@@ -114,14 +116,14 @@ class _StatementState extends State<Statement> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bagroundColor,
-      appBar: PreferredSize(
+      appBar:widget.isAppbar ?  PreferredSize(
           preferredSize: const Size.fromHeight(100),
           child: AppbarWidgget(
             headTxt: 'Statement',
             onPressed: () {
               Navigator.pop(context);
             },
-          )),
+          )) : null,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -172,6 +174,9 @@ class _StatementState extends State<Statement> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                  'assets/icons/ic_cash_receipt.png'),scale: 3.7),
                                   borderRadius: BorderRadius.circular(100),
                                   color: const Color(0xff0008B3)),
                               // child: Image.asset(
@@ -233,6 +238,9 @@ class _StatementState extends State<Statement> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                  'assets/icons/ic_cash_payment.png'),scale: 3.7),
                                   borderRadius: BorderRadius.circular(100),
                                   color: const Color(0xff0008B3)),
                               // child: Image.asset(
@@ -297,6 +305,9 @@ class _StatementState extends State<Statement> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                  'assets/icons/ic_bank_receipt.png'),scale: 3.7),
                                   borderRadius: BorderRadius.circular(100),
                                   color: const Color(0xff0008B3)),
                               // child: Image.asset(
@@ -356,6 +367,9 @@ class _StatementState extends State<Statement> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
+                                image: const DecorationImage(
+                                  image: AssetImage(
+                                  'assets/icons/ic_bank_payment.png'),scale: 3.7),
                                   borderRadius: BorderRadius.circular(100),
                                   color: const Color(0xff0008B3)),
                               // child: Image.asset(

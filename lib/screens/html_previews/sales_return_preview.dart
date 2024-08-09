@@ -342,8 +342,8 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
   @override
   Widget build(BuildContext context) {
     final route =
-        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
-    title = route['title']!;
+        ModalRoute.of(context)!.settings.arguments ;
+    // title = route!['title']!;
     return Scaffold(
         appBar: AppBar(
           title: Text('$title Preview'),
@@ -2710,9 +2710,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                             ],
                                                           )),
                                                     ],
-                                                  ), const SizedBox(
-                                                        height: 10,
-                                                      ),
+                                                  ), const Spacer(),
                                                   const Text(
                                                     "Certified that the particular given above are true and Correct",
                                                     style: TextStyle(

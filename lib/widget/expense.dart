@@ -15,18 +15,25 @@ import 'package:sheraccerp/widget/simple_piediagram.dart';
 
 
 class Expense extends StatefulWidget {
-  const Expense({Key? key}) : super(key: key);
+  final bool isAppbar;
+  const Expense({Key? key, required this.isAppbar}) : super(key: key);
 
   @override
   State<Expense> createState() => _ExpenseState();
 }
-
+// bool isAppbar = false;
 class _ExpenseState extends State<Expense> {
   String heading = "";
+  // bool isAppbar = false;
+  //  void _toggleActive() {
+  //   setState(() {
+  //     isAppbar = !isAppbar;
+  //   });
+  // }
   final List<ChartExpense> _expenseData = [];
   
   // final List<ChartExpense> _expenseData = [
-  //     ChartExpense(name: 'Shop', amount: '0.53', id: 1, colorVal: '0xff00008B'),
+  //     ChartExpense(name: 'Shop', amount: '0.53', id: 1, colorVal: '0xff00008B'), 
   //   ChartExpense(name: 'General Purchase A/c', amount: '2', id: 2, colorVal: '0xff0047AB'),
   //   ChartExpense(name: 'Service Charge', amount: '2', id: 3, colorVal: '0xff0096FF'),
   //   ChartExpense(name: 'Samsung Service Charge', amount: '2', id: 4, colorVal: '0xff1434A4'),
@@ -62,6 +69,7 @@ class _ExpenseState extends State<Expense> {
           .first;
       _fetchData(dropDownBranchId);
     }
+    
   }
 
   Future _fetchData(var branchID) async {
@@ -115,23 +123,24 @@ class _ExpenseState extends State<Expense> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bagroundColor,
-        appBar: PreferredSize(
-            preferredSize: Size.fromHeight(100),
+        appBar:widget.isAppbar ? PreferredSize(
+            preferredSize: const Size.fromHeight(100),
             child: AppbarWidgget(
               headTxt: 'Expenses',
               onPressed: () {
                 Navigator.pop(context);
               },
-            )),
+            )): null,
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
             child: Column(
               children: [
                 DropDownSettingsTile<int>(
-                  
-                  titleTextStyle: const TextStyle(
-                    fontFamily: 'poppins',fontSize: 15,fontWeight: FontWeight.w500),
+                  titleTextStyle: const TextStyle( 
+                    fontFamily: 'poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500),
                   title: 'Branch',
                   settingKey: 'key-dropdown-default-location-view',
                   values: locationList.isNotEmpty

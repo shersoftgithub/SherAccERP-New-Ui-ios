@@ -132,7 +132,7 @@ class _StockReportState extends State<StockReport> {
                       });
                     }),
                 PopupMenuButton(
-                  icon: const Icon(Icons.share_rounded),
+                  icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
                   itemBuilder: (context) => [
                     const PopupMenuItem(
                       child: Text('PDF'),

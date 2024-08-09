@@ -1,9 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sheraccerp/models/stock_item.dart';
+import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 
- part 'product_provider.g.dart';
+part 'product_provider.g.dart';
 
 @riverpod
 class Products extends _$Products {
@@ -23,7 +24,21 @@ class Products extends _$Products {
       return [];
     }
   }
+
+  Future<List<StockItem>> fetchNoStockProducts(String itemLike, String date) async {
+    state = const AsyncValue.loading();
+    try {
+      var variants = await DioService().fetchNoStockProductLike(DateUtil.dateDMY2YMDA(date), itemLike);
+      state = AsyncValue.data(variants);
+      return variants;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      return [];
+    }
+  }
 }
+
+
 
 
 

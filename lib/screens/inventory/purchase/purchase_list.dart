@@ -88,11 +88,33 @@ class _PurchaseListState extends State<PurchaseList> {
                 onPressed: () {
                   setState(() {
                     loadReport = false;
+                     isLoadingData = false;
+                    valueMore = false;
+                    lastRecord = false;
+                    page = 1;
+                    pageTotal = 0;
+                    totalRecords = 0;
+                    dataDisplay = [];
+                    dataDisplayHead = [];
+                    itemId = null;
+                    itemName = null;
+                    // customer = null;
+                    mfr = null;
+                    category = null;
+                    subCategory = null;
+                    locationId = null;
+                    project != null;
+                    salesMan != null;
+                    taxGroup = null;
+                    // stockValuation = false;
+                    supplier = null;
+                    // area = '0';
+                    // route = '0';
                   });
                 },
-                icon: const Icon(Icons.filter_alt)),
+                icon: Image.asset('assets/icons/ic_filter.png',scale: 3.3,)),
             PopupMenuButton(
-              icon: const Icon(Icons.share_rounded),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   child: Text('PDF'),
@@ -177,7 +199,7 @@ class _PurchaseListState extends State<PurchaseList> {
     var mfrId = mfr != null ? mfr['id'] : '0';
     var categoryId = category != null ? category['id'] : '0';
     var subcategoryId = subCategory != null ? subCategory['id'] : '0';
-    var locationsId = locationId != null ? locationId.id : '0';
+    var locationsId = locationId != null ? locationId.id : '1';
     var projectId = project != null ? project['id'] : '0';
     var salesManId = salesMan != null ? salesMan['id'] : '0';
     var taxGroupId = taxGroup != null ? taxGroup['id'] : '0';
@@ -186,13 +208,13 @@ class _PurchaseListState extends State<PurchaseList> {
     //   if (data.stock) dataSType.add({'id': data.id});
     // }
 
-    if (title == 'Daily') {
-      _purchaseListData(
+    if (statement == 'Daily') {
+   return _purchaseListData(
           locationsId,
           statementType,
           sDate,
           eDate,
-          supplierId,
+          supplierId, 
           projectId,
           itemsId,
           mfrId,
@@ -202,41 +224,32 @@ class _PurchaseListState extends State<PurchaseList> {
           taxGroupId,
           dataPType);
     } else {
-      // var dataJson = '[${json.encode({
-      //       'sDate': sDate,
-      //       'eDate': eDate,
-      //       'branchId': locationsId,
-      //       'statementType': statementType,
-      //       'supplierId': supplierId,
-      //       'project': projectId,
-      //       'itemId': itemsId,
-      //       'mfr': mfrId,
-      //       'category': categoryId,
-      //       'subcategory': subcategoryId,
-      //       'salesman': salesManId,
-      //       'taxGroup': taxGroupId,
-      //       'type': '',
-      //       'taxType': '',
-      //       'purchaseType': dataPType != null
-      //           ? jsonEncode(dataPType)
-      //           : jsonEncode({'id': 0}),
-      //     })}]';
+     var data = '['+ json.encode({
+            'sDate': '$sDate',
+            'eDate': '$eDate',
+            'branchId': locationsId,
+            'statementType': statementType,
+            'supplierId': supplierId,
+            'project': projectId,
+            'itemId': itemsId,
+            'mfr': mfrId,
+            'category': categoryId,
+            'subcategory': subcategoryId,
+            'salesman': salesManId,
+            'taxGroup': taxGroupId,
+            'type': '',
+            'taxType': '',
+            'purchaseType': dataPType != null
+                ? jsonEncode(dataPType)
+                : jsonEncode({'id': 0}),
+          })+ ']';
+          print(data);
       return FutureBuilder<List<dynamic>>(
         future: api.getPurchaseReport(
-            locationsId,
-            statementType,
-            sDate,
-            eDate,
-            supplierId,
-            projectId,
-            itemsId,
-            mfrId,
-            categoryId,
-            subcategoryId,
-            salesManId,
-            taxGroupId),
+           data),
         builder: (ctx, snapshot) {
           if (snapshot.hasData) {
+            
             if (snapshot.data!.isNotEmpty) {
               var data = snapshot.data;
               _data = data;
@@ -263,7 +276,8 @@ class _PurchaseListState extends State<PurchaseList> {
                               const MaterialStatePropertyAll(kPrimaryColor),
                           border: TableBorder.all(width: 1.0, color: grey),
                           headingTextStyle: const TextStyle(
-                              fontFamily: 'poppins', color: white),
+                              fontFamily: 'poppins',
+                              color: white),
                           columnSpacing: 12,
                           dataRowHeight: 20,
                           headingRowHeight: 30,
@@ -400,84 +414,85 @@ class _PurchaseListState extends State<PurchaseList> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
-              Row(
-                children: [
-                  const Text(
-                    'From ',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        fontFamily: 'poppins'),
-                  ),
-                  InkWell(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: grey),
-                          borderRadius: BorderRadius.circular(3)),
-                      child: Row(
-                        children: [
-                          Text(
-                            fromDate!,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                                fontFamily: 'poppins'),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          const Icon(
-                            Icons.calendar_month_outlined,
-                            color: grey,
-                            size: 20,
-                          )
-                        ],
-                      ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  children: [
+                    const Text(
+                      'From ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          fontFamily: 'poppins'),
                     ),
-                    onTap: () => _selectDate('f'),
-                  ),
-                  const SizedBox(
-                    width: 16,
-                  ),
-                  const Text(
-                    'To ',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        fontFamily: 'poppins'),
-                  ),
-                  InkWell(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: grey),
-                          borderRadius: BorderRadius.circular(3)),
-                      child: Row(
-                        children: [
-                          Text(
-                            toDate!,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                                fontFamily: 'poppins'),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          const Icon(
-                            Icons.calendar_month_outlined,
-                            color: grey,
-                            size: 20,
-                          )
-                        ],
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: Row(
+                          children: [
+                            Text(
+                              fromDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: grey,
+                              size: 20,
+                            )
+                          ],
+                        ),
                       ),
+                      onTap: () => _selectDate('f'),
                     ),
-                    onTap: () => _selectDate('t'),
-                  ),
-                ],
+                   const Spacer(),
+                    const Text(
+                      'To ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          fontFamily: 'poppins'),
+                    ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: grey),
+                            borderRadius: BorderRadius.circular(3)),
+                        child: Row(
+                          children: [
+                            Text(
+                              toDate!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                  fontFamily: 'poppins'),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Icon(
+                              Icons.calendar_month_outlined,
+                              color: grey,
+                              size: 20,
+                            )
+                          ],
+                        ),
+                      ),
+                      onTap: () => _selectDate('t'),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(
                 height: 10,
@@ -828,6 +843,7 @@ class _PurchaseListState extends State<PurchaseList> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     controller.dispose();
     super.dispose();
   }
@@ -1167,7 +1183,7 @@ class _PurchaseListState extends State<PurchaseList> {
       subcategoryId,
       salesManId,
       taxGroupId,
-      dataSType) async {
+      dataPType) async {
     if (!lastRecord) {
       if ((dataDisplay.isEmpty || dataDisplay.length < totalRecords) &&
           !isLoadingData) {
@@ -1177,9 +1193,9 @@ class _PurchaseListState extends State<PurchaseList> {
 
         List tempList = [];
         var dataJsonS = '${'[${json.encode({
-              'statementType': statementType.isEmpty ? '' : statementType,
-              'sDate': sDate.isEmpty ? '' : formatYMD(sDate),
-              'eDate': eDate.isEmpty ? '' : formatYMD(eDate),
+              'statementType': 'PurchaseList',
+              'sDate': sDate.isEmpty ? '' : sDate,
+              'eDate': eDate.isEmpty ? '' : eDate,
               'itemId': itemsId,
               'customerId': supplierId,
               'mfr': mfrId,
@@ -1188,13 +1204,14 @@ class _PurchaseListState extends State<PurchaseList> {
               'location': locationsId,
               'project': projectId,
               'salesman': salesManId,
-              'salesType': dataSType != null
-                  ? jsonEncode(dataSType)
+              'salesType': dataPType != null
+                  ? jsonEncode(dataPType)
                   : jsonEncode({'id': 0}),
               "page": page
             })}'}]';
         api.getListPageReport(dataJsonS).then((value) {
           final response = value;
+          if (response.isNotEmpty) {
           pageTotal = response[1][0]['Filtered'];
           totalRecords = response[1][0]['Total'];
           page++;
@@ -1202,12 +1219,17 @@ class _PurchaseListState extends State<PurchaseList> {
             tempList.add(response[0][i]);
           }
 
-          setState(() {
-            isLoadingData = false;
             dataDisplay.addAll(tempList);
             dataDisplayHead.addAll(response[1]);
             lastRecord = tempList.isNotEmpty ? false : true;
-          });
+          } else {
+            dataDisplay = [];
+            dataDisplayHead = [];
+            lastRecord = tempList.isNotEmpty ? false : true;
+          } 
+          
+            isLoadingData = false;
+           setState(() {});
         });
       }
     }
@@ -1229,8 +1251,8 @@ class _PurchaseListState extends State<PurchaseList> {
       subcategoryId,
       salesManId,
       taxGroupId,
-      dataSType) {
-    _getMoreData(
+      dataPType) {
+     _getMoreData(
         locationsId,
         statementType,
         sDate,
@@ -1243,7 +1265,7 @@ class _PurchaseListState extends State<PurchaseList> {
         subcategoryId,
         salesManId,
         taxGroupId,
-        dataSType);
+        dataPType);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
@@ -1260,7 +1282,7 @@ class _PurchaseListState extends State<PurchaseList> {
             subcategoryId,
             salesManId,
             taxGroupId,
-            dataSType);
+            dataPType); 
       }
     });
 
@@ -1291,7 +1313,7 @@ class _PurchaseListState extends State<PurchaseList> {
                       children: [
                         Text(
                           'Cash:' +
-                              dataDisplayHead[0]['CashReceived']
+                              dataDisplayHead[0]["CashPaid"]
                                   .toStringAsFixed(2),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w600),
@@ -1433,14 +1455,14 @@ class _PurchaseListState extends State<PurchaseList> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          dataDisplay[index]['ToName']
+                                          dataDisplay[index]['FromSup']
                                               .toString(),
                                           style: const TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.w700),
                                         ),
                                         Text(
-                                          'Invoice : ${dataDisplay[index]['Invoice']}',
+                                          'Invoice : ${dataDisplay[index]['Id']}',
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w600,

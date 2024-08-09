@@ -280,24 +280,21 @@ class _ServiceEntryState extends State<ServiceEntry> {
         appBar: AppBar(
           title: const Text("ServiceEntry"),
           actions: [
-            Visibility(
-              visible: previewData,
-              child: TextButton(
-                  child: Text(
-                    previewData ? "New ServiceEntry" : 'ServiceEntry',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue[700],
-                  ),
-                  onPressed: () async {
-                    setState(() {
-                      widgetID = false;
-                    });
-                  }),
-            ),
+            TextButton(
+                child: Text(
+                  previewData ? "New ServiceEntry" : 'ServiceEntry',
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue[700],
+                ),
+                onPressed: () async {
+                  setState(() {
+                    widgetID = false;
+                  });
+                }),
           ],
         ),
         body: previewData

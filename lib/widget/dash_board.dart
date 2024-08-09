@@ -14,10 +14,10 @@ class DashList extends StatefulWidget {
 
 class _DashListState extends State<DashList> {
   List pages = [
-    Statement(),
-    Expense(),
-    CashAndBank(),
-    ReceivablesAndPayables(),
+    Statement(isAppbar:  true,),
+    Expense(isAppbar: true,),
+    CashAndBank(isAppbar: true,),
+    ReceivablesAndPayables(isAppbar: true,),
   ];
   List dashTxt = [
     'Statement',

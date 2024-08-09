@@ -155,8 +155,8 @@ class _ManagerHomeState extends State<ManagerHome>
         length: 10,
         child: Scaffold(
           appBar: AppBar(
-            // title: Text("SherAcc"),
-            // brightness: Brightness.dark,
+            titleSpacing: -30,
+            toolbarHeight: 80,
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -166,29 +166,152 @@ class _ManagerHomeState extends State<ManagerHome>
               )
             ],
             elevation: .1,
-            title: const TabBar(
-              tabs: [
-                Tab(icon: Icon(Icons.dashboard), text: "Today"),
-                Tab(icon: Icon(Icons.assessment), text: "Statement"),
-                Tab(icon: Icon(Icons.assignment), text: "Expense"),
-                Tab(icon: Icon(Icons.assignment_outlined), text: "Cash & Bank"),
-                Tab(
-                    icon: Icon(Icons.assignment_outlined),
-                    text: "Receivable & Payable"),
-                Tab(
-                    icon: Icon(Icons.assignment_outlined),
-                    text: "Account Report"),
-                Tab(
-                    icon: Icon(Icons.assignment_outlined),
-                    text: "Inventory Report"),
-                Tab(icon: Icon(Icons.assignment_outlined), text: "Report"),
-                Tab(
-                    icon: Icon(Icons.settings_applications_outlined),
-                    text: "Settings"),
-                Tab(icon: Icon(Icons.more), text: "Tools"),
-              ],
-              isScrollable: true,
-              labelStyle: TextStyle(fontWeight: FontWeight.bold),
+            title:  Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TabBar(
+                dividerColor: kPrimaryColor,
+                  indicator: const BoxDecoration(color: kPrimaryColor),
+                tabs: [
+                  Tab(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/today_icon.png'),
+                        const Text(
+                          'Today',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),
+                    ),
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/statement_icon.png',scale: 1.6,),
+                        const Text(
+                          'Statement',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/expence_icon.png',scale: 1.6,),
+                        const Text(
+                          'Expense',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/cash_bank_icon.png',scale: 1.6,),
+                        const Text(
+                          'Cash & Bank',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/recivable_payable_icon.png',scale: 1.6,),
+                        const Text(
+                          'Recivable & Payable',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/accounts_report_icon.png',),
+                        const Text(
+                          'Account Report',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Inventory_report_icon.png'),
+                        const Text(
+                          'Inventory Report',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Report_icon.png'),
+                        const Text(
+                          'Report',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/Settings_icon.png'),
+                        const Text(
+                          'Settings',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                  Tab(child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Image.asset('assets/icons/tools_icon.png'),
+                        const Text(
+                          'Tools',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),),
+                ],
+                isScrollable: true,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
           body: TabBarView(
@@ -210,9 +333,9 @@ class _ManagerHomeState extends State<ManagerHome>
                               child:
                                   _expireWarningWidget(args, context, daysLeft),
                             )
-                          : const Statement()
+                          : const Statement(isAppbar: false,)
                       : _expire(args, context)
-                  : const Statement(),
+                  : const Statement(isAppbar: false,),
               args.active == "false"
                   ? _commonService.getTrialPeriod(args.atDate)
                       ? isExpireWarning
@@ -220,9 +343,9 @@ class _ManagerHomeState extends State<ManagerHome>
                               child:
                                   _expireWarningWidget(args, context, daysLeft),
                             )
-                          : const Expense()
+                          : const Expense(isAppbar: false,)
                       : _expire(args, context)
-                  : const Expense(),
+                  : const Expense(isAppbar: false,),
               args.active == "false"
                   ? _commonService.getTrialPeriod(args.atDate)
                       ? isExpireWarning
@@ -230,9 +353,9 @@ class _ManagerHomeState extends State<ManagerHome>
                               child:
                                   _expireWarningWidget(args, context, daysLeft),
                             )
-                          : CashAndBank()
+                          : CashAndBank(isAppbar: false,)
                       : _expire(args, context)
-                  : CashAndBank(),
+                  : CashAndBank(isAppbar: false,),
               args.active == "false"
                   ? _commonService.getTrialPeriod(args.atDate)
                       ? isExpireWarning
@@ -240,9 +363,9 @@ class _ManagerHomeState extends State<ManagerHome>
                               child:
                                   _expireWarningWidget(args, context, daysLeft),
                             )
-                          : ReceivablesAndPayables()
+                          : ReceivablesAndPayables(isAppbar: false,)
                       : _expire(args, context)
-                  : ReceivablesAndPayables(),
+                  : ReceivablesAndPayables(isAppbar: false,),
               args.active == "false"
                   ? _commonService.getTrialPeriod(args.atDate)
                       ? isExpireWarning

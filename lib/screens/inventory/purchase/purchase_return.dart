@@ -354,8 +354,14 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
           titleTextStyle: const TextStyle(fontFamily: 'poppins'),
           title: const Text('Purchase Return'),
         ),
-        body: Container(
-          child: previousBill(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
         ));
   }
 
@@ -1353,6 +1359,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
   String? selectedTaxOption = 'With Tax';
   dynamic productModelPrize;
   int? selectedProducteId; 
+  bool rateEditted = false;
   addItemWidget(){
     List<UnitModel> unitList = [];
      calculate() {
@@ -1388,7 +1395,180 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
             : 0)!;
         double.tryParse(controllerDiscount.text);
         
-      }    
+      }  
+       if (enableMULTIUNIT) {
+        if (currentRate > 0) {
+          if (conversion > 0 ) {
+            if (_focusNodeRate.hasFocus ) {
+              rate = double.tryParse(controllerRate.text)?? 0;
+              // rate = double.tryParse(_rateController.text) * _conversion;
+              // lastRateStatus = false;
+            } else {
+              rate =  (currentRate * conversion);
+              // rate = saleRate; // * _conversion; 
+              controllerRate.text = rate.toStringAsFixed(decimal);
+            }
+            
+          } else {
+            rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+          }
+        }
+       else {
+        rate = (controllerRate.text.isNotEmpty
+            ? double.tryParse(controllerRate.text)
+            : 0) ?? 0;
+      }
+      }
+      else{
+        if (_focusNodeRate.hasFocus) {
+         rate =  double.tryParse(controllerRate.text) ?? 0 ; 
+        } else if (currentRate > 0){
+          controllerRate.text = currentRate.toStringAsFixed(decimal);
+          rate = currentRate;
+        } else{
+           rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+        }
+      }
+      rRate = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
+          : rate;
+      rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, ((discount * 100) / (taxP + 100)))
+          : discount;
+       gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));    
+      // gross = CommonService.getRound(decimal, ((rRate * quantity)));
+      subTotal = CommonService.getRound(decimal, (gross - rDisc));    
+      // subTotal = CommonService.getRound(decimal, (rate * quantity));
+      net = CommonService.getRound(decimal, (subTotal - discount));
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+        csGST = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+      total = CommonService.getRound(
+          decimal, (net + csGST + csGST + iGST + cess + adCess));
+      // total = net + tax;
+      if (mrp > 0) {
+        profitPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(decimal, (((mrp - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((mrp - rate) * 100) / rate));
+      }
+      if (retail > 0) {
+        retailPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((retail - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((retail - rate) * 100) / rate));
+      }
+      if (wholeSale > 0) {
+        wholesalePer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((wholeSale - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((wholeSale - rate) * 100) / rate));
+      }
+      if (spRetail > 0) {
+        spRetailPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((spRetail - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((spRetail - rate) * 100) / rate));
+      }
+      if (branch > 0) {
+        branchPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((branch - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
+      }
+
+      // unitValue = _conversion > 0 ? _conversion : 1;
+    }
+     calculateConversion() {
+      quantity = (controllerQuantity.text.isNotEmpty
+          ? double.tryParse(controllerQuantity.text)
+          : 0)!;
+      rate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+      discount = (controllerDiscount.text.isNotEmpty
+          ? double.tryParse(controllerDiscount.text)
+          : 0)!;
+      discountPer = (controllerDiscountPer.text.isNotEmpty
+          ? double.tryParse(controllerDiscountPer.text)
+          : 0)!;
+       if (_focusNodeDiscountPer.hasFocus) {
+        controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? (((quantity * rRate) * discountPer) / 100).toStringAsFixed(2)
+            : (((quantity * rate) * discountPer) / 100).toStringAsFixed(2);
+        discount = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        discountPer = double.tryParse(controllerDiscountPer.text)?? 0;
+      }
+      if (_focusNodeDiscount.hasFocus) {
+        controllerDiscountPer.text = controllerDiscount.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? ((discount * 100) / (quantity * rRate)).toStringAsFixed(2)
+            : ((discount * 100) / (quantity * rate)).toStringAsFixed(2);
+        discountPer = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscountPer.text)
+            : 0)!;
+        double.tryParse(controllerDiscount.text);
+        
+      }  
+       if (enableMULTIUNIT) {
+        if (currentRate > 0) {
+          if (conversion > 0 &&  !rateEditted) {
+            if (_focusNodeRate.hasFocus ) {
+              rate = double.tryParse(controllerRate.text)?? 0;
+              // rate = double.tryParse(_rateController.text) * _conversion;
+              // lastRateStatus = false;
+            } else {
+              rate =  (currentRate * conversion);
+              // rate = saleRate; // * _conversion; 
+              controllerRate.text = rate.toStringAsFixed(decimal);
+            }
+            
+          } else {
+            rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+          }
+        }
+       else {
+        rate = (controllerRate.text.isNotEmpty
+            ? double.tryParse(controllerRate.text)
+            : 0) ?? 0;
+      }
+      }
+      else{
+        if (_focusNodeRate.hasFocus) {
+         rate =  double.tryParse(controllerRate.text) ?? 0 ; 
+        } else if (currentRate > 0){
+          controllerRate.text = currentRate.toStringAsFixed(decimal);
+          rate = currentRate;
+        } else{
+           rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+        }
+      }
       rRate = taxMethod == 'MINUS'
           ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
           : rate;
@@ -1542,7 +1722,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
           if (rate > 0 && !editableRate) {
             controllerRate.text = rate.toString();
           }
-
+          currentRate = rate;
+          // rate = currentRate;
           rRate = double.tryParse(stockProduct.buyingPriceReal.toString()) ?? 0.0;
           mrp = double.tryParse(stockProduct.sellingPrice.toString()) ?? 0.0;
 
@@ -1614,7 +1795,7 @@ const SizedBox(
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
                                     setState(() {
-                                      calculate();
+                                      calculateConversion();
                                     });
                                   },
                                 ),
@@ -1753,7 +1934,7 @@ const SizedBox(
                    ),
                                 TextField(
                                   controller: controllerRate,
-                                  // focusNode: _focusNodeRate,
+                                  focusNode: _focusNodeRate,
                                   textAlign: TextAlign.right,
                                   keyboardType: const TextInputType.numberWithOptions(
                                       decimal: true),
@@ -1771,6 +1952,9 @@ const SizedBox(
                                     ),
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
+                                    if (value.isNotEmpty) {
+                                      rateEditted = true;
+                                    }
                                     setState(() {
                                       calculate();
                                     });
@@ -1843,7 +2027,7 @@ const SizedBox(
                                                           value == 'Without Tax' 
                                                               ? isTax = false
                                                               : isTax = true;
-                                                          calculate();
+                                                          calculateConversion();
                                                         });
                                                       },
                                                       isExpanded: true,
@@ -1942,12 +2126,12 @@ const SizedBox(
                                                     ],
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     onSubmitted: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     decoration: InputDecoration(
@@ -2053,12 +2237,12 @@ const SizedBox(
                                                     ),
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     onSubmitted: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                   ),
@@ -2577,142 +2761,149 @@ const SizedBox(
     });
 
     return dataDisplay.isNotEmpty
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListView.separated(
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 5,
-              ),
-              itemCount: dataDisplay.length + 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == dataDisplay.length) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Opacity(
-                        opacity: isLoadingData ? 1.0 : 00,
-                        child: const CircularProgressIndicator(),
-                      ),
+        ?  ListView.builder(
+            itemCount: dataDisplay.length + 1,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == dataDisplay.length) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Opacity(
+                      opacity: isLoadingData ? 1.0 : 00,
+                      child: const CircularProgressIndicator(),
                     ),
-                  );
-                } else {
-                  return InkWell(
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(0, 5),
-                              blurRadius: 6,
-                              color: const Color(0xff000000).withOpacity(0.06),
-                            ),
-                          ],
+                  ),
+                );
+              } else {
+                return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
                         ),
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
-                                        ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                        // ListTile(
-                        //   title: Text(dataDisplay[index]['Name']),
-                        //   subtitle: Text('Date: ' +
-                        //       dataDisplay[index]['Date'] +
-                        //       ' / EntryNo : ' +
-                        //       dataDisplay[index]['Id'].toString()),
-                        //   trailing: Text(
-                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
-                        //   onTap: () {
-                        //     showEditDialog(context, dataDisplay[index]);
-                        //   },
-                        // ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index]);
+                            },
+                          ),
                         ),
-                  );
-                }
-              },
-              controller: _scrollController,
-            ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showDetails(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                      ],
+                    ));
+                // return Card(
+                //   elevation: 3,
+                //   clipBehavior: Clip.hardEdge,
+                //   margin: EdgeInsets.all(2),
+                //   child: ListTile(
+                //     title: Text(dataDisplay[index]['Name']),
+                //     subtitle: Text('Date: ' +
+                //         dataDisplay[index]['Date'] +
+                //         ' / EntryNo : ' +
+                //         dataDisplay[index]['Id'].toString()),
+                //     trailing: Text(
+                //         'Total : ' + dataDisplay[index]['Total'].toString()),
+                //     onTap: () {
+                //       if (userRole == 'SALESMAN') {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       } else {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       }
+                //     },
+                //   ),
+                // );
+              }
+            },
+            controller: _scrollController,
           )
         : Center(
             child: Column(
@@ -3562,6 +3753,7 @@ const SizedBox(
   double quantity = 0,
       rate = 0,
       subTotal = 0,
+      currentRate = 0,
       gross = 0,
       discount = 0,
       discountPer = 0,
@@ -4973,6 +5165,18 @@ const SizedBox(
             'Do you want to edit or delete\nRefNo:${dataDynamic['Id']}',
         title: 'Update',
         context: context);
+  }
+
+   showDetails(context, data) {
+    dataDynamic = [
+      {
+        'RealEntryNo': data['Id'],
+        'EntryNo': data['Id'],
+        'InvoiceNo': data['Id'],
+        'Type': '0'
+      }
+    ];
+  Navigator.pushReplacementNamed(context, '/purchase_return_preview_show');
   }
 
   fetchPurchase(context, data) {

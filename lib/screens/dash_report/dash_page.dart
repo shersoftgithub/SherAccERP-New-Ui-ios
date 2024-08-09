@@ -56,7 +56,8 @@ class _DashPageState extends State<DashPage> {
     return [
       charts.Series<ChartSales, String>(
         id: 'Sales',
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        colorFn: (_, __) => charts.ColorUtil.fromDartColor(kPrimaryColor),
+        // charts.MaterialPalette.blue.shadeDefault,
         domainFn: (ChartSales sales, _) => sales.ddate!,
         measureFn: (ChartSales sales, _) => sales.amount,
         data: data,
@@ -216,7 +217,8 @@ class _DashPageState extends State<DashPage> {
     List<charts.Series<ChartPurchase, String>> series = [
       charts.Series<ChartPurchase, String>(
         id: 'Purchase',
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        colorFn: (_, __) => charts.ColorUtil.fromDartColor(kPrimaryColor),
+        // charts.MaterialPalette.blue.shadeDefault,
         domainFn: (ChartPurchase sales, _) => sales.date!,
         measureFn: (ChartPurchase sales, _) => sales.amount,
         data: _purchaseData,
@@ -234,7 +236,7 @@ class _DashPageState extends State<DashPage> {
       'Total No Cash Sales',
       'Total Credit Sales',
       'No of Credit Sales',
-      ' No. Customers',
+      'No. Customers',
       'Repeat Customers No.'
     ];
     List imageList = [
@@ -263,7 +265,7 @@ class _DashPageState extends State<DashPage> {
         backgroundColor: bagroundColor,
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             child: Column(
               children: [
                 Container(
@@ -315,6 +317,11 @@ class _DashPageState extends State<DashPage> {
                     ? DropdownButtonHideUnderline(
                         child: DropDownSettingsTile<int>(
                           title: 'Branch',
+                          titleTextStyle: const TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15
+                          ),
                           settingKey: 'key-dropdown-default-location-view',
                           values: locationList.isNotEmpty
                               ? {for (var e in locationList) e.key + 1: e.value}
@@ -388,6 +395,8 @@ class _DashPageState extends State<DashPage> {
                               left: 3,
                               child: Text(
                                 summaryTxt[index],
+                                textAlign: TextAlign.justify,
+                                textScaler: const TextScaler.linear(.9),
                                 style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontWeight: FontWeight.w500,
@@ -401,7 +410,7 @@ class _DashPageState extends State<DashPage> {
                                 style: const TextStyle(
                                     fontSize: 18,
                                     fontFamily: 'poppins',
-                                    fontWeight: FontWeight.bold),
+                                    fontWeight: FontWeight.w500),
                               ))
                         ],
                       ),

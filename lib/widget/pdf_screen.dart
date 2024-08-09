@@ -17,9 +17,12 @@ class PDFScreen extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: const Text("PDF Document"),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.share),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               onPressed: () {
                 paths.add(pathPDF!);
                 urlFileShare(context, text!, subject!, paths);

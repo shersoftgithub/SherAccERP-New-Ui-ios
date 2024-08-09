@@ -68,9 +68,9 @@ class _ProductReportState extends State<ProductReport> {
                     pluNo = false;
                   });
                 },
-                icon: const Icon(Icons.filter_alt)),
+                icon: Image.asset('assets/icons/ic_filter.png',scale: 3.3,)),
             PopupMenuButton(
-              icon: const Icon(Icons.share_rounded),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   child: Text('PDF'),

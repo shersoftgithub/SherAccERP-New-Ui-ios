@@ -27,6 +27,7 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/provider/customer_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
+import 'package:sheraccerp/provider/stockvariant_provider.dart';
 import 'package:sheraccerp/scoped-models/cart_scope_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
@@ -174,6 +175,7 @@ class _SaleState extends ConsumerState<Sale> {
   @override
   void initState() {
     super.initState();
+    
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
@@ -186,7 +188,9 @@ class _SaleState extends ConsumerState<Sale> {
           ComSettings.salesFormList('key-item-sale-form-', false);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(productsProvider.notifier).fetchStockProducts("", date);
+      salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
+      ? ref.read(productsProvider.notifier).fetchNoStockProducts("", date)
+     : ref.read(productsProvider.notifier).fetchStockProducts("", date);
     });
     // fetchCustomerNames();
     // fetchStockProducts();
@@ -751,6 +755,7 @@ class _SaleState extends ConsumerState<Sale> {
     });
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: bagroundColor,
         appBar: AppBar(
           title: const Text(
             "Sales",
@@ -780,19 +785,29 @@ class _SaleState extends ConsumerState<Sale> {
           ],
         ),
         body: thisSale
-            ? Container(
-              color: bagroundColor,
-                child: previousBill(),
-              )
+            ? Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
+              child: Container(
+                color: bagroundColor,
+                  child: previousBill(),
+                ),
+            )
             : _defaultSale
-                ? Container(
-                  color: bagroundColor,
-                    child: previousBill(),
-                  )
+                ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,vertical: 8
+                  ),
+                  child: Container(
+                    color: bagroundColor,
+                      child: previousBill(),
+                    ),
+                )
                 : previewData
                     ? Container(
                       color: bagroundColor,
-                        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),child: previousBill(),),
+                        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),child: previousBill(),),
                       )
                     : Container(
                         color: bagroundColor,
@@ -899,6 +914,7 @@ class _SaleState extends ConsumerState<Sale> {
     return dataDisplay.isNotEmpty
         ? ListView.builder(
             itemCount: dataDisplay.length + 1,
+            shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
               if (index == dataDisplay.length) {
                 return Padding(
@@ -911,111 +927,113 @@ class _SaleState extends ConsumerState<Sale> {
                   ),
                 );
               } else {
-                return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: white,
-                      borderRadius: BorderRadius.circular(3),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: const Offset(0, 5),
-                          blurRadius: 6,
-                          color: const Color(0xff000000).withOpacity(0.06),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dataDisplay[index]['Name'],
-                                  // maxLines: 1,
-                                  style: const TextStyle(
-                                    // fontSize: 16,
-                                    color: ColorPalette.timberGreen,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Date :${dataDisplay[index]['Date']}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 5,
-                                        top: 2,
-                                        right: 5,
-                                      ),
-                                      child: Icon(
-                                        Icons.circle,
-                                        size: 5,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                    Text(
-                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            onTap: () {
-                              showEditDialog(context, dataDisplay[index]);
-                            },
+                return Expanded(
+                  child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 5),
+                            blurRadius: 6,
+                            color: const Color(0xff000000).withOpacity(0.06),
                           ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorPalette.nileBlue,
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  const SizedBox(
+                                    height: 5,
                                   ),
-                                ),
-                              ],
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showEditDialog(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showDetails(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                      ],
-                    ));
+                          Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showDetails(context, dataDisplay[index]);
+                              },
+                            ),
+                          ),
+                        ],
+                      )),
+                );
                 // return Card(
                 //   elevation: 3,
                 //   clipBehavior: Clip.hardEdge,
@@ -1577,6 +1595,7 @@ class _SaleState extends ConsumerState<Sale> {
       var data = "[${json.encode({
             'statement': 'SalesUpdate',
             'entryNo': dataDynamic[0]['EntryNo'],
+            'EditEntryNo': dataDynamic[0]['EntryNo'],
             'invoiceNo': manualInvoiceNumberInSales
                 ? invoiceNo
                 : dataDynamic[0]['InvoiceNo'].toString(),
@@ -2795,6 +2814,7 @@ void _onTabTapped(int index) {
                                         cartModel =
                                             cartItem.elementAt(position!);
                                             selectedItemId = cartModel!.itemId;
+                                            uniqueCode = cartModel!.uniqueCode!;
                                         itemNameControl.text =
                                             cartModel!.itemName.toString();
                                         _rateController.text =
@@ -4934,9 +4954,329 @@ void _onTabTapped(int index) {
   String selectedQuantity = '';
   List<String> selectedUnits = [];
   int? selectedItemId;
+  bool isPrateEdited = false;
   String? selectedTaxOption = 'With Tax';
   late StockProduct selectedVariant;
+  var fetchedData;
   addItemWidget() {
+    // if (editItem) {
+    //   uniqueCode = selectedVariant.productId!;
+    // }
+    calculate() {
+      uniqueCode = selectedVariant.productId!;
+    if (enableMULTIUNIT) {
+      if (saleRate > 0) {
+        if (_conversion > 0) {
+          //var r = 0.0;
+          if (_focusNodeRate.hasFocus) {
+            rate = double.tryParse(_rateController.text) ?? 0;
+            // rate = double.tryParse(_rateController.text) * _conversion;
+            lastRateStatus = false;
+          } else {
+            rate =  editItem ? saleRate : (saleRate * _conversion);
+            // rate = saleRate; // * _conversion;
+            _rateController.text = rate.toStringAsFixed(decimal);
+          }
+          //rate = r;
+          // _rateController.text = r.toStringAsFixed(decimal);
+          pRate = selectedVariant.buyingPrice! * _conversion;
+          rPRate = selectedVariant.buyingPriceReal! * _conversion;
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? (double.tryParse(_rateController.text))
+              : 0) ?? 0;
+        }
+      } else {
+        rate = (_rateController.text.isNotEmpty
+            ? (double.tryParse(_rateController.text))
+            : 0)?? 0;
+      }
+    } else {
+      if (_focusNodeRate.hasFocus) {
+        rate = double.tryParse(_rateController.text)!;
+        lastRateStatus = false;
+      } else if (saleRate > 0) {
+        _rateController.text = saleRate.toStringAsFixed(decimal);
+        rate = saleRate;
+      } else {
+        rate = (_rateController.text.isNotEmpty
+            ? double.tryParse(_rateController.text)
+            : 0)!;
+      }
+    }
+    if (_focusNodeQuantity.hasFocus) {
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)!;
+    } else {
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)!;
+    }
+    freeQty = (_freeQuantityController.text.isNotEmpty
+        ? double.tryParse(_freeQuantityController.text)
+        : 0)!;
+    rRate = taxMethod == 'MINUS'
+        ? cessOnNetAmount
+            ? CommonService.getRound(
+                4, (100 * rate) / (100 + taxP + kfcP + cessPer))
+            : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
+        : rate;
+    discount = (_discountController.text.isNotEmpty
+        ? double.tryParse(_discountController.text)
+        : 0)!;
+    double? discP = _discountPercentController.text.isNotEmpty
+        ? double.tryParse(_discountPercentController.text)?? 0 
+        : 0;
+    double? disc = _discountController.text.isNotEmpty
+        ? double.tryParse(_discountController.text)??0 
+        : 0;
+    double? qt = _quantityController.text.isNotEmpty
+        ? double.tryParse(_quantityController.text)
+        : 0;
+    double? sRate = _rateController.text.isNotEmpty
+        ? double.tryParse(_rateController.text)
+        : 0;
+    if (_focusNodeDiscountPer.hasFocus) {
+      _discountController.text = _discountPercentController.text.isNotEmpty &&
+              selectedTaxOption == 'With Tax'
+          ? (((qt! * rRate!) * discP) / 100).toStringAsFixed(2) 
+          : (((qt! * rate!) * discP) / 100).toStringAsFixed(2);
+      discount = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountController.text)
+          : 0)!;
+      discountPercent = double.tryParse(_discountPercentController.text) ?? 0;
+    }
+
+    if (_focusNodeDiscount.hasFocus) {
+      _discountPercentController.text =
+          _discountController.text.isNotEmpty && selectedTaxOption == 'With Tax'
+              ? ((disc * 100) / (qt! * rRate!)).toStringAsFixed(2)
+              : ((disc * 100) / (qt! * rate!)).toStringAsFixed(2);
+      discountPercent = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountPercentController.text)
+          : 0)!;
+      // discount = discountPercent > 0
+      // ?
+      double.tryParse(_discountController.text);
+      // : discount;
+    }
+    rDisc = taxMethod == 'MINUS'
+        ? CommonService.getRound(
+            4,
+            ((discount * 100) /
+                (cessOnNetAmount
+                    ? (taxP + 100 + cessPer + kfcP)
+                    : (taxP + 100 + kfcP))))
+        : discount;
+    gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));
+    subTotal = CommonService.getRound(decimal, (gross - rDisc));
+    if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+    if (companyTaxMode == 'INDIA') {
+      kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+      double csPer = taxP / 2;
+      iGST = 0;
+      csGST = CommonService.getRound(4, ((subTotal * csPer) / 100));
+    } else if (companyTaxMode == 'GULF') {
+      iGST = CommonService.getRound(4, ((subTotal * taxP) / 100));
+      csGST = 0;
+      kfc = 0;
+    } else {
+      iGST = 0;
+      csGST = 0;
+      kfc = 0;
+      tax = 0;
+    }
+    if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((subTotal * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
+    total = CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    if (enableMULTIUNIT && _conversion > 0) {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(
+              2, (total - (selectedVariant.buyingPrice! * _conversion * quantity)))
+          : CommonService.getRound(decimal,
+              (total - (selectedVariant.buyingPriceReal! * _conversion * quantity)));
+    } else {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(
+              2, (total - (selectedVariant.buyingPrice! * quantity)))
+          : CommonService.getRound(
+              2, (total - (selectedVariant.buyingPriceReal! * quantity)));
+    }
+    unitValue = _conversion > 0 ? _conversion : 1;
+  }
+  calculateConversion() {
+    if (enableMULTIUNIT) {
+      if (saleRate > 0) {
+        if (_conversion > 0 && !isPrateEdited) {
+          //var r = 0.0;
+          if (_focusNodeRate.hasFocus) {
+            rate = double.tryParse(_rateController.text) ?? 0;
+            // rate = double.tryParse(_rateController.text) * _conversion;
+            lastRateStatus = false;
+          } else {
+            rate =  editItem ? saleRate : (saleRate * _conversion);
+            // rate = saleRate; // * _conversion;
+            _rateController.text = rate.toStringAsFixed(decimal);
+          }
+          //rate = r;
+          // _rateController.text = r.toStringAsFixed(decimal);
+          pRate = selectedVariant.buyingPrice! * _conversion;
+          rPRate = selectedVariant.buyingPriceReal! * _conversion;
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? (double.tryParse(_rateController.text))
+              : 0) ?? 0;
+        }
+      } else {
+        rate = (_rateController.text.isNotEmpty
+            ? (double.tryParse(_rateController.text))
+            : 0)?? 0;
+      }
+    } else {
+      if (_focusNodeRate.hasFocus) {
+        rate = double.tryParse(_rateController.text)!;
+        lastRateStatus = false;
+      } else if (saleRate > 0) {
+        _rateController.text = saleRate.toStringAsFixed(decimal);
+        rate = saleRate;
+      } else {
+        rate = (_rateController.text.isNotEmpty
+            ? double.tryParse(_rateController.text)
+            : 0)!;
+      }
+    }
+    if (_focusNodeQuantity.hasFocus) {
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)!;
+    } else {
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)!;
+    }
+    freeQty = (_freeQuantityController.text.isNotEmpty
+        ? double.tryParse(_freeQuantityController.text)
+        : 0)!;
+    rRate = taxMethod == 'MINUS'
+        ? cessOnNetAmount
+            ? CommonService.getRound(
+                4, (100 * rate) / (100 + taxP + kfcP + cessPer))
+            : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
+        : rate;
+    discount = (_discountController.text.isNotEmpty
+        ? double.tryParse(_discountController.text)
+        : 0)!;
+    double? discP = _discountPercentController.text.isNotEmpty
+        ? double.tryParse(_discountPercentController.text)?? 0 
+        : 0;
+    double? disc = _discountController.text.isNotEmpty
+        ? double.tryParse(_discountController.text)??0 
+        : 0;
+    double? qt = _quantityController.text.isNotEmpty
+        ? double.tryParse(_quantityController.text)
+        : 0;
+    double? sRate = _rateController.text.isNotEmpty
+        ? double.tryParse(_rateController.text)
+        : 0;
+    if (_focusNodeDiscountPer.hasFocus) {
+      _discountController.text = _discountPercentController.text.isNotEmpty &&
+              selectedTaxOption == 'With Tax'
+          ? (((qt! * rRate!) * discP) / 100).toStringAsFixed(2) 
+          : (((qt! * rate!) * discP) / 100).toStringAsFixed(2);
+      discount = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountController.text)
+          : 0)!;
+      discountPercent = double.tryParse(_discountPercentController.text) ?? 0;
+    }
+
+    if (_focusNodeDiscount.hasFocus) {
+      _discountPercentController.text =
+          _discountController.text.isNotEmpty && selectedTaxOption == 'With Tax'
+              ? ((disc * 100) / (qt! * rRate!)).toStringAsFixed(2)
+              : ((disc * 100) / (qt! * rate!)).toStringAsFixed(2);
+      discountPercent = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountPercentController.text)
+          : 0)!;
+      // discount = discountPercent > 0
+      // ?
+      double.tryParse(_discountController.text);
+      // : discount;
+    }
+    rDisc = taxMethod == 'MINUS'
+        ? CommonService.getRound(
+            4,
+            ((discount * 100) /
+                (cessOnNetAmount
+                    ? (taxP + 100 + cessPer + kfcP)
+                    : (taxP + 100 + kfcP))))
+        : discount;
+    gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));
+    subTotal = CommonService.getRound(decimal, (gross - rDisc));
+    if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+    if (companyTaxMode == 'INDIA') {
+      kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+      double csPer = taxP / 2;
+      iGST = 0;
+      csGST = CommonService.getRound(4, ((subTotal * csPer) / 100));
+    } else if (companyTaxMode == 'GULF') {
+      iGST = CommonService.getRound(4, ((subTotal * taxP) / 100));
+      csGST = 0;
+      kfc = 0;
+    } else {
+      iGST = 0;
+      csGST = 0;
+      kfc = 0;
+      tax = 0;
+    }
+    if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((subTotal * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
+    total = CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    if (enableMULTIUNIT && _conversion > 0) {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(
+              2, (total - (selectedVariant.buyingPrice! * _conversion * quantity)))
+          : CommonService.getRound(decimal,
+              (total - (selectedVariant.buyingPriceReal! * _conversion * quantity)));
+    } else {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(
+              2, (total - (selectedVariant.buyingPrice! * quantity)))
+          : CommonService.getRound(
+              2, (total - (selectedVariant.buyingPriceReal! * quantity)));
+    }
+    unitValue = _conversion > 0 ? _conversion : 1;
+  }
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -5032,11 +5372,13 @@ void _onTabTapped(int index) {
                                           selectedQuantity =
                                               selectedItem.quantity.toString();
                                           selectedItemId = selectedItem.id!;
-                                          var fetchedData = selectedItemId != null
-                                              ? api.fetchStockVariant(selectedItemId!)
+                                           fetchedData = selectedItemId != null
+                                             ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                    ? api.fetchNoStockVariants(selectedItemId.toString())
+                                    : api.fetchStockVariants(selectedItemId!)
                                               : null;
                                           if (fetchedData != null) {
-                                            fetchedData.then((variants) {
+                                            fetchedData.listen((variants) {
                                               selectedVariant = variants.firstWhere(
                                                 (element) =>
                                                     element.itemId == selectedItemId,
@@ -5070,11 +5412,11 @@ void _onTabTapped(int index) {
                                               } else {
                                                 rateFuture = Future.value(null);
                                               }
-                                    
                                               rateFuture.then((rate) {
                                                 if (rate != null) {
                                                   _rateController.text =
                                                       rate.toStringAsFixed(2);
+                                                   
                                                 }
                                               });
                                               taxP = selectedVariant.tax! ?? 0;
@@ -5106,10 +5448,35 @@ void _onTabTapped(int index) {
                               const SizedBox(
                                 height: 10,
                               ),
-                              FutureBuilder(
-                                future: selectedItemId != null
-                                    ? api.fetchStockVariant(selectedItemId!)
-                                    : api.fetchStockVariant(0),
+    //                           Consumer(builder: (context, ref, child) {
+    //                            final stockVariants = ref.watch(stockVariantsProvider(selectedItemId??0));
+    //                              return stockVariants.when(
+    //   data: (items) => ListView.builder(
+    //     itemCount: 1,
+    //     shrinkWrap: true,
+    //     itemBuilder: (context, index) {
+    //        if (items.isEmpty) {
+    //             return const Center(
+    //               child: Text('No items found.'),
+    //             );
+    //           }
+    //       final item = items[index];
+    //       return ListTile(
+    //         title: Text(item.tax.toString()),
+    //         subtitle: Text(item.itemId.toString()),
+    //       );
+    //     },
+    //   ),
+    //   loading: () => CircularProgressIndicator(),
+    //   error: (err, stack) => Text('Error: $err'),
+    // );
+    //                           },),
+                              StreamBuilder(
+                                stream: selectedItemId != null
+                                   ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                    ? api.fetchNoStockVariants(selectedItemId.toString())
+                                    : api.fetchStockVariants(selectedItemId!)
+                                    : api.fetchStockVariants(0),
                                 builder: (context, snapshot) {
                                   // if (snapshot.connectionState ==
                                   //     ConnectionState.waiting) {
@@ -5260,8 +5627,7 @@ void _onTabTapped(int index) {
                                                                             : cartQ
                                                                                 ? true
                                                                                 : false;
-                                                            calculate(
-                                                                selectedVariant);
+                                                            calculateConversion();
                                                           });
                                                         }
                                                       },
@@ -5350,7 +5716,7 @@ void _onTabTapped(int index) {
                                                       : cartQ
                                                           ? true
                                                           : false;
-                                      calculate(selectedVariant);
+                                      calculate();
                                     });
                                     }
                                     },
@@ -5511,8 +5877,7 @@ void _onTabTapped(int index) {
                                                                                 break;
                                                                               }
                                                                             }
-                                                                            calculate(
-                                                                                selectedVariant);
+                                                                            calculate();
                                                                           });
                                                                         },
                                                                       ),
@@ -5598,6 +5963,9 @@ void _onTabTapped(int index) {
                                                           border:
                                                               OutlineInputBorder()),
                                                       onChanged: (value) {
+                                                         if (value.isNotEmpty) {
+                                        isPrateEdited = true;
+                                      }
                                                         if (value.isNotEmpty) {
                                                           if (isMinimumRate) {
                                                             double minRate =
@@ -5611,8 +5979,7 @@ void _onTabTapped(int index) {
                                                               setState(() {
                                                                 isMinimumRatedLock =
                                                                     false;
-                                                                calculate(
-                                                                    selectedVariant);
+                                                                calculate();
                                                               });
                                                             } else {
                                                               setState(() {
@@ -5622,8 +5989,7 @@ void _onTabTapped(int index) {
                                                             }
                                                           } else {
                                                             setState(() {
-                                                              calculate(
-                                                                  selectedVariant);
+                                                              calculate();
                                                             });
                                                           }
                                                         }
@@ -5686,7 +6052,7 @@ void _onTabTapped(int index) {
                                                               value == 'Without Tax' 
                                                                   ? isTax = false
                                                                   : isTax = true;
-                                                              calculate(selectedVariant);
+                                                              calculateConversion();
                                                             });
                                                           },
                                                           isExpanded: true,
@@ -5802,8 +6168,7 @@ void _onTabTapped(int index) {
                                                     ],
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate(
-                                                            selectedVariant);
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     decoration: InputDecoration(
@@ -5909,8 +6274,7 @@ void _onTabTapped(int index) {
                                                     ),
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate(
-                                                            selectedVariant);
+                                                        calculateConversion();
                                                       });
                                                     },
                                                   ),
@@ -8672,6 +9036,7 @@ void _onTabTapped(int index) {
       quantity = 0,
       rate = 0,
       saleRate = 0,
+      currentRate = 0,
       discount = 0,
       discountPercent = 0,
       rDisc = 0,
@@ -8705,7 +9070,7 @@ void _onTabTapped(int index) {
             // rate = double.tryParse(_rateController.text) * _conversion;
             lastRateStatus = false;
           } else {
-            rate = editItem ? saleRate : (saleRate * _conversion);
+            rate =  editItem ? saleRate : (saleRate * _conversion);
             // rate = saleRate; // * _conversion;
             _rateController.text = rate.toStringAsFixed(decimal);
           }

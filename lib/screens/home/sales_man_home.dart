@@ -565,6 +565,41 @@ class _SalesManHomeState extends State<SalesManHome> {
                         ),
                       ),
                       Visibility(
+                          visible: ComSettings.userControl('RECEIPT ORDER'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('Receipt Order',
+                                 style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? Navigator.pushNamed(
+                                            context, '/RPVoucher', arguments: {
+                                            'voucher': 'Receipt Order'
+                                          })
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(context, '/RPVoucher',
+                                        arguments: {
+                                            'voucher': 'Receipt Order'
+                                          });
+                              },
+                            ),
+                          ),
+                        ),
+                      Visibility(
                         visible: ComSettings.userControl('PAYMENT'),
                         child: Container(
                           margin: const EdgeInsets.only(
@@ -940,6 +975,143 @@ class _SalesManHomeState extends State<SalesManHome> {
                           ),
                         ),
                       ),
+                       Visibility(
+                          visible: ComSettings.userControl('STOCK REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('Stock Report',
+                                 style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/StockReport');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('SALESMAN REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('SalesMan Report',
+                                  style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                argumentsPass = 'SalesMan';
+                                Navigator.pushNamed(
+                                  context,
+                                  '/salesManReport',
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('RECEIPT REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('Receipt List',
+                                style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                argumentsPass = {'mode': 'ReceiptList'};
+                                Navigator.pushNamed(
+                                  context,
+                                  '/select_ledger',
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('PAYMENT REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('Payment List',
+                                  style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                argumentsPass = {'mode': 'PaymentList'};
+                                Navigator.pushNamed(
+                                  context,
+                                  '/select_ledger',
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('PRICE LIST'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                            bottom: 6
+                          ),
+                           decoration: BoxDecoration(
+                            color: white,
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                                ),
+                            child: TextButton(
+                              child: const Text('Price List',
+                                  style: TextStyle(
+                                  color: kPrimaryColor,
+                                                                  fontFamily: 'poppins',
+                                                                  fontSize: 16,
+                                                                  fontWeight: FontWeight.w500
+                                                                ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/priceList');
+                              },
+                            ),
+                          ),
+                        ),
                       Container(
                         margin: const EdgeInsets.only(
                             bottom: 6

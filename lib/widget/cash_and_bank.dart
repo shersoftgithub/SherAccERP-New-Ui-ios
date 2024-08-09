@@ -5,14 +5,16 @@ import 'package:sheraccerp/widget/appbar_custom_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 
 class CashAndBank extends StatelessWidget {
+  final bool isAppbar;
   DioService api = DioService();
   var dropDownBranchId;
   DateTime now = DateTime.now();
-
-  CashAndBank({Key? key}) : super(key: key);
-
+  
+  CashAndBank({Key? key, required this.isAppbar}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
+    
     String dated = now.year.toString() +
         '-' +
         now.month.toString() +
@@ -20,14 +22,14 @@ class CashAndBank extends StatelessWidget {
         now.day.toString();
     return Scaffold(
       backgroundColor: bagroundColor,
-      appBar: PreferredSize(
+      appBar: isAppbar ?  PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: AppbarWidgget(
             headTxt: 'Cash & Bank',
             onPressed: () {
               Navigator.pop(context);
             },
-          )),
+          )) : null,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(

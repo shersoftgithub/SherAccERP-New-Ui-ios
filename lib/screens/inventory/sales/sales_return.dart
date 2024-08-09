@@ -12,6 +12,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/order.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
@@ -246,8 +247,14 @@ class _SalesReturnState extends State<SalesReturn> {
                 )),
           ],
         ),
-        body: Container(
-          child: previousBill(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
         ));
   }
 
@@ -370,142 +377,149 @@ class _SalesReturnState extends State<SalesReturn> {
     });
 
     return dataDisplay.isNotEmpty
-        ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListView.separated(
-              separatorBuilder: (context, index) => const SizedBox(
-                height: 5,
-              ),
-              itemCount: dataDisplay.length + 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == dataDisplay.length) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: Opacity(
-                        opacity: isLoadingData ? 1.0 : 00,
-                        child: const CircularProgressIndicator(),
-                      ),
+        ? ListView.builder(
+            itemCount: dataDisplay.length + 1,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == dataDisplay.length) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Opacity(
+                      opacity: isLoadingData ? 1.0 : 00,
+                      child: const CircularProgressIndicator(),
                     ),
-                  );
-                } else {
-                  return InkWell(
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(0, 5),
-                              blurRadius: 6,
-                              color: const Color(0xff000000).withOpacity(0.06),
-                            ),
-                          ],
+                  ),
+                );
+              } else {
+                return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
                         ),
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
-                                        ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                        // ListTile(
-                        //   title: Text(dataDisplay[index]['Name']),
-                        //   subtitle: Text('Date: ' +
-                        //       dataDisplay[index]['Date'] +
-                        //       ' / EntryNo : ' +
-                        //       dataDisplay[index]['Id'].toString()),
-                        //   trailing: Text(
-                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
-                        //   onTap: () {
-                        //     showEditDialog(context, dataDisplay[index]);
-                        //   },
-                        // ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index]);
+                            },
+                          ),
                         ),
-                  );
-                }
-              },
-              controller: _scrollController,
-            ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showDetails(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                      ],
+                    ));
+                // return Card(
+                //   elevation: 3,
+                //   clipBehavior: Clip.hardEdge,
+                //   margin: EdgeInsets.all(2),
+                //   child: ListTile(
+                //     title: Text(dataDisplay[index]['Name']),
+                //     subtitle: Text('Date: ' +
+                //         dataDisplay[index]['Date'] +
+                //         ' / EntryNo : ' +
+                //         dataDisplay[index]['Id'].toString()),
+                //     trailing: Text(
+                //         'Total : ' + dataDisplay[index]['Total'].toString()),
+                //     onTap: () {
+                //       if (userRole == 'SALESMAN') {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       } else {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       }
+                //     },
+                //   ),
+                // );
+              }
+            },
+            controller: _scrollController,
           )
         : Center(
             child: Column(
@@ -842,7 +856,8 @@ class _SalesReturnState extends State<SalesReturn> {
           roundOff = CommonService.getRound(1, (1 - different));
         }
       }
-      var data = '[${json.encode({
+      var data = '[' +
+          json.encode({
             'statement': 'SalesReturnUpdate',
             'entryNo': dataDynamic[0]['EntryNo'],
             'invoiceNo': dataDynamic[0]['InvoiceNo'],
@@ -890,7 +905,8 @@ class _SalesReturnState extends State<SalesReturn> {
             'returnNo': 0,
             'returnAmount': 0,
             'fyId': currentFinancialYear!.id
-          })}]';
+          }) +
+          ']';
 
       final body = {
         'information': ledger,
@@ -1402,35 +1418,63 @@ class _SalesReturnState extends State<SalesReturn> {
                                     return InkWell(
                                       onTap: () {
                                        setState(() {
-                                            editItem = true;
+                                          editItem = true;
                                         position = index;
-                                        cartModel = cartItem.elementAt(position!);
-                                        selectedProducteId = 
-                                        cartModel!.id;
+                                        cartModel =
+                                            cartItem.elementAt(position!);
+                                            selectedProducteId = cartModel!.itemId;
                                         productNameController.text =
-                                        cartModel!.itemName!;
-                                        rate = cartModel!.rate!;
+                                            cartModel!.itemName.toString();
                                         _rateController.text =
-                                            cartModel!.rate.toString();
+                                            cartModel!.rate!.toString();
                                         _quantityController.text =
-                                            cartModel!.quantity.toString();
-                                            quantity = 
-                                            cartModel!.quantity!;
-                                        _quantityController.text =
-                                            cartModel!.quantity.toString();
+                                            cartModel!.quantity!.toString();
+                                        // _freeQuantityController.text =
+                                        //     cartModel!.free.toString();
                                         _discountController.text =
                                             cartModel!.discount.toString();
+                                            uniqueCode = cartModel!.uniqueCode!;
                                         _discountPercentController.text =
-                                            cartModel!.discountPercent.toString();
-                                            gross = cartModel!.gross!;
-                                            total = cartModel!.total!;
-                                            // unitValue = cartModel!.unitValue!;
-                                            _dropDownUnit = cartModel!.unitId!;
-                                            taxP = cartModel!.taxP!;
-                                        tax = cartModel!.tax!;
+                                            cartModel!.discountPercent
+                                                .toString();
                                         // _serialNoController.text =
-                                        //     cartModel.serialNo;
-                                            nextWidget = 1;
+                                        //     cartModel!.serialNo!;
+                                        _dropDownUnit = cartModel!.unitId!;
+                                        taxP = cartModel!.taxP!;
+                                        tax = cartModel!.tax!;
+                                        gross = cartModel!.gross!;
+                                        total = cartModel!.total!;
+                                        nextWidget = 1;
+                                        //     editItem = true;
+                                        // position = index;
+                                        // cartModel = cartItem.elementAt(position!);
+                                        // selectedProducteId = 
+                                        // cartModel!.id;
+                                        // productNameController.text =
+                                        // cartModel!.itemName!;
+                                        // rate = cartModel!.rate!;
+                                        // _rateController.text =
+                                        //     cartModel!.rate.toString();
+                                        // _quantityController.text =
+                                        //     cartModel!.quantity.toString();
+                                        //     quantity = 
+                                        //     cartModel!.quantity!;
+                                        // _quantityController.text =
+                                        //     cartModel!.quantity.toString();
+                                        // _discountController.text =
+                                        //     cartModel!.discount.toString();
+                                        // _discountPercentController.text =
+                                        //     cartModel!.discountPercent.toString();
+                                        //     gross = cartModel!.gross!;
+                                        //     total = cartModel!.total!;
+                                        //     unitValue = cartModel!.unitValue!;
+                                        //     _dropDownUnit = cartModel!.unitId!;
+                                            
+                                        //     taxP = cartModel!.taxP!;
+                                        // tax = cartModel!.tax!;
+                                        // // _serialNoController.text =
+                                        // //     cartModel.serialNo;
+                                        //     nextWidget = 1;
                                        });
                                       },
                                       child: Container(
@@ -2059,12 +2103,14 @@ dynamic productModelPrizee = [
 int? selectedProducteId;
 String? selectedTaxOption = 'With Tax';
 var fetchedPrice;
+bool isPrateEdited = false;
   addItemWidget(){
     int locationId = lId.toString().trim().isNotEmpty ? lId : 1;
     
     List<UnitModel> unitList = [];
      if (editItem) {
       productModelPrize = fetchedPrice;
+      // uniqueCode = cartItem[position!].uniqueCode!;
      }
     //   productModel = productModel == null
     //       ? ProductPurchaseModel(
@@ -2114,6 +2160,137 @@ var fetchedPrice;
       if (enableMULTIUNIT) {
         if (saleRate > 0) {
           if (_conversion > 0) {
+            if (_focusNodeRate.hasFocus) {
+              rate = double.tryParse(_rateController.text)?? 0;
+            } else {
+              rate = saleRate * _conversion;
+              _rateController.text = rate.toStringAsFixed(decimal);
+            }
+            pRate = productModelPrize[0]['prate'] * _conversion;
+            rPRate = productModelPrize[0]['realprate'] * _conversion;
+          } else {
+            rate = (_rateController.text.isNotEmpty
+                ? (double.tryParse(_rateController.text))
+                : 0)!;
+          }
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? (double.tryParse(_rateController.text))
+              : 0)!;
+        }
+      } else {
+        if (_focusNodeRate.hasFocus) {
+          rate = double.tryParse(_rateController.text)!;
+        } else if (saleRate > 0) {
+          _rateController.text = saleRate.toStringAsFixed(decimal);
+          rate = saleRate;
+        } else {
+          rate = (_rateController.text.isNotEmpty
+              ? double.tryParse(_rateController.text)
+              : 0)!;
+        }
+      }
+      quantity = (_quantityController.text.isNotEmpty
+          ? double.tryParse(_quantityController.text)
+          : 0)?? 0;
+      rRate = taxMethod == 'MINUS'
+          ? cessOnNetAmount
+              ? CommonService.getRound(
+                  4, (100 * rate) / (100 + taxP + kfcP + cessPer))
+              : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
+          : rate;
+       discountPercent =  (_discountPercentController.text.isNotEmpty
+          ? double.tryParse(_discountPercentController.text)
+          : 0)!;  
+         
+      discount = (_discountController.text.isNotEmpty
+          ? double.tryParse(_discountController.text)
+          : 0)!;
+              if (_focusNodeDiscountPer.hasFocus) {
+        _discountController.text = _discountPercentController.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? (((quantity * rRate) * discountPercent) / 100).toStringAsFixed(2)
+            : (((quantity * rate) * discountPercent) / 100).toStringAsFixed(2);
+        discount = (_discountController.text.isNotEmpty
+            ? double.tryParse(_discountController.text)
+            : 0)!;
+        discountPercent = double.tryParse(_discountPercentController.text)?? 0;
+      }
+      if (_focusNodeDiscount.hasFocus) {
+        _discountPercentController.text = _discountController.text.isNotEmpty
+        && selectedTaxOption == 'With Tax'
+            ? ((discount * 100) / (quantity * rRate)).toStringAsFixed(2)
+            : ((discount * 100) / (quantity * rate)).toStringAsFixed(2);
+        discountPercent = (_discountController.text.isNotEmpty
+            ? double.tryParse(_discountPercentController.text)
+            : 0)!;
+        double.tryParse(_discountController.text);
+        
+      }
+      rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(4, ((discount * 100) / (taxP + 100)))
+          : discount;
+      gross = selectedTaxOption == 'With Tax'
+        ? CommonService.getRound(decimal, ((rRate * quantity)))
+        : CommonService.getRound(decimal, ((rate * quantity)));    
+      // gross = CommonService.getRound(decimal, ((rRate * quantity)));
+      subTotal = CommonService.getRound(decimal, (gross - rDisc));
+      
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        kfc = isKFC
+            ? CommonService.getRound(decimal, ((subTotal * kfcP) / 100))
+            : 0;
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+        csGST = 0;
+        kfc = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        kfc = 0;
+        tax = 0;
+      }
+      if (cessOnNetAmount) {
+        if (cessPer > 0) {
+          cess = CommonService.getRound(decimal, ((subTotal * cessPer) / 100));
+          adCess = CommonService.getRound(decimal, (quantity * adCessPer));
+        } else {
+          cess = 0;
+          adCess = 0;
+        }
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+      total = CommonService.getRound(
+          2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+      if (enableMULTIUNIT && _conversion > 0) {
+        profitPer = pRateBasedProfitInSales
+            ? CommonService.getRound(2,
+                (total - (productModelPrize[0]['prate'] * _conversion * quantity)))
+            : CommonService.getRound(
+                decimal,
+                (total -
+                    (productModelPrize[0]['realprate'] * _conversion * quantity)));
+      } else {
+        profitPer = pRateBasedProfitInSales
+            ? CommonService.getRound(
+                2, (total - (productModelPrizee[0]['prate'] * quantity)))
+            : CommonService.getRound(
+                2, (total - (productModelPrizee[0]['realprate'] * quantity)))?? 0;
+      }
+      unitValue = _conversion > 0 ? _conversion : 1;
+    }
+     calculateConversion() {
+      if (enableMULTIUNIT) {
+        if (saleRate > 0) {
+          if (_conversion > 0 && !isPrateEdited) {
             if (_focusNodeRate.hasFocus) {
               rate = double.tryParse(_rateController.text)?? 0;
             } else {
@@ -2414,7 +2591,7 @@ var fetchedPrice;
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
                                     setState(() {
-                                      calculate();
+                                      calculateConversion();
                                     });
                                   },
                                 ),
@@ -2568,6 +2745,9 @@ var fetchedPrice;
                                     ),
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
+                                     if (value.isNotEmpty) {
+                                        isPrateEdited = true;
+                                      }
                                     setState(() {
                                       calculate();
                                     });
@@ -2640,7 +2820,7 @@ var fetchedPrice;
                                                           value == 'Without Tax' 
                                                               ? isTax = false
                                                               : isTax = true;
-                                                          calculate();
+                                                          calculateConversion();
                                                         });
                                                       },
                                                       isExpanded: true,
@@ -2749,12 +2929,12 @@ var fetchedPrice;
                                                     ],
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     onSubmitted: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     decoration: InputDecoration(
@@ -2860,12 +3040,12 @@ var fetchedPrice;
                                                     ),
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                     onSubmitted: (value) {
                                                       setState(() {
-                                                        calculate();
+                                                        calculateConversion();
                                                       });
                                                     },
                                                   ),
@@ -5218,6 +5398,18 @@ var fetchedPrice;
             'Do you want to edit or delete\nRefNo:${dataDynamic['Id']}',
         title: 'Update',
         context: context);
+  }
+
+   showDetails(context, data) {
+    dataDynamic = [
+      {
+        'RealEntryNo': data['Id'],
+        'EntryNo': data['Id'],
+        'InvoiceNo': data['Id'],
+        'Type': 0
+      }
+    ];
+    Navigator.pushReplacementNamed(context, '/return_preview_show');
   }
 
   fetchSaleReturn(context, id) {

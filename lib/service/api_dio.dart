@@ -1399,46 +1399,17 @@ class DioService {
   }
 
   Future<List<dynamic>> getPurchaseReport(
-      branchId,
-      statement,
-      sDate,
-      eDate,
-      supplierId,
-      project,
-      itemId,
-      mfr,
-      category,
-      subcategory,
-      salesman,
-      taxGroup) async {
+     data) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
-    List<dynamic> dataPType = [];
+   
     dataBase = isEstimateDataBase
         ? (pref.getString('DBName') ?? "cSharp")
         : (pref.getString('DBNameT') ?? "cSharp");
     try {
-      final response = await dio.get(
-          '${pref.getString('api')}${apiV}purchaseReport/$dataBase',
-          queryParameters: {
-            'sDate': '$sDate',
-            'eDate': '$eDate',
-            'branchId': branchId,
-            'statementType': statement,
-            'supplierId': supplierId,
-            'project': project,
-            'itemId': itemId,
-            'mfr': mfr,
-            'category': category,
-            'subcategory': subcategory,
-            'salesman': salesman,
-            'taxGroup': taxGroup,
-            'type': '',
-            'taxType': '',
-            'purchaseType': dataPType != null
-                ? jsonEncode(dataPType)
-                : jsonEncode({'id': 0}),
-          });
+      final response = await dio.post(
+          '${pref.getString('api')}${apiV}purchase_report/$dataBase',
+          data: data);
       if (response.statusCode == 200) {
         List<dynamic> data = response.data;
         return data;
@@ -2591,7 +2562,7 @@ class DioService {
     return _items;
   }
 
-  Future<CustomerModel> getCustomerDetail(int id) async {
+ Future<CustomerModel> getCustomerDetail(int id) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
     dataBase = isEstimateDataBase
@@ -2603,12 +2574,14 @@ class DioService {
           .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
       if (response.statusCode == 200) {
         List<dynamic> _data = response.data;
-         _item =  CustomerModel.fromJson(_data[0]);
+
+        _item = CustomerModel.fromJson(_data[0]);
       } else {
         debugPrint('Failed to load data');
       }
-    } on DioError catch (e) {
-      final errorMessage = DioExceptions.fromDioError(e).toString();
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
       debugPrint(errorMessage.toString());
     }
     return _item;
@@ -3301,6 +3274,45 @@ class DioService {
     return _items;
   }
 
+  Stream<List<StockProduct>> fetchStockVariants(int id) async* {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp', location = '0';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    if (locationList.isNotEmpty) {
+      location = locationList
+          .where((element) => element.value == defaultLocation)
+          .map((e) => e.key)
+          .first
+          .toString();
+    }
+    int lId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-location-view', 2) -
+        1;
+    location =
+        lId.toString().trim().isNotEmpty ? lId.toString().trim() : location;
+    List<StockProduct> _items = [];
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}stock/getStockVariant/$dataBase',
+          queryParameters: {'Id': id, 'location': location});
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var product in jsonResponse) {
+          _items.add(StockProduct.fromJson(product));
+        }
+      } else {
+        debugPrint('Unexpected error occurred!');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    yield _items;
+  }
+
   Future<List<dynamic>> fetchNoStockVariant(String id) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp', location = '0';
@@ -3338,6 +3350,44 @@ class DioService {
       debugPrint(errorMessage.toString());
     }
     return _items;
+  }
+  Stream<List<dynamic>> fetchNoStockVariants(String id) async* {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp', location = '0';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    if (locationList.isNotEmpty) {
+      location = locationList
+          .where((element) => element.value == defaultLocation)
+          .map((e) => e.key)
+          .first
+          .toString();
+    }
+    int lId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-location-view', 2) -
+        1;
+    location =
+        lId.toString().trim().isNotEmpty ? lId.toString().trim() : location;
+    List<dynamic> _items = [];
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}stock/getNonStockVariant/$dataBase',
+          queryParameters: {'Id': id});
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var product in jsonResponse) {
+          _items.add(product);
+        }
+      } else {
+        debugPrint('Unexpected error occurred!');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    yield _items;
   }
 
   Future<List<StockProduct>> fetchStockVariantProduct(int id) async {
@@ -4136,7 +4186,7 @@ class DioService {
     return _items;
   }
 
-  Future<dynamic> fetchPurchaseInvoice(int id, String type) async {
+  Future<dynamic> fetchPurchaseInvoice(int id, String type,int frmId) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
     dataBase = isEstimateDataBase
@@ -4149,7 +4199,8 @@ class DioService {
           queryParameters: {
             'id': id,
             'type': type,
-            'fyId': currentFinancialYear!.id
+            'fyId': currentFinancialYear!.id,
+            'frmId': frmId
           });
       if (response.statusCode == 200) {
         var jsonResponse = response.data;

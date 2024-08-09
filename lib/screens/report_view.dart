@@ -256,10 +256,10 @@ class _ReportViewState extends State<ReportView> {
                   },
                 );
               },
-              icon: const Icon(Icons.filter_alt),
+              icon: Image.asset('assets/icons/ic_filter.png',scale: 3.3,),
             ),
             PopupMenuButton(
-              icon: const Icon(Icons.share_rounded),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   child: Text('PDF'),
@@ -359,8 +359,8 @@ class _ReportViewState extends State<ReportView> {
           ],
           // title: Text(widget.type),
           title: Text(
-            'Ledger Report of ${(tempLedgerData != null ? tempLedgerData!.name : "")}',
-            style: const TextStyle(fontSize: 12),
+            (widget.type == 'ledger'? 'Ledger': widget.type),
+            style: const TextStyle(fontFamily: 'poppins'),
           ),
         ),
         body: widget.type == 'ledger' ||
@@ -415,8 +415,7 @@ class _ReportViewState extends State<ReportView> {
   }
 
   reportView() {
-    var dataJson = '[' +
-        json.encode({
+    var dataJson = '[${json.encode({
           'statementType':
               widget.statement.isEmpty ? 'Ledger_Report' : widget.statement,
           'sDate': widget.sDate.isEmpty ? '' : widget.sDate,
@@ -427,504 +426,153 @@ class _ReportViewState extends State<ReportView> {
           'project': jsonEncode(project),
           'salesMan': 0,
           'fyId': currentFinancialYear!.id,
-        }) +
-        ']';
-    //saleel
+        })}]';
 
     if (widget.statement.isEmpty) {
       return FutureBuilder<List<dynamic>>(
           future: api.fetchLedgerReport(dataJson),
           builder: (ctx, snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting){
+               return Center(child: CircularProgressIndicator());
+            }
+           else  if (snapshot.hasData) {
               if (snapshot.data!.isNotEmpty) {
                 recdset = snapshot.data;
 
                 return
-                    // SingleChildScrollView(
-                    //     child: Padding(
-                    //   padding: const EdgeInsets.all(8.0),
-                    //   child: Column(
-                    //     crossAxisAlignment: CrossAxisAlignment.start,
-                    //     children: [
-                    //       Row(
-                    //         mainAxisAlignment: MainAxisAlignment.center,
-                    //         crossAxisAlignment: CrossAxisAlignment.start,
-                    //         children: [
-                    //           Column(
-                    //             mainAxisAlignment: MainAxisAlignment.start,
-                    //             crossAxisAlignment: CrossAxisAlignment.start,
-                    //             children: [
-                    //               const Text(
-                    //                 "ACCOUNT SUMMERY",
-                    //                 style: TextStyle(
-                    //                     fontSize: 18, fontWeight: FontWeight.bold),
-                    //               ),
-                    //               const SizedBox(
-                    //                 height: 12,
-                    //               ),
-                    //               Text(
-                    //                 "${tempLedgerData.name} ",
-                    //                 style: const TextStyle(
-                    //                     fontSize: 10, fontWeight: FontWeight.bold),
-                    //               ),
-                    //               Row(
-                    //                 children: [
-                    //                   Text(
-                    //                     "From  ${DateUtil.dateDMY(widget.sDate)}",
-                    //                     style: const TextStyle(
-                    //                         fontSize: 10,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                   const SizedBox(
-                    //                     width: 15,
-                    //                   ),
-                    //                   Text(
-                    //                     "To  ${DateUtil.dateDMY(widget.eDate)}",
-                    //                     style: const TextStyle(
-                    //                         fontSize: 10,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ],
-                    //           )
-                    //         ],
-                    //       ),
-                    //       const SizedBox(
-                    //         height: 0,
-                    //       ),
-                    //       const Divider(
-                    //         color: Colors.blue,
-                    //       ),
-                    //       Container(
-                    //         height: 20,
-                    //         color: Colors.blue,
-                    //         child: Table(
-                    //           columnWidths: const {
-                    //             0: FixedColumnWidth(45),
-                    //             1: FlexColumnWidth(15),
-                    //             2: FlexColumnWidth(8),
-                    //             3: FlexColumnWidth(9),
-                    //             4: FlexColumnWidth(8),
-                    //           },
-                    //           children: [
-                    //             TableRow(children: [
-                    //               Column(
-                    //                 crossAxisAlignment: CrossAxisAlignment.start,
-                    //                 children: const [
-                    //                   SizedBox(
-                    //                     height: 5,
-                    //                   ),
-                    //                   Text(
-                    //                     '  Date',
-                    //                     style: TextStyle(
-                    //                         fontSize: 7,
-                    //                         color: Colors.white,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //               Column(
-                    //                 crossAxisAlignment: CrossAxisAlignment.start,
-                    //                 children: const [
-                    //                   SizedBox(
-                    //                     height: 5,
-                    //                   ),
-                    //                   Text(
-                    //                     '  Description',
-                    //                     style: TextStyle(
-                    //                         fontSize: 7,
-                    //                         color: Colors.white,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //               Column(
-                    //                 children: const [
-                    //                   SizedBox(
-                    //                     height: 5,
-                    //                   ),
-                    //                   Text(
-                    //                     'Debit',
-                    //                     style: TextStyle(
-                    //                         fontSize: 7,
-                    //                         color: Colors.white,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //               Column(
-                    //                 children: const [
-                    //                   SizedBox(
-                    //                     height: 5,
-                    //                   ),
-                    //                   Text(
-                    //                     'Credit',
-                    //                     style: TextStyle(
-                    //                         fontSize: 7,
-                    //                         color: Colors.white,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //               Column(
-                    //                 children: const [
-                    //                   SizedBox(
-                    //                     height: 5,
-                    //                   ),
-                    //                   Text(
-                    //                     "Balanace",
-                    //                     style: TextStyle(
-                    //                         fontSize: 7,
-                    //                         color: Colors.white,
-                    //                         fontWeight: FontWeight.bold),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ]),
-                    //           ],
-                    //           border: TableBorder.all(width: 1, color: Colors.blue),
-                    //         ),
-                    //       ),
-                    //       Visibility(
-                    //         visible: displayedData.isEmpty,
-                    //         child: Table(
-                    //           columnWidths: const {
-                    //             0: FixedColumnWidth(45),
-                    //             1: FlexColumnWidth(15),
-                    //             2: FlexColumnWidth(8),
-                    //             3: FlexColumnWidth(9),
-                    //             4: FlexColumnWidth(8),
-                    //           },
-                    //           children: [
-                    //             for (var i = 0; i < recdset.length; i++)
-                    //               TableRow(children: [
-                    //                 Center(
-                    //                     child: Column(
-                    //                   children: [
-                    //                     Padding(
-                    //                       padding: const EdgeInsets.all(2.0),
-                    //                       child: Text(
-                    //                         '${recdset[i]['Date']}',
-                    //                         style: const TextStyle(
-                    //                             fontSize: 6,
-                    //                             fontWeight: FontWeight.bold),
-                    //                       ),
-                    //                     ),
-                    //                   ],
-                    //                 )),
-                    //                 // Padding(
-                    //                 //   padding: const EdgeInsets.all(2.0),
-                    //                 //   child: Text(
-                    //                 //     '${recdset[i]['Particulars']}',
-                    //                 //     style: const TextStyle(
-                    //                 //         fontSize: 6, fontWeight: FontWeight.bold),
-                    //                 //   ),
-                    //                 // ),
-                    //                 Padding(
-                    //                   padding: const EdgeInsets.all(2.0),
-                    //                   child: recdset[i]['Particulars'] ==
-                    //                               'Opening Balance' ||
-                    //                           recdset[i]['Particulars'] ==
-                    //                               'Closing Balance'
-                    //                       ? Text(
-                    //                           '${recdset[i]['Particulars']}',
-                    //                           style: const TextStyle(
-                    //                               fontSize: 6,
-                    //                               fontWeight: FontWeight.bold),
-                    //                         )
-                    //                       : recdset[i]['Particulars'].isNotEmpty
-                    //                           ? Text(
-                    //                               'Voucher:${recdset[i]['Voucher']}\nNo:${recdset[i]['EntryNo']}\n${recdset[i]['Particulars']}',
-                    //                               style: const TextStyle(
-                    //                                   fontSize: 6,
-                    //                                   fontWeight: FontWeight.bold),
-                    //                             )
-                    //                           : const Text(''),
-                    //                 ),
-                    //                 Padding(
-                    //                   padding: const EdgeInsets.all(2.0),
-                    //                   child: Row(
-                    //                     mainAxisAlignment: MainAxisAlignment.end,
-                    //                     children: [
-                    //                       Text(
-                    //                         '${recdset[i]['Debit']}',
-                    //                         style: const TextStyle(
-                    //                             fontSize: 6,
-                    //                             fontWeight: FontWeight.bold),
-                    //                       ),
-                    //                     ],
-                    //                   ),
-                    //                 ),
-                    //                 Padding(
-                    //                   padding: const EdgeInsets.all(2.0),
-                    //                   child: Row(
-                    //                     mainAxisAlignment: MainAxisAlignment.end,
-                    //                     children: [
-                    //                       Text(
-                    //                         '${recdset[i]['Credit']}',
-                    //                         style: const TextStyle(
-                    //                             fontSize: 6,
-                    //                             fontWeight: FontWeight.bold),
-                    //                       ),
-                    //                     ],
-                    //                   ),
-                    //                 ),
-                    //                 Row(
-                    //                   mainAxisAlignment: MainAxisAlignment.end,
-                    //                   children: [
-                    //                     Padding(
-                    //                       padding: const EdgeInsets.all(2.0),
-                    //                       child: Text(
-                    //                         "${recdset[i]['Balance']}",
-                    //                         style: const TextStyle(
-                    //                             fontSize: 6,
-                    //                             color: Colors.black,
-                    //                             fontWeight: FontWeight.bold),
-                    //                       ),
-                    //                     ),
-                    //                   ],
-                    //                 ),
-                    //               ]),
-                    //           ],
-                    //           border: TableBorder.all(width: 1, color: Colors.blue),
-                    //         ),
-                    //       ),
-                    //       Table(
-                    //         columnWidths: const {
-                    //           0: FixedColumnWidth(45),
-                    //           1: FlexColumnWidth(15),
-                    //           2: FlexColumnWidth(8),
-                    //           3: FlexColumnWidth(9),
-                    //           4: FlexColumnWidth(8),
-                    //         },
-                    //         children: [
-                    //           for (var i = 0; i < displayedData.length; i++)
-                    //             TableRow(children: [
-                    //               Center(
-                    //                   child: Column(
-                    //                 children: [
-                    //                   Padding(
-                    //                     padding: const EdgeInsets.all(2.0),
-                    //                     child: Text(
-                    //                       '${displayedData[i]['Date']}',
-                    //                       style: const TextStyle(
-                    //                           fontSize: 6,
-                    //                           fontWeight: FontWeight.bold),
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               )),
-                    //               // Padding(
-                    //               //   padding: const EdgeInsets.all(2.0),
-                    //               //   child: Text(
-                    //               //     '${displayedData[i]['Particulars']}',
-                    //               //     style: const TextStyle(
-                    //               //         fontSize: 6, fontWeight: FontWeight.bold),
-                    //               //   ),
-                    //               // ),
-                    //               Padding(
-                    //                 padding: const EdgeInsets.all(2.0),
-                    //                 child: displayedData[i]['Particulars'] ==
-                    //                             'Opening Balance' ||
-                    //                         displayedData[i]['Particulars'] ==
-                    //                             'Closing Balance'
-                    //                     ? Text(
-                    //                         '${displayedData[i]['Particulars']}',
-                    //                         style: const TextStyle(
-                    //                             fontSize: 6,
-                    //                             fontWeight: FontWeight.bold),
-                    //                       )
-                    //                     : displayedData[i]['Particulars'].isNotEmpty
-                    //                         ? Text(
-                    //                             'Voucher:${displayedData[i]['Voucher']}\nNo:${displayedData[i]['EntryNo']}\n${displayedData[i]['Particulars']}',
-                    //                             style: const TextStyle(
-                    //                                 fontSize: 6,
-                    //                                 fontWeight: FontWeight.bold),
-                    //                           )
-                    //                         : const Text(''),
-                    //               ),
-                    //               Padding(
-                    //                 padding: const EdgeInsets.all(2.0),
-                    //                 child: Row(
-                    //                   mainAxisAlignment: MainAxisAlignment.end,
-                    //                   children: [
-                    //                     Text(
-                    //                       '${displayedData[i]['Debit']}',
-                    //                       style: const TextStyle(
-                    //                           fontSize: 6,
-                    //                           fontWeight: FontWeight.bold),
-                    //                     ),
-                    //                   ],
-                    //                 ),
-                    //               ),
-                    //               Padding(
-                    //                 padding: const EdgeInsets.all(2.0),
-                    //                 child: Row(
-                    //                   mainAxisAlignment: MainAxisAlignment.end,
-                    //                   children: [
-                    //                     Text(
-                    //                       '${displayedData[i]['Credit']}',
-                    //                       style: const TextStyle(
-                    //                           fontSize: 6,
-                    //                           fontWeight: FontWeight.bold),
-                    //                     ),
-                    //                   ],
-                    //                 ),
-                    //               ),
-                    //               Row(
-                    //                 mainAxisAlignment: MainAxisAlignment.end,
-                    //                 children: [
-                    //                   Padding(
-                    //                     padding: const EdgeInsets.all(2.0),
-                    //                     child: Text(
-                    //                       "${displayedData[i]['Balance']}",
-                    //                       style: const TextStyle(
-                    //                           fontSize: 6,
-                    //                           color: Colors.black,
-                    //                           fontWeight: FontWeight.bold),
-                    //                     ),
-                    //                   ),
-                    //                 ],
-                    //               ),
-                    //             ]),
-                    //         ],
-                    //         border: TableBorder.all(width: 1, color: Colors.blue),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ));
-                    Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(
-                              height: 30,
-                            ),
-                            const Text(
-                              "ACCOUNT SUMMERY",
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              "${tempLedgerData!.name} ",
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  "From  ${DateUtil.dateDMY(widget.sDate)}",
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(
-                                  width: 15,
-                                ),
-                                Text(
-                                  "To  ${DateUtil.dateDMY(widget.eDate)}",
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                     Padding(
-                      padding: const EdgeInsets.only(left: 15.0, right: 10),
-                      child: Expanded(
-                        child: SfDataGridTheme(
-                          data: SfDataGridThemeData(
-                              headerColor: Colors.blue,
-                              gridLineColor: Colors.blue,
-                              filterIconColor: Colors.white),
-                          child: SfDataGrid(
-                            headerRowHeight: 25,
-                            gridLinesVisibility: GridLinesVisibility.both,
-                            headerGridLinesVisibility: GridLinesVisibility.both,
-                            source: EmployeeDataSource(recdset),
-                            // allowSorting: true,
-
-                     allowFiltering: true,
-                            columns: [
-                              GridColumn(
-                                  width: size.width * 0.2,
-                                  columnName: 'Date',
-                                  label: const Text(
-                                    ' Date',
-                                    style: TextStyle(
-                                        fontSize: 6, color: Colors.white),
-                                  )),
-                              GridColumn(
-                                  width: 100,
-                                  columnName: 'Description',
-                                  label: const Text(' Description',
-                                      style: TextStyle(
-                                          fontSize: 6, color: Colors.white))),
-                              GridColumn(
-                                  filterIconPadding: const EdgeInsets.all(0),
-                                  width: 58,
-                                  columnName: 'Debit',
-                                  label: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        'Debit',
-                                        style: TextStyle(
-                                            fontSize: 6, color: Colors.white),
-                                      ),
-                                    ],
-                                  )),
-                              GridColumn(
-                                  filterIconPadding: const EdgeInsets.all(0),
-                                  width: 58,
-                                  columnName: 'Credit',
-                                  label: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text('Credit',
-                                          style: TextStyle(
-                                              fontSize: 6,
-                                              color: Colors.white)),
-                                    ],
-                                  )),
-                              GridColumn(
-                                  filterIconPadding: const EdgeInsets.all(0),
-                                  width: 70,
-                                  columnName: 'Balance',
-                                  label: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text('Balance',
-                                          style: TextStyle(
-                                              fontSize: 6,
-                                              color: Colors.white)),
-                                    ],
-                                  )),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                height: 30,
+                              ),
+                              const Text(
+                                "ACCOUNT SUMMERY",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Text(
+                                "${widget.name} ",
+                                style: TextStyle(
+                                    fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "From  ${DateUtil.dateDMY(widget.sDate)}",
+                                    style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(
+                                    width: 15,
+                                  ),
+                                  Text(
+                                    "To  ${DateUtil.dateDMY(widget.eDate)}",
+                                    style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
-                    ),
-                  ],
-                );
+                      const SizedBox(
+                        height: 10,
+                      ),
+                       Expanded(
+                         child: SfDataGridTheme(
+                           data: SfDataGridThemeData(
+                               headerColor: kPrimaryColor,
+                               gridLineColor: grey,
+                               filterIconColor: Colors.white),
+                           child: SfDataGrid(
+                             headerRowHeight: 30,
+                            //  rowHeight: 20,
+                             gridLinesVisibility: GridLinesVisibility.both,
+                             headerGridLinesVisibility: GridLinesVisibility.both,
+                             source: EmployeeDataSource(recdset),
+                             // allowSorting: true,                  
+                             allowFiltering: true,
+                             columns: [
+                               GridColumn(
+                                   width: size.width * 0.2,
+                                   columnName: 'Date',
+                                   label: const Text(
+                                     ' Date',
+                                     style: TextStyle(
+                                         fontSize: 6, color: Colors.white),
+                                   )),
+                               GridColumn(
+                                   width: 100,
+                                   columnName: 'Description',
+                                   label: const Text(' Description',
+                                       style: TextStyle(
+                                           fontSize: 6, color: Colors.white))),
+                               GridColumn(
+                                   filterIconPadding: const EdgeInsets.all(0),
+                                   width: 58,
+                                   columnName: 'Debit',
+                                   label: const Row(
+                                     mainAxisAlignment: MainAxisAlignment.end,
+                                     children: [
+                                       Text(
+                                         'Debit',
+                                         style: TextStyle(
+                                             fontSize: 6, color: Colors.white),
+                                       ),
+                                     ],
+                                   )),
+                               GridColumn(
+                                   filterIconPadding: const EdgeInsets.all(0),
+                                   width: 58,
+                                   columnName: 'Credit',
+                                   label: const Row(
+                                     mainAxisAlignment: MainAxisAlignment.end,
+                                     children: [
+                                       Text('Credit',
+                                           style: TextStyle(
+                                               fontSize: 6,
+                                               color: Colors.white)),
+                                     ],
+                                   )),
+                               GridColumn(
+                                   filterIconPadding: const EdgeInsets.all(0),
+                                   width: 70,
+                                   columnName: 'Balance',
+                                   label: const Row(
+                                     mainAxisAlignment: MainAxisAlignment.end,
+                                     children: [
+                                       Text('Balance',
+                                           style: TextStyle(
+                                               fontSize: 6,
+                                               color: Colors.white)),
+                                     ],
+                                   )),
+                             ],
+                           ),
+                         ),
+                       ),
+                                        ],
+                                      ),
+                    );
               }
             }
             return Container();
@@ -4026,7 +3674,7 @@ class _ReportViewState extends State<ReportView> {
         maxPages: 50,
         pageFormat: pw.PdfPageFormat.a4,
         header: (pw.Context context) =>
-            _buildHeader(widget.sDate, widget.eDate),
+            _buildHeader(widget.sDate, widget.eDate,widget.name),
         footer: (pw.Context context) => _buildFooter(context),
         build: (pw.Context context) {
           List<pw.Widget> widgets = [
@@ -4124,7 +3772,7 @@ class _ReportViewState extends State<ReportView> {
                   ]),
               ],
               border: pw.TableBorder.all(
-                  width: 1, color: const pw.PdfColor.fromInt(0xFF0000FF)),
+                  width: 1, color: const pw.PdfColor.fromInt(0xFF000000)),
             ),
           ];
 
@@ -4857,7 +4505,7 @@ class _ReportViewState extends State<ReportView> {
   }
 }
 
-_buildHeader(sDate, eDate) {
+_buildHeader(sDate, eDate,name) {
   return pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
     pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.center,
@@ -4865,7 +4513,7 @@ _buildHeader(sDate, eDate) {
       children: [
         pw.Column(
           mainAxisAlignment: pw.MainAxisAlignment.start,
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
             pw.Text(
               "ACCOUNT SUMMERY",
@@ -4875,7 +4523,7 @@ _buildHeader(sDate, eDate) {
               height: 12,
             ),
             pw.Text(
-              "${tempLedgerData!.name} ",
+              "$name ",
               style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
             pw.Row(

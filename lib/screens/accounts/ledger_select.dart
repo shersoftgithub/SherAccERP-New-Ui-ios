@@ -275,7 +275,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
               icon: const Icon(Icons.clear))
         ],
         titleTextStyle:
-            const TextStyle(fontFamily: 'poppins', fontWeight: FontWeight.w500),
+            const TextStyle(fontFamily: 'poppins', 
+            fontWeight: FontWeight.w500),
         title: Text(mode == 'ledger'
             ? 'Ledger Report'
             : mode == 'billByBill'
@@ -369,84 +370,85 @@ var _ledger, _id, locationId, _dropDownBranchId;
                 const SizedBox(
                   height: 15,
                 ),
-                Row(
-                  children: [
-                    const Text(
-                      'From ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          fontFamily: 'poppins'),
-                    ),
-                    InkWell(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 5),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: grey),
-                            borderRadius: BorderRadius.circular(3)),
-                        child: Row(
-                          children: [
-                            Text(
-                              fromDate!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
-                                  fontFamily: 'poppins'),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            const Icon(
-                              Icons.calendar_month_outlined,
-                              color: grey,
-                              size: 20,
-                            )
-                          ],
-                        ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Row(
+                    children: [
+                      const Text(
+                        'From ',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontFamily: 'poppins'),
                       ),
-                      onTap: () => _selectDate('f'),
-                    ),
-                    const SizedBox(
-                      width: 16,
-                    ),
-                    const Text(
-                      'To ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          fontFamily: 'poppins'),
-                    ),
-                    InkWell(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 5),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: grey),
-                            borderRadius: BorderRadius.circular(3)),
-                        child: Row(
-                          children: [
-                            Text(
-                              toDate!,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
-                                  fontFamily: 'poppins'),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            const Icon(
-                              Icons.calendar_month_outlined,
-                              color: grey,
-                              size: 20,
-                            )
-                          ],
+                      InkWell(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child: Row(
+                            children: [
+                              Text(
+                                fromDate!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15,
+                                    fontFamily: 'poppins'),
+                              ),
+                              const SizedBox(
+                                width: 8,
+                              ),
+                              const Icon(
+                                Icons.calendar_month_outlined,
+                                color: grey,
+                                size: 20,
+                              )
+                            ],
+                          ),
                         ),
+                        onTap: () => _selectDate('f'),
                       ),
-                      onTap: () => _selectDate('t'),
-                    ),
-                  ],
+                      const Spacer(),
+                      const Text(
+                        'To ',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            fontFamily: 'poppins'),
+                      ),
+                      InkWell(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3)),
+                          child: Row(
+                            children: [
+                              Text(
+                                toDate!,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15,
+                                    fontFamily: 'poppins'),
+                              ),
+                              const SizedBox(
+                                width: 8,
+                              ),
+                              const Icon(
+                                Icons.calendar_month_outlined,
+                                color: grey,
+                                size: 20,
+                              )
+                            ],
+                          ),
+                        ),
+                        onTap: () => _selectDate('t'),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
@@ -601,84 +603,85 @@ var _ledger, _id, locationId, _dropDownBranchId;
                     const SizedBox(
                       height: 10,
                     ),
-                    Row(
-                      children: [
-                        const Text(
-                          'From ',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              fontFamily: 'poppins'),
-                        ),
-                        InkWell(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 5),
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Row(
-                              children: [
-                                Text(
-                                  fromDate!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                      fontFamily: 'poppins'),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                const Icon(
-                                  Icons.calendar_month_outlined,
-                                  color: grey,
-                                  size: 20,
-                                )
-                              ],
-                            ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        children: [
+                          const Text(
+                            'From ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                                fontFamily: 'poppins'),
                           ),
-                          onTap: () => _selectDate('f'),
-                        ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        const Text(
-                          'To ',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              fontFamily: 'poppins'),
-                        ),
-                        InkWell(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 5),
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Row(
-                              children: [
-                                Text(
-                                  toDate!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                      fontFamily: 'poppins'),
-                                ),
-                                const SizedBox(
-                                  width: 8,
-                                ),
-                                const Icon(
-                                  Icons.calendar_month_outlined,
-                                  color: grey,
-                                  size: 20,
-                                )
-                              ],
+                          InkWell(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 5),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    fromDate!,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  const Icon(
+                                    Icons.calendar_month_outlined,
+                                    color: grey,
+                                    size: 20,
+                                  )
+                                ],
+                              ),
                             ),
+                            onTap: () => _selectDate('f'),
                           ),
-                          onTap: () => _selectDate('t'),
-                        ),
-                      ],
+                          const Spacer(),
+                          const Text(
+                            'To ',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                                fontFamily: 'poppins'),
+                          ),
+                          InkWell(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 5),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    toDate!,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  const Icon(
+                                    Icons.calendar_month_outlined,
+                                    color: grey,
+                                    size: 20,
+                                  )
+                                ],
+                              ),
+                            ),
+                            onTap: () => _selectDate('t'),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(
                       height: 10,
@@ -783,84 +786,85 @@ var _ledger, _id, locationId, _dropDownBranchId;
                         //   style: TextStyle(
                         //       fontWeight: FontWeight.bold, fontSize: 18),
                         // ),
-                        Row(
-                          children: [
-                            const Text(
-                              'From ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  fontFamily: 'poppins'),
-                            ),
-                            InkWell(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 5),
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      fromDate!,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                          fontFamily: 'poppins'),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    const Icon(
-                                      Icons.calendar_month_outlined,
-                                      color: grey,
-                                      size: 20,
-                                    )
-                                  ],
-                                ),
+                        SizedBox(
+                           width: MediaQuery.of(context).size.width,
+                          child: Row(
+                            children: [
+                              const Text(
+                                'From ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    fontFamily: 'poppins'),
                               ),
-                              onTap: () => _selectDate('f'),
-                            ),
-                            const SizedBox(
-                              width: 16,
-                            ),
-                            const Text(
-                              'To ',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                  fontFamily: 'poppins'),
-                            ),
-                            InkWell(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 8),
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      toDate!,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15,
-                                          fontFamily: 'poppins'),
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    const Icon(
-                                      Icons.calendar_month_outlined,
-                                      color: grey,
-                                      size: 20,
-                                    )
-                                  ],
+                              InkWell(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 5),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        fromDate!,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      const Icon(
+                                        Icons.calendar_month_outlined,
+                                        color: grey,
+                                        size: 20,
+                                      )
+                                    ],
+                                  ),
                                 ),
+                                onTap: () => _selectDate('f'),
                               ),
-                              onTap: () => _selectDate('t'),
-                            ),
-                          ],
+                              const Spacer(),
+                              const Text(
+                                'To ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    fontFamily: 'poppins'),
+                              ),
+                              InkWell(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 5),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        toDate!,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      const Icon(
+                                        Icons.calendar_month_outlined,
+                                        color: grey,
+                                        size: 20,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                onTap: () => _selectDate('t'),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
@@ -947,84 +951,85 @@ var _ledger, _id, locationId, _dropDownBranchId;
                             const SizedBox(
                               height: 15,
                             ),
-                            Row(
-                              children: [
-                                const Text(
-                                  'From ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      fontFamily: 'poppins'),
-                                ),
-                                InkWell(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 5),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: grey),
-                                        borderRadius: BorderRadius.circular(3)),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          fromDate!,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 15,
-                                              fontFamily: 'poppins'),
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        const Icon(
-                                          Icons.calendar_month_outlined,
-                                          color: grey,
-                                          size: 20,
-                                        )
-                                      ],
-                                    ),
+                            SizedBox(
+                               width: MediaQuery.of(context).size.width,
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    'From ',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        fontFamily: 'poppins'),
                                   ),
-                                  onTap: () => _selectDate('f'),
-                                ),
-                                const SizedBox(
-                                  width: 16,
-                                ),
-                                const Text(
-                                  'To ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                      fontFamily: 'poppins'),
-                                ),
-                                InkWell(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 5),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: grey),
-                                        borderRadius: BorderRadius.circular(3)),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          toDate!,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 15,
-                                              fontFamily: 'poppins'),
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        const Icon(
-                                          Icons.calendar_month_outlined,
-                                          color: grey,
-                                          size: 20,
-                                        )
-                                      ],
+                                  InkWell(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 5),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius: BorderRadius.circular(3)),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            fromDate!,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 15,
+                                                fontFamily: 'poppins'),
+                                          ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: grey,
+                                            size: 20,
+                                          )
+                                        ],
+                                      ),
                                     ),
+                                    onTap: () => _selectDate('f'),
                                   ),
-                                  onTap: () => _selectDate('t'),
-                                ),
-                              ],
+                                  const Spacer(),
+                                  const Text(
+                                    'To ',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        fontFamily: 'poppins'),
+                                  ),
+                                  InkWell(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 5),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: grey),
+                                          borderRadius: BorderRadius.circular(3)),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            toDate!,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 15,
+                                                fontFamily: 'poppins'),
+                                          ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: grey,
+                                            size: 20,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    onTap: () => _selectDate('t'),
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(
                               height: 10,
@@ -1087,86 +1092,87 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                 horizontal: 20, vertical: 16),
                             child: Column(
                               children: [
-                                Row(
-                                  children: [
-                                    const Text(
-                                      'From ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                          fontFamily: 'poppins'),
-                                    ),
-                                    InkWell(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 5),
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: grey),
-                                            borderRadius:
-                                                BorderRadius.circular(3)),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              fromDate!,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 15,
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            const SizedBox(
-                                              width: 8,
-                                            ),
-                                            const Icon(
-                                              Icons.calendar_month_outlined,
-                                              color: grey,
-                                              size: 20,
-                                            )
-                                          ],
-                                        ),
+                                SizedBox(
+                                   width: MediaQuery.of(context).size.width,
+                                  child: Row(
+                                    children: [
+                                      const Text(
+                                        'From ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                            fontFamily: 'poppins'),
                                       ),
-                                      onTap: () => _selectDate('f'),
-                                    ),
-                                    const SizedBox(
-                                      width: 16,
-                                    ),
-                                    const Text(
-                                      'To ',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                          fontFamily: 'poppins'),
-                                    ),
-                                    InkWell(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 5),
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: grey),
-                                            borderRadius:
-                                                BorderRadius.circular(3)),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              toDate!,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 15,
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            const SizedBox(
-                                              width: 8,
-                                            ),
-                                            const Icon(
-                                              Icons.calendar_month_outlined,
-                                              color: grey,
-                                              size: 20,
-                                            )
-                                          ],
+                                      InkWell(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 5),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                fromDate!,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 15,
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              const SizedBox(
+                                                width: 8,
+                                              ),
+                                              const Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: grey,
+                                                size: 20,
+                                              )
+                                            ],
+                                          ),
                                         ),
+                                        onTap: () => _selectDate('f'),
                                       ),
-                                      onTap: () => _selectDate('t'),
-                                    ),
-                                  ],
+                                      const Spacer(),
+                                      const Text(
+                                        'To ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      InkWell(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 5),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(color: grey),
+                                              borderRadius:
+                                                  BorderRadius.circular(3)),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                toDate!,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 15,
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              const SizedBox(
+                                                width: 8,
+                                              ),
+                                              const Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: grey,
+                                                size: 20,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        onTap: () => _selectDate('t'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 const SizedBox(
                                   height: 10,
@@ -1257,88 +1263,89 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     horizontal: 20, vertical: 16),
                                 child: Column(
                                   children: [
-                                    Row(
-                                      children: [
-                                        const Text(
-                                          'From ',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
-                                              fontFamily: 'poppins'),
-                                        ),
-                                        InkWell(
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 5),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color: grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  fromDate!,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 15,
-                                                      fontFamily: 'poppins'),
-                                                ),
-                                                const SizedBox(
-                                                  width: 8,
-                                                ),
-                                                const Icon(
-                                                  Icons.calendar_month_outlined,
-                                                  color: grey,
-                                                  size: 20,
-                                                )
-                                              ],
-                                            ),
+                                    SizedBox(
+                                       width: MediaQuery.of(context).size.width,
+                                      child: Row(
+                                        children: [
+                                          const Text(
+                                            'From ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontFamily: 'poppins'),
                                           ),
-                                          onTap: () => _selectDate('f'),
-                                        ),
-                                        const SizedBox(
-                                          width: 16,
-                                        ),
-                                        const Text(
-                                          'To ',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16,
-                                              fontFamily: 'poppins'),
-                                        ),
-                                        InkWell(
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 5),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color: grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(3)),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  toDate!,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 15,
-                                                      fontFamily: 'poppins'),
-                                                ),
-                                                const SizedBox(
-                                                  width: 8,
-                                                ),
-                                                const Icon(
-                                                  Icons.calendar_month_outlined,
-                                                  color: grey,
-                                                  size: 20,
-                                                )
-                                              ],
+                                          InkWell(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 5),
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(color: grey),
+                                                  borderRadius:
+                                                      BorderRadius.circular(3)),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    fromDate!,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15,
+                                                        fontFamily: 'poppins'),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 8,
+                                                  ),
+                                                  const Icon(
+                                                    Icons.calendar_month_outlined,
+                                                    color: grey,
+                                                    size: 20,
+                                                  )
+                                                ],
+                                              ),
                                             ),
+                                            onTap: () => _selectDate('f'),
                                           ),
-                                          onTap: () => _selectDate('t'),
-                                        ),
-                                      ],
+                                          const Spacer(),
+                                          const Text(
+                                            'To ',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontFamily: 'poppins'),
+                                          ),
+                                          InkWell(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 5),
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(color: grey),
+                                                  borderRadius:
+                                                      BorderRadius.circular(3)),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    toDate!,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 15,
+                                                        fontFamily: 'poppins'),
+                                                  ),
+                                                  const SizedBox(
+                                                    width: 8,
+                                                  ),
+                                                  const Icon(
+                                                    Icons.calendar_month_outlined,
+                                                    color: grey,
+                                                    size: 20,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            onTap: () => _selectDate('t'),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                     const SizedBox(
                                       height: 10,
@@ -1400,100 +1407,101 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                         horizontal: 20, vertical: 16),
                                     child: Column(
                                       children: [
-                                        Row(
-                                          children: [
-                                            const Text(
-                                              'From ',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 16,
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            InkWell(
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5),
-                                                decoration: BoxDecoration(
-                                                    border:
-                                                        Border.all(color: grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      fromDate!,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 15,
-                                                          fontFamily:
-                                                              'poppins'),
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 8,
-                                                    ),
-                                                    const Icon(
-                                                      Icons
-                                                          .calendar_month_outlined,
-                                                      color: grey,
-                                                      size: 20,
-                                                    )
-                                                  ],
-                                                ),
+                                        SizedBox(
+                                           width: MediaQuery.of(context).size.width,
+                                          child: Row(
+                                            children: [
+                                              const Text(
+                                                'From ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    fontFamily: 'poppins'),
                                               ),
-                                              onTap: () => _selectDate('f'),
-                                            ),
-                                            const SizedBox(
-                                              width: 16,
-                                            ),
-                                            const Text(
-                                              'To ',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 16,
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            InkWell(
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5),
-                                                decoration: BoxDecoration(
-                                                    border:
-                                                        Border.all(color: grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      toDate!,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 15,
-                                                          fontFamily:
-                                                              'poppins'),
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 10,
-                                                    ),
-                                                    const Icon(
-                                                      Icons
-                                                          .calendar_month_outlined,
-                                                      color: grey,
-                                                      size: 20,
-                                                    )
-                                                  ],
+                                              InkWell(
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                      border:
+                                                          Border.all(color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        fromDate!,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 15,
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 8,
+                                                      ),
+                                                      const Icon(
+                                                        Icons
+                                                            .calendar_month_outlined,
+                                                        color: grey,
+                                                        size: 20,
+                                                      )
+                                                    ],
+                                                  ),
                                                 ),
+                                                onTap: () => _selectDate('f'),
                                               ),
-                                              onTap: () => _selectDate('t'),
-                                            ),
-                                          ],
+                                              const Spacer(),
+                                              const Text(
+                                                'To ',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              InkWell(
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 5),
+                                                  decoration: BoxDecoration(
+                                                      border:
+                                                          Border.all(color: grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3)),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        toDate!,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 15,
+                                                            fontFamily:
+                                                                'poppins'),
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      const Icon(
+                                                        Icons
+                                                            .calendar_month_outlined,
+                                                        color: grey,
+                                                        size: 20,
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
+                                                onTap: () => _selectDate('t'),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                         const SizedBox(
                                           height: 10,
@@ -1556,461 +1564,464 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     ),
                                   )
                                 : mode == 'GroupList'
-                                    ? Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 16),
-                                        child: Column(
-                                          children: [
-                                            Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                _ledger,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 18,
-                                                    color: kPrimaryColor,
-                                                    fontFamily: 'poppins'),
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 15,
-                                            ),
-                                            Row(
-                                              children: [
-                                                const Text(
-                                                  'From ',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 16,
+                                    ? SingleChildScrollView(
+                                      child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 16),
+                                          child: Column(
+                                            children: [
+                                              Align(
+                                                alignment: Alignment.topLeft,
+                                                child: Text(
+                                                  _ledger,
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 18,
+                                                      color: kPrimaryColor,
                                                       fontFamily: 'poppins'),
                                                 ),
-                                                InkWell(
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5),
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: grey),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(3)),
-                                                    child: Row(
-                                                      children: [
-                                                        Text(
-                                                          fromDate!,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 15,
-                                                              fontFamily:
-                                                                  'poppins'),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 8,
-                                                        ),
-                                                        const Icon(
-                                                          Icons
-                                                              .calendar_month_outlined,
-                                                          color: grey,
-                                                          size: 20,
-                                                        )
-                                                      ],
+                                              ),
+                                              const SizedBox(
+                                                height: 15,
+                                              ),
+                                              SizedBox(
+                                                 width: MediaQuery.of(context).size.width,
+                                                child: Row(
+                                                  children: [
+                                                    const Text(
+                                                      'From ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 16,
+                                                          fontFamily: 'poppins'),
                                                     ),
-                                                  ),
-                                                  onTap: () => _selectDate('f'),
-                                                ),
-                                                const SizedBox(
-                                                  width: 16,
-                                                ),
-                                                const Text(
-                                                  'To ',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 16,
-                                                      fontFamily: 'poppins'),
-                                                ),
-                                                InkWell(
-                                                  child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5),
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: grey),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(3)),
-                                                    child: Row(
-                                                      children: [
-                                                        Text(
-                                                          toDate!,
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 15,
-                                                              fontFamily:
-                                                                  'poppins'),
+                                                    InkWell(
+                                                      child: Container(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 5),
+                                                        decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                                color: grey),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(3)),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(
+                                                              fromDate!,
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 15,
+                                                                  fontFamily:
+                                                                      'poppins'),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 8,
+                                                            ),
+                                                            const Icon(
+                                                              Icons
+                                                                  .calendar_month_outlined,
+                                                              color: grey,
+                                                              size: 20,
+                                                            )
+                                                          ],
                                                         ),
-                                                        const SizedBox(
-                                                          width: 8,
+                                                      ),
+                                                      onTap: () => _selectDate('f'),
+                                                    ),
+                                                    const Spacer(),
+                                                    const Text(
+                                                      'To ',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 16,
+                                                          fontFamily: 'poppins'),
+                                                    ),
+                                                    InkWell(
+                                                      child: Container(
+                                                        padding: const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 5),
+                                                        decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                                color: grey),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(3)),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(
+                                                              toDate!,
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 15,
+                                                                  fontFamily:
+                                                                      'poppins'),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 8,
+                                                            ),
+                                                            const Icon(
+                                                              Icons
+                                                                  .calendar_month_outlined,
+                                                              color: grey,
+                                                              size: 20,
+                                                            )
+                                                          ],
                                                         ),
-                                                        const Icon(
-                                                          Icons
-                                                              .calendar_month_outlined,
-                                                          color: grey,
-                                                          size: 20,
-                                                        )
-                                                      ],
+                                                      ),
+                                                      onTap: () => _selectDate('t'),
                                                     ),
-                                                  ),
-                                                  onTap: () => _selectDate('t'),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                  .width,
-                                              height: 40,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(3),
-                                                  border:
-                                                      Border.all(color: grey)),
-                                              child: Row(
-                                                children: [
-                                                  Radio(
-                                                    value: 1,
-                                                    activeColor: kPrimaryColor,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        rdId = 1;
-                                                        radioButtonItem = 'All';
-                                                        _gAll = true;
-                                                        _ob = false;
-                                                        _0b = false;
-                                                      });
-                                                    },
-                                                    groupValue: rdId,
-                                                  ),
-                                                  const Text(
-                                                    'All',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
-                                                        fontFamily: 'poppins'),
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 20,
-                                                  ),
-                                                  Radio(
-                                                    value: 2,
-                                                    activeColor: kPrimaryColor,
-                                                    groupValue: rdId,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        rdId = 2;
-                                                        radioButtonItem =
-                                                            'Balance';
-                                                        _ob = true;
-                                                        _gAll = false;
-                                                        _0b = false;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const Text(
-                                                    'Balance',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
-                                                        fontFamily: 'poppins'),
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  Radio(
-                                                    value: 3,
-                                                    activeColor: kPrimaryColor,
-                                                    groupValue: rdId,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        rdId = 3;
-                                                        radioButtonItem =
-                                                            '0 Balance';
-                                                        _0b = true;
-                                                        _gAll = false;
-                                                        _ob = false;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const Text(
-                                                    '0 Balance',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
-                                                        fontFamily: 'poppins'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            ContainerFieldWidget(
-                                                widget: DropdownSearch<dynamic>(
-                                                  popupProps:
-                                                      const PopupPropsMultiSelection
-                                                          .modalBottomSheet(
-                                                          showSearchBox: true,
-                                                          constraints:
-                                                              BoxConstraints(
-                                                                  maxHeight:
-                                                                      300)),
-                                                  asyncItems: (String filter) =>
-                                                      api.getSalesListData(
-                                                          filter,
-                                                          'sales_list/location'),
-                                                  dropdownDecoratorProps:
-                                                      const DropDownDecoratorProps(
-                                                    dropdownSearchDecoration:
-                                                        InputDecoration(
-                                                      border:
-                                                          OutlineInputBorder(),
-                                                    ),
-                                                  ),
-                                                  onChanged: (dynamic data) {
-                                                    locationId = data;
-                                                  },
-                                                ),
-                                                headTxt: 'Select Branch'),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 5),
-                                              width: MediaQuery.sizeOf(context)
-                                                  .width,
-                                              decoration: BoxDecoration(
-                                                  border:
-                                                      Border.all(color: grey),
-                                                  borderRadius:
-                                                      BorderRadius.circular(3)),
-                                              child:
-                                                  DropdownButtonHideUnderline(
-                                                child: DropdownButton(
-                                                  isExpanded: true,
-                                                  icon: const Icon(Icons
-                                                      .keyboard_arrow_down),
-                                                  items: [
-                                                    'Summery',
-                                                    'Simple',
-                                                    'Ledger Model',
-                                                    'Summery Area Wise',
-                                                    'Group & Ledger',
-                                                    'PV/RV Report',
-                                                    'Salesman Wise Group List',
-                                                    'Group List All Groups',
-                                                    'Balance Order By Date'
-                                                  ].map((String items) {
-                                                    return DropdownMenuItem(
-                                                      value: items,
-                                                      child: Text(items),
-                                                    );
-                                                  }).toList(),
-                                                  value: sType,
-                                                  onChanged: (value) {
-                                                    setState(() {
-                                                      sType = value;
-                                                      statement = value ==
-                                                              'Summery'
-                                                          ? 'SummeryAll'
-                                                          : value == 'Simple'
-                                                              ? 'SimpleGList'
-                                                              : value ==
-                                                                      'Ledger Model'
-                                                                  ? 'Ledger_Model'
-                                                                  : value ==
-                                                                          'Summery Area Wise'
-                                                                      ? 'SummeryAreaWise'
-                                                                      : value ==
-                                                                              'Group & Ledger'
-                                                                          ? 'Group_Ledger'
-                                                                          : value == 'PV/RV Report'
-                                                                              ? 'PV/RV Report'
-                                                                              : value == 'Salesman Wise Group List'
-                                                                                  ? 'SalesmanGroupList'
-                                                                                  : value == 'Group List All Groups'
-                                                                                      ? 'GroupListAllGroups'
-                                                                                      : value == 'Balance Order By Date'
-                                                                                          ? 'Balance Order By Date'
-                                                                                          : 'SummeryAll';
-                                                    });
-                                                  },
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                statement = sType == 'Summery'
-                                                    ? _gAll
-                                                        ? 'SummeryAll'
-                                                        : _ob
-                                                            ? 'SummeryBalanceOnly'
-                                                            : 'SummeryZeroBalanceOnly'
-                                                    : statement;
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            ReportView(
-                                                                _id.toString(),
-                                                                '1',
-                                                                DateUtil
-                                                                    .dateDMY2YMD(
-                                                                        fromDate),
-                                                                DateUtil
-                                                                    .dateDMY2YMD(
-                                                                        toDate),
-                                                                'GroupList',
-                                                                _ledger,
-                                                                statement,
-                                                                salesMan,
-                                                                locationId !=
-                                                                        null
-                                                                    ? [
-                                                                        locationId
-                                                                            .id
-                                                                      ]
-                                                                    : [
-                                                                        _dropDownBranchId
-                                                                      ],
-                                                                area!,
-                                                                route!)));
-                                              },
-                                              style: ButtonStyle(
-                                                shape: MaterialStatePropertyAll(
-                                                    RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(3))),
-                                                backgroundColor:
-                                                    MaterialStateProperty.all<
-                                                        Color>(kPrimaryColor),
-                                                foregroundColor:
-                                                    MaterialStateProperty.all<
-                                                        Color>(Colors.white),
+                                              const SizedBox(
+                                                height: 10,
                                               ),
-                                              child: const Text(
-                                                'Show',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
-                                                    fontFamily: 'poppins'),
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            ContainerFieldWidget(
-                                                widget: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(horizontal: 5),
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3)),
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                    child: DropdownButton<
-                                                        OtherRegistrationModel>(
-                                                      isExpanded: true,
-                                                      icon: const Icon(Icons
-                                                          .keyboard_arrow_down),
-                                                      items: otherRegAreaList.map(
-                                                          (OtherRegistrationModel
-                                                              items) {
-                                                        return DropdownMenuItem<
-                                                            OtherRegistrationModel>(
-                                                          value: items,
-                                                          child:
-                                                              Text(items.name),
-                                                        );
-                                                      }).toList(),
-                                                      value: areaModel,
+                                              Container(
+                                                width: MediaQuery.sizeOf(context)
+                                                    .width,
+                                                height: 40,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(3),
+                                                    border:
+                                                        Border.all(color: grey)),
+                                                child: Row(
+                                                  children: [
+                                                    Radio(
+                                                      value: 1,
+                                                      activeColor: kPrimaryColor,
                                                       onChanged: (value) {
                                                         setState(() {
-                                                          areaModel = value;
-                                                          area = value!.id
-                                                              .toString();
+                                                          rdId = 1;
+                                                          radioButtonItem = 'All';
+                                                          _gAll = true;
+                                                          _ob = false;
+                                                          _0b = false;
+                                                        });
+                                                      },
+                                                      groupValue: rdId,
+                                                    ),
+                                                    const Text(
+                                                      'All',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                          fontFamily: 'poppins'),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    Radio(
+                                                      value: 2,
+                                                      activeColor: kPrimaryColor,
+                                                      groupValue: rdId,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          rdId = 2;
+                                                          radioButtonItem =
+                                                              'Balance';
+                                                          _ob = true;
+                                                          _gAll = false;
+                                                          _0b = false;
                                                         });
                                                       },
                                                     ),
-                                                  ),
-                                                ),
-                                                headTxt: 'Select Area'),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            ContainerFieldWidget(
-                                                widget: Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(horizontal: 5),
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3)),
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                    child: DropdownButton<
-                                                        OtherRegistrationModel>(
-                                                      isExpanded: true,
-                                                      icon: const Icon(Icons
-                                                          .keyboard_arrow_down),
-                                                      items: otherRegRouteList.map(
-                                                          (OtherRegistrationModel
-                                                              items) {
-                                                        return DropdownMenuItem<
-                                                            OtherRegistrationModel>(
-                                                          value: items,
-                                                          child:
-                                                              Text(items.name),
-                                                        );
-                                                      }).toList(),
-                                                      value: routeModel,
+                                                    const Text(
+                                                      'Balance',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                          fontFamily: 'poppins'),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 10,
+                                                    ),
+                                                    Radio(
+                                                      value: 3,
+                                                      activeColor: kPrimaryColor,
+                                                      groupValue: rdId,
                                                       onChanged: (value) {
-                                                        routeModel = value;
-                                                        route = value!.id
-                                                            .toString();
+                                                        setState(() {
+                                                          rdId = 3;
+                                                          radioButtonItem =
+                                                              '0 Balance';
+                                                          _0b = true;
+                                                          _gAll = false;
+                                                          _ob = false;
+                                                        });
                                                       },
                                                     ),
+                                                    const Text(
+                                                      '0 Balance',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 15,
+                                                          fontFamily: 'poppins'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              ContainerFieldWidget(
+                                                  widget: DropdownSearch<dynamic>(
+                                                    popupProps:
+                                                        const PopupPropsMultiSelection
+                                                            .modalBottomSheet(
+                                                            showSearchBox: true,
+                                                            constraints:
+                                                                BoxConstraints(
+                                                                    maxHeight:
+                                                                        300)),
+                                                    asyncItems: (String filter) =>
+                                                        api.getSalesListData(
+                                                            filter,
+                                                            'sales_list/location'),
+                                                    dropdownDecoratorProps:
+                                                        const DropDownDecoratorProps(
+                                                      dropdownSearchDecoration:
+                                                          InputDecoration(
+                                                        border:
+                                                            OutlineInputBorder(),
+                                                      ),
+                                                    ),
+                                                    onChanged: (dynamic data) {
+                                                      locationId = data;
+                                                    },
+                                                  ),
+                                                  headTxt: 'Select Branch'),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 5),
+                                                width: MediaQuery.sizeOf(context)
+                                                    .width,
+                                                decoration: BoxDecoration(
+                                                    border:
+                                                        Border.all(color: grey),
+                                                    borderRadius:
+                                                        BorderRadius.circular(3)),
+                                                child:
+                                                    DropdownButtonHideUnderline(
+                                                  child: DropdownButton(
+                                                    isExpanded: true,
+                                                    icon: const Icon(Icons
+                                                        .keyboard_arrow_down),
+                                                    items: [
+                                                      'Summery',
+                                                      'Simple',
+                                                      'Ledger Model',
+                                                      'Summery Area Wise',
+                                                      'Group & Ledger',
+                                                      'PV/RV Report',
+                                                      'Salesman Wise Group List',
+                                                      'Group List All Groups',
+                                                      'Balance Order By Date'
+                                                    ].map((String items) {
+                                                      return DropdownMenuItem(
+                                                        value: items,
+                                                        child: Text(items),
+                                                      );
+                                                    }).toList(),
+                                                    value: sType,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        sType = value;
+                                                        statement = value ==
+                                                                'Summery'
+                                                            ? 'SummeryAll'
+                                                            : value == 'Simple'
+                                                                ? 'SimpleGList'
+                                                                : value ==
+                                                                        'Ledger Model'
+                                                                    ? 'Ledger_Model'
+                                                                    : value ==
+                                                                            'Summery Area Wise'
+                                                                        ? 'SummeryAreaWise'
+                                                                        : value ==
+                                                                                'Group & Ledger'
+                                                                            ? 'Group_Ledger'
+                                                                            : value == 'PV/RV Report'
+                                                                                ? 'PV/RV Report'
+                                                                                : value == 'Salesman Wise Group List'
+                                                                                    ? 'SalesmanGroupList'
+                                                                                    : value == 'Group List All Groups'
+                                                                                        ? 'GroupListAllGroups'
+                                                                                        : value == 'Balance Order By Date'
+                                                                                            ? 'Balance Order By Date'
+                                                                                            : 'SummeryAll';
+                                                      });
+                                                    },
                                                   ),
                                                 ),
-                                                headTxt: 'Select Route')
-                                          ],
+                                              ),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  statement = sType == 'Summery'
+                                                      ? _gAll
+                                                          ? 'SummeryAll'
+                                                          : _ob
+                                                              ? 'SummeryBalanceOnly'
+                                                              : 'SummeryZeroBalanceOnly'
+                                                      : statement;
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              ReportView(
+                                                                  _id.toString(),
+                                                                  '1',
+                                                                  DateUtil
+                                                                      .dateDMY2YMD(
+                                                                          fromDate),
+                                                                  DateUtil
+                                                                      .dateDMY2YMD(
+                                                                          toDate),
+                                                                  'GroupList',
+                                                                  _ledger,
+                                                                  statement,
+                                                                  salesMan,
+                                                                  locationId !=
+                                                                          null
+                                                                      ? [
+                                                                          locationId
+                                                                              .id
+                                                                        ]
+                                                                      : [
+                                                                          _dropDownBranchId
+                                                                        ],
+                                                                  area!,
+                                                                  route!)));
+                                                },
+                                                style: ButtonStyle(
+                                                  shape: MaterialStatePropertyAll(
+                                                      RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(3))),
+                                                  backgroundColor:
+                                                      MaterialStateProperty.all<
+                                                          Color>(kPrimaryColor),
+                                                  foregroundColor:
+                                                      MaterialStateProperty.all<
+                                                          Color>(Colors.white),
+                                                ),
+                                                child: const Text(
+                                                  'Show',
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.w500,
+                                                      fontSize: 15,
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              ContainerFieldWidget(
+                                                  widget: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(horizontal: 5),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                      child: DropdownButton<
+                                                          OtherRegistrationModel>(
+                                                        isExpanded: true,
+                                                        icon: const Icon(Icons
+                                                            .keyboard_arrow_down),
+                                                        items: otherRegAreaList.map(
+                                                            (OtherRegistrationModel
+                                                                items) {
+                                                          return DropdownMenuItem<
+                                                              OtherRegistrationModel>(
+                                                            value: items,
+                                                            child:
+                                                                Text(items.name),
+                                                          );
+                                                        }).toList(),
+                                                        value: areaModel,
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            areaModel = value;
+                                                            area = value!.id
+                                                                .toString();
+                                                          });
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  headTxt: 'Select Area'),
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                              ContainerFieldWidget(
+                                                  widget: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(horizontal: 5),
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                      child: DropdownButton<
+                                                          OtherRegistrationModel>(
+                                                        isExpanded: true,
+                                                        icon: const Icon(Icons
+                                                            .keyboard_arrow_down),
+                                                        items: otherRegRouteList.map(
+                                                            (OtherRegistrationModel
+                                                                items) {
+                                                          return DropdownMenuItem<
+                                                              OtherRegistrationModel>(
+                                                            value: items,
+                                                            child:
+                                                                Text(items.name),
+                                                          );
+                                                        }).toList(),
+                                                        value: routeModel,
+                                                        onChanged: (value) {
+                                                          routeModel = value;
+                                                          route = value!.id
+                                                              .toString();
+                                                        },
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  headTxt: 'Select Route')
+                                            ],
+                                          ),
                                         ),
-                                      )
+                                    )
                                     : mode == 'LedgerList'
                                         ? const Center(child: Text('empty'))
                                         : mode == 'closingReport'
@@ -2021,124 +2032,125 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         vertical: 16),
                                                 child: Column(
                                                   children: [
-                                                    Row(
-                                                      children: [
-                                                        const Text(
-                                                          'From ',
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 16,
-                                                              fontFamily:
-                                                                  'poppins'),
-                                                        ),
-                                                        InkWell(
-                                                          child: Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        8,
-                                                                    vertical:
-                                                                        5),
-                                                            decoration: BoxDecoration(
-                                                                border:
-                                                                    Border.all(
-                                                                        color:
-                                                                            grey),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            3)),
-                                                            child: Row(
-                                                              children: [
-                                                                Text(
-                                                                  fromDate!,
-                                                                  style: const TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      fontSize:
-                                                                          15,
-                                                                      fontFamily:
-                                                                          'poppins'),
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 8,
-                                                                ),
-                                                                const Icon(
-                                                                  Icons
-                                                                      .calendar_month_outlined,
-                                                                  color: grey,
-                                                                  size: 20,
-                                                                )
-                                                              ],
-                                                            ),
+                                                    SizedBox(
+                                                       width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        children: [
+                                                          const Text(
+                                                            'From ',
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 16,
+                                                                fontFamily:
+                                                                    'poppins'),
                                                           ),
-                                                          onTap: () =>
-                                                              _selectDate('f'),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 16,
-                                                        ),
-                                                        const Text(
-                                                          'To ',
-                                                          style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                              fontSize: 16,
-                                                              fontFamily:
-                                                                  'poppins'),
-                                                        ),
-                                                        InkWell(
-                                                          child: Container(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .symmetric(
-                                                                    horizontal:
-                                                                        8,
-                                                                    vertical:
-                                                                        5),
-                                                            decoration: BoxDecoration(
-                                                                border:
-                                                                    Border.all(
-                                                                        color:
-                                                                            grey),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            3)),
-                                                            child: Row(
-                                                              children: [
-                                                                Text(
-                                                                  toDate!,
-                                                                  style: const TextStyle(
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                      fontSize:
-                                                                          15,
-                                                                      fontFamily:
-                                                                          'poppins'),
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 8,
-                                                                ),
-                                                                const Icon(
-                                                                  Icons
-                                                                      .calendar_month_outlined,
-                                                                  color: grey,
-                                                                  size: 20,
-                                                                )
-                                                              ],
+                                                          InkWell(
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
+                                                              decoration: BoxDecoration(
+                                                                  border:
+                                                                      Border.all(
+                                                                          color:
+                                                                              grey),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3)),
+                                                              child: Row(
+                                                                children: [
+                                                                  Text(
+                                                                    fromDate!,
+                                                                    style: const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w500,
+                                                                        fontSize:
+                                                                            15,
+                                                                        fontFamily:
+                                                                            'poppins'),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 8,
+                                                                  ),
+                                                                  const Icon(
+                                                                    Icons
+                                                                        .calendar_month_outlined,
+                                                                    color: grey,
+                                                                    size: 20,
+                                                                  )
+                                                                ],
+                                                              ),
                                                             ),
+                                                            onTap: () =>
+                                                                _selectDate('f'),
                                                           ),
-                                                          onTap: () =>
-                                                              _selectDate('t'),
-                                                        ),
-                                                      ],
+                                                          const Spacer(),
+                                                          const Text(
+                                                            'To ',
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 16,
+                                                                fontFamily:
+                                                                    'poppins'),
+                                                          ),
+                                                          InkWell(
+                                                            child: Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
+                                                              decoration: BoxDecoration(
+                                                                  border:
+                                                                      Border.all(
+                                                                          color:
+                                                                              grey),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              3)),
+                                                              child: Row(
+                                                                children: [
+                                                                  Text(
+                                                                    toDate!,
+                                                                    style: const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight
+                                                                                .w500,
+                                                                        fontSize:
+                                                                            15,
+                                                                        fontFamily:
+                                                                            'poppins'),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    width: 8,
+                                                                  ),
+                                                                  const Icon(
+                                                                    Icons
+                                                                        .calendar_month_outlined,
+                                                                    color: grey,
+                                                                    size: 20,
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            onTap: () =>
+                                                                _selectDate('t'),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                     const SizedBox(
                                                       height: 10,
@@ -3145,83 +3157,83 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         16),
                                                                 child: Column(
                                                                   children: [
-                                                                    Row(
-                                                                      children: [
-                                                                        const Text(
-                                                                          'From ',
-                                                                          style: TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 16,
-                                                                              fontFamily: 'poppins'),
-                                                                        ),
-                                                                        InkWell(
-                                                                          child:
-                                                                              Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                                                            decoration:
-                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
-                                                                            child:
-                                                                                Row(
-                                                                              children: [
-                                                                                Text(
-                                                                                  fromDate!,
-                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 8,
-                                                                                ),
-                                                                                const Icon(
-                                                                                  Icons.calendar_month_outlined,
-                                                                                  color: grey,
-                                                                                  size: 20,
-                                                                                )
-                                                                              ],
-                                                                            ),
+                                                                    SizedBox(
+                                                                       width: MediaQuery.of(context).size.width,
+                                                                      child: Row(
+                                                                        children: [
+                                                                          const Text(
+                                                                            'From ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 16,
+                                                                                fontFamily: 'poppins'),
                                                                           ),
-                                                                          onTap: () =>
-                                                                              _selectDate('f'),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                          width:
-                                                                              16,
-                                                                        ),
-                                                                        const Text(
-                                                                          'To ',
-                                                                          style: TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 16,
-                                                                              fontFamily: 'poppins'),
-                                                                        ),
-                                                                        InkWell(
-                                                                          child:
-                                                                              Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                                                            decoration:
-                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                          InkWell(
                                                                             child:
-                                                                                Row(
-                                                                              children: [
-                                                                                Text(
-                                                                                  toDate!,
-                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 8,
-                                                                                ),
-                                                                                const Icon(
-                                                                                  Icons.calendar_month_outlined,
-                                                                                  color: grey,
-                                                                                  size: 20,
-                                                                                )
-                                                                              ],
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    fromDate!,
+                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 8,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
                                                                             ),
+                                                                            onTap: () =>
+                                                                                _selectDate('f'),
                                                                           ),
-                                                                          onTap: () =>
-                                                                              _selectDate('t'),
-                                                                        ),
-                                                                      ],
+                                                                          const Spacer(),
+                                                                          const Text(
+                                                                            'To ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 16,
+                                                                                fontFamily: 'poppins'),
+                                                                          ),
+                                                                          InkWell(
+                                                                            child:
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    toDate!,
+                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 8,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () =>
+                                                                                _selectDate('t'),
+                                                                          ),
+                                                                        ],
+                                                                      ),
                                                                     ),
                                                                     const SizedBox(
                                                                       height:
@@ -3367,83 +3379,83 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         16),
                                                                 child: Column(
                                                                   children: [
-                                                                    Row(
-                                                                      children: [
-                                                                        const Text(
-                                                                          'From ',
-                                                                          style: TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 16,
-                                                                              fontFamily: 'poppins'),
-                                                                        ),
-                                                                        InkWell(
-                                                                          child:
-                                                                              Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                                                            decoration:
-                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
-                                                                            child:
-                                                                                Row(
-                                                                              children: [
-                                                                                Text(
-                                                                                  fromDate!,
-                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 8,
-                                                                                ),
-                                                                                const Icon(
-                                                                                  Icons.calendar_month_outlined,
-                                                                                  color: grey,
-                                                                                  size: 20,
-                                                                                )
-                                                                              ],
-                                                                            ),
+                                                                    SizedBox(
+                                                                       width: MediaQuery.of(context).size.width,
+                                                                      child: Row(
+                                                                        children: [
+                                                                          const Text(
+                                                                            'From ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 16,
+                                                                                fontFamily: 'poppins'),
                                                                           ),
-                                                                          onTap: () =>
-                                                                              _selectDate('f'),
-                                                                        ),
-                                                                        const SizedBox(
-                                                                          width:
-                                                                              16,
-                                                                        ),
-                                                                        const Text(
-                                                                          'To ',
-                                                                          style: TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 16,
-                                                                              fontFamily: 'poppins'),
-                                                                        ),
-                                                                        InkWell(
-                                                                          child:
-                                                                              Container(
-                                                                            padding:
-                                                                                const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                                                                            decoration:
-                                                                                BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                          InkWell(
                                                                             child:
-                                                                                Row(
-                                                                              children: [
-                                                                                Text(
-                                                                                  toDate!,
-                                                                                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  width: 8,
-                                                                                ),
-                                                                                const Icon(
-                                                                                  Icons.calendar_month_outlined,
-                                                                                  color: grey,
-                                                                                  size: 20,
-                                                                                )
-                                                                              ],
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    fromDate!,
+                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 8,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
                                                                             ),
+                                                                            onTap: () =>
+                                                                                _selectDate('f'),
                                                                           ),
-                                                                          onTap: () =>
-                                                                              _selectDate('t'),
-                                                                        ),
-                                                                      ],
+                                                                          const Spacer(),
+                                                                          const Text(
+                                                                            'To ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 16,
+                                                                                fontFamily: 'poppins'),
+                                                                          ),
+                                                                          InkWell(
+                                                                            child:
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    toDate!,
+                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 8,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () =>
+                                                                                _selectDate('t'),
+                                                                          ),
+                                                                        ],
+                                                                      ),
                                                                     ),
                                                                     const SizedBox(
                                                                       height:
@@ -3564,22 +3576,22 @@ var _ledger, _id, locationId, _dropDownBranchId;
             _ledger = itemDisplay[index].name;
             _id = itemDisplay[index].id;
 
-            api.getCustomerDetail(_id).then((_data) => tempLedgerData =
-                CustomerModel(
-                    id: _data.id,
-                    name: _ledger,
-                    address1: _data.address1,
-                    address2: _data.address2,
-                    address3: _data.address3,
-                    address4: _data.address4,
-                    balance: _data.balance,
-                    city: _data.city,
-                    email: _data.email,
-                    phone: _data.phone,
-                    route: _data.route,
-                    state: _data.state,
-                    stateCode: _data.stateCode,
-                    taxNumber: _data.taxNumber));
+            // api.getCustomerDetail(_id).then((_data) => tempLedgerData =
+            //     CustomerModel(
+            //         id: _data.id,
+            //         name: _ledger,
+            //         address1: _data.address1,
+            //         address2: _data.address2,
+            //         address3: _data.address3,
+            //         address4: _data.address4,
+            //         balance: _data.balance,
+            //         city: _data.city,
+            //         email: _data.email,
+            //         phone: _data.phone,
+            //         route: _data.route,
+            //         state: _data.state,
+            //         stateCode: _data.stateCode,
+            //         taxNumber: _data.taxNumber));
           });
         },
       ),

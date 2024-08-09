@@ -2232,12 +2232,16 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Discount  ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Discount',
+                            textScaler: TextScaler.linear(1),
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           Flexible(
                             flex: 2,
                             child: Container(
@@ -2347,17 +2351,16 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       height: 6,
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Expanded(
-                          flex: 1,
-                          child: Text('Net ',
+                        SizedBox(
+                          width: MediaQuery.sizeOf(context).width/3.5,
+                          child: Text('Net',
                               style: TextStyle(
                                   fontFamily: 'poppins',
-                                  fontSize: 13,
+                                  // fontSize: 13,
                                   fontWeight: FontWeight.w400)),
                         ),
-                        const SizedBox(width: 4),
+                        // const SizedBox(width: 4),
                         Expanded(
                           flex: 2,
                           child: Container(
@@ -2420,13 +2423,16 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                         width: MediaQuery.of(context).size.width,
                         child: Row(
                           children: [
-                            Text(
-                                '${(companyTaxMode == 'INDIA' ? 'GST ' : companyTaxMode == 'GULF' ? 'VAT ' : 'Tax ')}          ',
-                                style: const TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                            const Spacer(),
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: Text(
+                                  '${(companyTaxMode == 'INDIA' ? 'GST ' : companyTaxMode == 'GULF' ? 'VAT ' : 'Tax ')}',
+                                  style: const TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
                             Flexible(
                               flex: 2,
                               child: Container(
@@ -2547,17 +2553,16 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       height: 6,
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Expanded(
-                          flex: 1,
+                        SizedBox(
+                          width: MediaQuery.sizeOf(context).width/3.5,
                           child: Text('Total ',
                               style: TextStyle(
                                   fontFamily: 'poppins',
-                                  fontSize: 13,
+                                  // fontSize: 13,
                                   fontWeight: FontWeight.w400)),
                         ),
-                        const SizedBox(width: 4),
+                        // const SizedBox(width: 4),
                         Expanded(
                           flex: 2,
                           child: Container(
@@ -2620,12 +2625,15 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('MRP     ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('MRP',
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           // Flexible(
                           //   flex: 2,
                           //   child: Container(
@@ -2737,12 +2745,15 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Retail  ',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Retail',
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           // Flexible(
                           //   flex: 2,
                           //   child: Container(
@@ -2854,12 +2865,15 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Wholesale',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w300)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Wholesale',
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 12.5,
+                                    fontWeight: FontWeight.w300)),
+                          ),
+                          // const Spacer(),
                           // Flexible(
                           //   flex: 2,
                           //   child: Container(
@@ -2972,12 +2986,15 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       width: MediaQuery.of(context).size.width,
                       child: Row(
                         children: [
-                          const Text('Branch',
-                              style: TextStyle(
-                                  fontFamily: 'poppins',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400)),
-                          const Spacer(),
+                          SizedBox(
+                            width: MediaQuery.sizeOf(context).width/3.5,
+                            child: const Text('Branch',
+                                style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    // fontSize: 13,
+                                    fontWeight: FontWeight.w400)),
+                          ),
+                          // const Spacer(),
                           // Flexible(
                           //   flex: 2,
                           //   child: Container(

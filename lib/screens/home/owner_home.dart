@@ -6,6 +6,7 @@ import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class OwnerHome extends StatefulWidget {
   const OwnerHome({Key? key}) : super(key: key);
@@ -115,6 +116,7 @@ class _OwnerHomeState extends State<OwnerHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
         appBar: AppBar(
           title: const Text("SherAcc"),
           // brightness: Brightness.dark,
@@ -147,31 +149,42 @@ class _OwnerHomeState extends State<OwnerHome> {
           padding: const EdgeInsets.all(20),
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
-          crossAxisCount: MediaQuery.of(context).size.width > 400
+          crossAxisCount: MediaQuery.of(context).size.width > 500
               ? (MediaQuery.of(context).size.width ~/ 250).toInt()
               : (MediaQuery.of(context).size.width ~/ 150).toInt(),
           children: <Widget>[
             GestureDetector(
               child: Card(
-                elevation: 5.0,
+                surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
                 child: Container(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Icon(
-                        Icons.menu_book_rounded,
-                        color: Colors.amber[200],
-                        size: 90.0,
-                      ),
-                      const Text(
-                        'Ledger Report',
-                        style: TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_lrdger_report.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Ledger Report',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15),
+                    ),
+                  ],
                 ),
+              ),
               ),
               onTap: () {
                 argumentsPass = {'mode': 'ledger'};
@@ -183,24 +196,36 @@ class _OwnerHomeState extends State<OwnerHome> {
             ),
             GestureDetector(
               child: Card(
-                elevation: 5.0,
+                 surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
                 child: Container(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Icon(
-                        Icons.auto_stories,
-                        color: Colors.blue[300],
-                        size: 90.0,
-                      ),
-                      const Text('Day Book', //note actually
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_daybook.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Day Book',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15),
+                    ),
+                  ],
                 ),
+              ),
               ),
               onTap: () {
                 argumentsPass = {'mode': 'CashBook'};
@@ -272,24 +297,36 @@ class _OwnerHomeState extends State<OwnerHome> {
             // ),
             GestureDetector(
               child: Card(
-                elevation: 5.0,
+                 surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
                 child: Container(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    children: <Widget>[
-                      Icon(
-                        Icons.trending_up_rounded,
-                        color: Colors.red[300],
-                        size: 90.0,
-                      ),
-                      const Text(
-                        'Fund Flow',
-                        style: TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_fund_flow.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Fund Flow',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15),
+                    ),
+                  ],
                 ),
+              ),
               ),
               onTap: () {
                 argumentsPass = {'mode': 'FundFlow'};
@@ -301,24 +338,36 @@ class _OwnerHomeState extends State<OwnerHome> {
             ),
             GestureDetector(
               child: Card(
-                elevation: 5.0,
+                 surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
                 child: Container(
-                  padding: const EdgeInsets.all(0),
-                  child: Column(
-                    children: <Widget>[
-                      Icon(
-                        Icons.read_more,
-                        color: Colors.pink[300],
-                        size: 90.0,
-                      ),
-                      const Text(
-                        'More',
-                        style: TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_other.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'More',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15),
+                    ),
+                  ],
                 ),
+              ),
               ),
               onTap: () {
                 _showDialog(context);

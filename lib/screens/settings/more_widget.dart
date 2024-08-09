@@ -468,39 +468,80 @@ class MoreWidget2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      children: [
-        Card(
-          elevation: 2,
-          child: TextButton(
-            child: const Text('Change Password'),
-            onPressed: () {
-              //
-            },
-          ),
+    return Scaffold(
+      backgroundColor: bagroundColor,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10
         ),
-        Card(
-          elevation: 2,
-          child: TextButton(
-            child: const Text('Other'),
-            onPressed: () {
-              //
-            },
-          ),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(
+                bottom: 8
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: white,
+              ),
+              child: TextButton(
+                child: const Text('Change Password',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'poppins',color: black
+                ),
+                ),
+                onPressed: () {
+                  //
+                },
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(
+                bottom: 8
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: white,
+              ),
+              child: TextButton(
+                child: const Text('Other',style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'poppins',color: black
+                ),),
+                onPressed: () {
+                  //
+                },
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(
+                bottom: 8
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: white,
+              ),
+              child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AboutSherSoft()),
+                    );
+                  },
+                  child: const Text('About Developer',style: TextStyle(
+                    fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'poppins',color: black
+                ),)),
+            ),
+          ],
         ),
-        Card(
-          elevation: 2,
-          child: TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutSherSoft()),
-                );
-              },
-              child: const Text('About Developer')),
-        ),
-      ],
+      ),
     );
   }
 }
