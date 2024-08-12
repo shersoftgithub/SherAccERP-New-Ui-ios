@@ -1182,7 +1182,7 @@ class _SalesListState extends State<SalesList> {
                     ' From ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontFamily: 'poppins'),
                   ),
                   InkWell(
@@ -1198,12 +1198,12 @@ class _SalesListState extends State<SalesList> {
                           Text(
                             fromDate!,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                // fontWeight: FontWeight.w500,
+                                // fontSize: 15,
                                 fontFamily: 'poppins'),
                           ),
                           const SizedBox(
-                            width: 6,
+                            width: 2,
                           ),
                           const Icon(
                             Icons.calendar_month_outlined,
@@ -1215,14 +1215,12 @@ class _SalesListState extends State<SalesList> {
                     ),
                     onTap: () => _selectDate('f'),
                   ),
-                  const SizedBox(
-                    width: 13,
-                  ),
+                  const Spacer(),
                   const Text(
                     ' To ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontFamily: 'poppins'),
                   ),
                   InkWell(
@@ -1238,12 +1236,12 @@ class _SalesListState extends State<SalesList> {
                           Text(
                             toDate!,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                // fontWeight: FontWeight.w500,
+                                // fontSize: 15,
                                 fontFamily: 'poppins'),
                           ),
                           const SizedBox(
-                            width: 6,
+                            width: 2,
                           ),
                           const Icon(
                             Icons.calendar_month_outlined,

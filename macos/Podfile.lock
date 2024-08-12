@@ -947,22 +947,23 @@ PODS:
     - abseil/xcprivacy
   - abseil/xcprivacy (1.20240116.2)
   - blue_thermal_printer (0.0.1):
-    - Flutter
+    - FlutterMacOS
   - BoringSSL-GRPC (0.0.32):
     - BoringSSL-GRPC/Implementation (= 0.0.32)
     - BoringSSL-GRPC/Interface (= 0.0.32)
   - BoringSSL-GRPC/Implementation (0.0.32):
     - BoringSSL-GRPC/Interface (= 0.0.32)
   - BoringSSL-GRPC/Interface (0.0.32)
-  - charset_converter (0.0.1):
-    - Flutter
   - cloud_firestore (4.15.4):
-    - Firebase/Firestore (= 10.20.0)
+    - Firebase/CoreOnly (~> 10.20.0)
+    - Firebase/Firestore (~> 10.20.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
     - nanopb (< 2.30910.0, >= 2.30908.0)
   - device_info_plus (0.0.1):
-    - Flutter
+    - FlutterMacOS
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
   - Firebase/CoreOnly (10.20.0):
     - FirebaseCore (= 10.20.0)
   - Firebase/Crashlytics (10.20.0):
@@ -971,29 +972,22 @@ PODS:
   - Firebase/Firestore (10.20.0):
     - Firebase/CoreOnly
     - FirebaseFirestore (~> 10.20.0)
-  - Firebase/InAppMessaging (10.20.0):
-    - Firebase/CoreOnly
-    - FirebaseInAppMessaging (~> 10.20.0-beta)
   - Firebase/Messaging (10.20.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 10.20.0)
   - firebase_core (2.25.4):
-    - Firebase/CoreOnly (= 10.20.0)
-    - Flutter
+    - Firebase/CoreOnly (~> 10.20.0)
+    - FlutterMacOS
   - firebase_crashlytics (3.4.14):
-    - Firebase/Crashlytics (= 10.20.0)
+    - Firebase/CoreOnly (~> 10.20.0)
+    - Firebase/Crashlytics (~> 10.20.0)
     - firebase_core
-    - Flutter
-  - firebase_in_app_messaging (0.7.4-13):
-    - Firebase/InAppMessaging (= 10.20.0)
-    - firebase_core
-    - Flutter
+    - FlutterMacOS
   - firebase_messaging (14.7.15):
-    - Firebase/Messaging (= 10.20.0)
+    - Firebase/CoreOnly (~> 10.20.0)
+    - Firebase/Messaging (~> 10.20.0)
     - firebase_core
-    - Flutter
-  - FirebaseABTesting (10.29.0):
-    - FirebaseCore (~> 10.0)
+    - FlutterMacOS
   - FirebaseAppCheckInterop (10.29.0)
   - FirebaseCore (10.20.0):
     - FirebaseCoreInternal (~> 10.0)
@@ -1031,12 +1025,6 @@ PODS:
     - gRPC-Core (~> 1.62.0)
     - leveldb-library (~> 1.22)
     - nanopb (< 2.30911.0, >= 2.30908.0)
-  - FirebaseInAppMessaging (10.20.0-beta):
-    - FirebaseABTesting (~> 10.0)
-    - FirebaseCore (~> 10.0)
-    - FirebaseInstallations (~> 10.0)
-    - GoogleUtilities/Environment (~> 7.8)
-    - nanopb (< 2.30910.0, >= 2.30908.0)
   - FirebaseInstallations (10.29.0):
     - FirebaseCore (~> 10.0)
     - GoogleUtilities/Environment (~> 7.8)
@@ -1061,16 +1049,7 @@ PODS:
     - nanopb (< 2.30911.0, >= 2.30908.0)
     - PromisesSwift (~> 2.1)
   - FirebaseSharedSwift (10.29.0)
-  - Flutter (1.0.0)
-  - flutter_bluetooth_basic (0.0.1):
-    - Flutter
-  - flutter_keyboard_visibility (0.0.1):
-    - Flutter
-  - flutter_phone_direct_caller (0.0.1):
-    - Flutter
-  - fluttertoast (0.0.2):
-    - Flutter
-    - Toast
+  - FlutterMacOS (1.0.0)
   - GoogleDataTransport (9.4.1):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30911.0, >= 2.30908.0)
@@ -1178,88 +1157,52 @@ PODS:
     - gRPC-Core/Privacy (= 1.62.5)
   - gRPC-Core/Interface (1.62.5)
   - gRPC-Core/Privacy (1.62.5)
-  - image_picker_ios (0.0.1):
-    - Flutter
   - leveldb-library (1.22.5)
-  - local_auth_ios (0.0.1):
-    - Flutter
-  - MTBBarcodeScanner (5.0.11)
   - nanopb (2.30909.1):
     - nanopb/decode (= 2.30909.1)
     - nanopb/encode (= 2.30909.1)
   - nanopb/decode (2.30909.1)
   - nanopb/encode (2.30909.1)
-  - open_file (0.0.1):
-    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - pdf_viewer_plugin (0.0.1):
-    - Flutter
-  - permission_handler_apple (9.3.0):
-    - Flutter
-  - pointer_interceptor_ios (0.0.1):
-    - Flutter
   - printing (1.0.0):
-    - Flutter
+    - FlutterMacOS
   - PromisesObjC (2.4.0)
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
-  - qr_code_scanner (0.2.0):
-    - Flutter
-    - MTBBarcodeScanner
   - share_plus (0.0.1):
-    - Flutter
+    - FlutterMacOS
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - sqflite (0.0.3):
     - Flutter
     - FlutterMacOS
-  - sunmi_printer_plus (0.0.1):
-    - Flutter
-  - Toast (4.1.1)
-  - url_launcher_ios (0.0.1):
-    - Flutter
-  - webview_flutter_wkwebview (0.0.1):
-    - Flutter
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
-  - blue_thermal_printer (from `.symlinks/plugins/blue_thermal_printer/ios`)
-  - charset_converter (from `.symlinks/plugins/charset_converter/ios`)
-  - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
-  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
-  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_crashlytics (from `.symlinks/plugins/firebase_crashlytics/ios`)
-  - firebase_in_app_messaging (from `.symlinks/plugins/firebase_in_app_messaging/ios`)
-  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
-  - Flutter (from `Flutter`)
-  - flutter_bluetooth_basic (from `.symlinks/plugins/flutter_bluetooth_basic/ios`)
-  - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
-  - flutter_phone_direct_caller (from `.symlinks/plugins/flutter_phone_direct_caller/ios`)
-  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
-  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - local_auth_ios (from `.symlinks/plugins/local_auth_ios/ios`)
-  - open_file (from `.symlinks/plugins/open_file/ios`)
-  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - pdf_viewer_plugin (from `.symlinks/plugins/pdf_viewer_plugin/ios`)
-  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
-  - pointer_interceptor_ios (from `.symlinks/plugins/pointer_interceptor_ios/ios`)
-  - printing (from `.symlinks/plugins/printing/ios`)
-  - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
-  - share_plus (from `.symlinks/plugins/share_plus/ios`)
-  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
-  - sqflite (from `.symlinks/plugins/sqflite/darwin`)
-  - sunmi_printer_plus (from `.symlinks/plugins/sunmi_printer_plus/ios`)
-  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
+  - blue_thermal_printer (from `Flutter/ephemeral/.symlinks/plugins/blue_thermal_printer/macos`)
+  - cloud_firestore (from `Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos`)
+  - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
+  - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
+  - firebase_crashlytics (from `Flutter/ephemeral/.symlinks/plugins/firebase_crashlytics/macos`)
+  - firebase_messaging (from `Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - printing (from `Flutter/ephemeral/.symlinks/plugins/printing/macos`)
+  - share_plus (from `Flutter/ephemeral/.symlinks/plugins/share_plus/macos`)
+  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite (from `Flutter/ephemeral/.symlinks/plugins/sqflite/darwin`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
 SPEC REPOS:
   trunk:
     - abseil
     - BoringSSL-GRPC
     - Firebase
-    - FirebaseABTesting
     - FirebaseAppCheckInterop
     - FirebaseCore
     - FirebaseCoreExtension
@@ -1267,7 +1210,6 @@ SPEC REPOS:
     - FirebaseCrashlytics
     - FirebaseFirestore
     - FirebaseFirestoreInternal
-    - FirebaseInAppMessaging
     - FirebaseInstallations
     - FirebaseMessaging
     - FirebaseSessions
@@ -1277,83 +1219,51 @@ SPEC REPOS:
     - "gRPC-C++"
     - gRPC-Core
     - leveldb-library
-    - MTBBarcodeScanner
     - nanopb
     - PromisesObjC
     - PromisesSwift
-    - Toast
 
 EXTERNAL SOURCES:
   blue_thermal_printer:
-    :path: ".symlinks/plugins/blue_thermal_printer/ios"
-  charset_converter:
-    :path: ".symlinks/plugins/charset_converter/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/blue_thermal_printer/macos
   cloud_firestore:
-    :path: ".symlinks/plugins/cloud_firestore/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/cloud_firestore/macos
   device_info_plus:
-    :path: ".symlinks/plugins/device_info_plus/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   firebase_core:
-    :path: ".symlinks/plugins/firebase_core/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_core/macos
   firebase_crashlytics:
-    :path: ".symlinks/plugins/firebase_crashlytics/ios"
-  firebase_in_app_messaging:
-    :path: ".symlinks/plugins/firebase_in_app_messaging/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_crashlytics/macos
   firebase_messaging:
-    :path: ".symlinks/plugins/firebase_messaging/ios"
-  Flutter:
-    :path: Flutter
-  flutter_bluetooth_basic:
-    :path: ".symlinks/plugins/flutter_bluetooth_basic/ios"
-  flutter_keyboard_visibility:
-    :path: ".symlinks/plugins/flutter_keyboard_visibility/ios"
-  flutter_phone_direct_caller:
-    :path: ".symlinks/plugins/flutter_phone_direct_caller/ios"
-  fluttertoast:
-    :path: ".symlinks/plugins/fluttertoast/ios"
-  image_picker_ios:
-    :path: ".symlinks/plugins/image_picker_ios/ios"
-  local_auth_ios:
-    :path: ".symlinks/plugins/local_auth_ios/ios"
-  open_file:
-    :path: ".symlinks/plugins/open_file/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
   path_provider_foundation:
-    :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  pdf_viewer_plugin:
-    :path: ".symlinks/plugins/pdf_viewer_plugin/ios"
-  permission_handler_apple:
-    :path: ".symlinks/plugins/permission_handler_apple/ios"
-  pointer_interceptor_ios:
-    :path: ".symlinks/plugins/pointer_interceptor_ios/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   printing:
-    :path: ".symlinks/plugins/printing/ios"
-  qr_code_scanner:
-    :path: ".symlinks/plugins/qr_code_scanner/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/printing/macos
   share_plus:
-    :path: ".symlinks/plugins/share_plus/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/share_plus/macos
   shared_preferences_foundation:
-    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
   sqflite:
-    :path: ".symlinks/plugins/sqflite/darwin"
-  sunmi_printer_plus:
-    :path: ".symlinks/plugins/sunmi_printer_plus/ios"
-  url_launcher_ios:
-    :path: ".symlinks/plugins/url_launcher_ios/ios"
-  webview_flutter_wkwebview:
-    :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite/darwin
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
 
 SPEC CHECKSUMS:
   abseil: d121da9ef7e2ff4cab7666e76c5a3e0915ae08c3
-  blue_thermal_printer: c83405103d2c17f8d67aaa43fcff94df5d616a66
+  blue_thermal_printer: bfbe572e3d68048f1023d61d91aebf2619844383
   BoringSSL-GRPC: 1e2348957acdbcad360b80a264a90799984b2ba6
-  charset_converter: 215c7b04932ec2b9ba43be96a9bc34afed3e5322
-  cloud_firestore: ba576bee785a05ff952e4da7fa4e23c196917436
-  device_info_plus: c6fb39579d0f423935b0c9ce7ee2f44b71b9fce6
+  cloud_firestore: e92d176e8b72d33527fbae9c6e47ec00d6d5f29a
+  device_info_plus: 5401765fde0b8d062a2f8eb65510fb17e77cf07f
+  file_selector_macos: 468fb6b81fac7c0e88d71317f3eec34c3b008ff9
   Firebase: 10c8cb12fb7ad2ae0c09ffc86cd9c1ab392a0031
-  firebase_core: a46c312d8bae4defa3d009b2aa7b5b413aeb394e
-  firebase_crashlytics: 3d12285fcbd865d576b9965bd4090cd8b68e11fd
-  firebase_in_app_messaging: 82bb70f773d547f6d81965a9f33acac9fdd4e999
-  firebase_messaging: 40d7dd2f3e88a6367c7326cf601f84633d477582
-  FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
+  firebase_core: 2e1a33fd13fb581f0dc809c18be25cdc1a2e10db
+  firebase_crashlytics: c8d9eb8c32ad6248e9be271d467d85b96da98fe9
+  firebase_messaging: aa7d68aa238b24ee36bfe33f7a73561d3a78b069
   FirebaseAppCheckInterop: 6a1757cfd4067d8e00fccd14fcc1b8fd78cfac07
   FirebaseCore: 28045c1560a2600d284b9c45a904fe322dc890b6
   FirebaseCoreExtension: 705ca5b14bf71d2564a0ddc677df1fc86ffa600f
@@ -1361,42 +1271,26 @@ SPEC CHECKSUMS:
   FirebaseCrashlytics: 81530595edb6d99f1918f723a6c33766a24a4c86
   FirebaseFirestore: 21be9ea244830f6cac15464550c2975c43f9dffc
   FirebaseFirestoreInternal: f43d25cc04835ec3aa1885f4fc946a1a4f9e1c56
-  FirebaseInAppMessaging: 1a9bba3e245cb3ff3fe96e828de2932208d6fc65
   FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
   FirebaseMessaging: 06c414a21b122396a26847c523d5c370f8325df5
   FirebaseSessions: dbd14adac65ce996228652c1fc3a3f576bdf3ecc
   FirebaseSharedSwift: 20530f495084b8d840f78a100d8c5ee613375f6e
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_bluetooth_basic: 2e1205de1b23d794eeef9d1f5850caf7822e67f1
-  flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
-  flutter_phone_direct_caller: bd2ffd297f371a8a6c7bfbba0196964ffe3c4358
-  fluttertoast: 31b00dabfa7fb7bacd9e7dbee580d7a2ff4bf265
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   "gRPC-C++": e725ef63c4475d7cdb7e2cf16eb0fde84bd9ee51
   gRPC-Core: eee4be35df218649fe66d721a05a7f27a28f069b
-  image_picker_ios: 99dfe1854b4fa34d0364e74a78448a0151025425
   leveldb-library: e8eadf9008a61f9e1dde3978c086d2b6d9b9dc28
-  local_auth_ios: 5046a18c018dd973247a0564496c8898dbb5adf9
-  MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
-  open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
   path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
-  pdf_viewer_plugin: 45fc2233c590780ca0ca623a1f575e4bd0a72b3a
-  permission_handler_apple: 036b856153a2b1f61f21030ff725f3e6fece2b78
-  pointer_interceptor_ios: 508241697ff0947f853c061945a8b822463947c1
-  printing: eafa00acb682c0ca029d4d98d0798f55a1e27102
+  printing: e4b7e232ff3d5d50a70b20d959aa71035a5c31f9
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
-  qr_code_scanner: bb67d64904c3b9658ada8c402e8b4d406d5d796e
-  share_plus: c3fef564749587fc939ef86ffb283ceac0baf9f5
+  share_plus: 76dd39142738f7a68dd57b05093b5e8193f220f7
   shared_preferences_foundation: b4c3b4cddf1c21f02770737f147a3f5da9d39695
   sqflite: 673a0e54cc04b7d6dba8d24fb8095b31c3a99eec
-  sunmi_printer_plus: 4ab3f09a655a47913c53ff5219323cbb04ebfbd7
-  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
-  url_launcher_ios: bbd758c6e7f9fd7b5b1d4cde34d2b95fcce5e812
-  webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
+  url_launcher_macos: d2691c7dd33ed713bf3544850a623080ec693d95
 
-PODFILE CHECKSUM: 7be2f5f74864d463a8ad433546ed1de7e0f29aef
+PODFILE CHECKSUM: 33f717155b480290c91194848d79e2e19658fd39
 
 COCOAPODS: 1.13.0

@@ -424,7 +424,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                           );
   }
 
-  int? selectedCustomerId = 0; 
+  int? selectedCustomerId; 
   newPurchaseOrderWidget(newPurchaseOrder){
    if (newPurchaseOrder) {
      setState(() {
@@ -724,8 +724,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                                   element.name == value);
                                           selectedCustomerId =
                                               selectedSupplier.id;
-                                            ledgerModel = selectedSupplier ;
-                                          // _isLoading = true;
+                                            // ledgerModel = selectedSupplier ;
+                                          _isLoading = true;
                                           dio
                                               .getCustomerDetail(
                                                   selectedCustomerId!)
@@ -1272,7 +1272,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     }
                   }
                   :()async {
-                    if (totalItem > 0 &&  selectedCustomerId != null) {
+                    if ( selectedCustomerId != null && cartItem.isNotEmpty) {
                        setState(() {
                       _isLoading = true;
                     });

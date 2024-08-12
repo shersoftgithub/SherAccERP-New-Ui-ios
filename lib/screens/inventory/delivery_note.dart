@@ -30,6 +30,7 @@ import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/dbhelper.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
+import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class DeliveryNote extends StatefulWidget {
@@ -4017,38 +4018,62 @@ class _DeliveryNoteState extends State<DeliveryNote> {
     });
     return loadReturnForm
         ? salesReturnForm()
-        : Column(
-            children: [
-              salesHeaderWidget(),
-              totalItem > 0
-                  ? Expanded(
-                      child: ListView.separated(
-                        itemCount: cartItem.length,
-                        separatorBuilder: (BuildContext context, int index) =>
-                            const Divider(),
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: InkWell(
-                              child: Text(cartItem[index].itemName!),
-                              onDoubleTap: () {
-                                setState(() {
-                                  removeProduct(cartItem[index]);
-                                });
-                              },
-                            ),
-                            subtitle: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SizedBox(
-                                  height: 40,
-                                  width: 40,
-                                  child: Card(
-                                    color: Colors.green[200],
-                                    child: IconButton(
+        : Scaffold(
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: Column(
+             mainAxisSize: MainAxisSize.min, 
+                children: [
+                  salesHeaderWidget(),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                 Expanded(
+                  child: 
+                  totalItem > 0
+                      ? Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16
+                        ),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: cartItem.length,
+                          separatorBuilder: (BuildContext context, int index) =>
+                              const SizedBox(
+                                height: 8,
+                              ),
+                          itemBuilder: (context, index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)
+                              ),
+                              child: ListTile(
+                                title: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(cartItem[index].itemName!),
+                                    PopUpMenuAction(
+                                      onDelete: () {
+                                        setState(() {
+                                    removeProduct(cartItem[index]);
+                                  });
+                                      },
+                                      onEdit: () {
+                                        
+                                      },
+                                    )
+                                  ],
+                                ),
+                                subtitle: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    IconButton(
                                       icon: const Icon(
                                         Icons.add,
-                                        color: Colors.black,
-                                        size: 18,
+                                        // color: Colors.black,
+                                        // size: 18,
                                       ),
                                       onPressed: () {
                                         if (oldBill) {
@@ -4191,56 +4216,49 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                         }
                                       },
                                     ),
-                                  ),
-                                ),
-                                InkWell(
-                                  child: Text(
-                                      cartItem[index].quantity.toString(),
-                                      style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold)),
-                                  onTap: () {
-                                    if (oldBill) {
-                                      api
-                                          .getStockOf(cartItem[index].itemId!)
-                                          .then((value) {
-                                        cartItem[index].stock = value;
-                                        _displayTextInputDialog(
-                                            context,
-                                            'Edit Quantity',
-                                            cartItem[index].quantity! > 0
-                                                ? double.tryParse(
-                                                        cartItem[index]
-                                                            .quantity
-                                                            .toString())
-                                                    .toString()
-                                                : '',
-                                            cartItem[index].id!);
-                                      });
-                                    } else {
-                                      _displayTextInputDialog(
-                                          context,
-                                          'Edit Quantity',
-                                          cartItem[index].quantity! > 0
-                                              ? double.tryParse(cartItem[index]
-                                                      .quantity
-                                                      .toString())
-                                                  .toString()
-                                              : '',
-                                          cartItem[index].id!);
-                                    }
-                                  },
-                                ),
-                                SizedBox(
-                                  height: 40,
-                                  width: 40,
-                                  child: Card(
-                                    color: Colors.red[200],
-                                    child: IconButton(
+                                    InkWell(
+                                      child: Text(
+                                          cartItem[index].quantity.toString(),
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold)),
+                                      onTap: () {
+                                        if (oldBill) {
+                                          api
+                                              .getStockOf(cartItem[index].itemId!)
+                                              .then((value) {
+                                            cartItem[index].stock = value;
+                                            _displayTextInputDialog(
+                                                context,
+                                                'Edit Quantity',
+                                                cartItem[index].quantity! > 0
+                                                    ? double.tryParse(
+                                                            cartItem[index]
+                                                                .quantity
+                                                                .toString())
+                                                        .toString()
+                                                    : '',
+                                                cartItem[index].id!);
+                                          });
+                                        } else {
+                                          _displayTextInputDialog(
+                                              context,
+                                              'Edit Quantity',
+                                              cartItem[index].quantity! > 0
+                                                  ? double.tryParse(cartItem[index]
+                                                          .quantity
+                                                          .toString())
+                                                      .toString()
+                                                  : '',
+                                              cartItem[index].id!);
+                                        }
+                                      },
+                                    ),
+                                    IconButton(
                                       icon: const Icon(
                                         Icons.remove,
-                                        color: Colors.black,
-                                        size: 18,
+                                        // color: Colors.black,
+                                        // size: 18,
                                       ),
                                       onPressed: () {
                                         setState(() {
@@ -4249,50 +4267,74 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                         });
                                       },
                                     ),
-                                  ),
-                                ),
-                                Text(
-                                    cartItem[index].unitId! > 0
-                                        ? '(' +
-                                            UnitSettings.getUnitName(
-                                                cartItem[index].unitId!) +
-                                            ')'
-                                        : " x ",
-                                    style: const TextStyle(
-                                        color: Colors.black, fontSize: 12)),
-                                InkWell(
-                                  child: Text(
-                                      cartItem[index]
-                                          .rate!
-                                          .toStringAsFixed(decimal),
-                                      style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold)),
-                                  onTap: () {
-                                    if (isItemRateEditLocked) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content: const Text(
-                                            'Sorry edit not available.'),
-                                        duration: const Duration(seconds: 2),
-                                        action: SnackBarAction(
-                                          label: 'Click',
-                                          onPressed: () {
-                                            // print('Action is clicked');
-                                          },
-                                          textColor: Colors.white,
-                                          disabledTextColor: Colors.grey,
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ));
-                                    } else {
-                                      if (isMinimumRate) {
-                                        if (oldBill) {
-                                          api
-                                              .getMinimumRateOf(
-                                                  cartItem[index].itemId!)
-                                              .then(((value) {
-                                            cartItem[index].minimumRate = value;
+                                    Text(
+                                        cartItem[index].unitId! > 0
+                                            ? '(' +
+                                                UnitSettings.getUnitName(
+                                                    cartItem[index].unitId!) +
+                                                ')'
+                                            : " x ",
+                                        style: const TextStyle(
+                                            color: Colors.black, fontSize: 12)),
+                                    InkWell(
+                                      child: Text(
+                                          cartItem[index]
+                                              .rate!
+                                              .toStringAsFixed(decimal),
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold)),
+                                      onTap: () {
+                                        if (isItemRateEditLocked) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: const Text(
+                                                'Sorry edit not available.'),
+                                            duration: const Duration(seconds: 2),
+                                            action: SnackBarAction(
+                                              label: 'Click',
+                                              onPressed: () {
+                                                // print('Action is clicked');
+                                              },
+                                              textColor: Colors.white,
+                                              disabledTextColor: Colors.grey,
+                                            ),
+                                            backgroundColor: Colors.red,
+                                          ));
+                                        } else {
+                                          if (isMinimumRate) {
+                                            if (oldBill) {
+                                              api
+                                                  .getMinimumRateOf(
+                                                      cartItem[index].itemId!)
+                                                  .then(((value) {
+                                                cartItem[index].minimumRate = value;
+                                                _displayTextInputDialog(
+                                                    context,
+                                                    'Edit Rate',
+                                                    cartItem[index].rate! > 0
+                                                        ? double.tryParse(
+                                                                cartItem[index]
+                                                                    .rate
+                                                                    .toString())
+                                                            .toString()
+                                                        : '',
+                                                    cartItem[index].id!);
+                                              }));
+                                            } else {
+                                              _displayTextInputDialog(
+                                                  context,
+                                                  'Edit Rate',
+                                                  cartItem[index].rate! > 0
+                                                      ? double.tryParse(
+                                                              cartItem[index]
+                                                                  .rate
+                                                                  .toString())
+                                                          .toString()
+                                                      : '',
+                                                  cartItem[index].id!);
+                                            }
+                                          } else {
                                             _displayTextInputDialog(
                                                 context,
                                                 'Edit Rate',
@@ -4304,68 +4346,49 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                                         .toString()
                                                     : '',
                                                 cartItem[index].id!);
-                                          }));
-                                        } else {
-                                          _displayTextInputDialog(
-                                              context,
-                                              'Edit Rate',
-                                              cartItem[index].rate! > 0
-                                                  ? double.tryParse(
-                                                          cartItem[index]
-                                                              .rate
-                                                              .toString())
-                                                      .toString()
-                                                  : '',
-                                              cartItem[index].id!);
+                                          }
                                         }
-                                      } else {
-                                        _displayTextInputDialog(
-                                            context,
-                                            'Edit Rate',
-                                            cartItem[index].rate! > 0
-                                                ? double.tryParse(
-                                                        cartItem[index]
-                                                            .rate
-                                                            .toString())
-                                                    .toString()
-                                                : '',
-                                            cartItem[index].id!);
-                                      }
-                                    }
-                                  },
+                                      },
+                                    ),
+                                    const Text(" = ",
+                                        style: TextStyle(
+                                            // color: Colors.red,
+                                            fontWeight: FontWeight.bold)),
+                                    InkWell(
+                                      child: Text(
+                                          ((cartItem[index].quantity! *
+                                                      cartItem[index].rate!) -
+                                                  (cartItem[index].discount!))
+                                              .toStringAsFixed(decimal),
+                                          style: const TextStyle(
+                                              // color: Colors.red,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16
+                                              )),
+                                      onDoubleTap: () {
+                                        setState(() {
+                                          removeProduct(cartItem[index]);
+                                        });
+                                      },
+                                    ),
+                                  ],
                                 ),
-                                const Text(" = ",
-                                    style: TextStyle(
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold)),
-                                InkWell(
-                                  child: Text(
-                                      ((cartItem[index].quantity! *
-                                                  cartItem[index].rate!) -
-                                              (cartItem[index].discount!))
-                                          .toStringAsFixed(decimal),
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20)),
-                                  onDoubleTap: () {
-                                    setState(() {
-                                      removeProduct(cartItem[index]);
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : const Center(
-                      child: Text("No items in Cart"),
-                    ),
-              footerWidget(),
-            ],
-          );
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                      : const Center(
+                          child: Text("No items in Cart"),
+                        ),
+                 ),
+                 valueMore ?
+                  Expanded(child: footerWidget(),)
+                  : footerWidget()
+                ],
+              ),
+          ),
+        );
   }
 
   productTrackingList(StockProduct product) {
@@ -4716,155 +4739,186 @@ class _DeliveryNoteState extends State<DeliveryNote> {
   }
 
   salesHeaderWidget() {
-    return Center(
-        child: Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Column(
           children: [
-            const SizedBox(
-              width: 10,
+    Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        const SizedBox(
+          width: 10,
+        ),
+        const Text(
+          'Date  ',
+          style: TextStyle(
+            fontFamily: 'poppins',
+            fontWeight: FontWeight.w500, fontSize: 15),
+        ),
+        InkWell(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 2
             ),
-            const Text(
-              'Date : ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            InkWell(
-              child: Text(
-                formattedDate!,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: grey
               ),
-              onTap: () => _selectDate(),
+              borderRadius: BorderRadius.circular(3)
             ),
-            const SizedBox(
-              width: 10,
-            ),
-
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.settings, color: blue),
-              onSelected: (value) {
-                setState(() {
-                  if (value == 'Generate E-Way Bill') {
-                    //
-                  } else if (value == 'Generate e-Invoice') {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (_) => GenerateE_Invoice(
-                    //               data: deliveryNoteData,
-                    //             )));
-                  } else if (value == 'Edit  e-Invoice') {
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (_) => GenerateE_Invoice(
-                    //               data: deliveryNoteData,
-                    //             )));
-                  }
-                });
-              },
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem<String>(
-                  value: 'Generate E-Way Bill',
-                  child: Text('Generate E-Way Bill'),
+            child: Row(
+              children: [
+                Text(
+                  formattedDate!,
+                  style:
+                      const TextStyle(),
                 ),
-                const PopupMenuItem<String>(
-                  value: 'Generate e-Invoice',
-                  child: Text('Generate e-Invoice'),
+                const SizedBox(
+                  width: 2,
                 ),
-                const PopupMenuItem<String>(
-                  value: 'Edit  e-Invoice',
-                  child: Text('Edit  e-Invoice Details'),
-                ),
+                Icon(Icons.calendar_month,color: grey,size: 18,)
               ],
             ),
-            // const Text(
-            //   'Cash Bill: ',
-            //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            // ),
-            // Checkbox(
-            //   checkColor: Colors.greenAccent,
-            //   activeColor: Colors.red,
-            //   value: _isCashBill,
-            //   onChanged: (bool value) {
-            //     setState(() {
-            //       _isCashBill = value;
-            //     });
-            //   },
-            // ),
+          ),
+          onTap: () => _selectDate(),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+    
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.settings, color: kPrimaryColor),
+          onSelected: (value) {
+            setState(() {
+              if (value == 'Generate E-Way Bill') {
+                //
+              } else if (value == 'Generate e-Invoice') {
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (_) => GenerateE_Invoice(
+                //               data: deliveryNoteData,
+                //             )));
+              } else if (value == 'Edit  e-Invoice') {
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (_) => GenerateE_Invoice(
+                //               data: deliveryNoteData,
+                //             )));
+              }
+            });
+          },
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem<String>(
+              value: 'Generate E-Way Bill',
+              child: Text('Generate E-Way Bill'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'Generate e-Invoice',
+              child: Text('Generate e-Invoice'),
+            ),
+            const PopupMenuItem<String>(
+              value: 'Edit  e-Invoice',
+              child: Text('Edit  e-Invoice Details'),
+            ),
           ],
         ),
-        oldBill
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text('EntryNo : ' + dataDynamic[0]['EntryNo'].toString(),
-                      style: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold)),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text('InvoiceNo : ' + dataDynamic[0]['InvoiceNo'].toString(),
-                      style: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.bold)),
-                ],
-              )
-            : Container(),
-        ListTile(
-          title: Text(ledgerModel.name,
-              style: const TextStyle(
-                  color: Colors.red, fontWeight: FontWeight.bold)),
-          subtitle: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // const Text(
+        //   'Cash Bill: ',
+        //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        // ),
+        // Checkbox(
+        //   checkColor: Colors.greenAccent,
+        //   activeColor: Colors.red,
+        //   value: _isCashBill,
+        //   onChanged: (bool value) {
+        //     setState(() {
+        //       _isCashBill = value;
+        //     });
+        //   },
+        // ),
+      ],
+    ),
+    oldBill
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text(ledgerModel.address1),
+              Text('EntryNo : ' + dataDynamic[0]['EntryNo'].toString(),
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
+              const SizedBox(
+                width: 10,
+              ),
+              Text('InvoiceNo : ' + dataDynamic[0]['InvoiceNo'].toString(),
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
+            ],
+          )
+        : Container(),
+    ListTile(
+      title: Text(ledgerModel.name,
+          style: const TextStyle(fontFamily: 'poppins')),
+      subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(ledgerModel.address1),
+        ],
+      ),
+    ),
+    InkWell(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 4,
+            vertical: 2
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(3),
+            color: kPrimaryColor
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add,color: white,),
+              Text(
+                'Add Item',
+                style: TextStyle(
+                    color: white,
+                    fontFamily: 'poppins'
+                    ),
+              ),
             ],
           ),
         ),
-        InkWell(
-            child: const SizedBox(
-              height: 26,
-              child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Text(
-                      'Add Item',
-                      style: TextStyle(
-                          color: blue,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )),
-            ),
-            onTap: () {
-              setState(() {
-                nextWidget = 2;
-              });
-            }),
-      ],
-    ));
+        onTap: () {
+          setState(() {
+            nextWidget = 2;
+          });
+        }),
+          ],
+        );
   }
 
   footerWidget() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        color: Colors.blue[50],
-        child: Column(
+    return Container(
+      color: Colors.blue[50],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16
+        ),
+        child: ListView(
+          shrinkWrap: true,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("SubTotal : ",
+                const Text("SubTotal : ",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red[300])),
+                      fontFamily: 'poppins'
+                    )),
                 Text(
                     CommonService.getRound(decimal, totalGrossValue)
                         .toStringAsFixed(decimal),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red[300])),
+                    style: const TextStyle()),
               ],
             ),
             Visibility(
@@ -4872,33 +4926,33 @@ class _DeliveryNoteState extends State<DeliveryNote> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Tax : ",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.red[400])),
+                  const Text("Tax : ",
+                      style: TextStyle(fontFamily: 'poppins')),
                   Text(
                       CommonService.getRound(decimal, taxTotalCartValue)
                           .toStringAsFixed(decimal),
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.red[400])),
+                      style: const TextStyle()),
                 ],
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Total : ",
+                const Text("Total : ",
                     style: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red[500])),
+                      fontSize: 15,
+                        fontFamily: 'poppins')),
                 Text(
                     CommonService.getRound(decimal, totalCartValue)
                         .toStringAsFixed(decimal),
                     style: TextStyle(
-                        fontSize: 20.0,
+                        fontSize: 15.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.red[500])),
+                       )),
               ],
+            ),
+            const SizedBox(
+              height: 3,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -4913,8 +4967,13 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           allow: true, replacementString: '.')
                     ],
                     decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
                       border: OutlineInputBorder(),
-                      label: Text('Cash Received : '),
+                      label: Text('Cash Received : ',
+                      style: TextStyle(fontFamily: 'poppins'),),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -4933,28 +4992,56 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                     },
                   ),
                 ),
-                const Text('Balance : '),
+                const SizedBox(
+                  width: 3,
+                ),
+                const Text('Balance : ',
+                style: TextStyle(
+                  fontFamily: 'poppins'
+                ),
+                ),
                 Text(ComSettings.appSettings(
                         'bool', 'key-round-off-amount', false)
                     ? _balance.toStringAsFixed(decimal)
                     : _balance.roundToDouble().toString()),
               ],
             ),
-            Card(
-              elevation: 5,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text('More Details'),
-                  Switch(
-                      value: valueMore,
-                      onChanged: (value) {
-                        setState(() {
-                          valueMore = value;
-                        });
-                      }),
-                ],
-              ),
+            const SizedBox(
+              height: 4,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text('More Details',
+                style: TextStyle(
+                  fontFamily: 'poppins'
+                ),
+                ),
+                const SizedBox(
+              width: 8,
+            ),
+                Switch(
+                  trackOutlineWidth:
+                                        const MaterialStatePropertyAll(14),
+                                    thumbIcon:
+                                        MaterialStateProperty.all(const Icon(
+                                      Icons.circle,
+                                      color: Color.fromARGB(255, 244, 242, 242),
+                                      size: 27,
+                                    )),
+                                    trackOutlineColor:
+                                         MaterialStatePropertyAll(blue[50]),
+                                    thumbColor:
+                                        MaterialStateProperty.all(white),
+                                    activeTrackColor: kPrimaryColor,
+                                    inactiveTrackColor: const Color(0xffD9D9D9),
+                    value: valueMore,
+                    onChanged: (value) {
+                      setState(() {
+                        valueMore = value;
+                      });
+                    }),
+              ],
             ),
             Visibility(
               visible: valueMore,
@@ -4966,8 +5053,15 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       Expanded(
                         child: TextField(
                           decoration: const InputDecoration(
+                             contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
                             border: OutlineInputBorder(),
                             labelText: 'Narration...',
+                            labelStyle: TextStyle(
+                              fontFamily: 'poppins'
+                            )
                           ),
                           onChanged: (value) {
                             setState(() {
@@ -4978,6 +5072,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       ),
                     ],
                   ),
+                  const SizedBox(
+                    height: 4,
+                  ),
                   Visibility(
                     visible: _isReturnInSales,
                     child: Row(
@@ -4986,6 +5083,10 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                           child: TextField(
                             controller: returnEntryNoController,
                             decoration: const InputDecoration(
+                               contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
                               border: OutlineInputBorder(),
                               labelText: 'Bill No :',
                             ),
@@ -5002,6 +5103,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                             },
                           ),
                         ),
+                        const SizedBox(
+                          width: 4,
+                        ),
                         TextButton(
                             onPressed: () {
                               setState(() {
@@ -5009,18 +5113,27 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                               });
                             },
                             style: ButtonStyle(
+                              shape: MaterialStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)
+                                )
+                              ),
                                 backgroundColor: MaterialStateProperty.all(
-                                    kPrimaryDarkColor),
+                                    kPrimaryColor),
                                 foregroundColor:
                                     MaterialStateProperty.all(white)),
                             child: const Text('Return Bill')),
                         const SizedBox(
-                          width: 10,
+                          width: 4,
                         ),
                         Expanded(
                           child: TextField(
                             controller: returnAmountController,
                             decoration: const InputDecoration(
+                               contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
                               border: OutlineInputBorder(),
                               labelText: 'Amount :',
                             ),
@@ -5043,8 +5156,11 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                       ],
                     ),
                   ),
+                  const SizedBox(
+                    height: 6,
+                  ),
                   SizedBox(
-                    height: deviceSize!.height / 6,
+                    // height: deviceSize!.height / 6,
                     child: Container(
                       color: white,
                       child: ListView.builder(
@@ -5127,14 +5243,16 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                 ],
               ),
             ),
+            SizedBox(
+              height: 4,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('GrandTotal : ',
                     style: TextStyle(
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red)),
+                      fontSize: 16,
+                        fontFamily: 'poppins')),
                 Text(
                     grandTotal > 0
                         ? ComSettings.appSettings(
@@ -5155,9 +5273,9 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                         .roundToDouble())
                                 .toString(),
                     style: const TextStyle(
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red))
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w500
+                       ))
               ],
             ),
           ],

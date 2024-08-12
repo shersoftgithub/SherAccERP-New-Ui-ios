@@ -184,6 +184,7 @@ class _TaxReportState extends State<TaxReport> {
         data.length,
         (index) => CheckboxListTile(
             value: data[index].stock,
+            activeColor: kPrimaryColor,
             title: Text(data[index].name),
             onChanged: (bool? value) {
               itemChange(value!, index);
@@ -201,9 +202,9 @@ class _TaxReportState extends State<TaxReport> {
                     loadReport = false;
                   });
                 },
-                icon: const Icon(Icons.filter_alt)),
+                icon: Image.asset('assets/icons/ic_filter.png',scale: 3.3,)),
             PopupMenuButton(
-              icon: const Icon(Icons.share_rounded),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   child: Text('PDF'),
@@ -261,6 +262,9 @@ class _TaxReportState extends State<TaxReport> {
               },
             )
           ],
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           title: Text(title),
         ),
         body: loadReport ? reportView(title) : selectData(title));
@@ -446,19 +450,20 @@ class _TaxReportState extends State<TaxReport> {
           child: Column(
             children: [
               Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   const Text(
                     'Month ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontFamily: 'poppins'),
                   ),
-                  const SizedBox(
-                    width: 20,
-                  ),
+                  // const SizedBox(
+                  //   width: 8,
+                  // ),
                   Container(
+                    height: 30,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 5,
                     ),
@@ -470,8 +475,12 @@ class _TaxReportState extends State<TaxReport> {
                         value: valueMonth,
                         items: monthList.map((item) {
                           return DropdownMenuItem<String>(
-                            child: Text(item),
                             value: item,
+                            child: Text(item,
+                            style: const TextStyle(
+                              fontFamily: 'poppins'
+                            ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -493,7 +502,7 @@ class _TaxReportState extends State<TaxReport> {
                     'From ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontFamily: 'poppins'),
                   ),
                   InkWell(
@@ -508,12 +517,12 @@ class _TaxReportState extends State<TaxReport> {
                           Text(
                             fromDate!,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                // fontWeight: FontWeight.w500,
+                                // fontSize: 15,
                                 fontFamily: 'poppins'),
                           ),
                           const SizedBox(
-                            width: 8,
+                            width: 2,
                           ),
                           const Icon(
                             Icons.calendar_month_outlined,
@@ -525,14 +534,12 @@ class _TaxReportState extends State<TaxReport> {
                     ),
                     onTap: () => _selectDate('f'),
                   ),
-                  const SizedBox(
-                    width: 16,
-                  ),
+                  const Spacer(),
                   const Text(
                     'To ',
                     style: TextStyle(
                         fontWeight: FontWeight.w500,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontFamily: 'poppins'),
                   ),
                   InkWell(
@@ -547,12 +554,12 @@ class _TaxReportState extends State<TaxReport> {
                           Text(
                             toDate!,
                             style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                // fontWeight: FontWeight.w500,
+                                // fontSize: 15,
                                 fontFamily: 'poppins'),
                           ),
                           const SizedBox(
-                            width: 8,
+                            width: 2,
                           ),
                           const Icon(
                             Icons.calendar_month_outlined,
@@ -671,14 +678,14 @@ class _TaxReportState extends State<TaxReport> {
                 child: Row(
                     // mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(
-                        width: 8,
-                      ),
+                      // const SizedBox(
+                      //   width: 8,
+                      // ),
                       const Text(
                         'Sales Return',
                         style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
+                            // fontWeight: FontWeight.w500,
+                            // fontSize: 15,
                             fontFamily: 'poppins'),
                       ),
                       Checkbox(
@@ -694,8 +701,8 @@ class _TaxReportState extends State<TaxReport> {
                       const Text(
                         'Purchase Return',
                         style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
+                            // fontWeight: FontWeight.w500,
+                            // fontSize: 15,
                             fontFamily: 'poppins'),
                       ),
                       Checkbox(

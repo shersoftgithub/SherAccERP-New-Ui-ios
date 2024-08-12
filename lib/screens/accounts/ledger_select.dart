@@ -378,7 +378,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                         'From ',
                         style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 14,
                             fontFamily: 'poppins'),
                       ),
                       InkWell(
@@ -393,12 +393,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                               Text(
                                 fromDate!,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 15,
+                                    // fontWeight: FontWeight.w500,
+                                    // fontSize: 15,
                                     fontFamily: 'poppins'),
                               ),
                               const SizedBox(
-                                width: 8,
+                                width: 2,
                               ),
                               const Icon(
                                 Icons.calendar_month_outlined,
@@ -415,7 +415,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                         'To ',
                         style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            fontSize: 16,
+                            fontSize: 14,
                             fontFamily: 'poppins'),
                       ),
                       InkWell(
@@ -430,12 +430,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                               Text(
                                 toDate!,
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 15,
+                                    // fontWeight: FontWeight.w500,
+                                    // fontSize: 15,
                                     fontFamily: 'poppins'),
                               ),
                               const SizedBox(
-                                width: 8,
+                                width: 2,
                               ),
                               const Icon(
                                 Icons.calendar_month_outlined,
@@ -611,7 +611,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                             'From ',
                             style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontFamily: 'poppins'),
                           ),
                           InkWell(
@@ -626,12 +626,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                   Text(
                                     fromDate!,
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
+                                        // fontWeight: FontWeight.w500,
+                                        // fontSize: 15,
                                         fontFamily: 'poppins'),
                                   ),
                                   const SizedBox(
-                                    width: 8,
+                                    width: 2,
                                   ),
                                   const Icon(
                                     Icons.calendar_month_outlined,
@@ -648,7 +648,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                             'To ',
                             style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontFamily: 'poppins'),
                           ),
                           InkWell(
@@ -663,12 +663,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                   Text(
                                     toDate!,
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
+                                        // fontWeight: FontWeight.w500,
+                                        // fontSize: 15,
                                         fontFamily: 'poppins'),
                                   ),
                                   const SizedBox(
-                                    width: 8,
+                                    width: 2,
                                   ),
                                   const Icon(
                                     Icons.calendar_month_outlined,
@@ -794,7 +794,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                 'From ',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontFamily: 'poppins'),
                               ),
                               InkWell(
@@ -809,12 +809,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                       Text(
                                         fromDate!,
                                         style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 15,
+                                            // fontWeight: FontWeight.w500,
+                                            // fontSize: 15,
                                             fontFamily: 'poppins'),
                                       ),
                                       const SizedBox(
-                                        width: 10,
+                                        width: 2,
                                       ),
                                       const Icon(
                                         Icons.calendar_month_outlined,
@@ -831,7 +831,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                 'To ',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                     fontFamily: 'poppins'),
                               ),
                               InkWell(
@@ -846,12 +846,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                       Text(
                                         toDate!,
                                         style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 15,
+                                            // fontWeight: FontWeight.w500,
+                                            // fontSize: 15,
                                             fontFamily: 'poppins'),
                                       ),
                                       const SizedBox(
-                                        width: 8,
+                                        width: 2,
                                       ),
                                       const Icon(
                                         Icons.calendar_month_outlined,
@@ -959,7 +959,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     'From ',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontFamily: 'poppins'),
                                   ),
                                   InkWell(
@@ -974,12 +974,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                           Text(
                                             fromDate!,
                                             style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 15,
+                                                // fontWeight: FontWeight.w500,
+                                                // fontSize: 15,
                                                 fontFamily: 'poppins'),
                                           ),
                                           const SizedBox(
-                                            width: 8,
+                                            width: 2,
                                           ),
                                           const Icon(
                                             Icons.calendar_month_outlined,
@@ -996,7 +996,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     'To ',
                                     style: TextStyle(
                                         fontWeight: FontWeight.w500,
-                                        fontSize: 16,
+                                        fontSize: 14,
                                         fontFamily: 'poppins'),
                                   ),
                                   InkWell(
@@ -1011,12 +1011,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                           Text(
                                             toDate!,
                                             style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 15,
+                                                // fontWeight: FontWeight.w500,
+                                                // fontSize: 15,
                                                 fontFamily: 'poppins'),
                                           ),
                                           const SizedBox(
-                                            width: 8,
+                                            width: 2,
                                           ),
                                           const Icon(
                                             Icons.calendar_month_outlined,
@@ -1100,7 +1100,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                         'From ',
                                         style: TextStyle(
                                             fontWeight: FontWeight.w500,
-                                            fontSize: 16,
+                                            fontSize: 14,
                                             fontFamily: 'poppins'),
                                       ),
                                       InkWell(
@@ -1116,12 +1116,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                               Text(
                                                 fromDate!,
                                                 style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
+                                                    // fontWeight: FontWeight.w500,
+                                                    // fontSize: 15,
                                                     fontFamily: 'poppins'),
                                               ),
                                               const SizedBox(
-                                                width: 8,
+                                                width: 2,
                                               ),
                                               const Icon(
                                                 Icons.calendar_month_outlined,
@@ -1138,7 +1138,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                         'To ',
                                         style: TextStyle(
                                             fontWeight: FontWeight.w500,
-                                            fontSize: 16,
+                                            fontSize: 14,
                                             fontFamily: 'poppins'),
                                       ),
                                       InkWell(
@@ -1154,12 +1154,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                               Text(
                                                 toDate!,
                                                 style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
+                                                    // fontWeight: FontWeight.w500,
+                                                    // fontSize: 15,
                                                     fontFamily: 'poppins'),
                                               ),
                                               const SizedBox(
-                                                width: 8,
+                                                width: 2,
                                               ),
                                               const Icon(
                                                 Icons.calendar_month_outlined,
@@ -1271,7 +1271,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                             'From ',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.w500,
-                                                fontSize: 16,
+                                                fontSize: 14,
                                                 fontFamily: 'poppins'),
                                           ),
                                           InkWell(
@@ -1287,9 +1287,9 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                   Text(
                                                     fromDate!,
                                                     style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
+                                                        // fontWeight:
+                                                        //     FontWeight.w500,
+                                                        // fontSize: 15,
                                                         fontFamily: 'poppins'),
                                                   ),
                                                   const SizedBox(
@@ -1310,7 +1310,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                             'To ',
                                             style: TextStyle(
                                                 fontWeight: FontWeight.w500,
-                                                fontSize: 16,
+                                                fontSize: 14,
                                                 fontFamily: 'poppins'),
                                           ),
                                           InkWell(
@@ -1326,13 +1326,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                   Text(
                                                     toDate!,
                                                     style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 15,
+                                                        // fontWeight:
+                                                        //     FontWeight.w500,
+                                                        // fontSize: 15,
                                                         fontFamily: 'poppins'),
                                                   ),
                                                   const SizedBox(
-                                                    width: 8,
+                                                    width: 2,
                                                   ),
                                                   const Icon(
                                                     Icons.calendar_month_outlined,
@@ -1415,7 +1415,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                 'From ',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w500,
-                                                    fontSize: 16,
+                                                    fontSize: 14,
                                                     fontFamily: 'poppins'),
                                               ),
                                               InkWell(
@@ -1435,9 +1435,9 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       Text(
                                                         fromDate!,
                                                         style: const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontSize: 15,
+                                                            // fontWeight:
+                                                            //     FontWeight.w500,
+                                                            // fontSize: 15,
                                                             fontFamily:
                                                                 'poppins'),
                                                       ),
@@ -1460,7 +1460,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                 'To ',
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w500,
-                                                    fontSize: 16,
+                                                    fontSize: 14,
                                                     fontFamily: 'poppins'),
                                               ),
                                               InkWell(
@@ -1480,14 +1480,14 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       Text(
                                                         toDate!,
                                                         style: const TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontSize: 15,
+                                                            // fontWeight:
+                                                            //     FontWeight.w500,
+                                                            // fontSize: 15,
                                                             fontFamily:
                                                                 'poppins'),
                                                       ),
                                                       const SizedBox(
-                                                        width: 10,
+                                                        width: 2,
                                                       ),
                                                       const Icon(
                                                         Icons
@@ -1593,7 +1593,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.w500,
-                                                          fontSize: 16,
+                                                          fontSize: 14,
                                                           fontFamily: 'poppins'),
                                                     ),
                                                     InkWell(
@@ -1613,15 +1613,15 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             Text(
                                                               fromDate!,
                                                               style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  fontSize: 15,
+                                                                  // fontWeight:
+                                                                  //     FontWeight
+                                                                  //         .w500,
+                                                                  // fontSize: 15,
                                                                   fontFamily:
                                                                       'poppins'),
                                                             ),
                                                             const SizedBox(
-                                                              width: 8,
+                                                              width: 2,
                                                             ),
                                                             const Icon(
                                                               Icons
@@ -1640,7 +1640,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       style: TextStyle(
                                                           fontWeight:
                                                               FontWeight.w500,
-                                                          fontSize: 16,
+                                                          fontSize: 14,
                                                           fontFamily: 'poppins'),
                                                     ),
                                                     InkWell(
@@ -1660,15 +1660,15 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             Text(
                                                               toDate!,
                                                               style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  fontSize: 15,
+                                                                  // fontWeight:
+                                                                  //     FontWeight
+                                                                  //         .w500,
+                                                                  // fontSize: 15,
                                                                   fontFamily:
                                                                       'poppins'),
                                                             ),
                                                             const SizedBox(
-                                                              width: 8,
+                                                              width: 2,
                                                             ),
                                                             const Icon(
                                                               Icons
@@ -1715,14 +1715,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     const Text(
                                                       'All',
                                                       style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 15,
+                                                          // fontWeight:
+                                                          //     FontWeight.w500,
+                                                          // fontSize: 15,
                                                           fontFamily: 'poppins'),
                                                     ),
-                                                    const SizedBox(
-                                                      width: 20,
-                                                    ),
+                                                    const Spacer(),
                                                     Radio(
                                                       value: 2,
                                                       activeColor: kPrimaryColor,
@@ -1741,14 +1739,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     const Text(
                                                       'Balance',
                                                       style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 15,
+                                                          // fontWeight:
+                                                          //     FontWeight.w500,
+                                                          // fontSize: 15,
                                                           fontFamily: 'poppins'),
                                                     ),
-                                                    const SizedBox(
-                                                      width: 10,
-                                                    ),
+                                                    const Spacer(),
                                                     Radio(
                                                       value: 3,
                                                       activeColor: kPrimaryColor,
@@ -1767,11 +1763,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     const Text(
                                                       '0 Balance',
                                                       style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontSize: 15,
+                                                          // fontWeight:
+                                                          //     FontWeight.w500,
+                                                          // fontSize: 15,
                                                           fontFamily: 'poppins'),
                                                     ),
+                                                    const Spacer()
                                                   ],
                                                 ),
                                               ),
@@ -2042,7 +2039,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w500,
-                                                                fontSize: 16,
+                                                                fontSize: 14,
                                                                 fontFamily:
                                                                     'poppins'),
                                                           ),
@@ -2069,16 +2066,16 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   Text(
                                                                     fromDate!,
                                                                     style: const TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w500,
-                                                                        fontSize:
-                                                                            15,
+                                                                        // fontWeight:
+                                                                        //     FontWeight
+                                                                        //         .w500,
+                                                                        // fontSize:
+                                                                        //     15,
                                                                         fontFamily:
                                                                             'poppins'),
                                                                   ),
                                                                   const SizedBox(
-                                                                    width: 8,
+                                                                    width: 2,
                                                                   ),
                                                                   const Icon(
                                                                     Icons
@@ -2099,7 +2096,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w500,
-                                                                fontSize: 16,
+                                                                fontSize: 14,
                                                                 fontFamily:
                                                                     'poppins'),
                                                           ),
@@ -2126,16 +2123,16 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   Text(
                                                                     toDate!,
                                                                     style: const TextStyle(
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w500,
-                                                                        fontSize:
-                                                                            15,
+                                                                        // fontWeight:
+                                                                        //     FontWeight
+                                                                        //         .w500,
+                                                                        // fontSize:
+                                                                        //     15,
                                                                         fontFamily:
                                                                             'poppins'),
                                                                   ),
                                                                   const SizedBox(
-                                                                    width: 8,
+                                                                    width: 2,
                                                                   ),
                                                                   const Icon(
                                                                     Icons
@@ -2312,7 +2309,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w500,
-                                                                  fontSize: 16,
+                                                                  fontSize: 14,
                                                                   fontFamily:
                                                                       'poppins'),
                                                             ),
@@ -2336,15 +2333,15 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     Text(
                                                                       fromDate!,
                                                                       style: const TextStyle(
-                                                                          fontWeight: FontWeight
-                                                                              .w500,
-                                                                          fontSize:
-                                                                              15,
+                                                                          // fontWeight: FontWeight
+                                                                          //     .w500,
+                                                                          // fontSize:
+                                                                          //     15,
                                                                           fontFamily:
                                                                               'poppins'),
                                                                     ),
                                                                     const SizedBox(
-                                                                      width: 8,
+                                                                      width: 2,
                                                                     ),
                                                                     const Icon(
                                                                       Icons
@@ -2360,16 +2357,14 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   _selectDate(
                                                                       'f'),
                                                             ),
-                                                            const SizedBox(
-                                                              width: 16,
-                                                            ),
+                                                            const Spacer(),
                                                             const Text(
                                                               'To ',
                                                               style: TextStyle(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w500,
-                                                                  fontSize: 16,
+                                                                  fontSize: 14,
                                                                   fontFamily:
                                                                       'poppins'),
                                                             ),
@@ -2393,15 +2388,15 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     Text(
                                                                       toDate!,
                                                                       style: const TextStyle(
-                                                                          fontWeight: FontWeight
-                                                                              .w500,
-                                                                          fontSize:
-                                                                              15,
+                                                                          // fontWeight: FontWeight
+                                                                          //     .w500,
+                                                                          // fontSize:
+                                                                          //     15,
                                                                           fontFamily:
                                                                               'poppins'),
                                                                     ),
                                                                     const SizedBox(
-                                                                      width: 8,
+                                                                      width: 2,
                                                                     ),
                                                                     const Icon(
                                                                       Icons
@@ -2608,7 +2603,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           FontWeight
                                                                               .w500,
                                                                       fontSize:
-                                                                          16,
+                                                                          14,
                                                                       fontFamily:
                                                                           'poppins'),
                                                                 ),
@@ -2632,13 +2627,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         Text(
                                                                           fromDate!,
                                                                           style: const TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 15,
+                                                                              // fontWeight: FontWeight.w500,
+                                                                              // fontSize: 15,
                                                                               fontFamily: 'poppins'),
                                                                         ),
                                                                         const SizedBox(
                                                                           width:
-                                                                              8,
+                                                                              2,
                                                                         ),
                                                                         const Icon(
                                                                           Icons
@@ -2655,9 +2650,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                       _selectDate(
                                                                           'f'),
                                                                 ),
-                                                                const SizedBox(
-                                                                  width: 16,
-                                                                ),
+                                                                const Spacer(),
                                                                 const Text(
                                                                   'To ',
                                                                   style: TextStyle(
@@ -2665,7 +2658,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           FontWeight
                                                                               .w500,
                                                                       fontSize:
-                                                                          16,
+                                                                          14,
                                                                       fontFamily:
                                                                           'poppins'),
                                                                 ),
@@ -2689,13 +2682,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         Text(
                                                                           toDate!,
                                                                           style: const TextStyle(
-                                                                              fontWeight: FontWeight.w500,
-                                                                              fontSize: 15,
+                                                                              // fontWeight: FontWeight.w500,
+                                                                              // fontSize: 15,
                                                                               fontFamily: 'poppins'),
                                                                         ),
                                                                         const SizedBox(
                                                                           width:
-                                                                              8,
+                                                                              2,
                                                                         ),
                                                                         const Icon(
                                                                           Icons
@@ -2888,7 +2881,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           fontWeight: FontWeight
                                                                               .w500,
                                                                           fontSize:
-                                                                              16,
+                                                                              14,
                                                                           fontFamily:
                                                                               'poppins'),
                                                                     ),
@@ -2910,10 +2903,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           children: [
                                                                             Text(
                                                                               fromDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                              style: const TextStyle(
+                                                                                // fontWeight: FontWeight.w500,
+                                                                                //  fontSize: 15, 
+                                                                                 fontFamily: 'poppins'),
                                                                             ),
                                                                             const SizedBox(
-                                                                              width: 8,
+                                                                              width: 2,
                                                                             ),
                                                                             const Icon(
                                                                               Icons.calendar_month_outlined,
@@ -2927,16 +2923,14 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           _selectDate(
                                                                               'f'),
                                                                     ),
-                                                                    const SizedBox(
-                                                                      width: 16,
-                                                                    ),
+                                                                    const Spacer(),
                                                                     const Text(
                                                                       'To ',
                                                                       style: TextStyle(
                                                                           fontWeight: FontWeight
                                                                               .w500,
                                                                           fontSize:
-                                                                              16,
+                                                                              14,
                                                                           fontFamily:
                                                                               'poppins'),
                                                                     ),
@@ -2958,10 +2952,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           children: [
                                                                             Text(
                                                                               toDate!,
-                                                                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                              style: const TextStyle(
+                                                                                // fontWeight: FontWeight.w500,
+                                                                                //  fontSize: 15, 
+                                                                                 fontFamily: 'poppins'),
                                                                             ),
                                                                             const SizedBox(
-                                                                              width: 8,
+                                                                              width: 2,
                                                                             ),
                                                                             const Icon(
                                                                               Icons.calendar_month_outlined,
@@ -3165,7 +3162,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             'From ',
                                                                             style: TextStyle(
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontSize: 16,
+                                                                                fontSize: 14,
                                                                                 fontFamily: 'poppins'),
                                                                           ),
                                                                           InkWell(
@@ -3180,10 +3177,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 children: [
                                                                                   Text(
                                                                                     fromDate!,
-                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15,
+                                                                                        fontFamily: 'poppins'),
                                                                                   ),
                                                                                   const SizedBox(
-                                                                                    width: 8,
+                                                                                    width: 2,
                                                                                   ),
                                                                                   const Icon(
                                                                                     Icons.calendar_month_outlined,
@@ -3201,7 +3201,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             'To ',
                                                                             style: TextStyle(
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontSize: 16,
+                                                                                fontSize: 14,
                                                                                 fontFamily: 'poppins'),
                                                                           ),
                                                                           InkWell(
@@ -3216,10 +3216,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 children: [
                                                                                   Text(
                                                                                     toDate!,
-                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15, 
+                                                                                       fontFamily: 'poppins'),
                                                                                   ),
                                                                                   const SizedBox(
-                                                                                    width: 8,
+                                                                                    width: 2,
                                                                                   ),
                                                                                   const Icon(
                                                                                     Icons.calendar_month_outlined,
@@ -3387,7 +3390,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             'From ',
                                                                             style: TextStyle(
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontSize: 16,
+                                                                                fontSize: 14,
                                                                                 fontFamily: 'poppins'),
                                                                           ),
                                                                           InkWell(
@@ -3402,10 +3405,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 children: [
                                                                                   Text(
                                                                                     fromDate!,
-                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15, 
+                                                                                       fontFamily: 'poppins'),
                                                                                   ),
                                                                                   const SizedBox(
-                                                                                    width: 8,
+                                                                                    width: 2,
                                                                                   ),
                                                                                   const Icon(
                                                                                     Icons.calendar_month_outlined,
@@ -3423,7 +3429,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             'To ',
                                                                             style: TextStyle(
                                                                                 fontWeight: FontWeight.w500,
-                                                                                fontSize: 16,
+                                                                                fontSize: 14,
                                                                                 fontFamily: 'poppins'),
                                                                           ),
                                                                           InkWell(
@@ -3438,10 +3444,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 children: [
                                                                                   Text(
                                                                                     toDate!,
-                                                                                    style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, fontFamily: 'poppins'),
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15, 
+                                                                                       fontFamily: 'poppins'),
                                                                                   ),
                                                                                   const SizedBox(
-                                                                                    width: 8,
+                                                                                    width: 2,
                                                                                   ),
                                                                                   const Icon(
                                                                                     Icons.calendar_month_outlined,

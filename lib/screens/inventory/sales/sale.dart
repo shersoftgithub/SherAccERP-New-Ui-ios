@@ -188,9 +188,11 @@ class _SaleState extends ConsumerState<Sale> {
           ComSettings.salesFormList('key-item-sale-form-', false);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
+     if (salesTypeData != null) {
+        salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
       ? ref.read(productsProvider.notifier).fetchNoStockProducts("", date)
      : ref.read(productsProvider.notifier).fetchStockProducts("", date);
+     }
     });
     // fetchCustomerNames();
     // fetchStockProducts();
@@ -280,7 +282,7 @@ class _SaleState extends ConsumerState<Sale> {
       rateTypeList = optionRateTypeList;
 
       String rateTypeS = salesTypeData != null
-          ? salesTypeData!.rateType.isNotEmpty
+          ? salesTypeData!.rateType.isNotEmpty  
               ? salesTypeData!.rateType
               : 'MRP'
           : 'MRP';
@@ -786,39 +788,39 @@ class _SaleState extends ConsumerState<Sale> {
         ),
         body: thisSale
             ? Padding(
-              padding: const EdgeInsets.symmetric(
+             padding: const EdgeInsets.symmetric(
                 horizontal: 16,vertical: 8
               ),
               child: Container(
-                color: bagroundColor,
                   child: previousBill(),
                 ),
             )
             : _defaultSale
                 ? Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,vertical: 8
-                  ),
+                   padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
                   child: Container(
-                    color: bagroundColor,
                       child: previousBill(),
                     ),
                 )
                 : previewData
-                    ? Container(
-                      color: bagroundColor,
-                        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),child: previousBill(),),
-                      )
-                    : Container(
-                        color: bagroundColor,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                          child: Container(
-                              color: white,
-                              padding: const EdgeInsets.all(8),
-                              child: selectSalesType()),
+                    ? Padding(
+                       padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
+                      child: Container(
+                          child: previousBill(),
                         ),
+                    )
+                    : Container(
+                      padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
+                        child: Container(
+                            color: white,
+                            padding: const EdgeInsets.all(8),
+                            child: selectSalesType()),
                       ));
   }
 
@@ -914,7 +916,6 @@ class _SaleState extends ConsumerState<Sale> {
     return dataDisplay.isNotEmpty
         ? ListView.builder(
             itemCount: dataDisplay.length + 1,
-            shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
               if (index == dataDisplay.length) {
                 return Padding(
@@ -927,113 +928,111 @@ class _SaleState extends ConsumerState<Sale> {
                   ),
                 );
               } else {
-                return Expanded(
-                  child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 2),
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: white,
-                        borderRadius: BorderRadius.circular(3),
-                        boxShadow: [
-                          BoxShadow(
-                            offset: const Offset(0, 5),
-                            blurRadius: 6,
-                            color: const Color(0xff000000).withOpacity(0.06),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: InkWell(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
-                                        ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                showEditDialog(context, dataDisplay[index]);
-                              },
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index]);
+                            },
                           ),
-                          Expanded(
-                            flex: 2,
-                            child: InkWell(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
-                                    ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
                                   ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
-                                    ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
                                   ),
-                                ],
-                              ),
-                              onTap: () {
-                                showDetails(context, dataDisplay[index]);
-                              },
+                                ),
+                              ],
                             ),
+                            onTap: () {
+                              showDetails(context, dataDisplay[index]);
+                            },
                           ),
-                        ],
-                      )),
-                );
+                        ),
+                      ],
+                    ));
                 // return Card(
                 //   elevation: 3,
                 //   clipBehavior: Clip.hardEdge,
@@ -2810,9 +2809,11 @@ void _onTabTapped(int index) {
                                     onTap: () {
                                       setState(() {
                                         editItem = true;
+                                        clearValue();
                                         position = index;
                                         cartModel =
                                             cartItem.elementAt(position!);
+                                            debugPrint(cartModel!.unitValue.toString());
                                             selectedItemId = cartModel!.itemId;
                                             uniqueCode = cartModel!.uniqueCode!;
                                         itemNameControl.text =
@@ -2831,10 +2832,17 @@ void _onTabTapped(int index) {
                                         _serialNoController.text =
                                             cartModel!.serialNo!;
                                         _dropDownUnit = cartModel!.unitId!;
+                                        // unitValue = _conversion;
                                         taxP = cartModel!.taxP!;
                                         tax = cartModel!.tax!;
                                         gross = cartModel!.gross!;
                                         total = cartModel!.total!;
+                                        cartModel!.uniqueCode = uniqueCode;
+                                        unitValue = cartModel!.unitValue!;
+                                         unit = DataJson(
+                                              id: cartModel!.unitId,
+                                              name: cartModel!.itemName!,
+                                            );
                                         nextWidget = 2;
                                       });
                                       
@@ -4959,9 +4967,16 @@ void _onTabTapped(int index) {
   late StockProduct selectedVariant;
   var fetchedData;
   addItemWidget() {
-    // if (editItem) {
-    //   uniqueCode = selectedVariant.productId!;
-    // }
+     List<UnitModel> unitListData = [];
+    if (editItem) {
+      cartModel = cartItem.elementAt(position!);
+      // uniqueCode = selectedVariant.productId!;
+      unitValue = cartModel!.unitValue!;
+      debugPrint("unitvalue =${unitValue.toString()}");
+      _dropDownUnit = cartModel!.unitId!;
+      // _conversion = cartModel!.unitValue!;
+      calculateTotal();
+    }
     calculate() {
       uniqueCode = selectedVariant.productId!;
     if (enableMULTIUNIT) {
@@ -4973,7 +4988,7 @@ void _onTabTapped(int index) {
             // rate = double.tryParse(_rateController.text) * _conversion;
             lastRateStatus = false;
           } else {
-            rate =  editItem ? saleRate : (saleRate * _conversion);
+            rate =  (saleRate * _conversion);
             // rate = saleRate; // * _conversion;
             _rateController.text = rate.toStringAsFixed(decimal);
           }
@@ -5360,7 +5375,7 @@ void _onTabTapped(int index) {
                                         // print('onChanged value: $value');
                                       },
                                       onSubmitted: (value) {
-                                        _dropDownUnit = 0;
+                                        
                                         setState(() {
                                           final selectedItem = 
                                           itemCodeViseChek 
@@ -5369,6 +5384,20 @@ void _onTabTapped(int index) {
                                           : data.firstWhere(
                                             (element) => element.name == value,
                                           );
+                                          _dropDownUnit = 0;
+                                          rate = 0;
+                                          quantity = 0;
+                                          _quantityController.text = '';
+                                          _discountController.text = '';
+                                          _discountPercentController.text = '';
+                                          tax = 0;
+                                          _rateController.text = '';
+                                          discount = 0;
+                                          discountPercent = 0;
+                                          subTotal = 0;
+                                          total = 0;
+                                          gross = 0;
+
                                           selectedQuantity =
                                               selectedItem.quantity.toString();
                                           selectedItemId = selectedItem.id!;
@@ -5549,7 +5578,7 @@ void _onTabTapped(int index) {
                                                           _quantityController,
                                                       focusNode:
                                                           _focusNodeQuantity,
-                                                      autofocus: true,
+                                                      // autofocus: true,
                                                       validator: (value) {
                                                         if (outOfStock) {
                                                           return 'No Stock';
@@ -6806,7 +6835,7 @@ void _onTabTapped(int index) {
                       splashColor: Colors.white,
                       onTap: () {
                         editItem ? setState(() {
-                           List<UnitModel> unitListData = [];
+                          
                         print(selectedVariant.name);
                         calculateText(selectedVariant);
                         setState(() {
@@ -6947,6 +6976,7 @@ void _onTabTapped(int index) {
                                   }
                                   if (isUnit) {
                                     if (editItem) {
+                                      unitValue = cartModel!.unitValue!;
                                       cartItem[position!].adCess = adCess;
                                       cartItem[position!].quantity =
                                           quantity;
@@ -7078,6 +7108,7 @@ void _onTabTapped(int index) {
                             }
                           }
                           if (totalItem > 0) {
+                            
                             clearValue();
                             calculateTotal();
                             nextWidget = 0;
@@ -7357,6 +7388,7 @@ void _onTabTapped(int index) {
                             }
                           }
                           if (totalItem > 0) {
+                            debugPrint("unit ==== ${unitValue.toString()}");
                             clearValue();
                             nextWidget = 0;
                           }
@@ -9026,6 +9058,7 @@ void _onTabTapped(int index) {
 
   final _resetKey = GlobalKey<FormState>();
   String expDate = '2000-01-01';
+  DataJson? unit;
   int _dropDownUnit = 0, fUnitId = 0, uniqueCode = 0, barcode = 0;
 
   double taxP = 0,

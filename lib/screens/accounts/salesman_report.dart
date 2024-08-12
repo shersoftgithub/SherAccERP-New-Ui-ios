@@ -102,9 +102,9 @@ class _SalesManReportState extends State<SalesManReport> {
                     loadReport = false;
                   });
                 },
-                icon: const Icon(Icons.filter_alt)),
+                icon: Image.asset('assets/icons/ic_filter.png',scale: 3.3,)),
             PopupMenuButton(
-              icon: const Icon(Icons.share_rounded),
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: 1,
@@ -148,7 +148,10 @@ class _SalesManReportState extends State<SalesManReport> {
               },
             )
           ],
-          title: Text(title ?? 'Salesman Report'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
+          title: const Text('Salesman Report'),
         ),
         body: loadReport ? reportView(title) : selectData(title));
   }
@@ -376,15 +379,21 @@ class _SalesManReportState extends State<SalesManReport> {
                   // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     const Text(
-                      ' From  ',
+                      ' From ',
                       style:
                           TextStyle(
                             fontFamily: 'poppins',
                             fontWeight: FontWeight.w500,
-                            fontSize: 15),
+                            fontSize: 14),
                     ),
                     Container(
-                      padding: const EdgeInsets.all(2),
+                      padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(color: grey)
@@ -395,16 +404,18 @@ class _SalesManReportState extends State<SalesManReport> {
                             Text(
                               fromDate!,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w500, 
-                                  fontSize: 15),
+                                  // fontWeight: FontWeight.w500, 
+                                  // fontSize: 15,
+                                  fontFamily: 'poppins'
+                                  ),
                             ),
                             const SizedBox(
-                              width: 4,
+                              width: 2,
                             ),
                             const Icon(
                               Icons.calendar_month,
                               color: grey,
-                              size: 18,)
+                              size: 20,)
                           ],
                         ),
                         onTap: () => _selectDate('f'),
@@ -412,15 +423,21 @@ class _SalesManReportState extends State<SalesManReport> {
                     ),
                     const Spacer(),
                     const Text(
-                      ' To : ',
+                      ' To ',
                       style:
                           TextStyle(
                             fontFamily: 'poppins',
                             fontWeight: FontWeight.w500,
-                            fontSize: 15),
+                            fontSize: 14),
                     ),
                     Container(
-                      padding: const EdgeInsets.all(2),
+                      padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(color: grey)
@@ -431,16 +448,18 @@ class _SalesManReportState extends State<SalesManReport> {
                             Text(
                               toDate!,
                               style: const TextStyle(
-                                      fontWeight: FontWeight.w500, 
-                                      fontSize: 15),
+                                      // fontWeight: FontWeight.w500, 
+                                      // fontSize: 15,
+                                      fontFamily: 'poppins'
+                                      ),
                             ),
                             const SizedBox(
-                              width: 4,
+                              width: 2,
                             ),
                             const Icon(
                               Icons.calendar_month,
                               color: grey,
-                              size: 18,)
+                              size: 20,)
                           ],
                         ),
                         onTap: () => _selectDate('t'),
@@ -550,10 +569,18 @@ class _SalesManReportState extends State<SalesManReport> {
                 height: 8,
               ),
               areaDataList.isNotEmpty
-                  ? ExpansionTile(
-                      title: const Text('Area List'),
-                      children: _getChildren(areaDataList),
-                    )
+                  ? Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: grey
+                      ),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+                    child: ExpansionTile(
+                        title: const Text('Area List'),
+                        children: _getChildren(areaDataList),
+                      ),
+                  )
                   : Container(),
               const SizedBox(
                 height: 8,
@@ -782,6 +809,7 @@ class _SalesManReportState extends State<SalesManReport> {
         data.length,
         (index) => CheckboxListTile(
             value: data[index].status,
+            activeColor: kPrimaryColor,
             title: Text(data[index].name),
             onChanged: (bool? value) {
               itemChange(value!, index);

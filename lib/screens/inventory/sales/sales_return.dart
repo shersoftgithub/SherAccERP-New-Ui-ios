@@ -1439,7 +1439,10 @@ class _SalesReturnState extends State<SalesReturn> {
                                                 .toString();
                                         // _serialNoController.text =
                                         //     cartModel!.serialNo!;
+                                        unitValue = cartModel!.unitValue!;
                                         _dropDownUnit = cartModel!.unitId!;
+                                        rate = cartModel!.rate!;
+                                        quantity = cartModel!.quantity!;
                                         taxP = cartModel!.taxP!;
                                         tax = cartModel!.tax!;
                                         gross = cartModel!.gross!;
@@ -2109,7 +2112,11 @@ bool isPrateEdited = false;
     
     List<UnitModel> unitList = [];
      if (editItem) {
+      selectedProducteId = cartModel!.itemId;
       productModelPrize = fetchedPrice;
+      unitValue = cartModel!.unitValue!;
+      debugPrint("unitvalue = ${unitValue.toString()}");
+      _dropDownUnit = cartModel!.unitId!;
       // uniqueCode = cartItem[position!].uniqueCode!;
      }
     //   productModel = productModel == null
@@ -3328,6 +3335,8 @@ bool isPrateEdited = false;
                   else{
                    setState(() {
                     if (editItem) {
+                      debugPrint("unitvalue === ${unitValue.toString()}");
+                      unitValue = cartModel!.unitValue!;
                       cartItem[position!].adCess = adCess;
                                 cartItem[position!].quantity = quantity;
                                 cartItem[position!].rate = rate;
@@ -3368,7 +3377,9 @@ bool isPrateEdited = false;
                                 calculateTotal();
                                 clearValue();
                     }
-                           else{   addProduct(
+                           else{ 
+                            debugPrint("unitvalue == ${unitValue.toString()}");
+                              addProduct(
                                   CartItem(
                                       id: totalItem + 1,
                                       itemId: int.tryParse(
@@ -5356,8 +5367,9 @@ bool isPrateEdited = false;
           // }
 
           Navigator.of(context).pop();
-          Navigator.pushReplacementNamed(context, '/return_preview_show',
-              arguments: {'title': 'SalesReturn'});
+          Navigator.pushReplacementNamed(context, '/return_preview_show');
+          // Navigator.pushReplacementNamed(context, '/return_preview_show',
+          //     arguments: {'title': 'SalesReturn'});
           //   }
           // });
         },

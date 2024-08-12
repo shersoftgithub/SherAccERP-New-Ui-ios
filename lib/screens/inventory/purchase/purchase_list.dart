@@ -422,7 +422,7 @@ class _PurchaseListState extends State<PurchaseList> {
                       'From ',
                       style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 14,
                           fontFamily: 'poppins'),
                     ),
                     InkWell(
@@ -437,12 +437,12 @@ class _PurchaseListState extends State<PurchaseList> {
                             Text(
                               fromDate!,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
+                                  // fontWeight: FontWeight.w500,
+                                  // fontSize: 15,
                                   fontFamily: 'poppins'),
                             ),
                             const SizedBox(
-                              width: 8,
+                              width: 2,
                             ),
                             const Icon(
                               Icons.calendar_month_outlined,
@@ -459,7 +459,7 @@ class _PurchaseListState extends State<PurchaseList> {
                       'To ',
                       style: TextStyle(
                           fontWeight: FontWeight.w500,
-                          fontSize: 16,
+                          fontSize: 14,
                           fontFamily: 'poppins'),
                     ),
                     InkWell(
@@ -474,12 +474,12 @@ class _PurchaseListState extends State<PurchaseList> {
                             Text(
                               toDate!,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
+                                  // fontWeight: FontWeight.w500,
+                                  // fontSize: 15,
                                   fontFamily: 'poppins'),
                             ),
                             const SizedBox(
-                              width: 8,
+                              width: 2,
                             ),
                             const Icon(
                               Icons.calendar_month_outlined,

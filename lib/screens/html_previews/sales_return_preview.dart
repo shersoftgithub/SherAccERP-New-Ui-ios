@@ -182,7 +182,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
       JsonTableColumn("Total", label: "Total")
     ];
     eNo = dataDynamic[0]['EntryNo'];
-    type = dataDynamic[0]['Type'];
+    type = int.tryParse(dataDynamic[0]['Type'].toString())!;
 
     if (printSettingsList != null) {
       if (printSettingsList.isNotEmpty) {
@@ -346,7 +346,14 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
     // title = route!['title']!;
     return Scaffold(
         appBar: AppBar(
-          title: Text('$title Preview'),
+          // leading: IconButton(onPressed: (){
+          //   Navigator.of(context).pop();
+          // }, icon: Icon(Icons.arrow_back)),
+          // title: Text('$title Preview'),
+          title: const Text('Sales Return Preview'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
           actions: [
             IconButton(
                 icon: const Icon(Icons.picture_as_pdf),
@@ -1197,8 +1204,12 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
         0, (total, particular) => total + particular['Net'].toDouble());
     double lineTotal = dataParticulars.fold(
         0, (total, particular) => total + particular['Total'].toDouble());
- double oldBalance =
-        double.tryParse(dataInformation['LedgerBalance'].toString())!
+//  double oldBalance =
+//         double.tryParse(dataInformation['LedgerBalance'].toString())!
+//             .toDouble();
+double oldBalance = dataInformation == null
+        ? 0.00
+        : double.tryParse(dataInformation['LedgerBalance'].toString())!
             .toDouble();
     double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
 

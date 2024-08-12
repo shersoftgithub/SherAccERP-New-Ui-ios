@@ -1986,6 +1986,7 @@ class _PurchaseState extends State<Purchase> {
                                                 double rates = cartModel!.rate / cartModel!.unitValue;
                                                 currentRate = rates;
                                                 selectedProducteId = cartModel!.itemId;
+                                                debugPrint(cartModel!.unitValue.toString());
                                             productNameController.text =
                                                 cartModel!.itemName;
                                             controllerRate.text =

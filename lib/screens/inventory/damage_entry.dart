@@ -18,6 +18,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
+import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class DamageEntry extends StatefulWidget {
@@ -1543,26 +1544,63 @@ class _DamageEntryState extends State<DamageEntry> {
         salesHeaderWidget(),
         totalItem > 0
             ? Expanded(
-                child: ListView.separated(
-                  itemCount: cartItem.length,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(),
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(cartItem[index].itemName!),
-                      subtitle: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            height: 40,
-                            width: 40,
-                            child: Card(
-                              color: Colors.green[200],
-                              child: IconButton(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: cartItem.length,
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const SizedBox(
+                          height: 8,
+                        ),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)
+                        ),
+                        child: ListTile(
+                          title: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(cartItem[index].itemName!),
+                              PopUpMenuAction(
+                                onDelete: () {
+                                  setState(() {
+                                            removeProducts(index);
+                                          });
+                                },
+                                onEdit: () {
+                                  
+                                },
+                              )
+                              // InkWell(
+                              //   onTap: () {
+                              //     PopUpMenuAction(
+                              //       onDelete: () {
+                              //         setState(() {
+                              //               removeProduct(index);
+                              //             });
+                              //       },
+                              //       onEdit: () {
+                                      
+                              //       },
+                              //     );
+                              //   },
+                              //   child: Icon(Icons.more_vert_outlined))
+                            ],
+                          ),
+                          subtitle: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
                                 icon: const Icon(
                                   Icons.add,
-                                  color: Colors.black,
-                                  size: 18,
+                                  // color: white
+                                  // size: 18,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -1571,36 +1609,29 @@ class _DamageEntryState extends State<DamageEntry> {
                                   });
                                 },
                               ),
-                            ),
-                          ),
-                          InkWell(
-                            child: Text(cartItem[index].quantity.toString(),
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold)),
-                            onTap: () {
-                              _displayTextInputDialog(
-                                  context,
-                                  'Edit Quantity',
-                                  cartItem[index].quantity! > 0
-                                      ? double.tryParse(cartItem[index]
-                                              .quantity
-                                              .toString())
-                                          .toString()
-                                      : '',
-                                  cartItem[index].id!);
-                            },
-                          ),
-                          SizedBox(
-                            height: 40,
-                            width: 40,
-                            child: Card(
-                              color: Colors.red[200],
-                              child: IconButton(
+                              InkWell(
+                                child: Text(cartItem[index].quantity.toString(),
+                                    style: const TextStyle(
+                                        // color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                                onTap: () {
+                                  _displayTextInputDialog(
+                                      context,
+                                      'Edit Quantity',
+                                      cartItem[index].quantity! > 0
+                                          ? double.tryParse(cartItem[index]
+                                                  .quantity
+                                                  .toString())
+                                              .toString()
+                                          : '',
+                                      cartItem[index].id!);
+                                },
+                              ),
+                              IconButton(
                                 icon: const Icon(
                                   Icons.remove,
-                                  color: Colors.black,
-                                  size: 18,
+                                  // color: Colors.black,
+                                  // size: 18,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -1609,52 +1640,50 @@ class _DamageEntryState extends State<DamageEntry> {
                                   });
                                 },
                               ),
-                            ),
+                              Text(
+                                  cartItem[index].unitId! > 0
+                                      ? '(' +
+                                          UnitSettings.getUnitName(
+                                              cartItem[index].unitId!) +
+                                          ')'
+                                      : " x ",
+                                  style: const TextStyle(
+                                      color: Colors.black, fontSize: 12)),
+                              InkWell(
+                                child: Text(
+                                    cartItem[index].rate!.toStringAsFixed(2),
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
+                                onTap: () {
+                                  _displayTextInputDialog(
+                                      context,
+                                      'Edit Rate',
+                                      cartItem[index].rate! > 0
+                                          ? double.tryParse(
+                                                  cartItem[index].rate.toString())
+                                              .toString()
+                                          : '',
+                                      cartItem[index].id!);
+                                },
+                              ),
+                              const Text(" = ",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              Text(
+                                  ((cartItem[index].quantity! *
+                                              cartItem[index].rate!) -
+                                          (cartItem[index].discount!))
+                                      .toStringAsFixed(2),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20)),
+                            ],
                           ),
-                          Text(
-                              cartItem[index].unitId! > 0
-                                  ? '(' +
-                                      UnitSettings.getUnitName(
-                                          cartItem[index].unitId!) +
-                                      ')'
-                                  : " x ",
-                              style: const TextStyle(
-                                  color: Colors.black, fontSize: 12)),
-                          InkWell(
-                            child: Text(
-                                cartItem[index].rate!.toStringAsFixed(2),
-                                style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold)),
-                            onTap: () {
-                              _displayTextInputDialog(
-                                  context,
-                                  'Edit Rate',
-                                  cartItem[index].rate! > 0
-                                      ? double.tryParse(
-                                              cartItem[index].rate.toString())
-                                          .toString()
-                                      : '',
-                                  cartItem[index].id!);
-                            },
-                          ),
-                          const Text(" = ",
-                              style: TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold)),
-                          Text(
-                              ((cartItem[index].quantity! *
-                                          cartItem[index].rate!) -
-                                      (cartItem[index].discount!))
-                                  .toStringAsFixed(2),
-                              style: const TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20)),
-                        ],
-                      ),
-                    );
-                  },
+                        ),
+                      );
+                    },
+                  ),
                 ),
               )
             : const Center(
@@ -1675,7 +1704,11 @@ class _DamageEntryState extends State<DamageEntry> {
       calculateTotal();
     }
   }
-
+  void removeProducts(int index) {
+    // int index = cartItem.indexWhere((i) => i.id == product.id);
+    // cartItem[index].quantity = 1;
+    cartItem.removeAt(index);
+  }
   void removeProduct(product) {
     int index = cartItem.indexWhere((i) => i.id == product.id);
     cartItem[index].quantity = 1;
@@ -1850,33 +1883,52 @@ class _DamageEntryState extends State<DamageEntry> {
               ),
             ],
           ),
-          ListTile(
-            title: Text(ledgerModel['LedName'],
-                 style: const TextStyle(
-                  fontFamily: 'poppins',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15),),
-            subtitle: const Text(''),
+          const SizedBox(
+            height: 8,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(ledgerModel['LedName'],
+            textAlign: TextAlign.center,
+                   style: const TextStyle(
+                    fontFamily: 'poppins',
+                    // fontWeight: FontWeight.w500,
+                    // fontSize: 15
+                    ),),
+          ),
+          // ListTile(
+          //   title: 
+          //   subtitle: const Text(''),
+          // ),
+          const SizedBox(
+            height: 8,
           ),
           InkWell(
-              child: const SizedBox(
-                height: 20,
-                child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        'Item Add',
-                        style: TextStyle(
-                            color: blue,
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    )),
+              child:  Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4,vertical: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: kPrimaryColor
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add,color: white,),
+                    Text(
+                      'Add Item',
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                          color: white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500),
+                    ),
+                    
+                  ],
+                ),
               ),
               onTap: () {
                 setState(() {
-                  nextWidget = 2;
+                  nextWidget = 1;
                 });
               }),
                 ],
@@ -1887,102 +1939,111 @@ class _DamageEntryState extends State<DamageEntry> {
   footerWidget() {
     return Container(
       color: Colors.blue[50],
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("SubTotal: ",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.red[300])),
-              Text(
-                  CommonService.getRound(2, totalGrossValue).toStringAsFixed(2),
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.red[300])),
-            ],
-          ),
-          Visibility(
-            visible: isTax,
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16
+        ),
+        child: Column(
+          children: [
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Tax: ",
+                const Text("SubTotal : ",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red[400])),
+                      fontFamily: 'poppins',)),
                 Text(
-                    CommonService.getRound(2, taxTotalCartValue)
-                        .toStringAsFixed(2),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.red[400])),
+                    CommonService.getRound(2, totalGrossValue).toStringAsFixed(2),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,)),
               ],
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Total: ",
-                  style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red[500])),
-              Text(CommonService.getRound(2, totalCartValue).toStringAsFixed(2),
-                  style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red[500])),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('GrandTotal : ',
-                  style: TextStyle(
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red)),
-              Text(
-                  grandTotal > 0
-                      ? ComSettings.appSettings(
-                              'bool', 'key-round-off-amount', false)
-                          ? CommonService.getRound(2, grandTotal).toString()
-                          : CommonService.getRound(2, grandTotal)
-                              .roundToDouble()
-                              .toString()
-                      : ComSettings.appSettings(
-                              'bool', 'key-round-off-amount', false)
-                          ? CommonService.getRound(2, totalCartValue).toString()
-                          : CommonService.getRound(
-                                  2, totalCartValue.roundToDouble())
-                              .toString(),
-                  style: const TextStyle(
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red))
-            ],
-          ),
-          Column(
-            children: [
-              Row(
+            Visibility(
+              visible: isTax,
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        label: Text('Narration...'),
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _narration = value;
-                        });
-                      },
-                    ),
-                  ),
+                  const Text("Tax : ",
+                      style: TextStyle(fontFamily: 'poppins')),
+                  Text(
+                      CommonService.getRound(2, taxTotalCartValue)
+                          .toStringAsFixed(2),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,)),
                 ],
               ),
-            ],
-          ),
-        ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Total : ",
+                    style: TextStyle(
+                      fontSize: 15,
+                        fontFamily: 'poppins')),
+                Text(CommonService.getRound(2, totalCartValue).toStringAsFixed(2),
+                    style: const TextStyle(
+                      fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                       )),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('GrandTotal : ',
+                    style: TextStyle(
+                      fontSize: 16,
+                        fontFamily: 'poppins')),
+                Text(
+                    grandTotal > 0
+                        ? ComSettings.appSettings(
+                                'bool', 'key-round-off-amount', false)
+                            ? CommonService.getRound(2, grandTotal).toString()
+                            : CommonService.getRound(2, grandTotal)
+                                .roundToDouble()
+                                .toString()
+                        : ComSettings.appSettings(
+                                'bool', 'key-round-off-amount', false)
+                            ? CommonService.getRound(2, totalCartValue).toString()
+                            : CommonService.getRound(
+                                    2, totalCartValue.roundToDouble())
+                                .toString(),
+                    style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        ))
+              ],
+            ),
+            const SizedBox(
+              height: 4,
+            ),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 8
+                          ),
+                          border: OutlineInputBorder(),
+                          label: Text('Narration...',style: TextStyle(fontFamily: 'poppins'),),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _narration = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

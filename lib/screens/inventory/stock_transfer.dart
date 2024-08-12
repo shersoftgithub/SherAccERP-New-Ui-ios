@@ -173,7 +173,7 @@ class _StockTransferState extends State<StockTransfer> {
                     }
                   }
                 },
-                icon: const Icon(Icons.delete_forever)),
+                icon: Image.asset('assets/icons/ic_delete.png',scale: 3.3,)),
           ),
           oldBill
               ? IconButton(
@@ -229,7 +229,7 @@ class _StockTransferState extends State<StockTransfer> {
                       }
                     }
                   },
-                  icon: const Icon(Icons.edit))
+                  icon: Image.asset('assets/icons/ic_edit.png',scale: 3.3,))
               : IconButton(
                   color: blue,
                   iconSize: 40,
@@ -472,7 +472,7 @@ class _StockTransferState extends State<StockTransfer> {
           child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 10),
             child: Column(
               children: [
                 Row(
@@ -482,7 +482,7 @@ class _StockTransferState extends State<StockTransfer> {
                       'Date  ',
                       style: TextStyle(fontWeight: FontWeight.w500,
                       fontFamily: 'poppins',
-                      fontSize: 16
+                      fontSize: 14
                       ),
                     ),
                     InkWell(
@@ -518,111 +518,108 @@ class _StockTransferState extends State<StockTransfer> {
                     ),
                   ],
                 ),
+                const SizedBox(
+                  height: 8,
+                ),
                 SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: Row(
                     // mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       const Text(
-                        'From',
+                        'From ',
                         style: TextStyle(
                           fontFamily: 'poppins',
                           fontWeight: FontWeight.w500),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: 35,
-                              width: 130,
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                               decoration: BoxDecoration(
-                                                    border: Border.all(color: grey,),
-                                                    borderRadius: BorderRadius.circular(3)
-                                                    ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<int>(
-                                  isExpanded: true,
-                                  hint: const Text('Select Branch',style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500
+                      Expanded(
+                        child: Container(
+                          // height: 35,
+                          // width: 130,
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                           decoration: BoxDecoration(
+                                                border: Border.all(color: grey,),
+                                                borderRadius: BorderRadius.circular(3)
+                                                ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              isExpanded: true,
+                              hint: const Text('Select Branch',style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 14,
+                                // fontWeight: FontWeight.w500
+                              ),),
+                              value: locationFromId,
+                              items: locationData
+                                  .map<DropdownMenuItem<int>>((value) {
+                                return DropdownMenuItem<int>(
+                                  value: value.key,
+                                  child: Text(value.value,style: TextStyle(
+                                     fontFamily: 'poppins',
+                                fontSize: 14,
+                                // fontWeight: FontWeight.w500
                                   ),),
-                                  value: locationFromId,
-                                  items: locationData
-                                      .map<DropdownMenuItem<int>>((value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value.key,
-                                      child: Text(value.value,style: TextStyle(
-                                         fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500
-                                      ),),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      locationFromId = value!;
-                                    });
-                                  },
-                                ),
-                              ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  locationFromId = value!;
+                                });
+                              },
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      const Icon(Icons.forward),
-                      const Spacer(),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      // const Icon(Icons.forward),
+                      // const Spacer(),
                       const Text(
-                        'To',
+                        'To ',
                         style: TextStyle(
                           fontFamily: 'poppins',
                           fontWeight: FontWeight.w500),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          children: [
-                            Container(
-                               height: 35,
-                              width: 130,
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                               decoration: BoxDecoration(
-                                                    border: Border.all(color: grey,),
-                                                    borderRadius: BorderRadius.circular(3)
+                      Expanded(
+                        child: Container(
+                          //  height: 35,
+                          // width: 130,
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                           decoration: BoxDecoration(
+                                                border: Border.all(color: grey,),
+                                                borderRadius: BorderRadius.circular(3)
+                                                ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<int>(
+                              hint: const Text('Select Branch',
+                              style: TextStyle(
+                                                    fontFamily: 'poppins',
+                                                    fontSize: 14,
+                                                    // fontWeight: FontWeight.w500
                                                     ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<int>(
-                                  hint: const Text('Select Branch',
-                                  style: TextStyle(
-                                                        fontFamily: 'poppins',
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  value: locationToId,
-                                  items: locationData
-                                      .map<DropdownMenuItem<int>>((value) {
-                                    return DropdownMenuItem<int>(
-                                      value: value.key,
-                                      child: Text(value.value,
-                                      style: TextStyle(
-                                                        fontFamily: 'poppins',
-                                                        fontSize: 14,
-                                                        fontWeight: FontWeight.w500),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      locationToId = value!;
-                                    });
-                                  },
-                                ),
                               ),
+                              value: locationToId,
+                              items: locationData
+                                  .map<DropdownMenuItem<int>>((value) {
+                                return DropdownMenuItem<int>(
+                                  value: value.key,
+                                  child: Text(value.value,
+                                  style: TextStyle(
+                                                    fontFamily: 'poppins',
+                                                    fontSize: 14,
+                                                    // fontWeight: FontWeight.w500
+                                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  locationToId = value!;
+                                });
+                              },
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ],

@@ -323,14 +323,14 @@ class _StockManagementState extends State<StockManagement> {
                   children: [
                    
                     const Text(
-                      'Date : ',
+                      'Date ',
                       style: TextStyle(
                         fontFamily: 'poppins',
-                        fontWeight: FontWeight.w500, fontSize: 15),
+                        fontWeight: FontWeight.w500, fontSize: 14),
                     ),
                     InkWell(
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: grey,
@@ -341,7 +341,8 @@ class _StockManagementState extends State<StockManagement> {
                           formattedDate!,
                            style: const TextStyle(
                           fontFamily: 'poppins',
-                          fontWeight: FontWeight.w500, fontSize: 15),
+                          // fontWeight: FontWeight.w500, fontSize: 15
+                          ),
                         ),
                       ),
                       onTap: () => _selectDate(),
@@ -354,10 +355,11 @@ class _StockManagementState extends State<StockManagement> {
                       'Branch  ',
                       style: TextStyle(
                         fontFamily: 'poppins',
-                        fontWeight: FontWeight.w500, fontSize: 15),
+                        fontWeight: FontWeight.w500, fontSize: 14
+                        ),
                     ),
                     Container(
-                      height: 35,
+                      height: 30,
                       padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
                                       border: Border.all(
@@ -367,13 +369,20 @@ class _StockManagementState extends State<StockManagement> {
                                     ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<int>(
-                          hint: const Text('Select Branch'),
+                          hint: const Text('Select Branch',style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 13
+                          ),),
                           value: locationFromId,
                           items: locationData
                               .map<DropdownMenuItem<int>>((value) {
                             return DropdownMenuItem<int>(
                               value: value.key,
-                              child: Text(value.value),
+                              child: Text(value.value,
+                              style: const TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 13
+                          )),
                             );
                           }).toList(),
                           onChanged: (value) {
