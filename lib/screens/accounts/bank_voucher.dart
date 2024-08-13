@@ -126,9 +126,23 @@ class _BankVoucherState extends State<BankVoucher> {
     var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
     title = 'Bank $title';
     return PopScope(
-        canPop: _onWillPop(),
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (didPop) {
+            return;
+          }
+          final NavigatorState navigator = Navigator.of(context);
+          final bool? shouldPop = await _onWillPop();
+          if (shouldPop ?? false) {
+            navigator.pop();
+          }
+        },
         child: widgetID ? widgetPrefix(title) : widgetSuffix(title));
   }
+  //   PopScope(
+  //       canPop: _onWillPop(),
+  //       child: widgetID ? widgetPrefix(title) : widgetSuffix(title));
+  // }
 
   _onWillPop() async {
     return (await showDialog(
@@ -229,6 +243,9 @@ class _BankVoucherState extends State<BankVoucher> {
                     icon: const Icon(Icons.save)),
           ],
           title: Text(title),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -254,6 +271,10 @@ class _BankVoucherState extends State<BankVoucher> {
           actions: [
             TextButton(
                 style: TextButton.styleFrom(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -269,6 +290,9 @@ class _BankVoucherState extends State<BankVoucher> {
                 )),
           ],
           title: Text(mode),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: Container(
           child: previousBill(mode),
@@ -571,23 +595,45 @@ class _BankVoucherState extends State<BankVoucher> {
 
   var _dropDownValue = '';
   widgetAccount() {
-    return DropdownButton<String>(
-      hint: Text(_dropDownValue.isNotEmpty
-          ? _dropDownValue.split('-')[1]
-          : 'Select bank account'),
-      items: cashBankACList.map<DropdownMenuItem<String>>((item) {
-        return DropdownMenuItem<String>(
-          value: item.id.toString() + "-" + item.name,
-          child: Text(item.name),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _dropDownValue = value!;
-          accountId = value.split('-')[0];
-          accountName = value.split('-')[1];
-        });
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 5
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(color: grey),
+        borderRadius: BorderRadius.circular(3)
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          hint: Text(_dropDownValue.isNotEmpty
+              ? _dropDownValue.split('-')[1]
+              : 'Select bank account',
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),
+              ),
+          items: cashBankACList.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: item.id.toString() + "-" + item.name,
+              child: Text(item.name,
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _dropDownValue = value!;
+              accountId = value.split('-')[0];
+              accountName = value.split('-')[1];
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -666,15 +712,27 @@ class _BankVoucherState extends State<BankVoucher> {
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("No data in" + mode),
+              Text("No data in" + mode,
+              style: TextStyle(
+                fontFamily: 'poppins'
+              ),
+              ),
               TextButton.icon(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  ),
+                  backgroundColor: kPrimaryColor
+                ),
                   onPressed: () {
                     setState(() {
                       widgetID = false;
                     });
                   },
-                  icon: const Icon(Icons.shopping_bag),
-                  label: Text('Take New ' + mode))
+                  icon: const Icon(Icons.shopping_bag,color: white,),
+                  label: Text('Take New ' + mode,style: const TextStyle(
+                    fontFamily: 'poppins',
+                    color: white),))
             ],
           ));
   }
@@ -752,310 +810,345 @@ class _BankVoucherState extends State<BankVoucher> {
   }
 
   voucherWidget(var mode) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Text(
-              'Date : ',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            InkWell(
-              child: Text(
-                formattedDate!,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              onTap: () => _selectDate(),
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            const Text('Bank Account ',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            widgetAccount(),
-          ],
-        ),
-        Card(
-          elevation: 5,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
-                onPressed: () {
-                  var under =
-                      mode == 'Bank Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
-                  Navigator.pushNamed(context, '/ledger',
-                      arguments: {'parent': under});
-                },
-                child: const Text('Add new ledger'),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.add_circle,
-                  color: kPrimaryColor,
+              const Text(
+                'Date ',
+                style: TextStyle(
+                  fontFamily: 'poppins'
                 ),
-                onPressed: () {
-                  var under =
-                      mode == 'Bank Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
-                  Navigator.pushNamed(context, '/ledger',
-                      arguments: {'parent': under});
-                },
+              ),
+              InkWell(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 3
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: grey
+                    ),
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        formattedDate!,
+                        style:
+                            const TextStyle(fontFamily: 'poppins'),
+                      ),
+                      const SizedBox(
+                        width: 2,
+                      ),
+                      const Icon(Icons.calendar_month,color: grey,size: 18,)
+                    ],
+                  ),
+                ),
+                onTap: () => _selectDate(),
               ),
             ],
           ),
-        ),
-        const Divider(),
-        DropdownSearch<LedgerModel>(
-          asyncItems: (String filter) async {
-            nameLike = filter.isNotEmpty ? filter : 'a';
-            var models = api.getCustomerNameListLike(
-                groupId, areaId, routeId, salesManId, nameLike);
-            return models;
-          },
-          popupProps: const PopupProps.menu(
-            constraints: BoxConstraints(maxHeight: 300),
-            showSearchBox: true,
-            isFilterOnline: true,
+          const SizedBox(
+            height: 8,
           ),
-          dropdownDecoratorProps: const DropDownDecoratorProps(
-              dropdownSearchDecoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Select Ledger Name")),
-          onChanged: (LedgerModel? data) {
-            // print(data);
-            ledData = data;
-            setState(() {
-              isSelected = true;
-            });
-          },
-          selectedItem: ledData,
-        ),
-        const Divider(),
-        isSelected
-            ? ledgerDetailWidget(ledData!.id)
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Expanded(
-                      child: Text(
-                    'Balance : 0',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  )),
-                ],
-              ),
-        const Divider(),
-        Card(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(
-                width: 10,
-              ),
-              const Text('Type '),
-              Expanded(
-                child: DropdownButton<String>(
-                  hint: const Text('Type'),
-                  value: dropDownType,
-                  items: type.map<DropdownMenuItem<String>>((value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      dropDownType = value!;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controllerChequeNo,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Cheque No'),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    chequeNo = value;
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-        Card(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(
-                width: 10,
-              ),
-              const Text('Status '),
-              Expanded(
-                child: DropdownButton<String>(
-                  hint: const Text('Status'),
-                  value: dropDownStatusType,
-                  items: statusType.map<DropdownMenuItem<String>>((value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      dropDownStatusType = value!;
-                    });
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-        Card(
-          child: Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const Text('Clear Date : '),
-              InkWell(
-                child: Text(
-                  formattedClearDate!,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
+              const Text('Bank Account ',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  )),
+              Expanded(child: widgetAccount(),)
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          InkWell(
+            onTap: () {
+               var under =
+                          mode == 'Bank Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+                      Navigator.pushNamed(context, '/ledger',
+                          arguments: {'parent': under});
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: kPrimaryColor
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add,color: white,),
+                  Text('Add new ledger',style: TextStyle(
+                    fontFamily: 'poppins',
+                    color: white
+                  ),),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          DropdownSearch<LedgerModel>(
+            asyncItems: (String filter) async {
+              nameLike = filter.isNotEmpty ? filter : 'a';
+              var models = api.getCustomerNameListLike(
+                  groupId, areaId, routeId, salesManId, nameLike);
+              return models;
+            },
+            popupProps: const PopupProps.menu(
+              constraints: BoxConstraints(maxHeight: 300),
+              showSearchBox: true,
+              isFilterOnline: true,
+            ),
+            dropdownDecoratorProps: const DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Select Ledger Name")),
+            onChanged: (LedgerModel? data) {
+              // print(data);
+              ledData = data;
+              setState(() {
+                isSelected = true;
+              });
+            },
+            selectedItem: ledData,
+          ),
+          const Divider(),
+          isSelected
+              ? ledgerDetailWidget(ledData!.id)
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Expanded(
+                        child: Text(
+                      'Balance : 0',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ],
                 ),
-                onTap: () => _selectClearDate(),
+          const Divider(),
+          Card(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(
+                  width: 10,
+                ),
+                const Text('Type '),
+                Expanded(
+                  child: DropdownButton<String>(
+                    hint: const Text('Type'),
+                    value: dropDownType,
+                    items: type.map<DropdownMenuItem<String>>((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        dropDownType = value!;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controllerChequeNo,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Cheque No'),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      chequeNo = value;
+                    });
+                  },
+                ),
               ),
             ],
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controllerAmount,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                      allow: true, replacementString: '.')
-                ],
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Amount'),
+          Card(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(
+                  width: 10,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    amount = (value != null
-                        ? value.trim().isNotEmpty
-                            ? double.tryParse(value)
-                            : 0
-                        : 0)!;
-                    calculate(mode);
-                  });
-                },
-              ),
-            ),
-            const SizedBox(
-              width: 2,
-            ),
-            Expanded(
-              child: TextField(
-                controller: _controllerDiscount,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                      allow: true, replacementString: '.')
-                ],
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Discount'),
+                const Text('Status '),
+                Expanded(
+                  child: DropdownButton<String>(
+                    hint: const Text('Status'),
+                    value: dropDownStatusType,
+                    items: statusType.map<DropdownMenuItem<String>>((value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        dropDownStatusType = value!;
+                      });
+                    },
+                  ),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    discount = (value != null
-                        ? value.trim().isNotEmpty
-                            ? double.tryParse(value)
-                            : 0
-                        : 0)!;
-                    calculate(mode);
-                  });
-                },
-              ),
+              ],
             ),
-          ],
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controllerBankCharge,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                      allow: true, replacementString: '.')
-                ],
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Bank Charge'),
+          ),
+          Card(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                const Text('Clear Date : '),
+                InkWell(
+                  child: Text(
+                    formattedClearDate!,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  onTap: () => _selectClearDate(),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    bankCharge = (value != null
-                        ? value.trim().isNotEmpty
-                            ? double.tryParse(value)
-                            : 0
-                        : 0)!;
-                    calculate(mode);
-                  });
-                },
-              ),
+              ],
             ),
-            // Expanded(
-            //     child: Text(
-            //   'Total : ${total.toStringAsFixed(0)}',
-            //   style: const TextStyle(fontWeight: FontWeight.bold),
-            // )),
-          ],
-        ),
-        const Divider(),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _controllerNarration,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  label: Text('Narration'),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controllerAmount,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Amount'),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      amount = (value != null
+                          ? value.trim().isNotEmpty
+                              ? double.tryParse(value)
+                              : 0
+                          : 0)!;
+                      calculate(mode);
+                    });
+                  },
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    narration = value;
-                  });
-                },
               ),
-            ),
-          ],
-        ),
-        const Divider(),
-      ],
+              const SizedBox(
+                width: 2,
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controllerDiscount,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Discount'),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      discount = (value != null
+                          ? value.trim().isNotEmpty
+                              ? double.tryParse(value)
+                              : 0
+                          : 0)!;
+                      calculate(mode);
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controllerBankCharge,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Bank Charge'),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      bankCharge = (value != null
+                          ? value.trim().isNotEmpty
+                              ? double.tryParse(value)
+                              : 0
+                          : 0)!;
+                      calculate(mode);
+                    });
+                  },
+                ),
+              ),
+              // Expanded(
+              //     child: Text(
+              //   'Total : ${total.toStringAsFixed(0)}',
+              //   style: const TextStyle(fontWeight: FontWeight.bold),
+              // )),
+            ],
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controllerNarration,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    label: Text('Narration'),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      narration = value;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+        ],
+      ),
     );
   }
 

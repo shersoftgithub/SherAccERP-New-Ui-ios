@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:flutter/material.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class PrintSettings extends StatefulWidget {
   const PrintSettings({Key? key}) : super(key: key);
@@ -314,6 +315,7 @@ class _PrintSettingsState extends State<PrintSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: bagroundColor,
       appBar: AppBar(
         centerTitle: true,
         titleTextStyle: const TextStyle(
@@ -364,14 +366,15 @@ class _PrintSettingsState extends State<PrintSettings> {
         builder: (c, snapshot) {
           if (snapshot.data!) {
             return FloatingActionButton(
-              child: const Icon(Icons.stop),
               onPressed: _stopScanDevices,
               backgroundColor: Colors.red,
+              child: const Icon(Icons.stop),
             );
           } else {
             return FloatingActionButton(
-              child: const Icon(Icons.search),
+              backgroundColor: kPrimaryColor,
               onPressed: _startScanDevices,
+              child: const Icon(Icons.search,color: white,),
             );
           }
         },

@@ -1,14 +1,24 @@
+import 'dart:io';
+
+import 'package:csv/csv.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:sheraccerp/widget/pdf_screen.dart';
 
 class DamageReport extends StatefulWidget {
   const DamageReport({Key? key}) : super(key: key);
@@ -30,6 +40,8 @@ class _DamageReportState extends State<DamageReport> {
   final controller = ScrollController();
   double offset = 0;
   var dropDownBranchId;
+  List<String> tableColumn = [];
+  var _data;
 
   List<TypeItem> dropdownItemsType = [
     TypeItem(1, 'Summary'),
@@ -57,13 +69,64 @@ class _DamageReportState extends State<DamageReport> {
       backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
-            IconButton(
-                icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
-                onPressed: () {
-                  setState(
-                    () {},
-                  );
-                }),
+             PopupMenuButton(
+              icon: Image.asset('assets/icons/ic_share.png',scale: 3.3,),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  child: Text('PDF'),
+                  value: 1,
+                ),
+                const PopupMenuItem(
+                  child: Text('CSV'),
+                  value: 2,
+                ),
+              ],
+              onSelected: (menuId) {
+                setState(() {
+                  // debugPrint(menuId.toString());
+                  if (menuId == 1) {
+                    Future.delayed(const Duration(milliseconds: 1000), () {
+                      _createPDF(
+                              title + ' Date :' + fromDate! + ' - ' + toDate!)
+                          .then((value) =>
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => PDFScreen(
+                                        pathPDF: value,
+                                        subject: title +
+                                            ' Date :' +
+                                            fromDate! +
+                                            ' - ' +
+                                            toDate!,
+                                        text: 'this is ' +
+                                            title +
+                                            ' Date :' +
+                                            fromDate! +
+                                            ' - ' +
+                                            toDate!,
+                                      ))));
+                    });
+                  } else if (menuId == 2) {
+                    Future.delayed(const Duration(milliseconds: 1000), () {
+                      _createCSV(
+                              title + ' Date :' + fromDate! + ' - ' + toDate!)
+                          .then((value) {
+                        var text = 'this is ' +
+                            title +
+                            ' Date :' +
+                            fromDate! +
+                            ' - ' +
+                            toDate!;
+                        var subject =
+                            title + ' Date :' + fromDate! + ' - ' + toDate!;
+                        List<String> paths = [];
+                        paths.add(value);
+                        urlFileShare(context, text, subject, paths);
+                      });
+                    });
+                  }
+                });
+              },
+            )
           ],
           title: const Text('Damage Report'),
           titleTextStyle: const TextStyle(fontFamily: 'poppins'),
@@ -108,7 +171,9 @@ class _DamageReportState extends State<DamageReport> {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
             var data = snapshot.data;
+             _data = data;
             var col = data![0].keys.toList();
+            tableColumn = data[0].keys.toList();
             return Padding(
               padding: const EdgeInsets.all(5.0),
               child: SingleChildScrollView(
@@ -483,6 +548,349 @@ class _DamageReportState extends State<DamageReport> {
     setState(() {
       offset = (controller.hasClients) ? controller.offset : 0;
     });
+  }
+
+  Future<String> _createPDF(String title) async {
+    return makePDF(title).then((value) => savePreviewPDF(value, title));
+  }
+
+  Future<pw.Document> makePDF(String title) async {
+    // var tableHeaders = [
+    //   "Date",
+    //   "Particulars",
+    //   "Voucher",
+    //   "EntryNo",
+    //   "Debit",
+    //   "Credit",
+    //   "Balance",
+    //   "Narration"
+    // ];
+
+    var data = _data;
+    final pw.Document pdf = pw.Document();
+    pdf.addPage(pw.MultiPage(
+        // pageFormat: PdfPageFormat.a4,
+        maxPages: 100,
+        header: (context) => pw.Column(children: [
+              pw.Text(title,
+                  style: pw.TextStyle(
+                      color: const PdfColor.fromInt(0),
+                      fontSize: 25,
+                      fontWeight: pw.FontWeight.bold)),
+            ]),
+        build: (context) => [
+           pw.Table(
+                border: pw.TableBorder.all(width: 0.2),
+                children: [
+                  pw.TableRow(children: [
+                    for (int k = 0; k < tableColumn.length; k++)
+                      pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          mainAxisAlignment: pw.MainAxisAlignment.center,
+                          children: [
+                            pw.Text(tableColumn[k],
+                                style: const pw.TextStyle(fontSize: 6)),
+                            // pw.Divider(thickness: 1)
+                          ]),
+                  ]),
+                  for (var i = 0; i < data.length; i++)
+                    pw.TableRow(children: [
+                      for (int l = 0; l < tableColumn.length; l++)
+                        pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(2.0),
+                                child: pw.Text(
+                                    data[i][tableColumn[l]].toString() ?? '',
+                                    style: const pw.TextStyle(fontSize: 6)),
+                                // pw.Divider(thickness: 1)
+                              ),
+                            ]),
+                    ])
+                ],
+              ),
+              // pw.Table(
+              //   border: pw.TableBorder.all(width: 0.2),
+              //   children: [
+              //     pw.TableRow(children: [
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[0],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[1],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[2],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[3],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[4],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[5],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[6],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[7],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //     ]),
+              //     for (var i = 0; i < data.length; i++)
+              //       pw.TableRow(children: [
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text(data[i]['Date']?? '',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               ),
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text(data[i]['Particulars']??'',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               ),
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Voucher']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['EntryNo']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Debit']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Credit']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Balance']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Narration']?? ''}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //       ])
+              //   ],
+              // ),
+            ],
+        footer: _buildFooter));
+
+    return pdf;
+  }
+
+  pw.Widget _buildFooter(pw.Context context) {
+    debugPrint('Page ${context.pageNumber}/${context.pagesCount}');
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: pw.CrossAxisAlignment.end,
+      children: [
+        pw.Container(),
+        pw.Text(
+          'Page ${context.pageNumber}/${context.pagesCount}',
+          style: const pw.TextStyle(
+            fontSize: 12,
+            color: PdfColors.red,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<String> savePreviewPDF(pw.Document pdf, var title) async {
+    title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
+    if (kIsWeb) {
+      try {
+        // final bytes = await pdf.save();
+        // final blob = html.Blob([bytes], 'application/pdf');
+        // final url = html.Url.createObjectUrlFromBlob(blob);
+        // final anchor = html.AnchorElement()
+        //   ..href = url
+        //   ..style.display = 'none'
+        //   ..download = '$title.pdf';
+        // html.document.body.children.add(anchor);
+        // anchor.click();
+        // html.document.body.children.remove(anchor);
+        // html.Url.revokeObjectUrl(url);
+        return '';
+      } catch (ex) {
+        ex.toString();
+      }
+      return '';
+    } else {
+      var output = await getTemporaryDirectory();
+      final file = File('${output.path}/' + title + '.pdf');
+      await file.writeAsBytes(await pdf.save());
+      return file.path.toString();
+    }
+  }
+
+  Future<String> _createCSV(String title) async {
+    return _generateCsvFile(title)
+        .then((value) => savePreviewCSV(value, title));
+  }
+
+  Future<String> _generateCsvFile(String title) async {
+    var dataList = _data;
+    List<List<dynamic>> rows = [];
+    var col = dataList[0].keys.toList();
+    List<dynamic> row = [];
+    for (var columnName in col) {
+      row.add(columnName.toString());
+    }
+    rows.add(row);
+
+    for (var i = 0; i < dataList.length; i++) {
+      List<dynamic> row1 = [];
+      for (var columnName in col) {
+        row1.add(dataList[i][columnName].toString());
+      }
+      rows.add(row1);
+    }
+    return const ListToCsvConverter().convert(rows);
+  }
+
+  Future<String> savePreviewCSV(var csv, var title) async {
+    title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
+    if (kIsWeb) {
+      try {
+        // final bytes = utf8.encode(csv);
+        // final blob = html.Blob([bytes], 'application/csv');
+        // final url = html.Url.createObjectUrlFromBlob(blob);
+        // final anchor = html.AnchorElement()
+        //   ..href = url
+        //   ..style.display = 'none'
+        //   ..download = '$title.csv';
+        // html.document.body.children.add(anchor);
+        // anchor.click();
+        // html.document.body.children.remove(anchor);
+        // html.Url.revokeObjectUrl(url);
+        return '';
+      } catch (ex) {
+        ex.toString();
+      }
+      return '';
+    } else {
+      var output = await getTemporaryDirectory();
+      final file = File('${output.path}/' + title + '.csv');
+      await file.writeAsString(csv);
+      return file.path.toString();
+    }
+  }
+
+  Future<void> urlFileShare(BuildContext context, String text, String subject,
+      List<String> paths) async {
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    if (paths.isNotEmpty) {
+      List<XFile> files = [];
+      for (String value in paths) {
+        files.add(XFile(value));
+      }
+      await Share.shareXFiles(files,
+          text: text,
+          subject: subject,
+          sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+    }
   }
 }
 

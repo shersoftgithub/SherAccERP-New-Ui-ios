@@ -10,6 +10,8 @@ class InventoryMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: bagroundColor,
       body: GridView.count(
@@ -35,11 +37,11 @@ class InventoryMenu extends StatelessWidget {
                       width: 77,
                       height: 77,
                       decoration: BoxDecoration(
-                        image: const DecorationImage(
+                        image:  DecorationImage(
                           image: AssetImage('assets/icons/ic_product.png',),
                           scale: 1.8,
                           ),
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(100),
                           color: kPrimaryColor),
                     ),
                     const Text(

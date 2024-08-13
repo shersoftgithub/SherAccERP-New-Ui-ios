@@ -1879,19 +1879,39 @@ class AppSettings extends StatelessWidget {
                       child: SettingsScreen(
                         title: 'Pinter Settings',
                         children: [
-                          SwitchSettingsTile(
-                            settingKey: 'key-pdf-logo',
-                            title: 'Show Logo On Pdf',
-                            subtitle: 'Set Logo First On Settings',
-                            enabledLabel: 'Enabled',
-                            disabledLabel: 'Disabled',
-                            // leading: Icon(Icons.receipt_long),
-                            onChange: (value) {
-                              debugPrint('key-pdf-logo: $value');
-                            },
-                          ),
-                          DropDownSettingsTile<int>(
+                          Container(
+                             width: MediaQuery.sizeOf(context).width,
+                            color: bagroundColor,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  SwitchSettingsTile(
+                                    settingKey: 'key-pdf-logo',
+                                    title: 'Show Logo On Pdf',
+                                    titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
+                                    subtitle: 'Set Logo First On Settings',
+                                    subtitleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        // fontSize: 16,
+                                        // fontWeight: FontWeight.w500
+                                        ),
+                                    enabledLabel: 'Enabled',
+                                    disabledLabel: 'Disabled',
+                                    // leading: Icon(Icons.receipt_long),
+                                    onChange: (value) {
+                                      debugPrint('key-pdf-logo: $value');
+                                    },
+                                  ),
+                                   DropDownSettingsTile<int>(
                             title: 'Pdf Type',
+                            titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
                             settingKey: 'key-dropdown-pdf-type-view',
                             values: const <int, String>{
                               2: 'Document',
@@ -1904,6 +1924,10 @@ class AppSettings extends StatelessWidget {
                           ),
                           DropDownSettingsTile<int>(
                             title: 'Paper Size',
+                            titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
                             settingKey: 'key-dropdown-pdf-size-view',
                             values: const <int, String>{
                               2: 'A4',
@@ -1928,6 +1952,10 @@ class AppSettings extends StatelessWidget {
                           ),
                           DropDownSettingsTile<int>(
                             title: 'Pdf Copy',
+                            titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
                             settingKey: 'key-dropdown-pdf-copy-view',
                             values: const <int, String>{
                               2: '1',
@@ -1943,6 +1971,10 @@ class AppSettings extends StatelessWidget {
                           ),
                           DropDownSettingsTile<int>(
                             title: 'Pdf Model',
+                            titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
                             settingKey: 'key-dropdown-pdf-model-view',
                             values: const <int, String>{
                               2: 'Default',
@@ -1963,6 +1995,10 @@ class AppSettings extends StatelessWidget {
                           ),
                           DropDownSettingsTile<int>(
                             title: 'Pdf Space',
+                            titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
                             settingKey: 'key-dropdown-pdf-line',
                             values: const <int, String>{
                               2: '1',
@@ -2030,6 +2066,14 @@ class AppSettings extends StatelessWidget {
                               debugPrint('key-dropdown-pdf-line: $value');
                             },
                           ),
+                          SizedBox(
+                            height: MediaQuery.sizeOf(context).height,
+                          )
+                                ],
+                              ),
+                            ),
+                          ),
+                         
                         ],
                       )),
                 ),

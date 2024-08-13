@@ -232,7 +232,7 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                       child: Row(
                           // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Start Date',
+                            const Text('Start',
                             style: TextStyle(
                               fontFamily: 'poppins'
                             ),
@@ -253,10 +253,11 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                                       fromDate,
                                       style: const TextStyle(
                                         fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500, fontSize: 13),
+                                          // fontWeight: FontWeight.w500, fontSize: 13
+                                          ),
                                     ),
                                     const SizedBox(
-                                      width: 3,
+                                      width: 2,
                                     ),
                                     const Icon(
                                       Icons.calendar_month,
@@ -268,7 +269,7 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                               onTap: () => _selectDateFrom(),
                             ),
                             const Spacer(),
-                            const Text('End Date',
+                            const Text('End',
                              style: TextStyle(
                               fontFamily: 'poppins'
                             ),
@@ -289,10 +290,11 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                                       toDate,
                                       style: const TextStyle(
                                         fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500, fontSize: 13),
+                                          // fontWeight: FontWeight.w500, fontSize: 13
+                                          ),
                                     ),
                                      const SizedBox(
-                                      width: 4,
+                                      width: 2,
                                     ),
                                     const Icon(
                                       Icons.calendar_month,
@@ -326,11 +328,13 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                                   borderRadius: BorderRadius.circular(3)
                                 ),
                                     child: ListTile(
+                                      dense: true,
                                       title: Text(
                                         '${taxGroupList[index].name} / ${taxGroupList[index].schedule}',
                                         style: const TextStyle(fontSize: 15),
                                       ),
                                       subtitle: Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
@@ -357,11 +361,13 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                                         ],
                                       ),
                                       trailing: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(DateUtil.dateDMY(
                                               taxGroupList[index].sDate)),
+                                            const Spacer(),
                                           Text(DateUtil.dateDMY(
                                               taxGroupList[index].eDate))
                                         ],

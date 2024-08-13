@@ -6450,10 +6450,13 @@ class DioService {
           '${pref.getString('api')}${apiV}reportDesignerByName/$dataBase',
           queryParameters: {'name': form});
       if (response.statusCode == 200) {
+        
         List<dynamic> _data = response.data;
         for (var data in _data) {
-          _reportDesign.add(ReportDesign.fromMap(data));
+            _reportDesign.add(ReportDesign.fromMap(data));
+           print(data);
         }
+       
       } else {
         // throw Exception('Failed to load data');
       }

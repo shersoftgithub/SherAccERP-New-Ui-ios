@@ -1297,8 +1297,8 @@ class _SalesListState extends State<SalesList> {
               const SizedBox(
                 height: 10,
               ),
-              // isType
-              //     ?
+              isType
+                  ?
                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -1337,8 +1337,8 @@ class _SalesListState extends State<SalesList> {
                           ),
                         ),
                       ],
-                    ),
-                  // : Container(),
+                    )
+                  : Container(),
               // Divider(),
               const SizedBox(
                 height: 4,
@@ -1836,7 +1836,7 @@ class _SalesListState extends State<SalesList> {
                       fontSize: 25,
                       fontWeight: pw.FontWeight.bold)),
             ]),
-        build: (context) => [
+        build: (context) => [ 
               pw.Table(
                 border: pw.TableBorder.all(width: 0.2),
                 children: [

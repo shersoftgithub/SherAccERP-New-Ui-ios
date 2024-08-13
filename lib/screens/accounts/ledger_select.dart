@@ -1526,15 +1526,11 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             _ledger,
                                                             statement,
                                                             salesMan,
-                                                            locationId !=
-                                                                    null
-                                                                ? [
-                                                                    locationId
-                                                                        .id
-                                                                  ]
-                                                                : [
-                                                                    _dropDownBranchId
-                                                                  ],
+                                                            locationId != null
+                                                            ? [locationId.id]
+                                                            : [
+                                                                _dropDownBranchId
+                                                              ],
                                                             area!,
                                                             route!)));
                                           },

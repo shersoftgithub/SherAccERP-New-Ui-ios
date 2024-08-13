@@ -35,6 +35,7 @@ class _SerialNoListState extends State<SerialNoList> {
   TextEditingController serialNoController = TextEditingController();
   List<String> reportType = ['Select All', 'Details', 'Transactions'];
   var dropDownBranchId;
+  List<String> tableColumn = [];
 
   @override
   void initState() {
@@ -129,6 +130,7 @@ class _SerialNoListState extends State<SerialNoList> {
             var data = snapshot.data;
             _data = data;
             var col = data![0].keys.toList();
+            tableColumn = data[0].keys.toList();
             return Padding(
               padding: const EdgeInsets.all(5.0),
               child: SingleChildScrollView(
@@ -482,16 +484,16 @@ class _SerialNoListState extends State<SerialNoList> {
   }
 
   Future<pw.Document> makePDF(String title) async {
-    var tableHeaders = [
-      "Date",
-      "Particulars",
-      "Voucher",
-      "EntryNo",
-      "Debit",
-      "Credit",
-      "Balance",
-      "Narration"
-    ];
+    // var tableHeaders = [
+    //   "Date",
+    //   "Particulars",
+    //   "Voucher",
+    //   "EntryNo",
+    //   "Debit",
+    //   "Credit",
+    //   "Balance",
+    //   "Narration"
+    // ];
 
     var data = _data;
     final pw.Document pdf = pw.Document();
@@ -506,168 +508,200 @@ class _SerialNoListState extends State<SerialNoList> {
                       fontWeight: pw.FontWeight.bold)),
             ]),
         build: (context) => [
-              pw.Table(
+           pw.Table(
                 border: pw.TableBorder.all(width: 0.2),
                 children: [
                   pw.TableRow(children: [
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[0],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[1],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[2],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[3],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[4],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[5],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[6],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
-                    pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(tableHeaders[7],
-                              style: const pw.TextStyle(fontSize: 6)),
-                          // pw.Divider(thickness: 1)
-                        ]),
+                    for (int k = 0; k < tableColumn.length; k++)
+                      pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          mainAxisAlignment: pw.MainAxisAlignment.center,
+                          children: [
+                            pw.Text(tableColumn[k],
+                                style: const pw.TextStyle(fontSize: 6)),
+                            // pw.Divider(thickness: 1)
+                          ]),
                   ]),
                   for (var i = 0; i < data.length; i++)
                     pw.TableRow(children: [
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text(data[i]['Date'],
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            ),
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text(data[i]['Particulars'],
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            ),
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['Voucher']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['EntryNo']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['Debit']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['Credit']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.end,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['Balance']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
-                      pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          mainAxisAlignment: pw.MainAxisAlignment.center,
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Text('${data[i]['Narration']}',
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
-                            )
-                          ]),
+                      for (int l = 0; l < tableColumn.length; l++)
+                        pw.Column(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(2.0),
+                                child: pw.Text(
+                                    data[i][tableColumn[l]].toString() ?? '',
+                                    style: const pw.TextStyle(fontSize: 6)),
+                                // pw.Divider(thickness: 1)
+                              ),
+                            ]),
                     ])
                 ],
               ),
+              // pw.Table(
+              //   border: pw.TableBorder.all(width: 0.2),
+              //   children: [
+              //     pw.TableRow(children: [
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[0],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[1],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[2],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[3],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[4],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[5],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[6],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //       pw.Column(
+              //           crossAxisAlignment: pw.CrossAxisAlignment.center,
+              //           mainAxisAlignment: pw.MainAxisAlignment.center,
+              //           children: [
+              //             pw.Text(tableHeaders[7],
+              //                 style: const pw.TextStyle(fontSize: 6)),
+              //             // pw.Divider(thickness: 1)
+              //           ]),
+              //     ]),
+              //     for (var i = 0; i < data.length; i++)
+              //       pw.TableRow(children: [
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text(data[i]['Date'],
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               ),
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text(data[i]['Particulars'],
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               ),
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Voucher']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['EntryNo']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Debit']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Credit']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.end,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Balance']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //         pw.Column(
+              //             crossAxisAlignment: pw.CrossAxisAlignment.start,
+              //             mainAxisAlignment: pw.MainAxisAlignment.center,
+              //             children: [
+              //               pw.Padding(
+              //                 padding: const pw.EdgeInsets.all(2.0),
+              //                 child: pw.Text('${data[i]['Narration']}',
+              //                     style: const pw.TextStyle(fontSize: 6)),
+              //                 // pw.Divider(thickness: 1)
+              //               )
+              //             ]),
+              //       ])
+              //   ],
+              // ),
             ],
         footer: _buildFooter));
 

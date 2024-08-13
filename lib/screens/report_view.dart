@@ -627,8 +627,8 @@ class _ReportViewState extends State<ReportView> {
                             0.0,
                             (a, b) =>
                                 a +
-                                double.parse(
-                                    b[tableColumn[i].toString()].toString()))
+                                double.tryParse(
+                                    b[tableColumn[i].toString()].toString())!)
                         .toStringAsFixed(2);
                   }
                   if (i == 0) {

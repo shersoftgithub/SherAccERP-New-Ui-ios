@@ -2170,7 +2170,7 @@ bool isPrateEdited = false;
             if (_focusNodeRate.hasFocus) {
               rate = double.tryParse(_rateController.text)?? 0;
             } else {
-              rate = saleRate * _conversion;
+              rate = (saleRate * _conversion);
               _rateController.text = rate.toStringAsFixed(decimal);
             }
             pRate = productModelPrize[0]['prate'] * _conversion;
@@ -2178,7 +2178,7 @@ bool isPrateEdited = false;
           } else {
             rate = (_rateController.text.isNotEmpty
                 ? (double.tryParse(_rateController.text))
-                : 0)!;
+                : 0)?? 0;
           }
         } else {
           rate = (_rateController.text.isNotEmpty
@@ -2430,7 +2430,7 @@ bool isPrateEdited = false;
     child: Scaffold(
       backgroundColor: bagroundColor,
       appBar: AppBar(
-        title: const Text('Add Item'),
+        title: const Text('Add Item to Sales return'),
         centerTitle: true,
         titleTextStyle: const TextStyle(
           fontFamily: 'poppins',
