@@ -20,6 +20,7 @@ import 'package:sheraccerp/provider/stock_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/accounts/bank_voucher.dart';
 import 'package:sheraccerp/screens/accounts/journal.dart';
+import 'package:sheraccerp/screens/accounts/receipt_order.dart';
 import 'package:sheraccerp/screens/accounts/salesman_report.dart';
 import 'package:sheraccerp/screens/accounts/tax_report.dart';
 import 'package:sheraccerp/screens/html_previews/purchase_return_preview.dart';
@@ -226,6 +227,7 @@ class MyApp extends StatelessWidget {
               '/TaxReport': (context) => const TaxReport(),
               '/BankVoucher': (context) => const BankVoucher(),
               '/serialNoList': (context) => const SerialNoList(),
+              '/ReceiptOrder': (context) => const ReceiptOrder(),
             },
             theme: themeData(),
           ),

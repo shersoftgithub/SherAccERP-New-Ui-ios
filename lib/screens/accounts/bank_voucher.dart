@@ -14,8 +14,10 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
@@ -54,6 +56,7 @@ class _BankVoucherState extends State<BankVoucher> {
       widgetID = true,
       lastRecord = false,
       buttonEvent = false,
+       isSalesManWiseLedger = false,
       isMultiRvPv = false;
   int refNo = 0, acId = 0;
   int page = 1, pageTotal = 0, totalRecords = 0;
@@ -166,92 +169,105 @@ class _BankVoucherState extends State<BankVoucher> {
   }
 
   widgetSuffix(title) {
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: AppBar(
-          actions: [
-            Visibility(
-              visible: oldVoucher,
-              child: IconButton(
-                  color: red,
-                  iconSize: 40,
-                  onPressed: () {
-                    //delete
-                    if (buttonEvent) {
-                      return;
-                    } else {
-                      accountId =
-                          int.parse(accountId) > 0 ? accountId.toString() : '0';
-                      if (companyUserData!.deleteData) {
-                        title == 'Bank Payment'
-                            ? deleteVoucher('Bank Payment', 'DELETE')
-                            : deleteVoucher('Bank Receipt', 'DELETE');
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+          key: _scaffoldKey,
+          appBar: AppBar(
+            actions: [
+              Visibility(
+                visible: oldVoucher,
+                child: IconButton(
+                    color: red,
+                    iconSize: 40,
+                    onPressed: () {
+                      //delete
+                      if (buttonEvent) {
+                        return;
                       } else {
-                        Fluttertoast.showToast(
-                            msg: 'Permission denied\ncan`t delete');
-                        setState(() {
-                          buttonEvent = false;
-                        });
+                        accountId =
+                            int.parse(accountId) > 0 ? accountId.toString() : '0';
+                        if (companyUserData!.deleteData) {
+                          title == 'Bank Payment'
+                              ? deleteVoucher('Bank Payment', 'DELETE')
+                              : deleteVoucher('Bank Receipt', 'DELETE');
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Permission denied\ncan`t delete');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
                       }
-                    }
-                  },
-                  icon: const Icon(Icons.delete_forever)),
+                    },
+                    icon: Image.asset('assets/icons/ic_delete.png',scale: 3.3,)),
+              ),
+              oldVoucher
+                  ? IconButton(
+                      color: white,
+                      iconSize: 40,
+                      onPressed: () {
+                        //edit
+                        accountId =
+                            int.parse(accountId) > 0 ? accountId.toString() : '0';
+
+                         if (buttonEvent) {
+                        return;
+                      } else{    
+                        if (companyUserData!.updateData) {
+                          title == 'Bank Payment'
+                              ? submitData('Bank Payment', 'UPDATE')
+                              : submitData('Bank Receipt', 'UPDATE');
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Permission denied\ncan`t edit');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                      },
+                      icon: Image.asset('assets/icons/ic_edit.png',scale: 3.3,))
+                  : IconButton(
+                      color: white,
+                      iconSize: 40,
+                      onPressed: () {
+                        //save
+                        if (accountId.trim().isEmpty) {
+                          accountId = int.parse(accountId) > 0
+                              ? accountId.toString()
+                              : '0';
+                        }
+                         if (buttonEvent) {
+                        return;
+                      } else {
+                        if (companyUserData!.insertData) {
+                          title == 'Bank Payment'
+                              ? submitData('Bank Payment', 'INSERT')
+                              : submitData('Bank Receipt', 'INSERT');
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Permission denied\ncan`t save');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                        }
+                      }
+                      },
+                      icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+            ],
+            title: Text(title),
+            titleTextStyle: const TextStyle(
+              fontFamily: 'poppins'
             ),
-            oldVoucher
-                ? IconButton(
-                    color: white,
-                    iconSize: 40,
-                    onPressed: () {
-                      //edit
-                      accountId =
-                          int.parse(accountId) > 0 ? accountId.toString() : '0';
-                      if (companyUserData!.updateData) {
-                        title == 'Bank Payment'
-                            ? submitData('Bank Payment', 'UPDATE')
-                            : submitData('Bank Receipt', 'UPDATE');
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: 'Permission denied\ncan`t edit');
-                        setState(() {
-                          buttonEvent = false;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.edit))
-                : IconButton(
-                    color: white,
-                    iconSize: 40,
-                    onPressed: () {
-                      //save
-                      if (accountId.trim().isEmpty) {
-                        accountId = int.parse(accountId) > 0
-                            ? accountId.toString()
-                            : '0';
-                      }
-                      if (companyUserData!.insertData) {
-                        title == 'Bank Payment'
-                            ? submitData('Bank Payment', 'INSERT')
-                            : submitData('Bank Receipt', 'INSERT');
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: 'Permission denied\ncan`t save');
-                        setState(() {
-                          buttonEvent = false;
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.save)),
-          ],
-          title: Text(title),
-          titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
           ),
-        ),
-        body: ProgressHUD(
-          inAsyncCall: _isLoading,
-          opacity: 0.0,
-          child: cashBankACList.isNotEmpty ? _body(title) : const Loading(),
-        ));
+          body: ProgressHUD(
+            inAsyncCall: _isLoading,
+            opacity: 0.0,
+            child: cashBankACList.isNotEmpty ? _body(title) : const Loading(),
+          )),
+    );
   }
 
   var nameLike = 'a';
@@ -267,6 +283,7 @@ class _BankVoucherState extends State<BankVoucher> {
   widgetPrefix(mode) {
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             TextButton(
@@ -294,8 +311,14 @@ class _BankVoucherState extends State<BankVoucher> {
             fontFamily: 'poppins'
           ),
         ),
-        body: Container(
-          child: previousBill(mode),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(mode),
+          ),
         ));
   }
 
@@ -361,7 +384,9 @@ class _BankVoucherState extends State<BankVoucher> {
                   Expanded(
                       child: Text(
                     'Balance : ${snapshot.data!.balance}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontWeight: FontWeight.w500),
                   )),
                 ],
               )
@@ -371,7 +396,9 @@ class _BankVoucherState extends State<BankVoucher> {
                   Expanded(
                       child: Text(
                     'Balance : 0',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontFamily: 'poppins',
+                      fontWeight: FontWeight.w500),
                   )),
                 ],
               );
@@ -689,25 +716,170 @@ class _BankVoucherState extends State<BankVoucher> {
                   ),
                 );
               } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index], mode);
-                    },
-                  ),
-                );
+                return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['Name'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
+                                      ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index],mode);
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              
+                              // showDetails(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                      ],
+                    ));
+                // return Card(
+                //   elevation: 3,
+                //   clipBehavior: Clip.hardEdge,
+                //   margin: EdgeInsets.all(2),
+                //   child: ListTile(
+                //     title: Text(dataDisplay[index]['Name']),
+                //     subtitle: Text('Date: ' +
+                //         dataDisplay[index]['Date'] +
+                //         ' / EntryNo : ' +
+                //         dataDisplay[index]['Id'].toString()),
+                //     trailing: Text(
+                //         'Total : ' + dataDisplay[index]['Total'].toString()),
+                //     onTap: () {
+                //       if (userRole == 'SALESMAN') {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       } else {
+                //         showEditDialog(context, dataDisplay[index]);
+                //       }
+                //     },
+                //   ),
+                // );
               }
             },
             controller: _scrollController,
           )
+        // ListView.builder(
+        //     itemCount: dataDisplay.length + 1,
+        //     itemBuilder: (BuildContext context, int index) {
+        //       if (index == dataDisplay.length) {
+        //         return Padding(
+        //           padding: const EdgeInsets.all(8.0),
+        //           child: Center(
+        //             child: Opacity(
+        //               opacity: isLoadingData ? 1.0 : 00,
+        //               child: const CircularProgressIndicator(),
+        //             ),
+        //           ),
+        //         );
+        //       } else {
+        //         return Card(
+        //           elevation: 2,
+        //           child: ListTile(
+        //             title: Text(dataDisplay[index]['Name']),
+        //             subtitle: Text('Date: ' +
+        //                 dataDisplay[index]['Date'] +
+        //                 ' / EntryNo : ' +
+        //                 dataDisplay[index]['Id'].toString()),
+        //             trailing: Text(
+        //                 'Total : ' + dataDisplay[index]['Total'].toString()),
+        //             onTap: () {
+        //               showEditDialog(context, dataDisplay[index], mode);
+        //             },
+        //           ),
+        //         );
+        //       }
+        //     },
+        //     controller: _scrollController,
+        //   )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -744,7 +916,7 @@ class _BankVoucherState extends State<BankVoucher> {
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-          clearData();
+          // clearData();
         },
         onPressedYes: () {
           Navigator.of(context).pop();
@@ -816,6 +988,7 @@ class _BankVoucherState extends State<BankVoucher> {
         vertical: 8
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -859,16 +1032,14 @@ class _BankVoucherState extends State<BankVoucher> {
           const SizedBox(
             height: 8,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              const Text('Bank Account ',
+           const Text(' Bank Account ',
                   style: TextStyle(
                     fontFamily: 'poppins'
                   )),
-              Expanded(child: widgetAccount(),)
-            ],
-          ),
+                  const SizedBox(
+                    height: 3,
+                  ),
+          widgetAccount(),
           const SizedBox(
             height: 8,
           ),
@@ -901,136 +1072,232 @@ class _BankVoucherState extends State<BankVoucher> {
           const SizedBox(
             height: 8,
           ),
-          DropdownSearch<LedgerModel>(
-            asyncItems: (String filter) async {
-              nameLike = filter.isNotEmpty ? filter : 'a';
-              var models = api.getCustomerNameListLike(
-                  groupId, areaId, routeId, salesManId, nameLike);
-              return models;
-            },
-            popupProps: const PopupProps.menu(
-              constraints: BoxConstraints(maxHeight: 300),
-              showSearchBox: true,
-              isFilterOnline: true,
-            ),
-            dropdownDecoratorProps: const DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Select Ledger Name")),
-            onChanged: (LedgerModel? data) {
-              // print(data);
-              ledData = data;
-              setState(() {
-                isSelected = true;
-              });
-            },
-            selectedItem: ledData,
+          const Text(' Select Ledger',
+          style: TextStyle(
+            fontFamily: 'poppins'),
           ),
-          const Divider(),
+          const SizedBox(
+            height: 3,
+          ),
+           DropdownSearch<LedgerModel>(
+                popupProps: const PopupPropsMultiSelection.dialog(
+                    showSearchBox: true,
+                    isFilterOnline: true,
+                    
+                    // constraints: BoxConstraints(
+                    //   maxHeight: 300,
+                    // )
+                    ),
+                asyncItems: (String filter) async {
+                  nameLike = filter.isNotEmpty ? filter : 'a';
+                  var models = isSalesManWiseLedger
+                ? api.getLedgerBySalesManLike(salesManId, nameLike)
+                : api.getCustomerNameListLike(
+                    groupId, areaId, routeId, salesManId, nameLike);
+                  return models;
+                },
+                dropdownDecoratorProps: const DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 5,
+                      horizontal: 5
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                onChanged: (LedgerModel? data) {
+                  // print(data);
+                  ledData = data;
+                  setState(() {
+                    isSelected = true;
+                  });
+                },
+                selectedItem: ledData,
+              ),
+          // DropdownSearch<LedgerModel>(
+          //   asyncItems: (String filter) async {
+          //     nameLike = filter.isNotEmpty ? filter : 'a';
+          //     var models = api.getCustomerNameListLike(
+          //         groupId, areaId, routeId, salesManId, nameLike);
+          //     return models;
+          //   },
+          //   popupProps: const PopupProps.menu(
+          //     constraints: BoxConstraints(maxHeight: 300),
+          //     showSearchBox: true,
+          //     isFilterOnline: true,
+          //   ),
+          //   dropdownDecoratorProps: const DropDownDecoratorProps(
+          //       dropdownSearchDecoration: InputDecoration(
+          //           border: OutlineInputBorder(),
+          //           labelText: "Select Ledger Name")),
+          //   onChanged: (LedgerModel? data) {
+          //     // print(data);
+          //     ledData = data;
+          //     setState(() {
+          //       isSelected = true;
+          //     });
+          //   },
+          //   selectedItem: ledData,
+          // ),
+          const SizedBox(
+            height: 8,
+          ),
           isSelected
               ? ledgerDetailWidget(ledData!.id)
-              : Row(
+              : const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
+                  children: [
                     Expanded(
                         child: Text(
                       'Balance : 0',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                      fontFamily: 'poppins',
+                      fontWeight: FontWeight.w500),
                     )),
                   ],
                 ),
-          const Divider(),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text('Type '),
-                Expanded(
-                  child: DropdownButton<String>(
-                    hint: const Text('Type'),
-                    value: dropDownType,
-                    items: type.map<DropdownMenuItem<String>>((value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        dropDownType = value!;
-                      });
-                    },
-                  ),
-                ),
-              ],
+          const SizedBox(
+            height: 8,
+          ),
+            const Text(' Type',style: TextStyle(
+                      fontFamily: 'poppins',
+                      ),),
+                      const SizedBox(
+                        height: 3,
+                      ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 5
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: grey),
+              borderRadius: BorderRadius.circular(3)
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                hint: const Text('Type'),
+                value: dropDownType,
+                items: type.map<DropdownMenuItem<String>>((value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value,style: const TextStyle(
+                fontFamily: 'poppins',),),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    dropDownType = value!;
+                  });
+                },
+              ),
             ),
           ),
-          const Divider(),
+          const SizedBox(
+            height: 8,
+          ),
+          const Text(' Cheque No',
+          style: TextStyle(
+                      fontFamily: 'poppins',
+                      ),),
+                      const SizedBox(
+                        height: 3,
+                      ),
+          TextField(
+            controller: _controllerChequeNo,
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 8
+              ),
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              setState(() {
+                chequeNo = value;
+              });
+            },
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          const Text(' Status',style: TextStyle(
+                      fontFamily: 'poppins',
+                      ),),
+          const SizedBox(
+            height: 3,
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 5
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: grey),
+              borderRadius: BorderRadius.circular(3)
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                hint: const Text('Status'),
+                value: dropDownStatusType,
+                items: statusType.map<DropdownMenuItem<String>>((value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    dropDownStatusType = value!;
+                  });
+                },
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _controllerChequeNo,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    label: Text('Cheque No'),
+              const Text('Clear Date ',style: TextStyle(
+                fontFamily: 'poppins'
+              ),),
+              InkWell(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      chequeNo = value;
-                    });
-                  },
+                  decoration: BoxDecoration(
+                    border: Border.all(color: grey),
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formattedClearDate!,
+                        style: const TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 3,
+                      ),
+                      const Icon(Icons.calendar_month,
+                      color: grey,
+                      size: 18,
+                      )
+                    ],
+                  ),
                 ),
+                onTap: () => _selectClearDate(),
               ),
             ],
           ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(
-                  width: 10,
-                ),
-                const Text('Status '),
-                Expanded(
-                  child: DropdownButton<String>(
-                    hint: const Text('Status'),
-                    value: dropDownStatusType,
-                    items: statusType.map<DropdownMenuItem<String>>((value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        dropDownStatusType = value!;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Card(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text('Clear Date : '),
-                InkWell(
-                  child: Text(
-                    formattedClearDate!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  onTap: () => _selectClearDate(),
-                ),
-              ],
-            ),
+          const SizedBox(
+            height: 8,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1045,6 +1312,13 @@ class _BankVoucherState extends State<BankVoucher> {
                         allow: true, replacementString: '.')
                   ],
                   decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 8
+                    ),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
                     border: OutlineInputBorder(),
                     label: Text('Amount'),
                   ),
@@ -1073,6 +1347,13 @@ class _BankVoucherState extends State<BankVoucher> {
                         allow: true, replacementString: '.')
                   ],
                   decoration: const InputDecoration(
+                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 8
+                    ),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
                     border: OutlineInputBorder(),
                     label: Text('Discount'),
                   ),
@@ -1090,7 +1371,9 @@ class _BankVoucherState extends State<BankVoucher> {
               ),
             ],
           ),
-          const Divider(),
+          const SizedBox(
+            height: 8,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1104,6 +1387,13 @@ class _BankVoucherState extends State<BankVoucher> {
                         allow: true, replacementString: '.')
                   ],
                   decoration: const InputDecoration(
+                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 8
+                    ),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
                     border: OutlineInputBorder(),
                     label: Text('Bank Charge'),
                   ),
@@ -1126,7 +1416,9 @@ class _BankVoucherState extends State<BankVoucher> {
               // )),
             ],
           ),
-          const Divider(),
+          const SizedBox(
+            height: 8,
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1134,6 +1426,13 @@ class _BankVoucherState extends State<BankVoucher> {
                 child: TextField(
                   controller: _controllerNarration,
                   decoration: const InputDecoration(
+                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 8
+                    ),
+                    labelStyle: TextStyle(
+                      fontFamily: 'poppins'
+                    ),
                     border: OutlineInputBorder(),
                     label: Text('Narration'),
                   ),
@@ -1146,7 +1445,7 @@ class _BankVoucherState extends State<BankVoucher> {
               ),
             ],
           ),
-          const Divider(),
+          // const Divider(),
         ],
       ),
     );

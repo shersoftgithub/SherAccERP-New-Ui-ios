@@ -384,6 +384,22 @@ class AccountsMenu extends StatelessWidget {
                       arguments: {'voucher': 'Receipt Invoice'});
                 },
               ),
+              SimpleDialogOption(
+                child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: const Center(
+                      child: Text('Receipt Order',
+                      style: TextStyle(fontFamily: 'poppins',color: white),),
+                    )),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushNamed(context, '/ReceiptOrder',
+                      arguments: {'voucher': 'Receipt Order'});
+                },
+              ),
               // SimpleDialogOption(
               //   child: Card(
               //       color: blue.shade50,

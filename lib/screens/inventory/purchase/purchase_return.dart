@@ -1264,7 +1264,70 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                           color: Colors.transparent,
                           child: InkWell(
                             splashColor: Colors.grey,
-                            onTap: () async{
+                            onTap:
+                            oldBill 
+                            ? () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    var inf = '[${json.encode({
+                          'id': ledgerModel.id,
+                          'name': ledgerModel.name,
+                          'invNo': invNoController.text.isNotEmpty
+                              ? invNoController.text
+                              : '0',
+                          'invDate': DateUtil.dateYMD(invDate)
+                        })}]';
+                    var jsonItem = CartItemP.encodeCartToJson(cartItem);
+                    var items = json.encode(jsonItem);
+                    var stType = 'Pr_Update';
+                    var data = '[${json.encode({
+                          'entryNo': dataDynamic[0]['EntryNo'],
+                          'date': DateUtil.dateYMD(formattedDate),
+                          'grossValue': totalGrossValue,
+                          'discount': totalDiscount,
+                          'net': totalNet,
+                          'cess': totalCess,
+                          'total': totalCartTotal,
+                          'otherCharges': 0,
+                          'otherDiscount': 0,
+                          'grandTotal': totalCartTotal,
+                          'taxType': isTax ? 'T' : 'N.T',
+                          'purchaseAccount': purchaseAccountList[0]['id'],
+                          'narration': _narration,
+                          'type': 'PR',
+                          'cashPaid': '0',
+                          'igst': totalIgST,
+                          'cgst': totalCgST,
+                          'sgst': totalSgST,
+                          'fCess': totalFCess,
+                          'adCess': totalAdCess,
+                          'Salesman': salesManId,
+                          'location': locationId,
+                          'statementtype': stType,
+                          'fyId': currentFinancialYear!.id,
+                          'frmId': voucherTypeData!.id
+                        })}]';
+
+                    final body = {
+                      'information': inf,
+                      'data': data,
+                      'particular': items,
+                      'serialNoData': json
+                          .encode(SerialNOModel.encodedToJson(serialNoData)),
+                    };
+                    bool _state = await dio.addPurchase(body);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    if (_state) {
+                      cartItem.clear();
+                      showMore(context, 'Edited');
+                    } else {
+                      showInSnackBar('Error enter data correctly');
+                    }
+                  }
+                             :() async{
                               if (totalItem > 0 && selectedCustomerId != null) {
                               setState(() {
                       _isLoading = true;
@@ -1335,7 +1398,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                               color: kPrimaryColor,
                               child:  Center(
                                 child:Text(
-                                  'Save',
+                                  oldBill ? 'Edit'
+                                 : 'Save',
                                   style: TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 16,

@@ -5107,6 +5107,7 @@ selectLedgerWidget() {
         onPressedYes: () {
           Navigator.of(context).pop();
           fetchPurchase(context, dataDynamic);
+
         },
         buttonTextForNo: 'No',
         buttonTextForYes: 'YES',
@@ -5215,6 +5216,7 @@ selectLedgerWidget() {
         _narration = narration;
         // nextWidget = 4;
         oldBill = true;
+        calculateTotal();
       });
     });
   }

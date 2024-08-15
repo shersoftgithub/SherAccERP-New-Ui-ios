@@ -147,6 +147,7 @@ class _DamageEntryState extends State<DamageEntry> {
           title: const Text("Damage"),
           actions: [
             IconButton(onPressed: () async {
+              
                   setState(() {
                     _isLoading = true;
                   });

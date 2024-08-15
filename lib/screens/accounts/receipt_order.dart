@@ -25,14 +25,14 @@ import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
-class RPVoucher extends StatefulWidget {
-  const RPVoucher({Key? key}) : super(key: key);
+class ReceiptOrder extends StatefulWidget {
+  const ReceiptOrder({Key? key}) : super(key: key);
 
   @override
-  State<RPVoucher> createState() => _RPVoucherState();
+  State<ReceiptOrder> createState() => _ReceiptOrderState();
 }
 
-class _RPVoucherState extends State<RPVoucher> {
+class _ReceiptOrderState extends State<ReceiptOrder> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<LedgerModel> cashBankACList = [];
   List<RpVoucherParticularModel> particularList = [];
@@ -181,19 +181,21 @@ String cashAc = '';
         : {'voucher': ''};
     var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
     if (voucherTypeList.isNotEmpty) {
-      voucherTypeData = title == 'Payment'
-          ? voucherTypeList.firstWhere(
-              (element) => element.voucher.toLowerCase() == 'payment')
-          : title == 'Receipt'
-              ? voucherTypeList.firstWhere(
-                  (element) => element.voucher.toLowerCase() == 'receipt')
-                  : title == 'Receipt Order'
-                  ? voucherTypeList.firstWhere((element) =>
-                      element.voucher.toLowerCase() == 'receipt order')
-                      : title == 'Payment Order'
-                       ? voucherTypeList.firstWhere((element) =>
-                          element.voucher.toLowerCase() == 'Payment order')
-                            : VoucherType.emptyData();
+      voucherTypeData = voucherTypeList.firstWhere((element) =>
+                      element.voucher.toLowerCase() == 'receipt order');
+      // = title == 'Payment'
+      //     ? voucherTypeList.firstWhere(
+      //         (element) => element.voucher.toLowerCase() == 'payment')
+      //     : title == 'Receipt'
+      //         ? voucherTypeList.firstWhere(
+      //             (element) => element.voucher.toLowerCase() == 'receipt')
+      //             : title == 'Receipt Order'
+      //             ? voucherTypeList.firstWhere((element) =>
+      //                 element.voucher.toLowerCase() == 'receipt order')
+      //                 : title == 'Payment Order'
+      //                  ? voucherTypeList.firstWhere((element) =>
+      //                     element.voucher.toLowerCase() == 'Payment order')
+      //                       : VoucherType.emptyData();
     }
     return PopScope(
         canPop: false,
@@ -288,8 +290,8 @@ String cashAc = '';
                         return;
                       }
                        if (buttonEvent) {
-                        return;
-                      } else {
+                      return;
+                    } else {
                       if (companyUserData!.updateData) {
                         if (!daysBefore) {
                           title == 'Payment'
@@ -309,7 +311,7 @@ String cashAc = '';
                           buttonEvent = false;
                         });
                       }
-                      }
+                    }
                     },
                     icon: Image.asset('assets/icons/ic_edit.png',scale: 3.3,))
                 : IconButton(
@@ -323,10 +325,10 @@ String cashAc = '';
                         Fluttertoast.showToast(msg: 'Select Cash Account');
                         return;
                       }
-                      if (buttonEvent) {
-                        return;
-                      } else{
-                        if (companyUserData!.insertData) {
+                       if (buttonEvent) {
+                      return;
+                    } else {
+                      if (companyUserData!.insertData) {
                         if (!daysBefore) {
                           title == 'Payment'
                               ? submitData('Payment', 'INSERT')
@@ -345,7 +347,7 @@ String cashAc = '';
                           buttonEvent = false;
                         });
                       }
-                      }
+                    }
                     },
                     icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],

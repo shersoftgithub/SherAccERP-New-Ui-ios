@@ -15,6 +15,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/popup_menu_action.dart';
@@ -148,6 +149,7 @@ class _StockTransferState extends State<StockTransfer> {
   widgetSuffix() {
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: bagroundColor,
       appBar: AppBar(
         actions: [
           Visibility(
@@ -296,6 +298,7 @@ class _StockTransferState extends State<StockTransfer> {
 
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           actions: [
@@ -321,8 +324,14 @@ class _StockTransferState extends State<StockTransfer> {
           title: const Text('Stock Transfer'),
           titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
-        body: Container(
-          child: previousBill(),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
         ));
   }
 
@@ -413,22 +422,128 @@ class _StockTransferState extends State<StockTransfer> {
                   ),
                 );
               } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['StockFrom'] +
+                return Container(
+                   margin: const EdgeInsets.symmetric(vertical: 2),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: white,
+                      borderRadius: BorderRadius.circular(3),
+                      boxShadow: [
+                        BoxShadow(
+                          offset: const Offset(0, 5),
+                          blurRadius: 6,
+                          color: const Color(0xff000000).withOpacity(0.06),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(10),
+                  child: 
+                  Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  dataDisplay[index]['StockFrom'] +
                         ' >>> ' +
-                        dataDisplay[index]['StockTo']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
-                    },
-                  ),
+                        dataDisplay[index]['StockTo'],
+                                  // maxLines: 1,
+                                  style: const TextStyle(
+                                    // fontSize: 16,
+                                    color: ColorPalette.timberGreen,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 5,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Date :${dataDisplay[index]['Date']}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 5,
+                                        top: 2,
+                                        right: 5,
+                                      ),
+                                      child: Icon(
+                                        Icons.circle,
+                                        size: 5,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                    Text(
+                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: ColorPalette.timberGreen
+                                            .withOpacity(0.44),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              showEditDialog(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'Total',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: ColorPalette.nileBlue,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // showDetails(context, dataDisplay[index]);
+                            },
+                          ),
+                        ),
+                      ],
+                    )
+                  // ListTile(
+                  //   title: Text(dataDisplay[index]['StockFrom'] +
+                  //       ' >>> ' +
+                  //       dataDisplay[index]['StockTo']),
+                  //   subtitle: Text('Date: ' +
+                  //       dataDisplay[index]['Date'] +
+                  //       ' / EntryNo : ' +
+                  //       dataDisplay[index]['Id'].toString()),
+                  //   trailing: Text(
+                  //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                  //   onTap: () {
+                  //     showEditDialog(context, dataDisplay[index]);
+                  //   },
+                  // ),
                 );
               }
             },
@@ -466,9 +581,8 @@ class _StockTransferState extends State<StockTransfer> {
   bool isData = false;
 
   purchaseHeaderWidget() {
-    return Scaffold(
-      backgroundColor: bagroundColor,
-      body: Center(
+    return 
+       Center(
           child: Column(
         children: [
           Padding(
@@ -554,9 +668,9 @@ class _StockTransferState extends State<StockTransfer> {
                                   .map<DropdownMenuItem<int>>((value) {
                                 return DropdownMenuItem<int>(
                                   value: value.key,
-                                  child: Text(value.value,style: TextStyle(
+                                  child: Text(value.value,style: const TextStyle(
                                      fontFamily: 'poppins',
-                                fontSize: 14,
+                                     fontSize: 14,
                                 // fontWeight: FontWeight.w500
                                   ),),
                                 );
@@ -651,8 +765,8 @@ class _StockTransferState extends State<StockTransfer> {
                 });
               }),
         ],
-      )),
-    );
+      ));
+   
   }
 
   bool isItemData = false;
@@ -671,57 +785,131 @@ class _StockTransferState extends State<StockTransfer> {
               itemDisplay = data!;
               items = data;
             }
-            return ListView.builder(
-              // shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return index == 0
-                    ? Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SizedBox(
-                          height: 40,
-                          width: 200,
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: TextField(
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    label: Text('Search...'),
-                                  ),
-                                  onChanged: (text) {
-                                    text = text.toLowerCase();
-                                    setState(() {
-                                      itemDisplay = items.where((item) {
-                                        var itemName = item.name.toLowerCase();
-                                        return itemName.contains(text);
-                                      }).toList();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+            return 
+            Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            children: [
+              // Search bar remains fixed
+              Row(
+                children: [
+                  Flexible(
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 8),
+                        border: OutlineInputBorder(),
+                        label: Text('Search...'),
+                      ),
+                      onChanged: (text) {
+                        text = text.toLowerCase();
+                        setState(() {
+                          itemDisplay = items.where((item) {
+                            var itemName = item.name.toLowerCase();
+                            return itemName.contains(text);
+                          }).toList();
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10), 
+              Expanded(
+                child: ListView.separated(
+                  separatorBuilder: (context, index) => const SizedBox(
+                    height: 6,
+                  ),
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                      )
-                    : InkWell(
-                        child: Card(
-                          child: ListTile(
-                            title: Text(itemDisplay[index - 1].name),
-                            trailing:
-                                Text('Qty :${itemDisplay[index - 1].quantity}'),
-                          ),
+                        child: ListTile(
+                          title: Text(itemDisplay[index].name),
+                          trailing: Text('Qty : ${itemDisplay[index].quantity}'),
                         ),
-                        onTap: () {
-                          setState(() {
-                            productModel = itemDisplay[index - 1];
-                            nextWidget = 2;
-                            isItemData = false;
-                          });
-                        },
-                      );
-              },
-              itemCount: itemDisplay.length + 1,
-            );
+                      ),
+                      onTap: () {
+                        setState(() {
+                          productModel = itemDisplay[index];
+                          nextWidget = 2;
+                          isItemData = false;
+                        });
+                      },
+                    );
+                  },
+                  itemCount: itemDisplay.length,
+                ),
+              ),
+            ],
+          ),
+        );
+            //  Padding(
+            //    padding: const EdgeInsets.symmetric(
+            //     horizontal: 16,
+            //     vertical: 8
+            //    ),
+            //    child: ListView.separated(
+            //     separatorBuilder: (context, index) => const SizedBox(
+            //       height: 6,
+            //     ),
+            //     // shrinkWrap: true,
+            //     itemBuilder: (context, index) {
+            //       return index == 0
+            //           ? Row(
+            //             children: [
+            //               Flexible(
+            //                 child: TextField(
+            //                   decoration: const InputDecoration(
+            //                     contentPadding: EdgeInsets.symmetric(
+            //                       horizontal: 5,
+            //                       vertical: 8
+            //                     ),
+            //                     border: OutlineInputBorder(),
+            //                     label: Text('Search...'),
+            //                   ),
+            //                   onChanged: (text) {
+            //                     text = text.toLowerCase();
+            //                     setState(() {
+            //                       itemDisplay = items.where((item) {
+            //                         var itemName = item.name.toLowerCase();
+            //                         return itemName.contains(text);
+            //                       }).toList();
+            //                     });
+            //                   },
+            //                 ),
+            //               ),
+            //             ],
+            //           )
+            //           : InkWell(
+            //               child: Container(
+            //                 decoration: BoxDecoration(
+            //                 color: white,
+            //                 border: Border.all(color: grey),
+            //                 borderRadius: BorderRadius.circular(3)
+            //               ),
+            //                 child: ListTile(
+            //                   title: Text(itemDisplay[index - 1].name),
+            //                   trailing:
+            //                       Text('Qty :${itemDisplay[index - 1].quantity}'),
+            //                 ),
+            //               ),
+            //               onTap: () {
+            //                 setState(() {
+            //                   productModel = itemDisplay[index - 1];
+            //                   nextWidget = 2;
+            //                   isItemData = false;
+            //                 });
+            //               },
+            //             );
+            //     },
+            //     itemCount: itemDisplay.length + 1,
+            //                ),
+            //  );
           } else {
             return const Center(
               child: Column(
@@ -1074,316 +1262,587 @@ class _StockTransferState extends State<StockTransfer> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                    'Item : ${editItem ? cartItem.elementAt(position!).itemName : product.name}')),
-            Row(
-              children: [
-                Expanded(
-                    child: MaterialButton(
-                  onPressed: () {
-                    setState(() {
-                      editItem = false;
-                      nextWidget = 1;
-                    });
-                  },
-                  child: const Text("Back"),
-                  color: blue[400],
-                )),
-                const SizedBox(
-                  width: 2,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8
+      ),
+      child: Column(
+        children: [
+          Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                  'Item : ${editItem ? cartItem.elementAt(position!).itemName : product.name}',
+                  style: const TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  )),
+          Row(
+            children: [
+              Expanded(
+                  child: MaterialButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  ),
+                onPressed: () {
+                  setState(() {
+                    editItem = false;
+                    nextWidget = 1;
+                  });
+                },
+                color: kPrimaryColor,
+                child: const Text("Back",
+                style: TextStyle(
+                  fontFamily: 'poppins',
+                  color: white
                 ),
-                Expanded(
-                    child: MaterialButton(
-                  onPressed: () {
-                    setState(() {
-                      editItem = false;
-                      nextWidget = 3;
-                      clearValue();
-                    });
-                  },
-                  child: const Text("Cancel"),
-                  color: blue[400],
-                )),
-                const SizedBox(
-                  width: 2,
                 ),
-                Expanded(
-                    child: MaterialButton(
-                  onPressed: () {
-                    bool cartQ = false;
-                    setState(() {
-                      rate = (controllerRate.text.isNotEmpty
-                          ? double.tryParse(controllerRate.text)
-                          : rate)!;
-                      mrp = (controllerMrp.text.isNotEmpty
-                          ? double.tryParse(controllerMrp.text)
-                          : mrp)!;
-                      retail = (controllerRetail.text.isNotEmpty
-                          ? double.tryParse(controllerRetail.text)
-                          : retail)!;
-                      wholeSale = (controllerWholeSale.text.isNotEmpty
-                          ? double.tryParse(controllerWholeSale.text)
-                          : wholeSale)!;
-                      // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
-                      branch = (controllerBranch.text.isNotEmpty
-                          ? double.tryParse(controllerBranch.text)
-                          : branch)!;
-                      quantity = (controllerQuantity.text.isNotEmpty
-                          ? double.tryParse(controllerQuantity.text)
-                          : quantity)!;
-
-                      if (product.quantity! >= quantity) {
-                        double cartS = 0, cartQt = 0;
-                        for (var element in cartItem) {
-                          if (element.uniqueCode == product.productId) {
-                            cartQt += element.quantity;
-                            cartS = element.stock;
-                          }
-                        }
-                        if (cartS > 0) {
-                          if (cartS < cartQt + quantity) {
-                            cartQ = true;
-                          }
-                        }
-
-                        if (cartQ) {
-                          showInSnackBar('Available Qty is ${cartS - cartQt}');
-                          isVariantSelected = false;
-                        } else {
-                          if (editItem) {
-                            cartItem[position!].barcode = barcode;
-                            cartItem[position!].branch = branch;
-                            cartItem[position!].gross = subTotal;
-                            cartItem[position!].mrp = mrp;
-                            cartItem[position!].quantity = quantity;
-                            cartItem[position!].rRate = rRate;
-                            cartItem[position!].rate = rate;
-                            cartItem[position!].retail = retail;
-                            cartItem[position!].serialNo = serialNo;
-                            cartItem[position!].spRetail = spRetail;
-                            cartItem[position!].uniqueCode = uniqueCode;
-                            cartItem[position!].unitValue = unitValue;
-                            cartItem[position!].wholesale = wholeSale;
-                            cartItem[position!].stUniqueCode = stUniqueCode;
-                          } else {
-                            cartItem.add(CartItemST(
-                                barcode: barcode,
-                                branch: branch,
-                                gross: subTotal,
-                                id: cartItem.length + 1,
-                                itemId: product.itemId!,
-                                itemName: product.name!,
-                                mrp: mrp,
-                                quantity: quantity,
-                                rRate: rRate,
-                                rate: rate,
-                                retail: retail,
-                                serialNo: serialNo,
-                                spRetail: spRetail,
-                                uniqueCode: uniqueCode,
-                                unitId: 0,
-                                unitName: '',
-                                unitValue: unitValue,
-                                wholesale: wholeSale,
-                                stUniqueCode: stUniqueCode,
-                                stock: product.quantity!));
-                          }
-                          if (cartItem.isNotEmpty) {
-                            nextWidget = 3;
-                            editItem = false;
-                            isVariantSelected = false;
-                            clearValue();
-                          }
-                        }
-                      } else {
-                        showInSnackBar('Available Qty is ${product.quantity}');
-                        isVariantSelected = false;
-                      }
-                    });
-                  },
-                  child: Text(editItem ? "Edit" : "Add"),
-                  color: blue,
-                )),
-              ],
-            ),
-            const Divider(),
-            TextField(
-              controller: controllerQuantity,
-              textAlign: TextAlign.right,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                label: Text('Available Quantity is ${product.quantity}'),
+              )),
+              const SizedBox(
+                width: 4,
               ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                    allow: true, replacementString: '.')
-              ],
-              onChanged: (value) {
-                setState(() {
-                  editableQuantity = true;
-                  quantity = double.tryParse(value)!;
-                  calculate();
-                });
-              },
-            ),
-            const Divider(),
-            TextField(
-              controller: controllerRate,
-              textAlign: TextAlign.right,
-              decoration: const InputDecoration(
-                  border: OutlineInputBorder(), label: Text('P Rate')),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                    allow: true, replacementString: '.')
-              ],
-              onChanged: (value) {
-                setState(() {
-                  editableRate = true;
-                  rate = double.tryParse(value)!;
-                  calculate();
-                });
-              },
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text('Subtotal :'),
-                Text(subTotal.toStringAsFixed(decimal)),
-              ],
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  height: 30,
-                  width: 100,
-                  child: TextField(
-                    controller: controllerMrp,
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), label: Text('MRP')),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        editableMrp = true;
-                        mrp = double.tryParse(value)!;
-                        calculateRate();
-                      });
-                    },
+              Expanded(
+                  child: MaterialButton(
+                    shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
                   ),
+                onPressed: () {
+                  setState(() {
+                    editItem = false;
+                    nextWidget = 3;
+                    clearValue();
+                  });
+                },
+                color: kPrimaryColor,
+                child: const Text("Cancel",
+                 style: TextStyle(
+                  fontFamily: 'poppins',
+                  color: white
                 ),
-                SizedBox(
-                  height: 30,
-                  width: 100,
-                  child: TextField(
-                    controller: controllerRetail,
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), label: Text('Retail')),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        editableRetail = true;
-                        retail = double.tryParse(value)!;
-                        calculateRate();
-                      });
-                    },
+                ),
+              )),
+              const SizedBox(
+                width: 4,
+              ),
+              Expanded(
+                  child: MaterialButton(
+                    shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
                   ),
+                onPressed: () {
+                  bool cartQ = false;
+                  setState(() {
+                    rate = (controllerRate.text.isNotEmpty
+                        ? double.tryParse(controllerRate.text)
+                        : rate)!;
+                    mrp = (controllerMrp.text.isNotEmpty
+                        ? double.tryParse(controllerMrp.text)
+                        : mrp)!;
+                    retail = (controllerRetail.text.isNotEmpty
+                        ? double.tryParse(controllerRetail.text)
+                        : retail)!;
+                    wholeSale = (controllerWholeSale.text.isNotEmpty
+                        ? double.tryParse(controllerWholeSale.text)
+                        : wholeSale)!;
+                    // spRetail = controllerSPRetail.text.length>0? double.tryParse(controllerSPRetail.text):spRetail;
+                    branch = (controllerBranch.text.isNotEmpty
+                        ? double.tryParse(controllerBranch.text)
+                        : branch)!;
+                    quantity = (controllerQuantity.text.isNotEmpty
+                        ? double.tryParse(controllerQuantity.text)
+                        : quantity)!;
+      
+                    if (product.quantity! >= quantity) {
+                      double cartS = 0, cartQt = 0;
+                      for (var element in cartItem) {
+                        if (element.uniqueCode == product.productId) {
+                          cartQt += element.quantity;
+                          cartS = element.stock;
+                        }
+                      }
+                      if (cartS > 0) {
+                        if (cartS < cartQt + quantity) {
+                          cartQ = true;
+                        }
+                      }
+      
+                      if (cartQ) {
+                        showInSnackBar('Available Qty is ${cartS - cartQt}');
+                        isVariantSelected = false;
+                      } else {
+                        if (editItem) {
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].gross = subTotal;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rRate;
+                          cartItem[position!].rate = rate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].stUniqueCode = stUniqueCode;
+                        } else {
+                          cartItem.add(CartItemST(
+                              barcode: barcode,
+                              branch: branch,
+                              gross: subTotal,
+                              id: cartItem.length + 1,
+                              itemId: product.itemId!,
+                              itemName: product.name!,
+                              mrp: mrp,
+                              quantity: quantity,
+                              rRate: rRate,
+                              rate: rate,
+                              retail: retail,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              uniqueCode: uniqueCode,
+                              unitId: 0,
+                              unitName: '',
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              stUniqueCode: stUniqueCode,
+                              stock: product.quantity!));
+                        }
+                        if (cartItem.isNotEmpty) {
+                          nextWidget = 3;
+                          editItem = false;
+                          isVariantSelected = false;
+                          clearValue();
+                        }
+                      }
+                    } else {
+                      showInSnackBar('Available Qty is ${product.quantity}');
+                      isVariantSelected = false;
+                    }
+                  });
+                },
+                color: kPrimaryColor,
+                child: Text(editItem ? "Edit" : "Add",
+                 style: const TextStyle(
+                  fontFamily: 'poppins',
+                  color: white
                 ),
-              ],
+                ),
+              )),
+            ],
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          TextField(
+            controller: controllerQuantity,
+            textAlign: TextAlign.right,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 8
+              ),
+              border: const OutlineInputBorder(),
+              label: Text('Available Quantity is ${product.quantity}'),
+              labelStyle:  const TextStyle(
+                  fontFamily: 'poppins',
+                ),
             ),
-            const SizedBox(
-              height: 2,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                  allow: true, replacementString: '.')
+            ],
+            onChanged: (value) {
+              setState(() {
+                editableQuantity = true;
+                quantity = double.tryParse(value)!;
+                calculate();
+              });
+            },
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          TextField(
+            controller: controllerRate,
+            textAlign: TextAlign.right,
+            decoration: const InputDecoration(
+               contentPadding: EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 8
+              ),
+               labelStyle:  TextStyle(
+                  fontFamily: 'poppins',
+                ),
+                border: OutlineInputBorder(), label: Text('P Rate')),
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                  allow: true, replacementString: '.')
+            ],
+            onChanged: (value) {
+              setState(() {
+                editableRate = true;
+                rate = double.tryParse(value)!;
+                calculate();
+              });
+            },
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const Text('Subtotal : ',
+              style: TextStyle(
+                fontFamily: 'poppins'
+              ),
+              ),
+              Text(subTotal.toStringAsFixed(decimal)),
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
               children: [
-                SizedBox(
-                  height: 30,
-                  width: 100,
-                  child: TextField(
-                    controller: controllerWholeSale,
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), label: Text('WholeSale')),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        editableWSale = true;
-                        wholeSale = double.tryParse(value)!;
-                        calculateRate();
-                      });
-                    },
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width /5.5,
+                              child: const Text('MRP',
+                               textScaler: TextScaler.linear(.9),
+                               style: TextStyle(
+                                fontFamily: 'poppins'
+                               ),
+                              )),
+                            Expanded(
+                              flex: 1,
+                              child: 
+                            TextField(
+                      controller: controllerMrp,
+                      textAlign: TextAlign.right,
+                      decoration:  const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 35,
+                        ),
+                         contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 5
                   ),
-                ),
-                SizedBox(
-                  height: 30,
-                  width: 100,
-                  child: TextField(
-                    controller: controllerBranch,
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), label: Text('Branch')),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                          allow: true, replacementString: '.')
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        editableBranch = true;
-                        branch = double.tryParse(value)!;
-                        calculateRate();
-                      });
-                    },
+                          border: OutlineInputBorder(), 
+                         ),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                            allow: true, replacementString: '.')
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          editableMrp = true;
+                          mrp = double.tryParse(value)!;
+                          calculateRate();
+                        });
+                      },
+                    ),
+                            )
+                          ],
+                        ),
+                      ) ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                    Expanded(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width /5.5,
+                              child: const Text('Retail',
+                               textScaler: TextScaler.linear(.9),
+                               style: TextStyle(
+                                fontFamily: 'poppins'
+                               ),
+                              )),
+                            Expanded(child: 
+                             TextField(
+                  controller: controllerRetail,
+                  textAlign: TextAlign.right,
+                  decoration: const InputDecoration(
+                    constraints: BoxConstraints(
+                          maxHeight: 35,
+                        ),
+                         contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 5
                   ),
+                      border: OutlineInputBorder(),),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      editableRetail = true;
+                      retail = double.tryParse(value)!;
+                      calculateRate();
+                    });
+                  },
                 ),
+                            )
+                          ],
+                        ),
+                      ) ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width /5.5,
+                              child: const Text('WholeSale',
+                               textScaler: TextScaler.linear(.9),
+                               style: TextStyle(
+                                fontFamily: 'poppins'
+                               ),
+                              )),
+                            Expanded(child: 
+                           TextField(
+                  controller: controllerWholeSale,
+                  textAlign: TextAlign.right,
+                  decoration: const InputDecoration(
+                    constraints: BoxConstraints(
+                          maxHeight: 35,
+                        ),
+                         contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 5
+                  ),
+                      border: OutlineInputBorder(),),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      editableWSale = true;
+                      wholeSale = double.tryParse(value)!;
+                      calculateRate();
+                    });
+                  },
+                ),
+                            )
+                          ],
+                        ),
+                      ) ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                    Expanded(
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width /5.5,
+                              child: const Text('Branch',
+                               textScaler: TextScaler.linear(.9),
+                               style: TextStyle(
+                                fontFamily: 'poppins'
+                               ),
+                              )),
+                            Expanded(child: 
+                             TextField(
+                  controller: controllerBranch,
+                  textAlign: TextAlign.right,
+                  decoration: const InputDecoration(
+                    constraints: BoxConstraints(
+                          maxHeight: 35,
+                        ),
+                         contentPadding: EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 5
+                  ),
+                      border: OutlineInputBorder(),),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                        allow: true, replacementString: '.')
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      editableBranch = true;
+                      branch = double.tryParse(value)!;
+                      calculateRate();
+                    });
+                  },
+                ),
+                            )
+                          ],
+                        ),
+                      ) ),
+                  ],
+                ),
+                
               ],
             ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Total :',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  totalCartTotal.toStringAsFixed(decimal),
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // SizedBox(
+              //   height: 30,
+              //   width: 100,
+              //   child: TextField(
+              //     controller: controllerMrp,
+              //     textAlign: TextAlign.right,
+              //     decoration: const InputDecoration(
+              //        contentPadding: EdgeInsets.symmetric(
+              //   horizontal: 5,
+              //   vertical: 5
+              // ),
+              //         border: OutlineInputBorder(), 
+              //         label: Text('MRP')),
+              //     keyboardType:
+              //         const TextInputType.numberWithOptions(decimal: true),
+              //     inputFormatters: [
+              //       FilteringTextInputFormatter(RegExp(r'[0-9]'),
+              //           allow: true, replacementString: '.')
+              //     ],
+              //     onChanged: (value) {
+              //       setState(() {
+              //         editableMrp = true;
+              //         mrp = double.tryParse(value)!;
+              //         calculateRate();
+              //       });
+              //     },
+              //   ),
+              // ),
+              // SizedBox(
+              //   height: 30,
+              //   width: 100,
+              //   child: TextField(
+              //     controller: controllerRetail,
+              //     textAlign: TextAlign.right,
+              //     decoration: const InputDecoration(
+              //         border: OutlineInputBorder(), label: Text('Retail')),
+              //     keyboardType:
+              //         const TextInputType.numberWithOptions(decimal: true),
+              //     inputFormatters: [
+              //       FilteringTextInputFormatter(RegExp(r'[0-9]'),
+              //           allow: true, replacementString: '.')
+              //     ],
+              //     onChanged: (value) {
+              //       setState(() {
+              //         editableRetail = true;
+              //         retail = double.tryParse(value)!;
+              //         calculateRate();
+              //       });
+              //     },
+              //   ),
+              // ),
+            ],
+          ),
+          const SizedBox(
+            height: 2,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // SizedBox(
+              //   height: 30,
+              //   width: 100,
+              //   child: TextField(
+              //     controller: controllerWholeSale,
+              //     textAlign: TextAlign.right,
+              //     decoration: const InputDecoration(
+              //         border: OutlineInputBorder(), label: Text('WholeSale')),
+              //     keyboardType:
+              //         const TextInputType.numberWithOptions(decimal: true),
+              //     inputFormatters: [
+              //       FilteringTextInputFormatter(RegExp(r'[0-9]'),
+              //           allow: true, replacementString: '.')
+              //     ],
+              //     onChanged: (value) {
+              //       setState(() {
+              //         editableWSale = true;
+              //         wholeSale = double.tryParse(value)!;
+              //         calculateRate();
+              //       });
+              //     },
+              //   ),
+              // ),
+              // SizedBox(
+              //   height: 30,
+              //   width: 100,
+              //   child: TextField(
+              //     controller: controllerBranch,
+              //     textAlign: TextAlign.right,
+              //     decoration: const InputDecoration(
+              //         border: OutlineInputBorder(), label: Text('Branch')),
+              //     keyboardType:
+              //         const TextInputType.numberWithOptions(decimal: true),
+              //     inputFormatters: [
+              //       FilteringTextInputFormatter(RegExp(r'[0-9]'),
+              //           allow: true, replacementString: '.')
+              //     ],
+              //     onChanged: (value) {
+              //       setState(() {
+              //         editableBranch = true;
+              //         branch = double.tryParse(value)!;
+              //         calculateRate();
+              //       });
+              //     },
+              //   ),
+              // ),
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total :',
+                style: TextStyle(
+                  fontFamily: 'poppins',
+                  fontSize: 15,
+                fontWeight: FontWeight.bold),
+              ),
+              Text(
+                totalCartTotal.toStringAsFixed(decimal),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1392,66 +1851,85 @@ class _StockTransferState extends State<StockTransfer> {
   int? position;
 
   cartProduct() {
-    return Column(
-      children: [
-        purchaseHeaderWidget(),
-        const Divider(
-          height: 2.0,
-          thickness: 2,
-        ),
-        Expanded(
-          child: ListView.separated(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16
+      ),
+      child: Column(
+        children: [
+          purchaseHeaderWidget(),
+          const SizedBox(
+            height: 8,
+          ),
+          ListView.separated(
+            shrinkWrap: true,
             itemCount: cartItem.length,
             separatorBuilder: (BuildContext context, int index) =>
-                const Divider(),
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(cartItem[index].itemName),
-                subtitle: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Q:${cartItem[index].quantity}'),
-                        Text(cartItem[index].unitName),
-                        Text(
-                            'R:${CommonService.getRound(decimal, cartItem[index].rate)}'),
-                        Text(
-                            ' = ${CommonService.getRound(decimal, cartItem[index].gross)}'),
-                      ],
-                    ),
-                  ],
+                const SizedBox(
+                  height: 8,
                 ),
-                trailing: PopUpMenuAction(
-                  onDelete: () {
-                    setState(() {
-                      cartItem.removeAt(index);
-                    });
-                  },
-                  onEdit: () {
-                    setState(() {
-                      editItem = true;
-                      position = index;
-                      nextWidget = 2;
-                      productModel = StockItem(
-                          code: cartItem[index].itemId.toString(),
-                          hasVariant: false,
-                          id: cartItem[index].id,
-                          name: cartItem[index].itemName,
-                          quantity: cartItem[index].quantity);
-                    });
-                  },
+            itemBuilder: (context, index) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: white,
+                  border: Border.all(
+                    color: grey
+                  ),
+                  borderRadius: BorderRadius.circular(3)
+                ),
+                child: ListTile(
+                  title: Text(cartItem[index].itemName,
+                  style: const TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  subtitle: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Q:${cartItem[index].quantity}'),
+                          Text(cartItem[index].unitName),
+                          Text(
+                              'R:${CommonService.getRound(decimal, cartItem[index].rate)}'),
+                          Text(
+                              ' = ${CommonService.getRound(decimal, cartItem[index].gross)}'),
+                        ],
+                      ),
+                    ],
+                  ),
+                  trailing: PopUpMenuAction(
+                    onDelete: () {
+                      setState(() {
+                        cartItem.removeAt(index);
+                      });
+                    },
+                    onEdit: () {
+                      setState(() {
+                        editItem = true;
+                        position = index;
+                        nextWidget = 2;
+                        productModel = StockItem(
+                            code: cartItem[index].itemId.toString(),
+                            hasVariant: false,
+                            id: cartItem[index].id,
+                            name: cartItem[index].itemName,
+                            quantity: cartItem[index].quantity);
+                      });
+                    },
+                  ),
                 ),
               );
             },
           ),
-        ),
-        const Divider(
-          height: 2,
-          thickness: 2,
-        ),
-        footerWidget(),
-      ],
+          const SizedBox(
+            height: 8,
+          ),
+         Expanded(
+          child:  footerWidget(),
+         )
+        ],
+      ),
     );
   }
 
@@ -1462,13 +1940,13 @@ class _StockTransferState extends State<StockTransfer> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               const Text('Total : ',
                   style: TextStyle(
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red)),
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'poppins')),
               Text(
                   totalCartTotal > 0
                       ? ComSettings.appSettings(
@@ -1486,15 +1964,15 @@ class _StockTransferState extends State<StockTransfer> {
                                   decimal, totalCartTotal.roundToDouble())
                               .toString(),
                   style: const TextStyle(
-                      fontSize: 22.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.red))
+                     fontSize: 18.0,
+                      fontWeight: FontWeight.w600,
+                      ))
             ],
           ),
-          const Divider(
-            height: 1,
-            thickness: 1,
-          ),
+          // const Divider(
+          //   height: 1,
+          //   thickness: 1,
+          // ),
         ],
       ),
     );

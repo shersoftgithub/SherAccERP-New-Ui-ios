@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
@@ -15,6 +16,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_list.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
@@ -153,6 +155,7 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
   widgetSuffix(title) {
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             Visibility(
@@ -178,7 +181,7 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                       }
                     }
                   },
-                  icon: const Icon(Icons.delete_forever)),
+                  icon: Image.asset('assets/icons/ic_delete.png',scale: 3.3,)),
             ),
             oldVoucher
                 ? IconButton(
@@ -186,6 +189,9 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                     iconSize: 40,
                     onPressed: () {
                       //edit
+                       if (buttonEvent) {
+                      return;
+                    } else {
                       if (companyUserData!.updateData) {
                         title == 'Payment Invoice'
                             ? submitData('Payment Invoice', 'UPDATE')
@@ -197,13 +203,17 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                           buttonEvent = false;
                         });
                       }
+                    }
                     },
-                    icon: const Icon(Icons.edit))
+                    icon:Image.asset('assets/icons/ic_edit.png',scale: 3.3,))
                 : IconButton(
                     color: white,
                     iconSize: 40,
                     onPressed: () {
                       //save
+                       if (buttonEvent) {
+                      return;
+                    } else {
                       if (companyUserData!.insertData) {
                         title == 'Payment Invoice'
                             ? submitData('Payment Invoice', 'INSERT')
@@ -215,10 +225,12 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                           buttonEvent = false;
                         });
                       }
+                    }
                     },
-                    icon: const Icon(Icons.save)),
+                    icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: Text(title),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -229,45 +241,81 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
 
   _body(mode) {
     return Container(
-      padding: const EdgeInsets.all(6.0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 6
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               const Text(
-                'Date : ',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                'Date ',
+                style: TextStyle(
+                  fontFamily: 'poppins'
+                ),
               ),
               InkWell(
-                child: Text(
-                  formattedDate!,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: grey
+                    ),
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        formattedDate!,
+                        style: const TextStyle(
+                          fontFamily: 'poppins'
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 2,
+                      ),
+                      const Icon(Icons.calendar_month,color: grey,size: 18,)
+                    ],
+                  ),
                 ),
                 onTap: () => _selectDate(),
               ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              const Text('Cash Account',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              widgetAccount(),
-            ],
+          const SizedBox(
+            height: 8,
           ),
+          const Text(' Cash Account',
+                  style: TextStyle(fontFamily: 'poppins')),
+                  const SizedBox(
+                    height: 3,
+                  ),
+          widgetAccount(),
+          const SizedBox(
+            height: 8,
+          ),
+           const Text(' Select Ledger Name',
+                  style: TextStyle(fontFamily: 'poppins')),
+                  const SizedBox(
+                    height: 3,
+                  ),
           DropdownSearch<LedgerModel>(
-            popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+            popupProps: const PopupPropsMultiSelection.dialog(
                 showSearchBox: true,
-                constraints: BoxConstraints(
-                  maxHeight: 300,
-                )),
+                // constraints: BoxConstraints(
+                //   maxHeight: 300,
+                // )
+                ),
             asyncItems: (String filter) => api.getLedgerData(filter),
             dropdownDecoratorProps: const DropDownDecoratorProps(
               dropdownSearchDecoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('Select Ledger Name')),
+                  // label: Text('Select Ledger Name')
+                  ),
             ),
             onChanged: (LedgerModel? data) {
               ledData = data;
@@ -289,7 +337,9 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
             },
             selectedItem: ledData,
           ),
-          const Divider(),
+          const SizedBox(
+            height: 8,
+          ),
           isSelected
               ? ledgerDetailWidget(ledData!.id)
               : const Row(
@@ -298,11 +348,16 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                     Expanded(
                         child: Text(
                       'Balance : 0',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.bold
+                      ),
                     )),
                   ],
                 ),
-          const Divider(),
+          const SizedBox(
+            height: 8,
+          ),
           isSelected
               ? isBillSelected
                   ? _loadParticular(mode)
@@ -316,10 +371,15 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
   widgetPrefix(mode) {
     return Scaffold(
         key: _scaffoldKey,
+        backgroundColor: bagroundColor,
         appBar: AppBar(
           actions: [
             TextButton(
                 style: TextButton.styleFrom(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  ),
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue[700],
                 ),
@@ -335,6 +395,9 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                 )),
           ],
           title: Text(mode),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins'
+          ),
         ),
         body: Container(
           child: previousBill(mode),
@@ -401,7 +464,10 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                   Expanded(
                       child: Text(
                     'Balance : ${snapshot.data!.balance}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.bold
+                      ),
                   )),
                 ],
               )
@@ -411,7 +477,10 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                   Expanded(
                       child: Text(
                     'Balance : 0',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                   style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontWeight: FontWeight.bold
+                      ),
                   )),
                 ],
               );
@@ -422,33 +491,72 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
   _loadParticular(mode) {
     return Column(
       children: [
-        const Divider(
-          color: black,
-          height: 10,
-          thickness: 2,
-        ),
-        Card(
+        // const Divider(
+        //   color: black,
+        //   height: 10,
+        //   thickness: 2,
+        // ),
+        Container(
+          decoration: BoxDecoration(
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: grey,
+            //      blurRadius: 3,
+            //     spreadRadius: .2
+            //   )
+            // ],
+            color: white,
+            border: Border.all(color: grey),
+            borderRadius: BorderRadius.circular(3)
+          ),
           child: ListTile(
-            title: Text('Entry Type : ${_invoiceData['Stype'].toString()}'),
-            subtitle: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text(
-                    "Entry No : ${_invoiceData['entryno']}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text("Invoice No : ${_invoiceData['invoiceNo']}",
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
+            title: Text(_invoiceData['Stype'].toString(),
+            style: const TextStyle(
+              fontFamily: 'poppins'
             ),
-            trailing: Text('Balance : ${_invoiceData['Balance'].toString()}',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            subtitle: Row(
+              // mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Entry No ${_invoiceData['entryno']}",
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'poppins'
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Icon(Icons.circle,
+                  size: 5,
+                  color: grey,),
+                ),
+                Text("Invoice No ${_invoiceData['invoiceNo']}",
+                    style: const TextStyle(
+                      fontSize: 10,
+                    fontFamily: 'poppins'
+                    )),
+              ],
+            ),
+            trailing: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${_invoiceData['Ddate'].toString()}',
+                    style: const TextStyle(
+                    fontFamily: 'poppins')),
+                    // Spacer(),
+                Text('Balance : ${_invoiceData['Balance'].toString()}',
+                    style: const TextStyle(
+                    fontFamily: 'poppins')),
+              ],
+            ),
           ),
         ),
-        const Divider(),
+        const SizedBox(
+          height: 10,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -464,6 +572,13 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                           allow: true, replacementString: '.')
                     ],
                     decoration: const InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
+                      labelStyle: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
                       border: OutlineInputBorder(),
                       label: Text('Amount'),
                     ),
@@ -481,7 +596,7 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 3),
             Expanded(
               child: TextField(
                 controller: _controllerDiscount,
@@ -492,6 +607,13 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                       allow: true, replacementString: '.')
                 ],
                 decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
+                      labelStyle: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
                   border: OutlineInputBorder(),
                   label: Text('Discount'),
                 ),
@@ -507,15 +629,20 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                 },
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 3),
             Expanded(
                 child: Text(
               'Total : ${total.toStringAsFixed(0)}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                fontWeight: FontWeight.bold
+              ),
             )),
           ],
         ),
-        const Divider(),
+        const SizedBox(
+          height: 8,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -523,6 +650,13 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
               child: TextField(
                 controller: _controllerNarration,
                 decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 8
+                      ),
+                      labelStyle: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
                   border: OutlineInputBorder(),
                   label: Text('Narration...'),
                 ),
@@ -535,7 +669,7 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
             ),
           ],
         ),
-        const Divider(),
+        // const Divider(),
       ],
     );
   }
@@ -571,111 +705,110 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                         child: Center(
                             child: Padding(
                                 padding: const EdgeInsets.all(5.0),
-                                child: Stack(children: [
+                                child: Column(children: [
                                   Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5
+                                    ),
                                     height: 80,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(6),
-                                      gradient: const LinearGradient(
-                                          colors: [
-                                            Color.fromARGB(255, 151, 211, 239),
-                                            Color.fromARGB(255, 195, 211, 241)
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Color(0xff73A1F9),
-                                          blurRadius: 12,
-                                          offset: Offset(0, 6),
-                                        ),
-                                      ],
+                                      color: white,
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: grey)
+                                      // gradient: const LinearGradient(
+                                      //     colors: [
+                                      //       Color.fromARGB(255, 151, 211, 239),
+                                      //       Color.fromARGB(255, 195, 211, 241)
+                                      //     ],
+                                      //     begin: Alignment.topLeft,
+                                      //     end: Alignment.bottomRight),
+                                      // boxShadow: const [
+                                      //   BoxShadow(
+                                      //     color: Color(0xff73A1F9),
+                                      //     blurRadius: 12,
+                                      //     offset: Offset(0, 6),
+                                      //   ),
+                                      // ],
                                     ),
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    top: 0,
-                                    child: CustomPaint(
-                                      size: const Size(100, 150),
-                                      painter: CustomCardShapePainter(
-                                          24,
-                                          const Color(0xff6DC8F3),
-                                          const Color(0xff73A1F9)),
-                                    ),
-                                  ),
-                                  Positioned.fill(
-                                      child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 5,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(5.0),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                dataDisplayBill[index]['Stype'],
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontWeight:
-                                                        FontWeight.w700),
-                                              ),
-                                              Text(
-                                                'Date       : ' +
-                                                    dataDisplayBill[index]
-                                                            ['Ddate']
-                                                        .toString(),
-                                                style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              Text(
-                                                'EntryNo : ' +
-                                                    dataDisplayBill[index]
-                                                            ['entryno']
-                                                        .toString(),
-                                                style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Column(
+                                    child:   Row(
+                                                                      children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Total      : ' +
-                                                dataDisplayBill[index]
-                                                        ['grandtotal']
-                                                    .toStringAsFixed(2),
+                                            dataDisplayBill[index]['Stype'],
                                             style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600),
+                                               fontFamily: 'poppins'),
                                           ),
                                           Text(
-                                            'Balance : ' +
+                                            'Date       : ' +
                                                 dataDisplayBill[index]
-                                                        ['Balance']
-                                                    .toStringAsFixed(2),
+                                                        ['Ddate']
+                                                    .toString(),
                                             style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600),
+                                              fontFamily: 'poppins',
+                                              fontSize: 10
+                                            ),
+                                          ),
+                                          Text(
+                                            'EntryNo : ' +
+                                                dataDisplayBill[index]
+                                                        ['entryno']
+                                                    .toString(),
+                                            style: const TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 10
+                                            ),
                                           ),
                                         ],
                                       ),
+                                    ),
+                                  ),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Total      : ' +
+                                            dataDisplayBill[index]
+                                                    ['grandtotal']
+                                                .toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                      ),
+                                      Text(
+                                        'Balance : ' +
+                                            dataDisplayBill[index]
+                                                    ['Balance']
+                                                .toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                      ),
                                     ],
-                                  ))
+                                  ),
+                                                                      ],
+                                                                    ),
+                                  ),
+                                  // Positioned(
+                                  //   right: 0,
+                                  //   bottom: 0,
+                                  //   top: 0,
+                                  //   child: CustomPaint(
+                                  //     size: const Size(100, 150),
+                                  //     painter: CustomCardShapePainter(
+                                  //         24,
+                                  //         const Color(0xff6DC8F3),
+                                  //         const Color(0xff73A1F9)),
+                                  //   ),
+                                  // ),
+                                
                                 ]))),
                         onTap: () {
                           setState(() {
@@ -782,21 +915,19 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
           _isLoading = true;
           buttonEvent = true;
         });
-        var particular = '[' +
-            json.encode({
+        var particular = '[${json.encode({
               'ledger': ledData!.id,
               'entryType': _invoiceData['Stype'].toString(),
               'pEntryNo': _invoiceData['entryno'].toString(),
               'invoiceNo': _invoiceData['invoiceNo'].toString(),
               'date': operation == 'UPDATE' || operation == 'DELETE'
                   ? _invoiceData['Ddate']
-                  : DateUtil.dateYMD1(_invoiceData['Ddate'].toString()),
+                  : _invoiceData['Ddate'].toString(),
               'amount': amount,
               'discount': discount,
               'total': total,
               'narration': narration
-            }) +
-            ']';
+            })}]';
         var data = [
           {
             'entryNo': oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '0',
@@ -829,10 +960,10 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
             _isLoading = false;
             buttonEvent = false;
             showInSnackBar(operation == 'DELETE'
-                ? 'Deleted : ' + mode + ' voucher.'
+                ? '${'Deleted : ' + mode} voucher.'
                 : operation == 'UPDATE'
-                    ? 'Update : ' + mode + ' voucher.'
-                    : 'Saved : ' + mode + ' voucher.');
+                    ? '${'Update : ' + mode} voucher.'
+                    : '${'Saved : ' + mode} voucher.');
             clearData();
           });
         } else {
@@ -880,22 +1011,44 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
 
   var _dropDownValue = '';
   widgetAccount() {
-    return DropdownButton<String>(
-      hint: Text(_dropDownValue.isNotEmpty
-          ? _dropDownValue.split('-')[1]
-          : 'Select cash account'),
-      items: cashBankACList.map<DropdownMenuItem<String>>((item) {
-        return DropdownMenuItem<String>(
-          value: item.id.toString() + "-" + item.name,
-          child: Text(item.name),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _dropDownValue = value!;
-          acId = int.parse(value.split('-')[0]);
-        });
-      },
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 5
+      ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: grey
+                    ),
+                    borderRadius: BorderRadius.circular(3)
+                  ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          hint: Text(_dropDownValue.isNotEmpty
+              ? _dropDownValue.split('-')[1]
+              : 'Select cash account',
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),
+              ),
+          items: cashBankACList.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: item.id.toString() + "-" + item.name,
+              child: Text(item.name, style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _dropDownValue = value!;
+              acId = int.parse(value.split('-')[0]);
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -920,46 +1073,194 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ?  Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListView.separated(
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 5,
+            ),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text('Date: ' +
-                        dataDisplay[index]['Date'] +
-                        ' / EntryNo : ' +
-                        dataDisplay[index]['Id'].toString()),
-                    trailing: Text(
-                        'Total : ' + dataDisplay[index]['Total'].toString()),
+                  );
+                } else {
+                  return 
+                  InkWell(
                     onTap: () {
                       showEditDialog(context, dataDisplay[index], mode);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
-          )
+                    child:
+                    Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
+        )
+        // ListView.builder(
+        //     itemCount: dataDisplay.length + 1,
+        //     itemBuilder: (BuildContext context, int index) {
+        //       if (index == dataDisplay.length) {
+        //         return Padding(
+        //           padding: const EdgeInsets.all(8.0),
+        //           child: Center(
+        //             child: Opacity(
+        //               opacity: isLoadingData ? 1.0 : 00,
+        //               child: const CircularProgressIndicator(),
+        //             ),
+        //           ),
+        //         );
+        //       } else {
+        //         return Card(
+        //           elevation: 2,
+        //           child: ListTile(
+        //             title: Text(dataDisplay[index]['Name']),
+        //             subtitle: Text('Date: ' +
+        //                 dataDisplay[index]['Date'] +
+        //                 ' / EntryNo : ' +
+        //                 dataDisplay[index]['Id'].toString()),
+        //             trailing: Text(
+        //                 'Total : ' + dataDisplay[index]['Total'].toString()),
+        //             onTap: () {
+        //               showEditDialog(context, dataDisplay[index], mode);
+        //             },
+        //           ),
+        //         );
+        //       }
+        //     },
+        //     controller: _scrollController,
+        //   )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("No data in " + mode),
+              Text("No data in " + mode,
+              style: const TextStyle(
+                fontFamily: 'poppins'
+              ),
+              ),
               TextButton.icon(
                   style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)
+                      )
+                    ),
                     backgroundColor:
                         MaterialStateProperty.all<Color>(kPrimaryColor),
                     foregroundColor:
@@ -971,7 +1272,11 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: Text('Take New ' + mode))
+                  label: Text('Take New ' + mode,
+                   style: const TextStyle(
+                fontFamily: 'poppins'
+              ),
+                  ))
             ],
           ));
   }
