@@ -20,6 +20,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pw;
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 // ignore: avoid_web_libraries_in_flutter
 // import 'dart:html' as html;
 
@@ -459,7 +460,7 @@ class _ReportViewState extends State<ReportView> {
                                 height: 30,
                               ),
                               const Text(
-                                "ACCOUNT SUMMERY",
+                                "ACCOUNT ",
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
@@ -498,75 +499,85 @@ class _ReportViewState extends State<ReportView> {
                         height: 10,
                       ),
                        Expanded(
-                         child: SfDataGridTheme(
-                           data: SfDataGridThemeData(
-                               headerColor: kPrimaryColor,
-                               gridLineColor: grey,
-                               filterIconColor: Colors.white),
-                           child: SfDataGrid(
-                             headerRowHeight: 30,
-                            //  rowHeight: 20,
-                             gridLinesVisibility: GridLinesVisibility.both,
-                             headerGridLinesVisibility: GridLinesVisibility.both,
-                             source: EmployeeDataSource(recdset),
-                             // allowSorting: true,                  
-                             allowFiltering: true,
-                             columns: [
-                               GridColumn(
-                                   width: size.width * 0.2,
-                                   columnName: 'Date',
-                                   label: const Text(
-                                     ' Date',
-                                     style: TextStyle(
-                                         fontSize: 6, color: Colors.white),
-                                   )),
-                               GridColumn(
-                                   width: 100,
-                                   columnName: 'Description',
-                                   label: const Text(' Description',
-                                       style: TextStyle(
-                                           fontSize: 6, color: Colors.white))),
-                               GridColumn(
-                                   filterIconPadding: const EdgeInsets.all(0),
-                                   width: 58,
-                                   columnName: 'Debit',
-                                   label: const Row(
-                                     mainAxisAlignment: MainAxisAlignment.end,
-                                     children: [
-                                       Text(
-                                         'Debit',
+                         child: Zoom(
+                          enableScroll: true,
+                          scrollWeight: 2,
+                          maxZoomWidth: MediaQuery.of(context).size.width,
+                          backgroundColor: white,
+                           child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height,
+                             child: SfDataGridTheme(
+                               data: SfDataGridThemeData(
+                                   headerColor: kPrimaryColor,
+                                   gridLineColor: grey,
+                                   filterIconColor: Colors.white),
+                               child: SfDataGrid(
+                                 headerRowHeight: 30,
+                                //  rowHeight: 20,
+                                 gridLinesVisibility: GridLinesVisibility.both,
+                                 headerGridLinesVisibility: GridLinesVisibility.both,
+                                 source: EmployeeDataSource(recdset),
+                                 // allowSorting: true,                  
+                                 allowFiltering: true,
+                                 columns: [
+                                   GridColumn(
+                                       width: size.width * 0.2,
+                                       columnName: 'Date',
+                                       label: const Text(
+                                         ' Date',
                                          style: TextStyle(
                                              fontSize: 6, color: Colors.white),
-                                       ),
-                                     ],
-                                   )),
-                               GridColumn(
-                                   filterIconPadding: const EdgeInsets.all(0),
-                                   width: 58,
-                                   columnName: 'Credit',
-                                   label: const Row(
-                                     mainAxisAlignment: MainAxisAlignment.end,
-                                     children: [
-                                       Text('Credit',
+                                       )),
+                                   GridColumn(
+                                       width: 100,
+                                       columnName: 'Description',
+                                       label: const Text(' Description',
                                            style: TextStyle(
-                                               fontSize: 6,
-                                               color: Colors.white)),
-                                     ],
-                                   )),
-                               GridColumn(
-                                   filterIconPadding: const EdgeInsets.all(0),
-                                   width: 70,
-                                   columnName: 'Balance',
-                                   label: const Row(
-                                     mainAxisAlignment: MainAxisAlignment.end,
-                                     children: [
-                                       Text('Balance',
-                                           style: TextStyle(
-                                               fontSize: 6,
-                                               color: Colors.white)),
-                                     ],
-                                   )),
-                             ],
+                                               fontSize: 6, color: Colors.white))),
+                                   GridColumn(
+                                       filterIconPadding: const EdgeInsets.all(0),
+                                       width: 58,
+                                       columnName: 'Debit',
+                                       label: const Row(
+                                         mainAxisAlignment: MainAxisAlignment.end,
+                                         children: [
+                                           Text(
+                                             'Debit',
+                                             style: TextStyle(
+                                                 fontSize: 6, color: Colors.white),
+                                           ),
+                                         ],
+                                       )),
+                                   GridColumn(
+                                       filterIconPadding: const EdgeInsets.all(0),
+                                       width: 58,
+                                       columnName: 'Credit',
+                                       label: const Row(
+                                         mainAxisAlignment: MainAxisAlignment.end,
+                                         children: [
+                                           Text('Credit',
+                                               style: TextStyle(
+                                                   fontSize: 6,
+                                                   color: Colors.white)),
+                                         ],
+                                       )),
+                                   GridColumn(
+                                       filterIconPadding: const EdgeInsets.all(0),
+                                       width: 70,
+                                       columnName: 'Balance',
+                                       label: const Row(
+                                         mainAxisAlignment: MainAxisAlignment.end,
+                                         children: [
+                                           Text('Balance',
+                                               style: TextStyle(
+                                                   fontSize: 6,
+                                                   color: Colors.white)),
+                                         ],
+                                       )),
+                                 ],
+                               ),
+                             ),
                            ),
                          ),
                        ),

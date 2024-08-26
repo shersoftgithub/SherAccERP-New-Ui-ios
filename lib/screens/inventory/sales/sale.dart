@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:dotted_border/dotted_border.dart';
+import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/cupertino.dart';
@@ -187,13 +189,13 @@ class _SaleState extends ConsumerState<Sale> {
       salesTypeDisplay =
           ComSettings.salesFormList('key-item-sale-form-', false);
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-     if (salesTypeData != null) {
-        salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
-      ? ref.read(productsProvider.notifier).fetchNoStockProducts("", date)
-     : ref.read(productsProvider.notifier).fetchStockProducts("", date);
-     }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //  if (salesTypeData != null) {
+    //     salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
+    //   ? ref.read(productsProvider.notifier).fetchNoStockProducts("", date)
+    //  : ref.read(productsProvider.notifier).fetchStockProducts("", date);
+    //  }
+    // });
     // fetchCustomerNames();
     // fetchStockProducts();
     // api
@@ -405,6 +407,21 @@ class _SaleState extends ConsumerState<Sale> {
       });
       });
     }
+    
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+     if (salesTypeData != null) {
+     var productspro= 
+        salesTypeData!.type == 'SALE-O' || salesTypeData!.type == 'SALE-Q'
+        ? isStockProductOnlyInSalesQO
+                ? ref.read(productsProvider.notifier).fetchStockProducts(itemLike, DateUtil.dateDMY2YMD(formattedDate))
+                : ref.read(productsProvider.notifier).fetchNoStockProducts(
+                    DateUtil.dateDMY2YMD(formattedDate), itemLike)
+            : ref.read(productsProvider.notifier).fetchStockProducts(
+                DateUtil.dateDMY2YMD(formattedDate), itemLike);
+    //   ? ref.read(productsProvider.notifier).fetchNoStockProducts("", date)
+    //  : ref.read(productsProvider.notifier).fetchStockProducts("", date);
+     }
+    });
 
     api.getVehicleNameList().then((value) {
       vehicleNameListDisplay.addAll(value);
@@ -930,7 +947,11 @@ class _SaleState extends ConsumerState<Sale> {
               } else {
                 return Container(
                     margin: const EdgeInsets.symmetric(vertical: 2),
-                    height: 80,
+                    // height: 80,
+                    constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                     decoration: BoxDecoration(
                       color: white,
                       borderRadius: BorderRadius.circular(3),
@@ -943,95 +964,97 @@ class _SaleState extends ConsumerState<Sale> {
                       ],
                     ),
                     padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dataDisplay[index]['Name'],
-                                  // maxLines: 1,
-                                  style: const TextStyle(
-                                    // fontSize: 16,
-                                    color: ColorPalette.timberGreen,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Date :${dataDisplay[index]['Date']}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 5,
-                                        top: 2,
-                                        right: 5,
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                      child: Icon(
-                                        Icons.circle,
-                                        size: 5,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showEditDialog(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showEditDialog(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorPalette.nileBlue,
+                          Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              onTap: () {
+                                showDetails(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showDetails(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ));
                 // return Card(
                 //   elevation: 3,
@@ -1354,6 +1377,7 @@ class _SaleState extends ConsumerState<Sale> {
           'id': order.customerModel[0].id.toString(),
           'fyId': currentFinancialYear!.id
         };
+        debugPrint(bodyJsonAmount.toString());
         if (salesTypeData!.accounts) {
           api.addOtherAmount(bodyJsonAmount).then((ret) {
             if (ret) {
@@ -1672,8 +1696,10 @@ class _SaleState extends ConsumerState<Sale> {
             'saleFormType': saleFormType,
             'narration': order.narration,
             'location': order.location.toString(),
-            'id': order.customerModel[0].id.toString()
+            'id': order.customerModel[0].id.toString(),
+            'fyId': currentFinancialYear!.id
           };
+          debugPrint(bodyJsonAmount.toString());
           if (salesTypeData!.accounts) {
             api.addOtherAmount(bodyJsonAmount).then((retNotUsed) {
               final bodyJson = {
@@ -1821,7 +1847,7 @@ class _SaleState extends ConsumerState<Sale> {
   }
 
   getEntryNo(saleFormId) {
-    api.getSalesInvoiceNo(saleFormId).then((value) {
+    api.getSalesInvoiceNo(saleFormId,'sentryno').then((value) {
       setState(() {
         invoiceNo = (int.parse(value.toString()) + 1).toString();
         invoiceNoController.text = invoiceNo;
@@ -2126,6 +2152,9 @@ void _onTabTapped(int index) {
       });
     });
   }
+  // else{
+    
+  // }
 }
 
 
@@ -2270,82 +2299,125 @@ void _onTabTapped(int index) {
                         children: [
                           Expanded(
                               child: ContainerFieldWidget(
-                                  widget: InkWell(
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) =>
-                                            Padding(
-                                          padding: EdgeInsets.only(
-                                              bottom: MediaQuery.of(context).viewInsets.bottom),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              children: [
-                                                const SizedBox(height: 16),
-                                                TextField(
-                                                  decoration: const  InputDecoration(
-                                                          border: OutlineInputBorder(),
-                                                          // hintText:
-                                                          //     'Invoice No',
-                                                          labelText:'Enter invoice no'),
-                                                  controller: invoiceNoController,
-                                                  autofocus: true,
-                                                ),
-                                                const SizedBox(height: 10),
-                                                ElevatedButton(
-                                                  style: ElevatedButton.styleFrom(
-                                                      backgroundColor: kPrimaryColor,
-                                                      shape: RoundedRectangleBorder(
-                                                      borderRadius:BorderRadius.circular(3))),
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                    setState(() {});
-                                                  },
-                                                  child: const Text("Done",
-                                                      style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          color: white)),
-                                                ),
-                                              ],
+                                  widget: 
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     // showModalBottomSheet(
+                                  //     //   context: context,
+                                  //     //   builder: (BuildContext context) =>
+                                  //     //       Padding(
+                                  //     //     padding: EdgeInsets.only(
+                                  //     //         bottom: MediaQuery.of(context).viewInsets.bottom),
+                                  //     //     child: Padding(
+                                  //     //       padding: const EdgeInsets.all(8.0),
+                                  //     //       child: Column(
+                                  //     //         children: [
+                                  //     //           const SizedBox(height: 16),
+                                  //     //           TextField(
+                                  //     //             decoration: const  InputDecoration(
+                                  //     //                     border: OutlineInputBorder(),
+                                  //     //                     // hintText:
+                                  //     //                     //     'Invoice No',
+                                  //     //                     labelText:'Enter invoice no'),
+                                  //     //             controller: invoiceNoController,
+                                  //     //             autofocus: true,
+                                  //     //           ),
+                                  //     //           const SizedBox(height: 10),
+                                  //     //           ElevatedButton(
+                                  //     //             style: ElevatedButton.styleFrom(
+                                  //     //                 backgroundColor: kPrimaryColor,
+                                  //     //                 shape: RoundedRectangleBorder(
+                                  //     //                 borderRadius:BorderRadius.circular(3))),
+                                  //     //             onPressed: () {
+                                  //     //               Navigator.of(context).pop();
+                                  //     //               setState(() {});
+                                  //     //             },
+                                  //     //             child: const Text("Done",
+                                  //     //                 style: TextStyle(
+                                  //     //                     fontFamily: 'poppins',
+                                  //     //                     color: white)),
+                                  //     //           ),
+                                  //     //         ],
+                                  //     //       ),
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // );
+                                  //   },
+                                  //   child: Container(
+                                  //     margin: const EdgeInsets.only(
+                                  //       bottom: 15,
+                                  //     ),
+                                  //     width: MediaQuery.of(context).size.width,
+                                  //     padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  //     height: 20,
+                                  //     decoration: BoxDecoration(
+                                  //         border: Border.all(color: grey),
+                                  //         borderRadius: BorderRadius.circular(3)),
+                                  //     child: Row(
+                                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //       children: [
+                                  //         Text(invoiceNoController.text,
+                                  //             style: const TextStyle(
+                                  //                 fontWeight: FontWeight.w500,
+                                  //                 fontSize: 16,
+                                  //                 fontFamily: 'poppins')),
+                                  //         // const Icon(
+                                  //         //     Icons.arrow_drop_down_sharp,
+                                  //         //     color: black)
+                                  //       ],
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 15,
+                                    ),
+                                    child: TextField(
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 14
+                                      ),
+                                      controller: invoiceNoController,
+                                      decoration:  InputDecoration(
+                                         prefixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                            const SizedBox(
+                                              width: 4,
                                             ),
-                                          ),
+                                            InkWell(
+                                              onTap: () {
+                                              //  var data = api.getSalesInvoiceNo(1, '').then((value) => value);
+                                              //  data.then((value) => value.)
+                                              // debugPrint(data.toString());
+                                              },
+                                              child: const Icon(Icons.arrow_back_ios_rounded,
+                                              // size: 16,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      );
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.only(
-                                        bottom: 15,
-                                      ),
-                                      width: MediaQuery.of(context).size.width,
-                                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                          border: Border.all(color: grey),
-                                          borderRadius: BorderRadius.circular(3)),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(invoiceNoController.text,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 16,
-                                                  fontFamily: 'poppins')),
-                                          const Icon(
-                                              Icons.arrow_drop_down_sharp,
-                                              color: black)
-                                        ],
-                                      ),
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            InkWell(
+                                              onTap: () {
+                                                
+                                              },
+                                              child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                            //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                          ],
+                                        ),
+                                        // constraints: BoxConstraints(
+                                        //   maxHeight: 20
+                                        // ),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 5),
+                                          border: OutlineInputBorder()),
                                     ),
                                   ),
-                                  // TextField(
-                                  //   controller: invoiceNoController,
-                                  //   decoration: const InputDecoration(
-                                  //       contentPadding: EdgeInsets.symmetric(
-                                  //           vertical: 5, horizontal: 5),
-                                  //       border: OutlineInputBorder()),
-                                  // ),
-                                  headTxt: 'Invoice No')),
+                                  headTxt: 'Entry No')),
                           const SizedBox(
                             width: 8,
                           ),
@@ -2819,7 +2891,7 @@ void _onTabTapped(int index) {
                                         itemNameControl.text =
                                             cartModel!.itemName.toString();
                                         _rateController.text =
-                                            cartModel!.rate!.toString();
+                                            cartModel!.rate!.toStringAsFixed(decimal);
                                         _quantityController.text =
                                             cartModel!.quantity!.toString();
                                         _freeQuantityController.text =
@@ -2833,9 +2905,22 @@ void _onTabTapped(int index) {
                                             cartModel!.serialNo!;
                                         _dropDownUnit = cartModel!.unitId!;
                                         // unitValue = _conversion;
-                                        taxP = cartModel!.taxP!;
-                                        tax = cartModel!.tax!;
-                                        gross = cartModel!.gross!;
+                                        // taxP = cartModel!.taxP!;
+                                        // tax = cartModel!.tax!;
+                                        // taxP = (salesTypeData!.type == 'SALES-ES'
+                                        // ? cartModel!.taxP 
+                                        // :0)!;
+                                        // tax = (salesTypeData!.type == 'SALES-ES'
+                                        // ? cartModel!.tax 
+                                        // :0)!;
+                                        salesTypeData!.type != 'SALES-EC'
+                                        ? taxP = cartModel!.taxP!
+                                        : taxP = 0;
+                                        salesTypeData!.type != 'SALES-EC'
+                                        ? tax = cartModel!.tax!
+                                        : tax = 0;
+                                        gross = 
+                                         cartModel!.gross!;
                                         total = cartModel!.total!;
                                         cartModel!.uniqueCode = uniqueCode;
                                         unitValue = cartModel!.unitValue!;
@@ -3544,35 +3629,58 @@ void _onTabTapped(int index) {
                                         height: 8,
                                   ),
                              Row(
-                              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children:[
                                 const Expanded(child: Text('Cash Received',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'),),),
                                 Expanded(
                                   flex: 1,
-                                  child: SizedBox(
-                                    height: 30,
-                                    child: TextField(
-                                                          controller: controllerCashReceived,
-                                                          focusNode: _focusNodeCashReceived,
-                                                          keyboardType:
-                                                              const TextInputType.numberWithOptions(decimal: true),
-                                                          inputFormatters: [
-                                                            FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                                                allow: true, replacementString: '.')
-                                                          ],
-                                                          decoration: const InputDecoration(
-                                                            contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
-                                                            border: OutlineInputBorder(
-                                                              gapPadding: 10,
-                                                              borderRadius: BorderRadius.all( Radius.circular(2))
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 30,
+                                        child: Container(
+                                            decoration: DottedDecoration(
+                                                              color: black,
+                                                              strokeWidth: 1,
+                                                              linePosition: LinePosition.bottom,
                                                             ),
-                                                          ),
-                                                          onChanged: (value) {
-                                                            setState(() {
-                                                              balanceCalculate();
-                                                            });
-                                                          },
-                                                        ),
+                                          child: TextField(
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'poppins'),
+                                                                controller: controllerCashReceived,
+                                                                focusNode: _focusNodeCashReceived,
+                                                                keyboardType:
+                                                                    const TextInputType.numberWithOptions(decimal: true),
+                                                                inputFormatters: [
+                                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                                                      allow: true, replacementString: '.')
+                                                                ],
+                                                                decoration:  const InputDecoration(
+                                                                  prefixIcon: Text('₹ ',
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    ),),
+                                                                  prefixIconConstraints: BoxConstraints(
+                                                                    maxWidth: 15
+                                                                  ),
+                                                                  contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                  border: OutlineInputBorder(
+                                                                    borderSide: BorderSide.none
+                                                                  )
+                                                                ),
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    balanceCalculate();
+                                                                  });
+                                                                },
+                                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ]
@@ -4967,14 +5075,18 @@ void _onTabTapped(int index) {
   late StockProduct selectedVariant;
   var fetchedData;
   addItemWidget() {
+    
      List<UnitModel> unitListData = [];
     if (editItem) {
+      editItem = true;
       cartModel = cartItem.elementAt(position!);
       // uniqueCode = selectedVariant.productId!;
       unitValue = cartModel!.unitValue!;
       debugPrint("unitvalue =${unitValue.toString()}");
       _dropDownUnit = cartModel!.unitId!;
-      // _conversion = cartModel!.unitValue!;
+      rate = cartModel!.rate!;
+      _rateController.text = cartModel!.rate!.toStringAsFixed(decimal);
+      _conversion = cartModel!.unitValue!;
       calculateTotal();
     }
     calculate() {
@@ -5317,13 +5429,45 @@ void _onTabTapped(int index) {
                   icon: const Icon(Icons.settings, color: white))
             ],
           ),
-          body: ref.watch(productsProvider).when(
-                data: (data) {
-                  List<String> itemNames =
-                  itemCodeViseChek 
-                  ? data.map((e) => e.code!).toList()
-                  : data.map((item) => item.name!).toList();
-                  return SingleChildScrollView(
+          body: 
+          // ref.watch(productsProvider).when(
+          //       data: (data) {
+          //         List<String> itemNames =
+          //         itemCodeViseChek 
+          //         ? data.map((e) => e.code!).toList()
+          //         : data.map((item) => item.name!).toList();
+          //         return
+
+            // StreamBuilder<List<StockItem>>(
+            // stream: (salesTypeData!.type == 'SALES-O' ||
+            //     salesTypeData!.type == 'SALES-Q')
+            // ? isStockProductOnlyInSalesQO
+            //     ? api.fetchStockProductLikes(
+            //         DateUtil.dateDMY2YMD(formattedDate), itemNameControl.text)
+            //     : api.fetchNoStockProductLikes(
+            //         DateUtil.dateDMY2YMD(formattedDate), itemNameControl.text)
+            // : api.fetchStockProductLikes(
+            //     DateUtil.dateDMY2YMD(formattedDate), itemNameControl.text),
+            // // fetchStockProducts(itemNameControl.text),
+            // builder: (context, snapshot) {
+            //     if (snapshot.hasError) {
+            //                     return Text('Error: ${snapshot.error}');
+            //                   }
+            //                   //  else if (snapshot.connectionState == ConnectionState.waiting){
+            //                   //    isLoading == true;
+            //                   // }
+            //                   else if (!snapshot.hasData) {
+            //                     return const Text('No data found');
+            //                   }
+                   
+            //     final itemNameListDisplay = snapshot.data!
+            //         .map((item) => item.name)
+            //         .where((name) => name != null)
+            //         .cast<String>()
+            //         .toList();
+
+            //     return
+                  SingleChildScrollView(
                     child: Column(
                       children: [
                         Container(
@@ -5348,112 +5492,147 @@ void _onTabTapped(int index) {
                                 children: [
                                   Expanded(
                                     flex: 12,
-                                    child: EasyAutocomplete(
-                                      autofocus: false,
-                                      progressIndicatorBuilder:
-                                          const CircularProgressIndicator(),
-                                      controller: itemNameControl,
-                                      inputTextStyle: const TextStyle(
-                                          fontFamily: 'poppins', fontSize: 14),
-                                      suggestionTextStyle:
-                                          const TextStyle(fontFamily: 'poppins'),
-                                      decoration:  InputDecoration(
-                          //               suffixIcon:  Visibility(
-                          //   visible: enableBarcode,
-                          //   child: IconButton(
-                          //       onPressed: () {
-                          //         searchProductBarcode();
-                          //       },
-                          //       icon: const Icon(Icons.document_scanner)),
-                          // ),
-                                        contentPadding: EdgeInsets.symmetric(
-                                            vertical: 10, horizontal: 5),
-                                        border: OutlineInputBorder(),
-                                      ),
-                                      suggestions: itemNames,
-                                      onChanged: (value) {
-                                        // print('onChanged value: $value');
-                                      },
-                                      onSubmitted: (value) {
-                                        
-                                        setState(() {
-                                          final selectedItem = 
-                                          itemCodeViseChek 
-                                          ? data.firstWhere(
-                                            (element) => element.code == value)
-                                          : data.firstWhere(
-                                            (element) => element.name == value,
-                                          );
-                                          _dropDownUnit = 0;
-                                          rate = 0;
-                                          quantity = 0;
-                                          _quantityController.text = '';
-                                          _discountController.text = '';
-                                          _discountPercentController.text = '';
-                                          tax = 0;
-                                          _rateController.text = '';
-                                          discount = 0;
-                                          discountPercent = 0;
-                                          subTotal = 0;
-                                          total = 0;
-                                          gross = 0;
-
-                                          selectedQuantity =
-                                              selectedItem.quantity.toString();
-                                          selectedItemId = selectedItem.id!;
-                                           fetchedData = selectedItemId != null
-                                             ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
-                                    ? api.fetchNoStockVariants(selectedItemId.toString())
-                                    : api.fetchStockVariants(selectedItemId!)
-                                              : null;
-                                          if (fetchedData != null) {
-                                            fetchedData.listen((variants) {
-                                              selectedVariant = variants.firstWhere(
-                                                (element) =>
-                                                    element.itemId == selectedItemId,
-                                                orElse: () => StockProduct.empty(),
+                                    child:
+                                     StreamBuilder(
+                                      stream: (salesTypeData!.type == 'SALES-O' ||
+                salesTypeData!.type == 'SALES-Q')
+            ? isStockProductOnlyInSalesQO
+                ? api.fetchStockProducts(
+                    DateUtil.dateDMY2YMD(formattedDate))
+                : api.fetchNoStockProducts(
+                    DateUtil.dateDMY2YMD(formattedDate))
+            : api.fetchStockProducts(
+                DateUtil.dateDMY2YMD(formattedDate),),
+            // fetchStockProducts(itemNameControl.text), ,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+                              //  else if (snapshot.connectionState == ConnectionState.waiting){
+                              //    isLoading == true;
+                              // }
+                              else if (!snapshot.hasData) {
+                                return const Text('No data found');
+                              }
+                   
+                final itemNameListDisplay = snapshot.data!
+                    .map((item) => item.name)
+                    .where((name) => name != null)
+                    .cast<String>()
+                    .toList();
+                                        return EasyAutocomplete(
+                                          // progressIndicatorBuilder:
+                                          //     const CircularProgressIndicator(),
+                                          controller: itemNameControl,
+                                          inputTextStyle: const TextStyle(
+                                              fontFamily: 'poppins', fontSize: 14),
+                                          suggestionTextStyle:
+                                              const TextStyle(fontFamily: 'poppins'),
+                                          decoration:  InputDecoration(
+                                                                  //               suffixIcon:  Visibility(
+                                                                  //   visible: enableBarcode,
+                                                                  //   child: IconButton(
+                                                                  //       onPressed: () {
+                                                                  //         searchProductBarcode();
+                                                                  //       },
+                                                                  //       icon: const Icon(Icons.document_scanner)),
+                                                                  // ),
+                                            contentPadding: EdgeInsets.symmetric(
+                                                vertical: 10, horizontal: 5),
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          suggestions: itemNameListDisplay,
+                                          onChanged: (value) {
+                                            // print('onChanged value: $value');
+                                          },
+                                          onSubmitted: (value) async{
+                                            // clearValue();
+                                            // itemNameControl.text = '';
+                                            // setState(() {
+                                              final selectedItem = 
+                                              itemCodeViseChek 
+                                              ? snapshot.data!.firstWhere(
+                                                (element) => element.code == value)
+                                              : snapshot.data!.firstWhere(
+                                                (element) => element.name == value,
                                               );
-                                              Future<double?> rateFuture;
-                                              if (salesTypeData!.rateType == 'MRP') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.sellingPrice);
-                                              } else if (salesTypeData!.rateType ==
-                                                  'WHOLESALE') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.wholeSalePrice);
-                                              } else if (salesTypeData!.rateType ==
-                                                  'RETAIL') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.retailPrice);
-                                              } else if (salesTypeData!.rateType ==
-                                                  'SPRETAIL') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.spRetailPrice);
-                                              } else if (rateType == '1') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.sellingPrice);
-                                              } else if (rateType == '2') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.retailPrice);
-                                              } else if (rateType == '3') {
-                                                rateFuture = Future.value(
-                                                    selectedVariant.wholeSalePrice);
-                                              } else {
-                                                rateFuture = Future.value(null);
+                                               itemNameControl.text = selectedItem.name!;
+                                              _dropDownUnit = 0;
+                                              rate = 0;
+                                              quantity = 0;
+                                              _quantityController.text = '';
+                                              _discountController.text = '';
+                                              _discountPercentController.text = '';
+                                              tax = 0;
+                                              _rateController.text = '';
+                                              discount = 0;
+                                              discountPercent = 0;
+                                              subTotal = 0;
+                                              total = 0;
+                                              gross = 0;
+                                        
+                                              selectedQuantity =
+                                                  selectedItem.quantity.toString();
+                                              selectedItemId = selectedItem.id!;
+                                               fetchedData = selectedItemId != null
+                                                 ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                                 ? isStockProductOnlyInSalesQO
+                                        ? await api.fetchNoStockVariants(selectedItemId.toString())
+                                        : await api.fetchStockVariants(selectedItemId!)
+                                        : await api.fetchStockVariants(selectedItemId!)
+                                                  : null;
+                                              if (fetchedData != null) {
+                                                fetchedData.listen((variants) {
+                                                  selectedVariant = variants.firstWhere(
+                                                    (element) =>
+                                                        element.itemId == selectedItemId,
+                                                    orElse: () => StockProduct.empty(),
+                                                  );
+                                                  Future<double?> rateFuture;
+                                                  if (salesTypeData!.rateType == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.spRetailPrice);
+                                                  } else if (rateType == '1') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (rateType == '2') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (rateType == '3') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else {
+                                                    rateFuture = Future.value(null);
+                                                  }
+                                                  rateFuture.then((rate) {
+                                                    if (rate != null) {
+                                                      _rateController.text =
+                                                          rate.toStringAsFixed(2);
+                                                       
+                                                    }
+                                                  });
+                                                   salesTypeData!.type != 'SALES-ES' 
+                                                   ?taxP = selectedVariant.tax! ?? 0
+                                                   :taxP = 0;
+                                                });
                                               }
-                                              rateFuture.then((rate) {
-                                                if (rate != null) {
-                                                  _rateController.text =
-                                                      rate.toStringAsFixed(2);
-                                                   
-                                                }
-                                              });
-                                              taxP = selectedVariant.tax! ?? 0;
-                                            });
-                                          }
-                                        });
-                                        // print('onSubmitted value: $selectedItemId');
-                                      },
+                                            // });
+                                            // print('onSubmitted value: $selectedItemId');
+                                          },
+                                        );
+                                      }
                                     ),
                                   ),
                                    Visibility(
@@ -5503,9 +5682,12 @@ void _onTabTapped(int index) {
                               StreamBuilder(
                                 stream: selectedItemId != null
                                    ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                   ? isStockProductOnlyInSalesQO
                                     ? api.fetchNoStockVariants(selectedItemId.toString())
                                     : api.fetchStockVariants(selectedItemId!)
-                                    : api.fetchStockVariants(0),
+                                    // : api.fetchStockVariants(0)
+                                    :api.fetchStockVariants(selectedItemId!)
+                                    :api.fetchStockVariants(0),
                                 builder: (context, snapshot) {
                                   // if (snapshot.connectionState ==
                                   //     ConnectionState.waiting) {
@@ -5937,6 +6119,7 @@ void _onTabTapped(int index) {
                                                                         onChanged:(value) {
                                                                           setState(() {
                                                                             _dropDownUnit = int.tryParse(value!)!;
+                                                                            calculate();
                                                                             // for (var i = 0;
                                                                             //     i < unitListData.length;
                                                                             //     i++) {
@@ -6028,7 +6211,9 @@ void _onTabTapped(int index) {
                                             const SizedBox(
                                               width: 5,
                                             ),
-                                            Expanded(
+                                            salesTypeData!.type == 'SALES-ES'
+                                            ?SizedBox()
+                                           : Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
                                                       margin:
@@ -6061,6 +6246,18 @@ void _onTabTapped(int index) {
                                                                   'With Tax'),
                                                             ),
                                                             DropdownMenuItem(
+                                                              onTap: () {
+                                                                salesTypeData!
+                                                                              .id ==
+                                                                          1 ||
+                                                                      salesTypeData!
+                                                                              .id ==
+                                                                          2 ?
+                                                                          selectedTaxOption == 'Without Tax'
+                                                                          ? Fluttertoast.showToast(msg: "Can't select")
+                                                                          :null
+                                                                          :null;
+                                                              },
                                                               enabled: salesTypeData!
                                                                               .id ==
                                                                           1 ||
@@ -6315,7 +6512,9 @@ void _onTabTapped(int index) {
                                         const SizedBox(
                                           height: 10,
                                         ),
-                                        SizedBox(
+                                        salesTypeData!.type == 'SALES-ES'
+                                        ?SizedBox()
+                                       : SizedBox(
                                           width:
                                               MediaQuery.of(context).size.width,
                                           child: Row(children: [
@@ -6472,35 +6671,67 @@ void _onTabTapped(int index) {
                               )
                       ],
                     ),
-                  );
-                },
-                error: (error, stackTrace) => Center(
-                  child: Text(error.toString()),
-                ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-          //  FutureBuilder<List<StockItem>>(
-          //   future: fetchStockProducts(itemNameControl.text),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.waiting) {
-          //       return const Center(child: CircularProgressIndicator());
-          //     } else if (snapshot.hasError) {
-          //       return Center(child: Text('Error: ${snapshot.error}'));
-          //     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  ),
+             
+              // if (snapshot.connectionState == ConnectionState.waiting) {
+              //   return const Center(child: CircularProgressIndicator());
+              // } else
+          //      if (snapshot.hasError) {
+          //   return AlertDialog(
+          //     title: const Text(
+          //       'An Error Occurred!',
+          //       textAlign: TextAlign.center,
+          //       style: TextStyle(
+          //         color: Colors.redAccent,
+          //       ),
+          //     ),
+          //     content: Text(
+          //       "${snapshot.error}",
+          //       style: const TextStyle(
+          //         color: Colors.blueAccent,
+          //       ),
+          //     ),
+          //     actions: <Widget>[
+          //       TextButton(
+          //         child: const Text(
+          //           'Go Back',
+          //           style: TextStyle(
+          //             color: Colors.redAccent,
+          //           ),
+          //         ),
+          //         onPressed: () {
+          //           Navigator.of(context).pop();
+          //         },
+          //       )
+          //     ],
+          //   );
+          // } 
+          // else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           //       return const Center(child: Text('No items found'));
-          //     } else {
-          //       final itemNameListDisplay = snapshot.data!
-          //           .map((item) => item.name)
-          //           .where((name) => name != null)
-          //           .cast<String>()
-          //           .toList();
-
-          //       return
-          //     }
+          //     } 
+          //     return const Center(
+          //   child: Column(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: <Widget>[
+          //       CircularProgressIndicator(),
+          //       SizedBox(height: 20),
+          //       Text('This may take some time..')
+          //     ],
+          //   ),
+          // );
+              
           //   },
           // ),
+                 
+              //   },
+              //   error: (error, stackTrace) => Center(
+              //     child: Text(error.toString()),
+              //   ),
+              //   loading: () => const Center(
+              //     child: CircularProgressIndicator(),
+              //   ),
+              // ),
+         
           bottomNavigationBar: Container(
             width: MediaQuery.of(context).size.width,
             // decoration: const BoxDecoration(
@@ -6835,7 +7066,6 @@ void _onTabTapped(int index) {
                       splashColor: Colors.white,
                       onTap: () {
                         editItem ? setState(() {
-                          
                         print(selectedVariant.name);
                         calculateText(selectedVariant);
                         setState(() {
@@ -6963,8 +7193,7 @@ void _onTabTapped(int index) {
                                           : 0;
                                       _conversion = unitedValue!;
                                     }
-                                    isUnit =
-                                        _dropDownUnit > 0 ? true : false;
+                                    isUnit =_dropDownUnit > 0 ? true : false;
                                     if (unitData.isEmpty && !isUnit) {
                                       unitValue = 1;
                                       _conversion = 0;
@@ -6976,7 +7205,7 @@ void _onTabTapped(int index) {
                                   }
                                   if (isUnit) {
                                     if (editItem) {
-                                      unitValue = cartModel!.unitValue!;
+                                      // unitValue = cartModel!.unitValue!;
                                       cartItem[position!].adCess = adCess;
                                       cartItem[position!].quantity =
                                           quantity;
@@ -7021,6 +7250,7 @@ void _onTabTapped(int index) {
                                       cartItem[position!].stock =
                                           selectedVariant.quantity;
                                       editItem = false;
+                                      calculateTotal();
                                     }
                                      else {
                                       addProduct(

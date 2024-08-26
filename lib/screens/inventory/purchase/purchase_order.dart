@@ -69,10 +69,14 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       realPRATEBASEDPROFITPERCENTAGE = false;
   int locationId = 1, salesManId = 0, decimal = 2;
   VoucherType? voucherTypeData;
+  Future<List<ProductPurchaseModel>>? _purchaseProductsFuture;
+  Future<List<DataJson>>? _getSalesListData; 
 
   @override
   void initState() {
     super.initState();
+    _purchaseProductsFuture = dio.fetchAllProductPurchase();
+    _getSalesListData = dio.getSalesListData('', 'sales_list/supplier');
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
@@ -645,6 +649,28 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                               )),
                                                ],
                                           ),
+                                          Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Tax',
+                                    style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  Checkbox(
+                                    checkColor: white,
+                                    activeColor: kPrimaryColor,
+                                    value: isTax,
+                                    onChanged: (bool? value) {
+                                      setState(() {
+                                        isTax = value!;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              )
                      ],
                    ),
                  ),
@@ -671,11 +697,11 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       height: 4,
                      ),
                        FutureBuilder<List<dynamic>>(
-                                  future: dio.getSalesListData('', 'sales_list/supplier'),
+                                  future: _getSalesListData,
                                   builder: (context, snapshot) {
-                                    // if(snapshot.connectionState == ConnectionState.waiting){
-                                    //  return CircularProgressIndicator();
-                                    // }
+                                    if(snapshot.connectionState == ConnectionState.waiting){
+                                     return const Center(child: CircularProgressIndicator());
+                                    }
                                     if (snapshot.hasError) {
                                       return Text('Error: ${snapshot.error}');
                                     } else if (!snapshot.hasData) {
@@ -799,6 +825,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                             editItem = true;
                                         position = index;
                                         cartModel = cartItem.elementAt(position!);
+                                        debugPrint(cartModel!.unitValue.toString());
                                         selectedProducteId = 
                                         cartModel!.id;
                                         productNameController.text =
@@ -829,7 +856,11 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                             tax = cartModel!.tax;
                                             taxP = cartModel!.taxP;
                                             total = cartModel!.total;
-                                            
+                                            unitValue = cartModel!.unitValue;
+                                            unit = DataJson(
+                                              id: cartModel!.unitId,
+                                              name: cartModel!.unitName,
+                                            );
                                         // _serialNoController.text =
                                         //     cartModel.serialNo;
                                             nextWidget = 1;
@@ -1371,9 +1402,20 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
   int? selectedProducteId;
   var selectedItem;
   String? selectedTaxOption = 'With Tax';
-
+   List<UnitModel> unitListData = [];
    addItemWidget(){
     List<UnitModel> unitList = [];
+    if (editItem) {
+       unitValue = cartModel!.unitValue;
+       taxP = cartItem.elementAt(position!).taxP;
+       tax = cartItem.elementAt(position!).tax;
+        unit = DataJson(
+                                              id: cartModel!.unitId,
+                                              name: cartModel!.unitName,
+                                            );
+
+     calculateTotal();                                       
+    }
     //  if (editItem) {
     //   // adCessPer = double.tryParse(productModel['adcessper'].toString());
     //   // cessPer = double.tryParse(productModel['cessper'].toString());
@@ -1585,7 +1627,141 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
             : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
       }
 
-      // unitValue = _conversion > 0 ? _conversion : 1;
+      unitValue = conversion > 0 ? conversion : 1;
+    }
+    calculateConversion() {
+      quantity = (controllerQuantity.text.isNotEmpty
+          ? double.tryParse(controllerQuantity.text)
+          : 0)!;
+      rate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+           if (enableMULTIUNIT) {
+        if (currentRate > 0) {
+          if (conversion > 0 && !isPrateEdited) {
+            if (focusNodeRate.hasFocus ) {
+              rate = double.tryParse(controllerRate.text)?? 0;
+              // rate = double.tryParse(_rateController.text) * _conversion;
+              // lastRateStatus = false;
+            } else {
+              rate =  (currentRate * conversion);
+              // rate = saleRate; // * _conversion;
+              controllerRate.text = rate.toStringAsFixed(decimal);
+            }
+            
+          } else {
+            rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+          }
+        }
+       else {
+        rate = (controllerRate.text.isNotEmpty
+            ? double.tryParse(controllerRate.text)
+            : 0) ?? 0;
+      }
+      }
+      else{
+        if (focusNodeRate.hasFocus) {
+         rate =  double.tryParse(controllerRate.text) ?? 0 ; 
+        } else if (currentRate > 0){
+          controllerRate.text = currentRate.toStringAsFixed(decimal);
+          rate = currentRate;
+        } else{
+           rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+        }
+      }
+        if (isPrateEdited) {
+         rate = double.tryParse(controllerRate.text)?? 0;
+         currentRate = rate;
+      }
+      if (focusNodeDiscountPer.hasFocus) {
+        controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
+            ? (((quantity * rate) * discountPer) / 100).toStringAsFixed(2)
+            : '';
+        discount = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        discountPer = (double.tryParse(controllerDiscountPer.text))?? 0;
+      }
+
+      if (focusNodeDiscount.hasFocus) {
+        controllerDiscountPer.text = controllerDiscount.text.isNotEmpty
+            ? ((discount * 100) / (quantity * rate)).toStringAsFixed(2)
+            : '';
+        discountPer = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        double.tryParse(controllerDiscount.text);
+      }
+      // discount = (controllerDiscount.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscount.text)
+      //     : 0)!;
+      // discountPer = (controllerDiscountPer.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscountPer.text)
+      //     : 0)!;
+      
+      rRate = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
+          : rate;
+      rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, ((discount * 100) / (taxP + 100)))
+          : discount;
+      subTotal = CommonService.getRound(decimal, (rate * quantity));
+      net = CommonService.getRound(decimal, (subTotal - discount));
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+        csGST = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+      total = CommonService.getRound(
+          decimal, (net + csGST + csGST + iGST + cess + adCess));
+      // total = net + tax;
+      if (mrp > 0) {
+        profitPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(decimal, (((mrp - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((mrp - rate) * 100) / rate));
+      }
+      if (retail > 0) {
+        retailPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((retail - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((retail - rate) * 100) / rate));
+      }
+      if (wholeSale > 0) {
+        wholesalePer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((wholeSale - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((wholeSale - rate) * 100) / rate));
+      }
+      if (spRetail > 0) {
+        spRetailPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((spRetail - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((spRetail - rate) * 100) / rate));
+      }
+      if (branch > 0) {
+        branchPer = realPRATEBASEDPROFITPERCENTAGE
+            ? CommonService.getRound(
+                decimal, (((branch - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
+      }
+
+      unitValue = conversion > 0 ? conversion : 1;
     }
 
     calculateRate() {
@@ -1644,14 +1820,16 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       height: 3,
                     ),
                      FutureBuilder(
-                            future: dio.fetchAllProductPurchase(),
+                            future: _purchaseProductsFuture,
                             builder: (context, snapshot) {
-                              if (snapshot.hasError) {
+                               if (snapshot.connectionState == ConnectionState.waiting){
+                                return  const Center(
+                                  child: CircularProgressIndicator());
+                              }
+                             else if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               }
-                              //  else if (snapshot.connectionState == ConnectionState.waiting){
-                              //    isLoading == true;
-                              // }
+                               
                               else if (!snapshot.hasData) {
                                 return const Text('No data found');
                               }
@@ -1687,9 +1865,15 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   controllerQuantity.text = '';
                                   controllerDiscountPer.text = '';
                                   controllerDiscount.text = '';
+                                  controllerRate.text = '';
+                                  controllerMrp.text = '';
+                                  controllerBranch.text = '';
+                                  controllerRetail.text = '';
+                                  controllerWholeSale.text = '';
                                   unitValue = 1;
                                   _dropDownUnit = 0;
                                   rate = 0;
+                                  currentRate =0;
                                   // currentRate = 0;
                                   // rPRate = 0;
                                   mrp = 0;
@@ -1699,6 +1883,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   branch = 0;
                                   // grossTotal = 0;
                                   net = 0;
+                                  taxP = 0 ;
                                   tax = 0 ;
                                   total = 0;
                                   discountPer = 0;
@@ -1711,10 +1896,13 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                       .fetchProductPrize(selectedProducteId!);
                                  
                                   productModelPrize = fetchedPrice.toList();
+                                  taxP = selectedItem.tax ?? 0;
+                                  // tax = selectedItem.tax ?? 0;
                           
                                  adCessPer = double.tryParse(selectedItem.adCessPer.toString())!;
       cessPer = double.tryParse(selectedItem.cessPer.toString())!;
       taxP = double.tryParse(selectedItem!.tax.toString())?? 0;
+      // tax = double.tryParse(selectedItem!.tax.toString())?? 0;
       // kfcP = double.tryParse(selectedItem!.KFC.toString())?? 0;
       rate = double.tryParse(productModelPrize[0]['prate'].toString())!;
       if (rate > 0 && !editableRate) {
@@ -1741,88 +1929,6 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       if (branch > 0 && !editableBranch) {
         controllerBranch.text = branch.toString();
       }
-                                //     currentRate =
-                                //   double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
-                                //   pRate = currentRate;
-                                //   if (pRate > 0 && !focusNodeRate.hasFocus) {
-                                //   controllerRate.text = pRate.toString();
-                                //    }
-                                //    else {
-                                //     controllerRate.text = '';
-                                //   }
-                                //    if (currentRate > 0 && !focusNodeRate.hasFocus &&
-                                //    controllerRate.text.isEmpty) {
-                                //    controllerRate.text = _conversion > 0
-                                //    ? (pRate * _conversion).toStringAsFixed(decimal)
-                                //    : pRate.toStringAsFixed(decimal);
-                                //    pRate = _conversion > 0 ? pRate * _conversion : pRate;
-                                //  }
-                                 
-                                 
-                                //    double.tryParse(productModelPrize[0]['realprate'].toString()) == 0
-                                //    ? 0
-                                //    : rPRate =
-                                //    double.tryParse(productModelPrize[0]['realprate'].toString()) ??
-                                //    0;
-                          
-                                //   // pRate = double.tryParse(
-                                //   //         productModelPrize[0]['prate'].toString()) ??
-                                //   //     0;
-                                //   // if (pRate > 0 && !focusNodeRate.hasFocus) {
-                                //   //   controllerRate.text = pRate.toString();
-                                //   // } else {
-                                //   //   controllerRate.text = '';
-                                //   // }
-                          
-                                //   // rPRate = double.tryParse(productModelPrize[0]
-                                //   //             ['realprate']
-                                //   //         .toString()) ??
-                                //   //     0;
-                                //   mrp = double.tryParse(
-                                //           productModelPrize[0]['mrp'].toString()) ??
-                                //       0;
-                                //   if (mrp > 0 && !focusNodeMrp.hasFocus) {
-                                //     controllerMrp.text = mrp.toString();
-                                //   } else {
-                                //     controllerMrp.text = '';
-                                //   }
-                          
-                                //   retail = double.tryParse(productModelPrize[0]
-                                //               ['retail']
-                                //           .toString()) ??
-                                //       0;
-                                //   if (retail > 0 && !focusNodeRetail.hasFocus) {
-                                //     controllerRetail.text = retail.toString();
-                                //   } else {
-                                //     controllerRetail.text = '';
-                                //   }
-                          
-                                //   wholeSale = double.tryParse(productModelPrize[0]
-                                //               ['wsrate']
-                                //           .toString()) ??
-                                //       0;
-                                //   if (wholeSale > 0 && !focusNodeWholeSale.hasFocus) {
-                                //     controllerWholeSale.text = wholeSale.toString();
-                                //   } else {
-                                //     controllerWholeSale.text = '';
-                                //   }
-                          
-                                //   spRetail = double.tryParse(productModelPrize[0]
-                                //               ['spretail']
-                                //           .toString()) ??
-                                //       0;
-                                //   branch = double.tryParse(productModelPrize[0]
-                                //               ['branch']
-                                //           .toString()) ??
-                                //       0;
-                                //   if (branch > 0 && !focusNodeBranch.hasFocus) {
-                                //     controllerBranch.text = branch.toString();
-                                //   } else {
-                                //     controllerBranch.text = '';
-                                //   }
-                          
-                                //   taxP = selectedItem.tax ?? 0;
-                                
                                 },
                               );
                             },
@@ -1866,7 +1972,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
                                     setState(() {
-                                      calculate();
+                                      calculateConversion();
                                     });
                                   },
                                 ),
@@ -1877,111 +1983,218 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                         const SizedBox(
                           width: 4,
                         ),
-                        Visibility(
-                        visible: enableMULTIUNIT,
-                        child: Expanded(
-                          child: FutureBuilder(
-                            future: dio.fetchUnitOf(selectedProducteId?? 0),
-                            builder: (BuildContext context,
-                                AsyncSnapshot snapshot) {
-                              if (snapshot.hasData) {
-                                unitList.clear();
-                                for (var i = 0;
-                                    i < snapshot.data.length;
-                                    i++) {
-                                  if (defaultUnitID.toString().isNotEmpty) {
-                                    if (snapshot.data[i].id ==
-                                        defaultUnitID! - 1) {
-                                      _dropDownUnit = snapshot.data[i].id;
-                                      conversion =
-                                          snapshot.data[i].conversion;
-                                    }
-                                  }
-                                  unitList.add(UnitModel(
-                                      id: snapshot.data[i].id,
-                                      itemId: snapshot.data[i].itemId,
-                                      conversion: snapshot.data[i].conversion,
-                                      name: snapshot.data[i].name,
-                                      pUnit: snapshot.data[i].pUnit,
-                                      sUnit: snapshot.data[i].sUnit,
-                                      unit: snapshot.data[i].unit,
-                                      rate: ''));
-                                }
-                              }
-                              return snapshot.hasData
-                                  ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                        const Text(' Unit',
-                                        style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),),
-                                        const SizedBox(
-                                        height: 2,
-                                        ),
-                                      Container(
-                                        height: 40,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 5
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: grey),
-                                          borderRadius: BorderRadius.circular(3)
-                                        ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            isExpanded: true,
-                                              hint: Text(_dropDownUnit > 0
-                                                  ? UnitSettings.getUnitName(
-                                                      _dropDownUnit)
-                                                  : 'SKU',
-                                                  style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),
-                                                  ),
-                                              items: snapshot.data
-                                                  .map<DropdownMenuItem<String>>(
-                                                      (item) {
-                                                return DropdownMenuItem<String>(
-                                                  value: item.id.toString(),
-                                                  child: Text(item.name,style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),),
-                                                );
-                                              }).toList(),
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _dropDownUnit =
-                                                      int.tryParse(value!)!;
-                                                  for (var i = 0;
-                                                      i < unitList.length;
-                                                      i++) {
-                                                    UnitModel _unit = unitList[i];
-                                                    if (_unit.unit ==
-                                                        int.tryParse(value)) {
-                                                      conversion = _unit.conversion!;
-                                                      break;
-                                                    }
+                      Visibility(
+                          visible: enableMULTIUNIT,
+                          child: Expanded(
+                              child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(' Unit',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400)),
+                              Visibility(
+                                visible: enableMULTIUNIT,
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: selectedProducteId == null
+                                      ? SizedBox()
+                                      : FutureBuilder(
+                                          future: dio.fetchUnitOf(editItem
+                                              ? cartItem[position!].itemId
+                                              : selectedProducteId!),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot snapshot) {
+                                            if (snapshot.hasData) {
+                                              unitListData.clear();
+                                              for (var i = 0;
+                                                  i < snapshot.data.length;
+                                                  i++) {
+                                                if (defaultUnitID
+                                                    .toString()
+                                                    .isNotEmpty) {
+                                                  if (snapshot.data[i].id ==
+                                                      defaultUnitID! - 1) {
+                                                    _dropDownUnit =
+                                                        snapshot.data[i].id;
+                                                    conversion = snapshot
+                                                        .data[i].conversion;
+                                                    unit = DataJson(
+                                                        id: snapshot.data[i].id,
+                                                        name: snapshot
+                                                            .data[i].name);
                                                   }
-                                                  calculate();
-                                                });
-                                              },
-                                            ),
+                                                }
+                                                unitListData.add(UnitModel(
+                                                    id: snapshot.data[i].id,
+                                                    itemId:
+                                                        snapshot.data[i].itemId,
+                                                    conversion: snapshot
+                                                        .data[i].conversion,
+                                                    name: snapshot.data[i].name,
+                                                    pUnit:
+                                                        snapshot.data[i].pUnit,
+                                                    sUnit:
+                                                        snapshot.data[i].sUnit,
+                                                    unit: snapshot.data[i].unit,
+                                                    rate:
+                                                        snapshot.data[i].rate));
+                                              }
+                                            }
+                                            return snapshot.data != null &&
+                                                    snapshot.data.length > 0
+                                                ? DropdownButtonHideUnderline(
+                                                    child:
+                                                        DropdownButton<String>(
+                                                      isExpanded: true,
+                                                      hint: Text(
+                                                        _dropDownUnit > 0
+                                                            ? UnitSettings
+                                                                .getUnitName(
+                                                                    _dropDownUnit)
+                                                            : 'Unit',
+                                                        style: const TextStyle(
+                                                            color: black,
+                                                            fontFamily: 'poppins',
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w400),
+                                                      ),
+                                                      items: snapshot.data.map<
+                                                          DropdownMenuItem<
+                                                              String>>((item) {
+                                                        return DropdownMenuItem<
+                                                            String>(
+                                                          value: item.id
+                                                              .toString(),
+                                                          child: Text(
+                                                            item.name,
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontFamily: 'poppins',
+                                                                    fontSize:
+                                                                        12,
+                                                                    color:
+                                                                        black),
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _dropDownUnit =
+                                                              int.tryParse(
+                                                                  value!)!;
+                                                          // for (var i = 0;
+                                                          //     i < unitListData.length;
+                                                          //     i++) {
+                                                          UnitModel _unit =
+                                                              unitListData.firstWhere(
+                                                                  (element) =>
+                                                                      element
+                                                                          .id ==
+                                                                      _dropDownUnit);
+                                                          // if (_unit.unit == int.tryParse(value)) {
+                                                          // if (_unit.rate.isNotEmpty) {
+                                                          // rateTypeItem = rateTypeList
+                                                          //     .firstWhere((element) =>
+                                                          //         element.name ==
+                                                          //         _unit.rate);
+                                                          // }
+                                                          conversion =
+                                                              _unit.conversion!;
+
+                                                          unit = DataJson(
+                                                              id: _unit.id,
+                                                              name: _unit.name);
+                                                          // break;
+                                                          // }
+                                                          // }
+                                                          calculate();
+                                                        });
+                                                      },
+                                                    ),
+                                                  )
+                                                : DropdownButtonHideUnderline(
+                                                    child:
+                                                        DropdownButton<String>(
+                                                      isExpanded: true,
+                                                      hint: Text(
+                                                        _dropDownUnit > 0
+                                                            ? UnitSettings
+                                                                .getUnitName(
+                                                                    _dropDownUnit)
+                                                            : 'Unit',
+                                                        style: const TextStyle(
+                                                            color: black,
+                                                            fontSize: 12,
+                                                            fontFamily: 'poppins',
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w400),
+                                                      ),
+                                                      items: unitListSettings.map<
+                                                          DropdownMenuItem<
+                                                              String>>((item) {
+                                                        return DropdownMenuItem<
+                                                            String>(
+                                                          value: item.key
+                                                              .toString(),
+                                                          child: Text(
+                                                            item.value,
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                        fontFamily: 'poppins',
+                                                                    color:
+                                                                        black),
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _dropDownUnit =
+                                                              int.tryParse(
+                                                                  value!)!;
+                                                          // UnitModel _unit =
+                                                          //     unitListData.firstWhere((element) =>
+                                                          //         element.id == _dropDownUnit);
+                                                          //          _conversion = _unit.conversion!;
+                                                          // for (var i = 0;
+                                                          //     i < unitListData.length;
+                                                          //     i++) {
+                                                          //   UnitModel _unit = unitListData[i];
+                                                          //   if (_unit.unit ==
+                                                          //       int.tryParse(value)) {
+                                                          //     _conversion = _unit.conversion;
+                                                          //     break;
+                                                          //   }
+                                                          // }
+                                                          calculateConversion();
+                                                          unit = DataJson(
+                                                              id: _dropDownUnit,
+                                                              name: UnitSettings
+                                                                  .getUnitName(
+                                                                      _dropDownUnit));
+                                                        });
+                                                      },
+                                                    ),
+                                                  );
+                                          },
                                         ),
-                                      ),
-                                    ],
-                                  )
-                                  : Container();
-                            },
-                          ),
-                        ),
-                      ),
+                                ),
+                              ),
+                            ],
+                          )),
+                        )
                       ],
                     ),
                      const SizedBox(
@@ -2022,6 +2235,9 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
                                     setState(() {
+                                      if (value.isNotEmpty) {
+                                        isPrateEdited = true;
+                                      }
                                       calculate();
                                     });
                                   },
@@ -2264,7 +2480,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                 onChanged: (value) {
                                   setState(() {
                                     discountPer = double.tryParse(value) ?? 0;
-                                    calculate();
+                                    calculateConversion();
                                   });
                                 },
                                 decoration: InputDecoration(
@@ -2338,7 +2554,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                 onChanged: (value) {
                                   setState(() {
                                     discount = double.tryParse(value) ?? 0;
-                                    calculate();
+                                    calculateConversion();
                                   });
                                 },
                               ),
@@ -3255,6 +3471,9 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       if (cartItem.isNotEmpty) {
                         editItem = false;
                         // nextWidget = 0;
+                        Fluttertoast.showToast(
+                          backgroundColor: green,
+                          msg: 'Product Saved');
                         clearValue();
                         calculateTotal();
                       }
@@ -3295,6 +3514,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     else {
                      setState(() {
                       unit ??= DataJson(id: 0, name: '');
+                      debugPrint(unitValue.toString());
                       rate = (controllerRate.text.isNotEmpty
                           ? double.tryParse(controllerRate.text)
                           : rate)!;
@@ -3415,6 +3635,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       }
                       if (cartItem.isNotEmpty ) {
                         editItem = false;
+                        debugPrint(unitValue.toString());
                         nextWidget = 0;
                         clearValue();
                         calculateTotal();
@@ -3481,7 +3702,11 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     },
                     child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 80,
+                        // height: 80,
+                        constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                         decoration: BoxDecoration(
                           color: white,
                           borderRadius: BorderRadius.circular(3),
@@ -3494,85 +3719,87 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                           ],
                         ),
                         padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dataDisplay[index]['Name'],
+                                      // maxLines: 1,
+                                      style: const TextStyle(
+                                        // fontSize: 16,
+                                        color: ColorPalette.timberGreen,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Date :${dataDisplay[index]['Date']}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 5,
+                                            top: 2,
+                                            right: 5,
+                                          ),
+                                          child: Icon(
+                                            Icons.circle,
+                                            size: 5,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
+                                        Text(
+                                          'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      'Total',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ColorPalette.nileBlue,
+                                      ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                            '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         )
                         // ListTile(
                         //   title: Text(dataDisplay[index]['Name']),
@@ -4231,6 +4458,7 @@ selectLedgerWidget() {
       editableRate = false,
       editableQuantity = false,
       editableDiscount = false,
+      isPrateEdited = false,
       editableDiscountP = false;
 
   itemDetailWidget() {
@@ -5254,7 +5482,7 @@ selectLedgerWidget() {
         Navigator.pushReplacementNamed(context, '/purchaseOrder');
          Fluttertoast.showToast(
           backgroundColor: green,
-          msg: 'Sale Bill Deleted'); 
+          msg: 'Bill Deleted'); 
         // showDialog(
         //   context: context,
         //   builder: (BuildContext context) {

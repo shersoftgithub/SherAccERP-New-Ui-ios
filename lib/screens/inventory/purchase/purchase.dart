@@ -53,6 +53,8 @@ class _PurchaseState extends State<Purchase> {
   double _balance = 0;
   List<dynamic> otherAmountList = [];
   VoucherType? voucherTypeData;
+  Future<List<dynamic>>? _getSupplierListData;
+  Future<List<ProductPurchaseModel>>? _fetchAllProductPurchase;
 
   bool isTax = true,
       _isCashBill = false,
@@ -88,6 +90,7 @@ class _PurchaseState extends State<Purchase> {
   List<SerialNOModel> serialNoData = [];
   bool enableMULTIUNIT = false,
       cessOnNetAmount = false,
+      supplierOnly = false,
       enableKeralaFloodCess = false,
       useUniqueCodeAaBarcode = false,
       useOldBarcode = false,
@@ -107,6 +110,8 @@ class _PurchaseState extends State<Purchase> {
   @override
   void initState() {
     super.initState();
+    
+    _fetchAllProductPurchase = api.fetchAllProductPurchase();
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
@@ -117,6 +122,10 @@ class _PurchaseState extends State<Purchase> {
       });
     });
     loadSettings();
+     _getSupplierListData = 
+    supplierOnly 
+    ? api.getLedgerListByType('SelectSupplierOnly')
+    : api.getLedgersAll();
     setCursorPosition();
   }
   
@@ -132,7 +141,7 @@ class _PurchaseState extends State<Purchase> {
         ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
     acId = mainAccount.firstWhere((element) => element['LedName'] == cashAc,
         orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode'];
-
+    supplierOnly = ComSettings.getStatus('PURCHASE ENTRY SUPPLIER ONLY', settings);
     taxMethod = companySettings.taxCalculation!;
     enableMULTIUNIT = ComSettings.getStatus('ENABLE MULTI-UNIT', settings);
     companyTaxMode = ComSettings.getValue('PACKAGE', settings);
@@ -659,7 +668,11 @@ class _PurchaseState extends State<Purchase> {
               } else {
                 return Container(
                     margin: const EdgeInsets.symmetric(vertical: 2),
-                    height: 80,
+                    // height: 80,
+                    constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                     decoration: BoxDecoration(
                       color: white,
                       borderRadius: BorderRadius.circular(3),
@@ -672,95 +685,97 @@ class _PurchaseState extends State<Purchase> {
                       ],
                     ),
                     padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dataDisplay[index]['Name'],
-                                  // maxLines: 1,
-                                  style: const TextStyle(
-                                    // fontSize: 16,
-                                    color: ColorPalette.timberGreen,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Date :${dataDisplay[index]['Date']}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 5,
-                                        top: 2,
-                                        right: 5,
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                      child: Icon(
-                                        Icons.circle,
-                                        size: 5,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showEditDialog(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showEditDialog(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorPalette.nileBlue,
+                          Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              onTap: () {
+                                showDetails(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showDetails(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ));
                 // return Card(
                 //   elevation: 3,
@@ -1585,11 +1600,11 @@ class _PurchaseState extends State<Purchase> {
                                 height: 3,
                               ),
                               FutureBuilder(
-                                future: api.getSupplierListData(query),
+                                future: _getSupplierListData,
                                 builder: (context, snapshot) {
-                                  // if(snapshot.connectionState == ConnectionState.waiting){
-                                  //  return CircularProgressIndicator();
-                                  // }
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(child: CircularProgressIndicator());
+                                  }
                                   if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else if (!snapshot.hasData) {
@@ -1599,7 +1614,7 @@ class _PurchaseState extends State<Purchase> {
                                   final supplierList = snapshot.data;
 
                                   final names = supplierList!
-                                      .map((e) => e.name)
+                                      .map((e) => e['LedName'])
                                       .where((name) => name != null)
                                       .cast<String>()
                                       .toList();
@@ -1635,9 +1650,9 @@ class _PurchaseState extends State<Purchase> {
                                       setState(() {
                                         final selectedSupplier =
                                             supplierList.firstWhere((element) =>
-                                                element.name == value);
+                                             element['LedName'] == value);
                                         selectedSupplierId =
-                                            selectedSupplier.id;
+                                            selectedSupplier['Ledcode'];
 
                                         _isLoading = true;
                                         api
@@ -4568,14 +4583,16 @@ class _PurchaseState extends State<Purchase> {
                         Flexible(
                           flex: 12,
                           child: FutureBuilder(
-                            future: api.fetchAllProductPurchase(),
+                            future:_fetchAllProductPurchase,
                             builder: (context, snapshot) {
                               if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               }
-                              //  else if (snapshot.connectionState == ConnectionState.waiting){
-                              //    isLoading == true;
-                              // }
+                               else if (snapshot.connectionState == ConnectionState.waiting){
+                                 return const Center(
+                                  child: CircularProgressIndicator(),
+                                 );
+                              }
                               else if (!snapshot.hasData) {
                                 return const Text('No data found');
                               }

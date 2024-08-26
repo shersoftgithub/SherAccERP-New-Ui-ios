@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/api_error.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/company_user.dart';
+import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/provider/app_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api.dart';
@@ -955,7 +956,11 @@ class _LandingState extends State<Landing> {
                   Navigator.pushNamedAndRemoveUntil(context, '/manager_home',
                       ModalRoute.withName('/manager_home'),
                       arguments: (_user));
-                } else {
+                } else if(_user.userType.toUpperCase() == 'POS'){
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                  builder: (context) => const PosHomePage(selectedItems: {}),), (route) => false);
+              }
+                else {
                   Navigator.pushNamedAndRemoveUntil(
                       context, '/home', ModalRoute.withName('/home'));
                 }
@@ -985,7 +990,11 @@ class _LandingState extends State<Landing> {
                 Navigator.pushNamedAndRemoveUntil(context, '/manager_home',
                     ModalRoute.withName('/manager_home'),
                     arguments: (_user));
-              } else {
+              } else if(_user.userType.toUpperCase() == 'POS'){
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                  builder: (context) => const PosHomePage(selectedItems: {}),), (route) => false);
+              }
+              else {
                 Navigator.pushNamedAndRemoveUntil(
                     context, '/home', ModalRoute.withName('/home'));
               }

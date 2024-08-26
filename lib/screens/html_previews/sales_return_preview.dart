@@ -17,6 +17,7 @@ import 'package:pdf/pdf.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/print_settings_model.dart';
 import 'package:sheraccerp/models/sales_bill.dart';
@@ -47,7 +48,6 @@ import 'dart:ui' as ui;
 // import 'dart:html' as html;
 // import 'package:sunmi_printer_service/sunmi_printer_service.dart' as sum_mi;
 
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:zxing2/qrcode.dart';
 
 class SalesReturnPreviewShow extends StatefulWidget {
@@ -68,6 +68,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
   bool isEsQrCodeKSA = false; //
   int printerType = 0, printerDevice = 0, printModel = 2;
   bool toggle = true;
+  bool isCashAc = false;
   var eNo = 0, type = 0;
   var companyTaxMode = '';
   List<JsonTableColumn>? columnsVAT, columnsGST, columns;
@@ -297,6 +298,12 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
           _isLoading = false;
 
           List itemIdList = [];
+            AppSettingsMap mapCash = cashAccount.firstWhere(
+            (element) => 
+         element.key.toString() == dataInformation['Customer'].toString(),
+         orElse: () => AppSettingsMap(key: 0,value: ''), );
+
+         isCashAc = mapCash.key.toString() == dataInformation['Customer'].toString() ? true : false;
           dataParticulars.addAll(dataParticularsAll);
 
           data['Particulars'] = dataParticulars;
@@ -342,21 +349,29 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
   @override
   Widget build(BuildContext context) {
     final route =
-        ModalRoute.of(context)!.settings.arguments ;
-    // title = route!['title']!;
+        ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    title = route['title']!;
     return Scaffold(
         appBar: AppBar(
+           leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            iconSize: 20.0,
+            onPressed: () {
+              // Navigator.pushNamed(context, '/salesReturn');
+              Navigator.pushReplacementNamed(context, '/salesReturn');
+            },
+          ),
           // leading: IconButton(onPressed: (){
           //   Navigator.of(context).pop();
           // }, icon: Icon(Icons.arrow_back)),
           // title: Text('$title Preview'),
-          title: const Text('Sales Return Preview'),
+          title:  Text('$title Preview'),
           titleTextStyle: const TextStyle(
             fontFamily: 'poppins'
           ),
           actions: [
             IconButton(
-                icon: const Icon(Icons.picture_as_pdf),
+                icon: Image.asset('assets/icons/ic_pdf.png',scale: 2.6,),
                 onPressed: () {
                   setState(
                     () {
@@ -393,7 +408,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                   );
                 }),
             IconButton(
-                icon: const Icon(Icons.list),
+                icon: Image.asset('assets/icons/ic_menu-bar.png',scale: 2.6,),
                 onPressed: () {
                   argumentsPass = {
                     'mode': 'selectedLedger',
@@ -421,7 +436,7 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
             //       });
             //     }),
             IconButton(
-                icon: const Icon(Icons.print),
+                icon: Image.asset('assets/icons/ic_printer_new.png',scale: 2.8,),
                 onPressed: () {
                   _capturePng().then((value) => {
                         setState(() {
@@ -445,7 +460,6 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
         body: eNo > 0
             ? isInvoiceDesigner!
                 ? invoiceGenerate(context)
-                // : webView()
                 : previewWidget()
             : const Center(child: Text('Not Found')));
   }
@@ -1218,7 +1232,7 @@ double oldBalance = dataInformation == null
         ? SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(5.0),
-              child: _isLoading
+              child: _isLoading 
                   ? const Center(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -2661,59 +2675,62 @@ double oldBalance = dataInformation == null
                                                                 ],
                                                               ),
                                                               Visibility(
-                                                                visible:
-                                                                    oldBalance >
-                                                                            0 ||
-                                                                        balance >
-                                                                            0,
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          right:
-                                                                              10.0),
-                                                                  child: Column(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Row(
-                                                                        children: [
-                                                                          const SizedBox(
-                                                                            child:
-                                                                                Text(
-                                                                              "OB           : ",
-                                                                              style: TextStyle(fontSize: 6),
-                                                                            ),
-                                                                             ),
-                                                                          Text(
-                                                                            double.tryParse(dataInformation['LedgerBalance'].toString())!.toStringAsFixed(decimal!),
-                                                                            style:
-                                                                                const TextStyle(fontSize: 6),
-                                                                          )
-                                                                        ],
-                                                                      ),
-                                                                      Row(
-                                                                        children: [
-                                                                          const SizedBox(
-                                                                            child:
-                                                                                Text(
-                                                                              "Balance  : ",
+                                                                visible: !isCashAc,
+                                                                child: Visibility(
+                                                                  visible:
+                                                                      oldBalance >
+                                                                              0 ||
+                                                                          balance >
+                                                                              0,
+                                                                  child: Padding(
+                                                                    padding:
+                                                                        const EdgeInsets
+                                                                            .only(
+                                                                            right:
+                                                                                10.0),
+                                                                    child: Column(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children: [
+                                                                        Row(
+                                                                          children: [
+                                                                            const SizedBox(
+                                                                              child:
+                                                                                  Text(
+                                                                                "OB           : ",
+                                                                                style: TextStyle(fontSize: 6),
+                                                                              ),
+                                                                               ),
+                                                                            Text(
+                                                                              double.tryParse(dataInformation['LedgerBalance'].toString())!.toStringAsFixed(decimal!),
                                                                               style:
-                                                                                TextStyle(fontSize: 6),
-                                                                            ),
+                                                                                  const TextStyle(fontSize: 6),
+                                                                            )
+                                                                          ],
                                                                         ),
-                                                                          Text(
-                                                                            customerBalance,
-                                                                            style:
-                                                                                const TextStyle(fontSize: 6),
-                                                                          )
-                                                                        ],
-                                                                      ),
-                                                                    ],
+                                                                        Row(
+                                                                          children: [
+                                                                            const SizedBox(
+                                                                              child:
+                                                                                  Text(
+                                                                                "Balance  : ",
+                                                                                style:
+                                                                                  TextStyle(fontSize: 6),
+                                                                              ),
+                                                                          ),
+                                                                            Text(
+                                                                              customerBalance,
+                                                                              style:
+                                                                                  const TextStyle(fontSize: 6),
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
@@ -15343,6 +15360,12 @@ _buildEstimateHeader(
 _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings,
     dataInformation, customerBalance) {
   double oldBalance = double.tryParse(customerBalance)!.toDouble();
+   AppSettingsMap mapCash = cashAccount.firstWhere(
+            (element) => 
+         element.key.toString() == dataInformation['Customer'].toString(),
+         orElse: () => AppSettingsMap(key: 0,value: ''), );
+
+    bool isCashAc = mapCash.key.toString() == dataInformation['Customer'].toString() ? true : false;
 
   double cBalance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
   double grandTotal = dataInformation['GrandTotal'].toDouble() ?? 0.00;
@@ -15372,7 +15395,7 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings,
                 ),
               ),
               child: pw.Padding(
-                padding: const pw.EdgeInsets.only(top: 0, left: 3),
+                padding: const pw.EdgeInsets.only(top: 2, left: 3),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
@@ -15423,6 +15446,7 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings,
                                     ),
                                   ],
                                 ),
+                                !isCashAc?
                                 oldBalance > 0 || balance > 0
                                     ? pw.Padding(
                                         padding: const pw.EdgeInsets.only(
@@ -15480,7 +15504,8 @@ _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings,
                                           ],
                                         ),
                                       )
-                                    : pw.Container(),
+                                    : pw.Container()
+                                    :pw.SizedBox(),
                               ],
                             )),
                       ],

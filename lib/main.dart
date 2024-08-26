@@ -11,6 +11,7 @@ import 'package:sheraccerp/cache_provider.dart';
 import 'package:sheraccerp/firebase_options.dart';
 import 'package:sheraccerp/landing.dart';
 import 'package:sheraccerp/models/expense_list_item_model.dart';
+import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/provider/app_provider.dart';
 import 'package:sheraccerp/provider/ledger_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
@@ -154,6 +155,7 @@ class MyApp extends StatelessWidget {
               '/home': (context) => const Home(),
               '/admin_home': (context) => const AdminHome(title: 'SherAcc'),
               '/manager_home': (context) => const ManagerHome(title: 'SherAcc'),
+              '/pos_home': (context) => const PosHomePage(selectedItems: {}),
               '/staff_home': (context) => const StaffHome(title: 'SherAcc'),
               '/expense_list': (context) =>
                   ExpenseList(ExpenseListItemModel.emptyData(), 0),

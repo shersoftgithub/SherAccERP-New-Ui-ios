@@ -1247,7 +1247,11 @@ String cashAc = '';
                     child:
                     Container(
                         margin: const EdgeInsets.symmetric(vertical: 2),
-                        height: 80,
+                        // height: 80,
+                        constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                         decoration: BoxDecoration(
                           color: white,
                           borderRadius: BorderRadius.circular(3),
@@ -1260,85 +1264,87 @@ String cashAc = '';
                           ],
                         ),
                         padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    dataDisplay[index]['Name'],
-                                    // maxLines: 1,
-                                    style: const TextStyle(
-                                      // fontSize: 16,
-                                      color: ColorPalette.timberGreen,
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dataDisplay[index]['Name'],
+                                      // maxLines: 1,
+                                      style: const TextStyle(
+                                        // fontSize: 16,
+                                        color: ColorPalette.timberGreen,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Date :${dataDisplay[index]['Date']}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Date :${dataDisplay[index]['Date']}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 5,
-                                          top: 2,
-                                          right: 5,
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 5,
+                                            top: 2,
+                                            right: 5,
+                                          ),
+                                          child: Icon(
+                                            Icons.circle,
+                                            size: 5,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                        child: Icon(
-                                          Icons.circle,
-                                          size: 5,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
+                                        Text(
+                                          'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: ColorPalette.timberGreen
-                                              .withOpacity(0.44),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: ColorPalette.nileBlue,
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      'Total',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ColorPalette.nileBlue,
+                                      ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                            '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         )
                         // ListTile(
                         //   title: Text(dataDisplay[index]['Name']),
@@ -1529,81 +1535,84 @@ String cashAc = '';
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              // const Text(
-              //   'Date : ',
-              //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              // ),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(' Date',
-                     style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                      fontFamily: 'poppins'),
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    InkWell(
-                          child: Container(
-                            // margin: EdgeInsets.symmetric(vertical: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            // width: 140,
-                            height: 35,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  formattedDate!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 13,
-                                      fontFamily: 'poppins'),
-                                ),
-                                const Icon(
-                                  Icons.calendar_month_outlined,
-                                  size: 20,
-                                  color: grey,
-                                )
-                              ],
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Row(
+              children: [
+                // const Text(
+                //   'Date : ',
+                //   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                // ),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width/3.3,
+                  // flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(' Date',
+                       style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                      ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      InkWell(
+                            child: Container(
+                              // margin: EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                              // width: 140,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    formattedDate!,
+                                    style: const TextStyle(
+                                        // fontWeight: FontWeight.w500,
+                                        // fontSize: 13,
+                                        fontFamily: 'poppins'),
+                                  ),
+                                  const Icon(
+                                    Icons.calendar_month_outlined,
+                                    size: 20,
+                                    color: grey,
+                                  )
+                                ],
+                              ),
                             ),
+                            onTap: () => _selectDate(),
                           ),
-                          onTap: () => _selectDate(),
-                        ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(
-                width: 8,
-              ),
-              Expanded(
-                flex: 2,
-                // width: 200,
-                child:  Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(' Cash Account',
-                      style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 15,
-                                      fontFamily: 'poppins'),
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    widgetAccount(),
-                  ],
+                const SizedBox(
+                  width: 3,
+                ),
+                Expanded(
+                  // flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(' Cash Account',
+                        style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 15,
+                                        fontFamily: 'poppins'),
+                      ),
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      widgetAccount(),
+                    ],
+                  ),
                 )
-              )
-            ],
+              ],
+            ),
           ),
           // Row(
           //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,

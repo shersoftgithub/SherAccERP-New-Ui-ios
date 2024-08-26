@@ -424,7 +424,11 @@ class _StockTransferState extends State<StockTransfer> {
               } else {
                 return Container(
                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    height: 80,
+                    // height: 80,
+                     constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                     decoration: BoxDecoration(
                       color: white,
                       borderRadius: BorderRadius.circular(3),
@@ -438,98 +442,100 @@ class _StockTransferState extends State<StockTransfer> {
                     ),
                     padding: const EdgeInsets.all(10),
                   child: 
-                  Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dataDisplay[index]['StockFrom'] +
-                        ' >>> ' +
-                        dataDisplay[index]['StockTo'],
-                                  // maxLines: 1,
-                                  style: const TextStyle(
-                                    // fontSize: 16,
-                                    color: ColorPalette.timberGreen,
+                  IntrinsicHeight(
+                    child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['StockFrom'] +
+                          ' >>> ' +
+                          dataDisplay[index]['StockTo'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Date :${dataDisplay[index]['Date']}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 5,
-                                        top: 2,
-                                        right: 5,
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                      child: Icon(
-                                        Icons.circle,
-                                        size: 5,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showEditDialog(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showEditDialog(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorPalette.nileBlue,
+                          Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              onTap: () {
+                                // showDetails(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              // showDetails(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                      ],
-                    )
+                        ],
+                      ),
+                  )
                   // ListTile(
                   //   title: Text(dataDisplay[index]['StockFrom'] +
                   //       ' >>> ' +

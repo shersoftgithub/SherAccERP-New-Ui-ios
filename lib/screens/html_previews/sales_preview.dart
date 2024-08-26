@@ -16,6 +16,7 @@ import 'package:pdf/pdf.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/print_settings_model.dart';
 import 'package:sheraccerp/models/sales_bill.dart';
@@ -124,6 +125,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       isInvoiceDesigner = false,
       isQuantityBasedSerialNo = false,
       isPrintSerialNoLineByLine = false,
+      isCashAc = false,
       isPrintSerialNoInSales = false;
 
   @override
@@ -131,7 +133,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     super.initState();
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
-
+   
     companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
     decimal = (ComSettings.getValue('DECIMAL', settings!).toString().isNotEmpty
         ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())
@@ -225,6 +227,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       setState(() {
         data = value;
         dataInformation = value['Information'][0];
+        
         customerBalance = dataInformation['Balance'].toString();
         dataParticularsAll = value['Particulars'];
         dataSerialNO = value['SerialNO'];
@@ -282,6 +285,15 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         //     dataParticulars.add(u);
         //   }
         // }
+
+
+          AppSettingsMap mapCash = cashAccount.firstWhere(
+            (element) => 
+         element.key.toString() == dataInformation['Customer'].toString(),
+         orElse: () => AppSettingsMap(key: 0,value: ''), );
+
+         isCashAc = mapCash.key.toString() == dataInformation['Customer'].toString() ? true : false;
+
         dataParticulars.addAll(dataParticularsAll);
 
         data['Particulars'] = dataParticulars;
@@ -303,7 +315,10 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         }
       });
     });
+
   }
+  
+  
 
   Future<void> requestBluetoothPermission() async {
     Map<Permission, PermissionStatus> statuses = await [
@@ -3001,58 +3016,61 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                                 width: 30,
                                                               ),
                                                               Visibility(
-                                                                visible:
-                                                                    oldBalance >
-                                                                            0 ||
-                                                                        balance >
-                                                                            0,
-                                                                child: Column(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Row(
-                                                                      children: [
-                                                                        const SizedBox(
-                                                                          child:
-                                                                              Text(
-                                                                            "OB           : ",
-                                                                            style:
-                                                                                TextStyle(fontSize: 6),
+                                                                visible: !isCashAc!,
+                                                                child: Visibility(
+                                                                  visible:
+                                                                      oldBalance >
+                                                                              0 ||
+                                                                          balance >
+                                                                              0,
+                                                                  child: Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Row(
+                                                                        children: [
+                                                                          const SizedBox(
+                                                                            child:
+                                                                                Text(
+                                                                              "OB           : ",
+                                                                              style:
+                                                                                  TextStyle(fontSize: 6),
+                                                                            ),
                                                                           ),
-                                                                        ),
-                                                                        Text(
-                                                                          double.tryParse(customerBalance)!
-                                                                              .toStringAsFixed(decimal),
-                                                                          style:
-                                                                              const TextStyle(fontSize: 6),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                                    Row(
-                                                                      children: [
-                                                                        const SizedBox(
-                                                                          child:
-                                                                              Text(
-                                                                            "Balance  : ",
+                                                                          Text(
+                                                                            double.tryParse(customerBalance)!
+                                                                                .toStringAsFixed(decimal),
                                                                             style:
-                                                                                TextStyle(fontSize: 6),
+                                                                                const TextStyle(fontSize: 6),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                      Row(
+                                                                        children: [
+                                                                          const SizedBox(
+                                                                            child:
+                                                                                Text(
+                                                                              "Balance  : ",
+                                                                              style:
+                                                                                  TextStyle(fontSize: 6),
+                                                                            ),
                                                                           ),
-                                                                        ),
-                                                                        Text(
-                                                                           double.tryParse(customerBalance)!
-                                                                              .toStringAsFixed(decimal),
-                                                                          style:
-                                                                              const TextStyle(fontSize: 6),
-                                                                        )
-                                                                      ],
-                                                                    ),
-                                                                  ],
+                                                                          Text(
+                                                                             double.tryParse(customerBalance)!
+                                                                                .toStringAsFixed(decimal),
+                                                                            style:
+                                                                                const TextStyle(fontSize: 6),
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ],
+                                                                  ),
                                                                 ),
-                                                              )
+                                                              ),
                                                             ],
                                                           )),
                                                           const SizedBox(
@@ -6745,7 +6763,7 @@ Future<String> _createPDF(
     List<CompanySettings> settings,
     var data,
     var customerBalance) async {
-  return makePDF(model, title, companySettings, settings, data, customerBalance)
+  return makePDF(model, title, companySettings, settings, data, customerBalance,)
       .then((value) => savePreviewPDF(value, title));
 }
 
@@ -6778,6 +6796,7 @@ Future<String> savePreviewPDF(pw.Document pdf, var title) async {
 }
 
 Future<pw.Document> makePDF(
+  
     int model,
     String title,
     CompanyInformation companySettings,
@@ -6785,6 +6804,10 @@ Future<pw.Document> makePDF(
     var data,
     var customerBalance) async {
   var dataInformation = data['Information'][0];
+  // bool  isCashAc =cashAccount.firstWhere(
+  //           (element) => 
+  //        element.key.toString() == dataInformation['Customer'].toString(),
+  //        orElse: () => AppSettingsMap(key: 0,value: ''), );
   var dataParticulars = data['Particulars'];
   // var dataSerialNO = data['SerialNO'];
   var dataDeliveryNote = data['DeliveryNote'];
@@ -15415,6 +15438,7 @@ Future<pw.Document> makePDF(
                     companySettings,
                     otherAmount,
                     dataInformation,
+                    // isCashAc!,
                     customerBalance),
                 build: (pw.Context context) {
                   double calculateTotalQuantity(List<dynamic> perticu) {
@@ -19266,7 +19290,14 @@ _buildEstimateHeader(
 }
 
 _buildFooterr(pw.Context context, bankledger, dataInfo, cSettings, otherAmount,
+// isCashAc,
     dataInformation, customerBalance) {
+       AppSettingsMap mapCash = cashAccount.firstWhere(
+            (element) => 
+         element.key.toString() == dataInformation['Customer'].toString(),
+         orElse: () => AppSettingsMap(key: 0,value: ''), );
+
+    bool isCashAc = mapCash.key.toString() == dataInformation['Customer'].toString() ? true : false;
 double oldBalance =
       double.tryParse(dataInformation['LedgerBalance'].toString())!.toDouble();
   double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
@@ -19281,7 +19312,7 @@ double oldBalance =
               height: 102,
               decoration: const pw.BoxDecoration(
                 border: pw.Border(
-                  // top: BorderSide(color: Colors.black, width: 2),
+                  // top: pw.BorderSide(color: pw.PdfColor.fromInt(0xFF000000), width: 2),
                   right: pw.BorderSide(
                       color: pw.PdfColor.fromInt(0xFF000000), // Black color,
                       width: 1),
@@ -19339,6 +19370,7 @@ double oldBalance =
                           ],
                         ),
                         pw.SizedBox(width: 50),
+                        !isCashAc?
                         oldBalance > 0 || balance > 0
                             ? pw.Column(
                                 mainAxisAlignment: pw.MainAxisAlignment.center,
@@ -19386,13 +19418,18 @@ double oldBalance =
                                 ],
                               )
                             : pw.Container()
+                            : pw.SizedBox()
                       ],
                     )),
+                    pw.Spacer(),
                     pw.Text(
                       " Certified that the perticular given above are true and Correct",
                       style: pw.TextStyle(
                           fontSize: 6, fontWeight: pw.FontWeight.bold),
                     ),
+                    pw.SizedBox(
+                      height: 3
+                    )
                   ],
                 ),
               ),

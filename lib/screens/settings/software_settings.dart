@@ -181,16 +181,23 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              iconFirst: const Icon(
-                Icons.filter_alt_outlined,
-                color: white,
-              ),
+              iconFirst: Image.asset('assets/icons/ic_filter.png',scale: 3.3,),
               onTapFirst: () {
                 setState(() {
                   settingsDisplayList = _settingsList;
                 });
               },
-              iconSecondPath: Image.asset('assets/icons/Save instagram@2x.png',
+              iconSecondPath: isLoading ? SizedBox(
+                width: 25,
+                height: 25,
+                child: const FittedBox(
+                  fit: BoxFit.fitHeight,
+                  child: CircularProgressIndicator(
+                    backgroundColor: white,
+                  ),
+                ),
+              )
+              :Image.asset('assets/icons/Save instagram@2x.png',
               scale: 1.6,
               ),
               onTapSecond: () {
@@ -947,7 +954,9 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
   _listItem(int index) {
     CompanySettings item = settingsDisplayList[index];
     // debugPrint(item.toJson());
-    return Card(
+    return item.name == 'ALLOW NEGETIVE STOCK'
+    ? Container()
+    : Card(
       shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(3)),
       elevation: 0,
       color: white,

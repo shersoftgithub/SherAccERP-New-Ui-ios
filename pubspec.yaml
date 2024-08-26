@@ -96,6 +96,10 @@ dependencies:
   riverpod_annotation: ^2.3.5
   flutter_async_autocomplete: ^0.1.1
   easy_pie_chart: ^1.0.0
+  zoom_widget: ^2.0.1
+  dotted_border: ^2.1.0
+  dotted_decoration: ^2.0.0
+  flutter_hooks: ^0.20.5
  
 
 dev_dependencies:

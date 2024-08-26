@@ -15,6 +15,7 @@ import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
@@ -46,6 +47,7 @@ class _DamageEntryState extends State<DamageEntry> {
       enableMULTIUNIT = false,
       pRateBasedProfitInSales = false,
       negativeStock = false,
+      buttonEvent = false,
       cessOnNetAmount = false,
       negativeStockStatus = false,
       enableKeralaFloodCess = false,
@@ -147,11 +149,33 @@ class _DamageEntryState extends State<DamageEntry> {
           title: const Text("Damage"),
           actions: [
             IconButton(onPressed: () async {
-              
+               if (buttonEvent) {
+                      return;
+                    } else {
+                      if (companyUserData!.insertData) {
+                        
+                      
+                      if (cartItem.isNotEmpty) {
                   setState(() {
                     _isLoading = true;
+                    buttonEvent = true;
                   });
                   saveSale();
+                    }else{
+                      Fluttertoast.showToast(
+                              msg: 'Please add item');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                    }
+                      } else{
+                      Fluttertoast.showToast(
+                              msg: 'Permission denied\ncan`t save');
+                          setState(() {
+                            buttonEvent = false;
+                          });
+                    }
+                    }
                 }, icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,))
             // TextButton(
             //     style: TextButton.styleFrom(
@@ -185,36 +209,154 @@ class _DamageEntryState extends State<DamageEntry> {
     });
 
     return dataDisplay.isNotEmpty
-        ? ListView.builder(
-            itemCount: dataDisplay.length + 1,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == dataDisplay.length) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isLoadingData ? 1.0 : 00,
-                      child: const CircularProgressIndicator(),
+        ? 
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: ListView.separated(
+            separatorBuilder: (context, index) => const SizedBox(
+              height: 5,
+            ),
+              itemCount: dataDisplay.length + 1,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == dataDisplay.length) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isLoadingData ? 1.0 : 00,
+                        child: const CircularProgressIndicator(),
+                      ),
                     ),
-                  ),
-                );
-              } else {
-                return Card(
-                  elevation: 2,
-                  child: ListTile(
-                    title: Text(dataDisplay[index]['Name']),
-                    subtitle: Text(
-                        'Date: ${dataDisplay[index]['Date']} / EntryNo : ${dataDisplay[index]['Id']}'),
-                    trailing: Text('Total : ${dataDisplay[index]['Total']}'),
+                  );
+                } else {
+                  return 
+                  InkWell(
                     onTap: () {
-                      // print(dataDisplay[index]);
+                      // showEditDialog(context, dataDisplay[index],);
                     },
-                  ),
-                );
-              }
-            },
-            controller: _scrollController,
-          )
+                    child:
+                    Container(
+                        margin: const EdgeInsets.symmetric(vertical: 2),
+                        // height: 80,
+                        constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
+                        decoration: BoxDecoration(
+                          color: white,
+                          borderRadius: BorderRadius.circular(3),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(0, 5),
+                              blurRadius: 6,
+                              color: const Color(0xff000000).withOpacity(0.06),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      dataDisplay[index]['Name'],
+                                      // maxLines: 1,
+                                      style: const TextStyle(
+                                        // fontSize: 16,
+                                        color: ColorPalette.timberGreen,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Date :${dataDisplay[index]['Date']}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 5,
+                                            top: 2,
+                                            right: 5,
+                                          ),
+                                          child: Icon(
+                                            Icons.circle,
+                                            size: 5,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
+                                        ),
+                                        Text(
+                                          'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: ColorPalette.timberGreen
+                                                .withOpacity(0.44),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      'Total',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ColorPalette.nileBlue,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                            '${dataDisplay[index]['Total'].toStringAsFixed(2)}'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                        // ListTile(
+                        //   title: Text(dataDisplay[index]['Name']),
+                        //   subtitle: Text('Date: ' +
+                        //       dataDisplay[index]['Date'] +
+                        //       ' / EntryNo : ' +
+                        //       dataDisplay[index]['Id'].toString()),
+                        //   trailing: Text(
+                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                        //   onTap: () {
+                        //     showEditDialog(context, dataDisplay[index]);
+                        //   },
+                        // ),
+                        ),
+                  );
+                }
+              },
+              controller: _scrollController,
+            ),
+        )
         : Center(
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -258,15 +400,17 @@ class _DamageEntryState extends State<DamageEntry> {
   void _getMoreData() async {
     if (!lastRecord) {
       if (dataDisplay.isEmpty ||
+          // ignore: curly_braces_in_flow_control_structures
           dataDisplay.length < totalRecords) if (!isLoadingData) {
         setState(() {
           isLoadingData = true;
         });
 
         List tempList = [];
+        var statement = 'DamageList';
         dio
-            .getPaginationList('DamageList', page, '1', '0',
-                DateUtil.dateYMD(formattedDate), '0')
+            .getPaginationList(statement, page, '1', '0',
+                DateUtil.dateYMD(formattedDate), '')
             .then((value) {
           if (value.isEmpty) {
             return;
@@ -331,10 +475,15 @@ class _DamageEntryState extends State<DamageEntry> {
       dio.addDamage(body).then((value) {
         setState(() {
           _isLoading = false;
+          buttonEvent = false;
         });
         if (value) {
           clearCart();
-          showMore(context);
+          Fluttertoast.showToast(
+            backgroundColor: green,
+            msg: 'Damage Bill Saved');
+          Navigator.pushReplacementNamed(context, '/damageEntry');
+          // showMore(context);
         }
       });
     }
@@ -1477,6 +1626,10 @@ class _DamageEntryState extends State<DamageEntry> {
                           ),
                           color: kPrimaryColor,
                           onPressed: () {
+                            if (quantity <= 0 ) {
+                               Fluttertoast.showToast(
+                                msg: 'Please Fill quantity');
+                            }else{
                             setState(() {
                               addProduct(CartItem(
                                   id: totalItem + 1,
@@ -1518,6 +1671,7 @@ class _DamageEntryState extends State<DamageEntry> {
                                 nextWidget = 3;
                               }
                             });
+                            }
                           },
                           child: const Text("ADD",
                            style: TextStyle(
@@ -2170,20 +2324,20 @@ class _DamageEntryState extends State<DamageEntry> {
 
   showMore(context) {
     ConfirmAlertBox(
-        buttonColorForNo: Colors.red,
-        buttonColorForYes: Colors.green,
+        buttonColorForNo: Colors.green,
+        // buttonColorForYes: Colors.green,
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-          Navigator.pushNamed(context, '/damageEntry');
+          Navigator.pushReplacementNamed(context, '/damageEntry');
         },
-        onPressedYes: () {
-          Navigator.of(context).pop();
-          // Navigator.pushReplacementNamed(context, '/preview_show',
-          //     arguments: {'title': 'SaleS'});
-        },
-        buttonTextForNo: 'No',
-        buttonTextForYes: 'YES',
+        // onPressedYes: () {
+        //   Navigator.of(context).pop();
+        //   // Navigator.pushReplacementNamed(context, '/preview_show',
+        //   //     arguments: {'title': 'SaleS'});
+        // },
+        buttonTextForNo: 'Ok',
+        // buttonTextForYes: 'YES',
         infoMessage: 'your Damage Bill saved',
         title: 'SAVED',
         context: context);

@@ -10,6 +10,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/cart_item.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
+import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/order.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
@@ -17,6 +18,7 @@ import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/screens/html_previews/sales_return_preview.dart';
 import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/blue_thermal.dart';
@@ -85,6 +87,8 @@ class _SalesReturnState extends State<SalesReturn> {
   String labelSerialNo = 'SerialNo';
   String labelSpRate = 'SpRetail';
   CartItem? cartModel;
+  Future<List<LedgerModel>>? _getCustomerNameList;
+  Future<List<ProductPurchaseModel>>? _fetchAllProductPurchase;
 
   @override
   void initState() {
@@ -93,6 +97,8 @@ class _SalesReturnState extends State<SalesReturn> {
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
     loadSettings();
+    _getCustomerNameList = dio.getCustomerNameList();
+    _fetchAllProductPurchase = dio.fetchAllProductPurchase();
     dio.fetchDetailAmount().then((value) {
       otherAmountList = value;
       setState(() {
@@ -393,7 +399,11 @@ class _SalesReturnState extends State<SalesReturn> {
               } else {
                 return Container(
                     margin: const EdgeInsets.symmetric(vertical: 2),
-                    height: 80,
+                    // height: 80,
+                    constraints: const BoxConstraints(
+                          maxHeight: 110,
+                          minHeight: 80
+                        ),
                     decoration: BoxDecoration(
                       color: white,
                       borderRadius: BorderRadius.circular(3),
@@ -406,95 +416,97 @@ class _SalesReturnState extends State<SalesReturn> {
                       ],
                     ),
                     padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  dataDisplay[index]['Name'],
-                                  // maxLines: 1,
-                                  style: const TextStyle(
-                                    // fontSize: 16,
-                                    color: ColorPalette.timberGreen,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    dataDisplay[index]['Name'],
+                                    // maxLines: 1,
+                                    style: const TextStyle(
+                                      // fontSize: 16,
+                                      color: ColorPalette.timberGreen,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      'Date :${dataDisplay[index]['Date']}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Date :${dataDisplay[index]['Date']}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        left: 5,
-                                        top: 2,
-                                        right: 5,
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 5,
+                                          top: 2,
+                                          right: 5,
+                                        ),
+                                        child: Icon(
+                                          Icons.circle,
+                                          size: 5,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                      child: Icon(
-                                        Icons.circle,
-                                        size: 5,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
+                                      Text(
+                                        'EntryNo :${dataDisplay[index]['Id'].toString()}',
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: ColorPalette.timberGreen
+                                              .withOpacity(0.44),
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      'EntryNo :${dataDisplay[index]['Id'].toString()}',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: ColorPalette.timberGreen
-                                            .withOpacity(0.44),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              onTap: () {
+                                showEditDialog(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showEditDialog(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: InkWell(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Total',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: ColorPalette.nileBlue,
+                          Expanded(
+                            flex: 2,
+                            child: InkWell(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  const Text(
+                                    'Total',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorPalette.nileBlue,
+                                    ),
                                   ),
-                                ),
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                        '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                          '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              onTap: () {
+                                showDetails(context, dataDisplay[index]);
+                              },
                             ),
-                            onTap: () {
-                              showDetails(context, dataDisplay[index]);
-                            },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ));
                 // return Card(
                 //   elevation: 3,
@@ -1265,11 +1277,11 @@ class _SalesReturnState extends State<SalesReturn> {
                     height: 4,
                    ),
                      FutureBuilder<List<dynamic>>(
-                                future: dio.getCustomerNameList(),
+                                future: _getCustomerNameList,
                                 builder: (context, snapshot) {
-                                  // if(snapshot.connectionState == ConnectionState.waiting){
-                                  //  return CircularProgressIndicator();
-                                  // }
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(child: CircularProgressIndicator());
+                                  }
                                   if (snapshot.hasError) {
                                     return Text('Error: ${snapshot.error}');
                                   } else if (!snapshot.hasData) {
@@ -2465,14 +2477,16 @@ bool isPrateEdited = false;
                   height: 4,
                  ),
                  FutureBuilder(
-                            future: dio.fetchAllProductPurchase(),
+                            future: _fetchAllProductPurchase,
                             builder: (context, snapshot) {
                               if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               }
-                              //  else if (snapshot.connectionState == ConnectionState.waiting){
-                              //    isLoading == true;
-                              // }
+                               else if (snapshot.connectionState == ConnectionState.waiting){
+                                 return const Center(
+                                  child: CircularProgressIndicator(),
+                                 );
+                              }
                               else if (!snapshot.hasData) {
                                 return const Text('No data found');
                               }
@@ -5362,12 +5376,14 @@ bool isPrateEdited = false;
           //   } else if (printerDevice == 6) {
           //     //                6: 'Thermal',
           //     _selectBtThermalPrint(context, title, companySettings,
-          //         settings, dataAll, byteImage, "4");
+          //         settings, dataAll, byteImage, "4"); 
           //   }
           // }
 
           Navigator.of(context).pop();
-          Navigator.pushReplacementNamed(context, '/return_preview_show');
+          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SalesReturnPreviewShow(),));
+          Navigator.pushReplacementNamed(context, '/return_preview_show',
+          arguments:{ 'title': 'Salesreturn'});
           // Navigator.pushReplacementNamed(context, '/return_preview_show',
           //     arguments: {'title': 'SalesReturn'});
           //   }
@@ -5414,14 +5430,15 @@ bool isPrateEdited = false;
 
    showDetails(context, data) {
     dataDynamic = [
-      {
+      { 
         'RealEntryNo': data['Id'],
         'EntryNo': data['Id'],
         'InvoiceNo': data['Id'],
         'Type': 0
       }
     ];
-    Navigator.pushReplacementNamed(context, '/return_preview_show');
+    Navigator.pushReplacementNamed(context, '/return_preview_show',
+    arguments:{ 'title': 'Salesreturn'});
   }
 
   fetchSaleReturn(context, id) {

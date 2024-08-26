@@ -22,7 +22,7 @@ class UserScreen extends StatefulWidget {
 
 class _UserScreenState extends State<UserScreen> {
   var regId = "";
-  bool nextWidget = false;
+  bool nextWidget = false,changes = false;
   CompanyUser? userData;
   List<FormModel> form = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -47,6 +47,7 @@ class _UserScreenState extends State<UserScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: bagroundColor,
       appBar: PreferredSize(
           preferredSize: Size.fromHeight(100),
           child: AppbarWidgget(
@@ -56,10 +57,7 @@ class _UserScreenState extends State<UserScreen> {
             },
             iconSecondPath: Visibility(
               visible: nextWidget,
-              child: const Icon(
-                Icons.save,
-                color: white,
-              ),
+              child: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)
             ),
             onTapSecond: () {
               Visibility(
@@ -81,6 +79,19 @@ class _UserScreenState extends State<UserScreen> {
                                     const SnackBar(content: Text('Data Error')),
                                   )
                           });
+                           var body = [
+                    {
+                      'id': userData!.registrationId.toString(),
+                      'userId': userData!.userId.toString(),
+                      'type': userData!.userType,
+                      'insert': userData!.insertData ? 1 : 0,
+                      'update': userData!.updateData ? 1 : 0,
+                      'delete': userData!.deleteData ? 1 : 0
+                    }
+                  ];
+                  if (changes) {
+                    editCompanyUser(body).then((value) => null);
+                  }
                     },
                     icon: const Icon(
                       Icons.save,
@@ -253,22 +264,34 @@ class _UserScreenState extends State<UserScreen> {
           return AlertDialog(
             title: const Text('Change Password'),
             content: SizedBox(
-              height: 100,
+              height: 110,
               child: Column(
                 children: [
-                  TextField(
-                    controller: _textFieldController,
-                    textInputAction: TextInputAction.go,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        label: Text("Enter new password")),
+                  Expanded(
+                    child: TextField(
+                      controller: _textFieldController,
+                      textInputAction: TextInputAction.go,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 8
+                        ),
+                          border: OutlineInputBorder(),
+                          label: Text("Enter new password")),
+                    ),
                   ),
-                  TextField(
-                    controller: _textFieldController1,
-                    textInputAction: TextInputAction.go,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        label: Text("Confirm password")),
+                  Expanded(
+                    child: TextField(
+                      controller: _textFieldController1,
+                      textInputAction: TextInputAction.go,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 8
+                        ),
+                          border: OutlineInputBorder(),
+                          label: Text("Confirm password")),
+                    ),
                   ),
                 ],
               ),
@@ -342,107 +365,182 @@ class _UserScreenState extends State<UserScreen> {
       autovalidateMode: AutovalidateMode.always,
       key: _formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.face,
-                    color: Colors.blue,
+                 
+                  Container(
+                    width: MediaQuery.of(context).size.width/2.9,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 2,
+                      vertical: 5
+                    ),
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+                    child: Text(
+                      'No : ${user.userId}',
+                      style: const TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                    ),
                   ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    user.userId,
-                    style: const TextStyle(color: Colors.blue, fontSize: 18),
+                  const Spacer(),
+                  Container(
+                    width: MediaQuery.of(context).size.width/2.5,
+                     padding: const EdgeInsets.symmetric(
+                      horizontal: 2,
+                      vertical: 5
+                    ),
+                      decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+                    child: Text(
+                      ' Date : ${DateUtil.dateDMY(user.atDate)}',
+                      style: const TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                    ),
                   )
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.calendar_month,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    user.atDate,
-                    style: const TextStyle(color: Colors.blue, fontSize: 18),
-                  )
-                ],
+            const SizedBox(
+              height: 10,
+            ),
+              const Text(' Username',
+              style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 10
+                    ),
+                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+              child: Text(user.username.toString(),
+              style: const TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+              )),
+              const SizedBox(
+                height: 10,
+              ),
+               const Text(' User Role',
+              style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                    items: roles.map((String items) {
+                      return DropdownMenuItem(
+                        value: items,
+                        child: Text(items,
+                         style: const TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                        ),
+                      );
+                    }).toList(),
+                    value: role != '' ? role : roles[0],
+                    onChanged: (value) {
+                      setState(() {
+                        role = value!;
+                        user.userType = role;
+                        changes = true;
+                      });
+                    }),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: Text('UserName : ${user.username.toString()}'),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              //     Icon(
-              //       Icons.circle,
-              //       color: user.active == "false" ? Colors.red : Colors.green,
-              //     ),
-              //   ],
-              // ),
+            const SizedBox(
+              height: 10,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+            const Text(' Options',
+            style:  TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(3)
+                    ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.rule,
-                    color: Colors.blue,
-                  ),
                   const SizedBox(
                     width: 10,
                   ),
-                  const Text('User Role : '),
-                  DropdownButton<String>(
-                      items: roles.map((String items) {
-                        return DropdownMenuItem(
-                          value: items,
-                          child: Text(items),
-                        );
-                      }).toList(),
-                      value: role != '' ? role : roles[0],
-                      onChanged: (value) {
-                        setState(() {
-                          role = value!;
+                  const Text('Save',
+                  style:  TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                  ),
+                  Checkbox(
+                    activeColor: kPrimaryColor,
+                    value: user.insertData,
+                    onChanged: (value) {
+                      setState(() {
+                          user.insertData = value!;
+                          changes = true;
                         });
-                      })
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.edit_note,
-                    color: Colors.blue,
+                    }),
+                  const Spacer(),
+                  const Text('Edit',
+                  style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
                   ),
-                  const SizedBox(
-                    width: 10,
+                  Checkbox(
+                    activeColor: kPrimaryColor,
+                    value: user.updateData, 
+                    onChanged: (value) {
+                      setState(() {
+                          user.updateData = value!;
+                          changes = true;
+                        });
+                    }),
+                  const Spacer(),
+                  const Text('Delete',
+                  style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
                   ),
-                  const Text('Save : '),
-                  Checkbox(value: user.insertData, onChanged: (value) {}),
-                  const Text('Edit : '),
-                  Checkbox(value: user.insertData, onChanged: (value) {}),
-                  const Text('Delete : '),
-                  Checkbox(value: user.insertData, onChanged: (value) {}),
+                  Checkbox(
+                    activeColor: kPrimaryColor,
+                    value: user.deleteData, 
+                    onChanged: (value) {
+                       setState(() {
+                          user.deleteData = value!;
+                          changes = true;
+                        });
+                    }),
                 ],
               ),
             ),
@@ -457,10 +555,26 @@ class _UserScreenState extends State<UserScreen> {
             //     return null;
             //   },
             // ),
-            Row(children: [
+            const SizedBox(
+              height: 10,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: grey,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  )
+                ),
                   onPressed: () => showEditDialog(context, user),
-                  child: const Text('Change Password')),
+                  child: const Text('Change Password',
+                  style: TextStyle(
+                        fontFamily: 'poppins',
+                        color: white
+                      ),
+                  )),
               // TextFormField(
               //   decoration: InputDecoration(
               //     border: OutlineInputBorder(),label: Text("Password"),
@@ -486,6 +600,9 @@ class _UserScreenState extends State<UserScreen> {
                 padding: EdgeInsets.all(2.0),
                 child: Text(
                   'User Control',
+                    style: TextStyle(
+                        fontFamily: 'poppins',
+                      ),
                 ),
               ),
             ]),
@@ -503,6 +620,7 @@ class _UserScreenState extends State<UserScreen> {
         children: form
             .map(
               (FormModel item) => CheckboxListTile(
+                activeColor: kPrimaryColor,
                 title: Text(item.title!),
                 value: item.isChecked,
                 onChanged: (bool? val) {
@@ -512,6 +630,7 @@ class _UserScreenState extends State<UserScreen> {
             )
             .toList());
   }
+  
 
   bool newControl = false;
   userControlWidget(id) {
@@ -536,19 +655,25 @@ class _UserScreenState extends State<UserScreen> {
                     )
                     .toList());
           } else {
-            return TextButton.icon(
-              style: ButtonStyle(
-                backgroundColor:
-                    MaterialStateProperty.all<Color>(kPrimaryColor),
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+            return Align(
+              alignment: Alignment.center,
+              child: TextButton.icon(
+                style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5)
+                  )),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(kPrimaryColor),
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                ),
+                onPressed: () {
+                  setState(() {
+                    newControl = true;
+                  });
+                },
+                icon: const Icon(Icons.admin_panel_settings_outlined),
+                label: const Text('Add'),
               ),
-              onPressed: () {
-                setState(() {
-                  newControl = true;
-                });
-              },
-              icon: const Icon(Icons.admin_panel_settings_outlined),
-              label: const Text('Add'),
             );
           }
         } else {
