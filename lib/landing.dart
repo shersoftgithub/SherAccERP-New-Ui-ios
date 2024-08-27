@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -134,6 +136,8 @@ class _LandingState extends State<Landing> {
         elevation: .1,
       ),
       body: nextWidget ? authUser() : firmWidget(),
+      // body: WithForegroundTask(child: (nextWidget ? authUser() : firmWidget())),
+
     );
   }
 
@@ -898,8 +902,22 @@ class _LandingState extends State<Landing> {
       ScopedModel.of<MainModel>(context).getCompanySettingsAll(dataBase);
       ScopedModel.of<MainModel>(context)
           .getReportDesignByName(dataBase!, 'Ledger_Report_Qty');
+          // delayFunction();
     }
   }
+
+
+  // delayFunction() {
+  //   Future.delayed(
+  //     const Duration(seconds: 5),
+  //     () {
+  //       if (enableMap) {
+  //         // checkGPSService();
+  //       }
+  //     },
+  //   );
+  // }
+
 
   _loadUserInfo() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -924,10 +942,16 @@ class _LandingState extends State<Landing> {
           if ((_apiResponse.apiError).error.isEmpty) {
             // Future.delayed(const Duration(milliseconds: 3000), () {
             dynamic _user = _apiResponse.data;
-            companyUserData = _user as CompanyUser;
+            companyUserData = _user ;
             // if (companyUserData.active.isNotEmpty &&
             //     companyUserData.active.toUpperCase() == 'TRUE') {
             //   userRole = _user.userType.toUpperCase();
+
+            //             if (companyUserData!.username.isNotEmpty) {
+            //   var fId = (pref.getString('fId') ?? "");
+            //   customerId = fId;
+            //   logeUserName = companyUserData!.username;
+            // }
 
             if (_userId != null) {
               getCompanyUserControlList(_userId).then((value) {

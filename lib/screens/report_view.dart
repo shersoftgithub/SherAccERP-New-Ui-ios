@@ -415,7 +415,13 @@ class _ReportViewState extends State<ReportView> {
                                                                             'No Report'));
   }
 
+   bool classic = false;
+  final GlobalKey _globalKey = GlobalKey();
+
   reportView() {
+      if (widget.type != 'ledger') {
+      classic = true;
+    }
     var dataJson = '[${json.encode({
           'statementType':
               widget.statement.isEmpty ? 'Ledger_Report' : widget.statement,
@@ -600,7 +606,7 @@ class _ReportViewState extends State<ReportView> {
                 for (ReportDesign design in reportDesignList!) {
                   if (!design.visibility) {
                     for (var item in filterItems!) {
-                      item.remove(design.caption.trim());
+                        item.remove(design.caption.replaceAll(' ', '').trim());
                     }
                   }
                 }
@@ -1910,7 +1916,8 @@ class _ReportViewState extends State<ReportView> {
           'Check_openingBalance': widget.ob ?? 0,
           'location': jsonEncode(location),
           'city': jsonEncode(project),
-          'salesMan': widget.salesMan.isNotEmpty ? widget.salesMan : '0'
+          'salesMan': widget.salesMan.isNotEmpty ? widget.salesMan : '0',
+          'hName': ''
         }) +
         ']';
     return FutureBuilder<List<dynamic>>(
@@ -1932,7 +1939,9 @@ class _ReportViewState extends State<ReportView> {
                     .fold(
                         0.0,
                         (a, b) =>
-                            a + double.parse(b[tableColumn[i]].toString()))
+                            a +
+                            (double.tryParse(b[tableColumn[i]].toString()) ??
+                                0))
                     .toStringAsFixed(2);
               }
               if (i == 0) {
@@ -2262,7 +2271,9 @@ class _ReportViewState extends State<ReportView> {
                     .fold(
                         0.0,
                         (a, b) =>
-                            a + double.parse(b[tableColumn[i]].toString()))
+                             a +
+                            (double.tryParse(b[tableColumn[i]].toString()) ??
+                                0))
                     .toStringAsFixed(2);
               }
               if (i == 0) {

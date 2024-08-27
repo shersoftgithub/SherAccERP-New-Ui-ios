@@ -14,6 +14,7 @@ import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 
 // import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:image/image.dart' as img;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -47,6 +48,7 @@ class _BtPrintState extends State<BtPrint> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _onScanPressed());
+    initDefaultData();
   }
 
   final BlueThermalPrinter _bluePrintPos = BlueThermalPrinter.instance;
@@ -69,6 +71,7 @@ class _BtPrintState extends State<BtPrint> {
           _devices = map;
           _blueDevices = devices;
           _isLoading = false;
+          printDefault();
         });
       } else {
         setState(() => _isLoading = false);
@@ -153,7 +156,19 @@ class _BtPrintState extends State<BtPrint> {
                               ),
                             ],
                           ),
-                        )
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              setState(() {
+                                defaultPrinter = _devices[index].name!;
+                                setDefaultPrinter();
+                              });
+                            },
+                            child: Text(defaultPrinter.isNotEmpty
+                                ? _devices[index].name == defaultPrinter
+                                    ? 'Default'
+                                    : 'Set Default'
+                                : 'Set Default'))
                       ],
                     ),
                   ),
@@ -168,14 +183,14 @@ class _BtPrintState extends State<BtPrint> {
         builder: (c, snapshot) {
           if (snapshot.hasData) {
             return FloatingActionButton(
+              child: const Icon(Icons.stop),
               onPressed: _stopScanDevices,
               backgroundColor: Colors.red,
-              child: const Icon(Icons.stop),
             );
           } else {
             return FloatingActionButton(
-              onPressed: _onScanPressed,
               child: const Icon(Icons.search),
+              onPressed: _onScanPressed,
             );
           }
         },
@@ -201,7 +216,7 @@ class _BtPrintState extends State<BtPrint> {
     } else if (printerSize == "3") {
       paper = PaperSize.mm80;
     } else if (printerSize == "4") {
-      paper = PaperSize.mm58;
+      paper = PaperSize.mm72; //PaperSize.mm112;
     } else if (printerSize == "5") {
       paper = PaperSize.mm58;
     }
@@ -318,7 +333,7 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -333,7 +348,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center, bold: true));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
               styles: const PosStyles(align: PosAlign.center, bold: true));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -351,7 +366,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left, bold: true)),
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right, bold: true)),
           ]);
@@ -390,15 +405,15 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.right, bold: true)),
           ]);
           double totalQty = 0, totalRate = 0;
-          for (var i = 0; i < dataParticulars.length; i++) {
+            for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['igst'].toString())! > 0) {
-              if (taxPercentages.contains(
-                  '@' + dataParticulars[i]['igst'].toString() + ' %')) {
-              } else {
-                taxPercentages +=
-                    '@' + dataParticulars[i]['igst'].toString() + ' %,';
-              }
+              taxPercentages = dataParticulars[i]['igst'].toString() + ' %';
+              // if (taxPercentages.contains(
+              //     '@' + dataParticulars[i]['igst'].toString() + ' %')) {
+            } else {
+              taxPercentages = '0 %';
             }
+            // }
             var itemName = dataParticulars[i]['itemname'].toString();
             bytes += ticket.text(itemName,
                 styles: const PosStyles(align: PosAlign.left, bold: true));
@@ -408,26 +423,29 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(
                   text:
                       '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
-                  width: 1),
+                  width: 2),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
-                  width: 2,
+                  width: 4,
                   styles: const PosStyles(align: PosAlign.right, bold: true)),
               PosColumn(
                   text: '${dataParticulars[i]['Total']}',
-                  width: 2,
+                  width: 4,
                   styles: const PosStyles(align: PosAlign.right, bold: true)),
             ]);
             totalQty += dataParticulars[i]['Qty'];
-            totalRate +=
-                double.tryParse(dataParticulars[i]['Rate'].toString())!;
+            totalRate += double.tryParse(dataParticulars[i]['Rate'].toString())!;
           }
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Total : ', width: 5, styles: PosStyles(bold: true)),
+                text: 'Total : ',
+                width: 5,
+                styles: const PosStyles(bold: true)),
             PosColumn(
-                text: '$totalQty', width: 2, styles: PosStyles(bold: true)),
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(bold: true)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 2,
@@ -458,7 +476,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                     // height: PosTextSize.size3,
@@ -479,7 +497,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -515,7 +533,7 @@ class _BtPrintState extends State<BtPrint> {
                     styles:
                         const PosStyles(align: PosAlign.center, bold: true)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
                 styles: const PosStyles(align: PosAlign.center, bold: true));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -536,7 +554,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -554,7 +572,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -582,7 +600,8 @@ class _BtPrintState extends State<BtPrint> {
 
           bytes += ticket.row([
             PosColumn(text: ' ', width: 1),
-            PosColumn(text: 'Qty', width: 3, styles: PosStyles(bold: true)),
+            PosColumn(
+                text: 'Qty', width: 3, styles: const PosStyles(bold: true)),
             PosColumn(
                 text: 'Price',
                 width: 4,
@@ -603,7 +622,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
               PosColumn(
@@ -721,7 +740,8 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: double.tryParse(dataInformation['Balance'].toString())!
+                  text: double.tryParse(
+                          dataInformation['LedgerBalance'].toString())!
                       .toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
@@ -778,13 +798,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: (double.tryParse(
-                              dataInformation['Balance'].toString())! +
-                          (double.tryParse(
-                                  dataInformation['GrandTotal'].toString())! -
-                              double.tryParse(
-                                  dataInformation['CashReceived'].toString())!))
-                      .toStringAsFixed(2),
+                  text: dataInformation['Balance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -825,12 +839,10 @@ class _BtPrintState extends State<BtPrint> {
           // bytes += ticket.qrcode('example.com');
           if (taxSale) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -841,12 +853,10 @@ class _BtPrintState extends State<BtPrint> {
                 ComSettings.appSettings('int', 'key-dropdown-print-line', 1));
           } else if (isEsQrCodeKSA) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -867,7 +877,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -875,7 +885,7 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -902,7 +912,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
               styles: const PosStyles(align: PosAlign.center));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -923,7 +933,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.row([
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 12,
                 styles: const PosStyles(align: PosAlign.right)),
           ]);
@@ -955,11 +965,9 @@ class _BtPrintState extends State<BtPrint> {
           double totalQty = 0, totalRate = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['igst'].toString())! > 0) {
-              if (taxPercentages.contains(
-                  '@' + dataParticulars[i]['igst'].toString() + ' %')) {
+              if (taxPercentages.contains('@${dataParticulars[i]['igst']} %')) {
               } else {
-                taxPercentages +=
-                    '@' + dataParticulars[i]['igst'].toString() + ' %,';
+                taxPercentages += '@${dataParticulars[i]['igst']} %,';
               }
             }
             var itemName = paper.width == PaperSize.mm80.width
@@ -983,7 +991,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: itemName, width: 7),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 1),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
@@ -1033,7 +1041,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                   // height: PosTextSize.size3,
@@ -1055,7 +1063,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -1080,7 +1088,7 @@ class _BtPrintState extends State<BtPrint> {
                 (bytes += ticket.text(companySettings.add2!,
                     styles: const PosStyles(align: PosAlign.center)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
                 styles: const PosStyles(align: PosAlign.center));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -1098,7 +1106,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -1114,7 +1122,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -1168,7 +1176,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: itemName, width: 7),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 1,
                   styles: const PosStyles(align: PosAlign.right)),
               PosColumn(
@@ -1283,12 +1291,10 @@ class _BtPrintState extends State<BtPrint> {
           // bytes += ticket.qrcode('example.com');
           if (taxSale) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -1299,12 +1305,10 @@ class _BtPrintState extends State<BtPrint> {
                 ComSettings.appSettings('int', 'key-dropdown-print-line', 1));
           } else if (isEsQrCodeKSA) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -1325,7 +1329,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -1391,17 +1395,16 @@ class _BtPrintState extends State<BtPrint> {
     bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
     bool isEsQrCodeKSA =
         ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-    int? printCopy =
-        Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
-    int? printerModel = Settings.getValue<int>(
-        'key-dropdown-printer-model-view',
-        defaultValue: 0);
+    int printCopy = Settings.getValue<int>('key-dropdown-print-copy-view',
+        defaultValue: 0)!;
+    int printerModel = Settings.getValue<int>('key-dropdown-printer-model-view',
+        defaultValue: 0)!;
     // for (int pCopy = 0; pCopy <= printCopy; pCopy++) {
     if (printerSize == "2") {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -1416,7 +1419,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center, bold: true));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
               styles: const PosStyles(align: PosAlign.center, bold: true));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -1434,7 +1437,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left, bold: true)),
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right, bold: true)),
           ]);
@@ -1475,11 +1478,9 @@ class _BtPrintState extends State<BtPrint> {
           double totalQty = 0, totalRate = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['igst'].toString())! > 0) {
-              if (taxPercentages.contains(
-                  '@' + dataParticulars[i]['igst'].toString() + ' %')) {
+              if (taxPercentages.contains('@${dataParticulars[i]['igst']} %')) {
               } else {
-                taxPercentages +=
-                    '@' + dataParticulars[i]['igst'].toString() + ' %,';
+                taxPercentages += '@${dataParticulars[i]['igst']} %,';
               }
             }
             var itemName = dataParticulars[i]['itemname'].toString();
@@ -1490,7 +1491,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 2),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 1),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
@@ -1508,9 +1509,13 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Total : ', width: 5, styles: PosStyles(bold: true)),
+                text: 'Total : ',
+                width: 5,
+                styles: const PosStyles(bold: true)),
             PosColumn(
-                text: '$totalQty', width: 2, styles: PosStyles(bold: true)),
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(bold: true)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 2,
@@ -1541,7 +1546,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                     // height: PosTextSize.size3,
@@ -1562,7 +1567,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -1598,7 +1603,7 @@ class _BtPrintState extends State<BtPrint> {
                     styles:
                         const PosStyles(align: PosAlign.center, bold: true)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
                 styles: const PosStyles(align: PosAlign.center, bold: true));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -1619,7 +1624,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -1637,7 +1642,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -1665,7 +1670,8 @@ class _BtPrintState extends State<BtPrint> {
 
           bytes += ticket.row([
             PosColumn(text: ' ', width: 1),
-            PosColumn(text: 'Qty', width: 3, styles: PosStyles(bold: true)),
+            PosColumn(
+                text: 'Qty', width: 3, styles: const PosStyles(bold: true)),
             PosColumn(
                 text: 'Price',
                 width: 4,
@@ -1686,7 +1692,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
               PosColumn(
@@ -1804,7 +1810,8 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: double.tryParse(dataInformation['Balance'].toString())!
+                  text: double.tryParse(
+                          dataInformation['LedgerBalance'].toString())!
                       .toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
@@ -1861,13 +1868,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: (double.tryParse(
-                              dataInformation['Balance'].toString())! +
-                          (double.tryParse(
-                                  dataInformation['GrandTotal'].toString())! -
-                              double.tryParse(
-                                  dataInformation['CashReceived'].toString())!))
-                      .toStringAsFixed(2),
+                  text: dataInformation['Balance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -1910,7 +1911,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -1918,7 +1919,7 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -1935,7 +1936,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Phone No: ${'${companySettings.telephone!},${companySettings.mobile!}'}',
               styles: const PosStyles(align: PosAlign.center));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -1975,7 +1976,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left)),
             PosColumn(
                 text:
-                    'Party Balance:${double.tryParse(dataInformation['Balance'].toString())! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)}',
+                    'Party Balance:${dataInformation['Balance'].toStringAsFixed()}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right)),
           ]);
@@ -2023,7 +2024,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
@@ -2106,7 +2107,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -2124,7 +2125,7 @@ class _BtPrintState extends State<BtPrint> {
             companySettings.add2.toString().trim().isNotEmpty ??
                 (bytes += text3);
             bytes += ticket.text(
-                'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Phone No: ${'${companySettings.telephone!},${companySettings.mobile!}'}',
                 styles: const PosStyles(align: PosAlign.center));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -2165,7 +2166,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left)),
             PosColumn(
                 text:
-                    'Party Balance:${double.tryParse(dataInformation['Balance'].toString())! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)}',
+                    'Party Balance:${dataInformation['Balance'].toStringAsFixed()}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right)),
           ]);
@@ -2213,7 +2214,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
@@ -2306,7 +2307,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -2369,8 +2370,8 @@ class _BtPrintState extends State<BtPrint> {
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
-              height: PosTextSize.size2,
-              width: PosTextSize.size1,
+              // height: PosTextSize.size2,
+              // width: PosTextSize.size2,
             ),
           );
           if (companySettings.add1.toString().trim().isNotEmpty) {
@@ -2392,13 +2393,15 @@ class _BtPrintState extends State<BtPrint> {
           if (companySettings.telephone.toString().trim().isNotEmpty ||
               companySettings.mobile.toString().trim().isNotEmpty) {
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone!},${companySettings.mobile!}'}',
                 styles: const PosStyles(align: PosAlign.center));
           }
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
                   ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
-                  : 'TRN : ${ComSettings.getValue('GST-NO', settings)}',
+                  : companyTaxMode == 'GULF'
+                      ? 'TRN : ${ComSettings.getValue('GST-NO', settings)}'
+                      : 'TaxNo : ${ComSettings.getValue('GST-NO', settings)}',
               styles: const PosStyles(align: PosAlign.center, bold: true));
           bytes += ticket.text(invoiceHead!,
               styles: const PosStyles(align: PosAlign.center, bold: true));
@@ -2411,7 +2414,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left, bold: true)),
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right, bold: true)),
           ]);
@@ -2452,7 +2455,7 @@ class _BtPrintState extends State<BtPrint> {
           double totalQty = 0, totalRate = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['igst'].toString())! > 0) {
-              taxPercentages = dataParticulars[i]['igst'].toString() + ' %';
+              taxPercentages = '${dataParticulars[i]['igst']} %';
               // if (taxPercentages.contains(
               //     '@' + dataParticulars[i]['igst'].toString() + ' %')) {
             } else {
@@ -2467,7 +2470,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 4),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
@@ -2485,9 +2488,13 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Total : ', width: 5, styles: PosStyles(bold: true)),
+                text: 'Total : ',
+                width: 5,
+                styles: const PosStyles(bold: true)),
             PosColumn(
-                text: '$totalQty', width: 2, styles: PosStyles(bold: true)),
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(bold: true)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 2,
@@ -2518,7 +2525,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                     // height: PosTextSize.size3,
@@ -2539,7 +2546,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -2575,7 +2582,7 @@ class _BtPrintState extends State<BtPrint> {
                     styles:
                         const PosStyles(align: PosAlign.center, bold: true)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center, bold: true));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -2596,7 +2603,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -2614,7 +2621,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -2642,7 +2649,8 @@ class _BtPrintState extends State<BtPrint> {
 
           bytes += ticket.row([
             PosColumn(text: ' ', width: 1),
-            PosColumn(text: 'Qty', width: 3, styles: PosStyles(bold: true)),
+            PosColumn(
+                text: 'Qty', width: 3, styles: const PosStyles(bold: true)),
             PosColumn(
                 text: 'Price',
                 width: 4,
@@ -2663,7 +2671,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
               PosColumn(
@@ -2781,8 +2789,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: double.tryParse(dataInformation['Balance'].toString())!
-                      .toStringAsFixed(2),
+                  text: dataInformation['LedgerBalance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       // height: PosTextSize.size2, width: PosTextSize.size2,
@@ -2838,13 +2845,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: (double.tryParse(
-                              dataInformation['Balance'].toString())! +
-                          (double.tryParse(
-                                  dataInformation['GrandTotal'].toString())! -
-                              double.tryParse(
-                                  dataInformation['CashReceived'].toString())!))
-                      .toStringAsFixed(2),
+                  text: dataInformation['Balance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -2885,12 +2886,10 @@ class _BtPrintState extends State<BtPrint> {
           // bytes += ticket.qrcode('example.com');
           if (taxSale) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -2901,12 +2900,10 @@ class _BtPrintState extends State<BtPrint> {
                 ComSettings.appSettings('int', 'key-dropdown-print-line', 1));
           } else if (isEsQrCodeKSA) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -2927,7 +2924,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -2937,11 +2934,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.text(
             companySettings.name,
             styles: const PosStyles(
-              align: PosAlign.center,
-              bold: true,
-              // height: PosTextSize.size1,
-              // width: PosTextSize.size2,
-            ),
+                align: PosAlign.center, bold: true, height: PosTextSize.size2),
           );
           bytes += ticket.text('');
 
@@ -2957,33 +2950,42 @@ class _BtPrintState extends State<BtPrint> {
           // header1
           if (companySettings.add1.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add1!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add2.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add2!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add3.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add3!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add4.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add4!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.telephone.toString().trim().isNotEmpty ||
               companySettings.mobile.toString().trim().isNotEmpty) {
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
-                styles: const PosStyles(align: PosAlign.center));
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
                   ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
-                  : 'TRN : ${ComSettings.getValue('GST-NO', settings)}',
-              styles: const PosStyles(align: PosAlign.center));
+                  : companyTaxMode == 'GULF'
+                      ? 'TRN : ${ComSettings.getValue('GST-NO', settings)}'
+                      : 'TaxNo : ${ComSettings.getValue('GST-NO', settings)}',
+              styles: const PosStyles(
+                  align: PosAlign.center,
+                  bold: true,
+                  height: PosTextSize.size2));
           bytes += ticket.text(invoiceHead!,
-              styles: const PosStyles(align: PosAlign.center, bold: true));
+              styles: const PosStyles(
+                  align: PosAlign.center,
+                  bold: true,
+                  height: PosTextSize.size2,
+                  width: PosTextSize.size2));
           // ticket.text('Invoice No : ${dataInformation['InvoiceNo']}',
           //     styles: const PosStyles(align: PosAlign.left));
           bytes += ticket.hr();
@@ -2991,39 +2993,57 @@ class _BtPrintState extends State<BtPrint> {
             PosColumn(
                 text: 'Invoice No : ${dataInformation['InvoiceNo']}',
                 width: 12,
-                styles: const PosStyles(align: PosAlign.left)),
+                styles: const PosStyles(
+                    align: PosAlign.left,
+                    bold: true,
+                    height: PosTextSize.size2)),
           ]);
           bytes += ticket.row([
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date       : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 12,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.left,
+                    bold: true,
+                    height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
           bytes += ticket.text('Bill To : ${dataInformation['ToName']}',
-              styles: const PosStyles(align: PosAlign.left));
+              styles: const PosStyles(align: PosAlign.left, bold: true));
           //don't use it if (isEsQrCodeKSA) {
           if (dataInformation['gstno'].toString().trim().isNotEmpty) {
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
                     ? 'GSTNO : ${dataInformation['gstno'].toString().trim()}'
                     : 'TRN : ${dataInformation['gstno'].toString().trim()}',
-                styles: const PosStyles(align: PosAlign.left));
+                styles: const PosStyles(align: PosAlign.left, bold: true));
           }
           // }
           bytes += ticket.hr();
           bytes += ticket.row([
-            PosColumn(text: 'Description', width: 7),
-            PosColumn(text: 'Qty', width: 1),
+            PosColumn(
+                text: 'Description',
+                width: 7,
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
+            PosColumn(
+                text: 'Qty',
+                width: 1,
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
             PosColumn(
                 text: 'Price',
                 width: 2,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.right,
+                    bold: true,
+                    height: PosTextSize.size2)),
             PosColumn(
                 text: 'Total',
                 width: 2,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.right,
+                    bold: true,
+                    height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
           double totalQty = 0, totalRate = 0;
@@ -3032,12 +3052,10 @@ class _BtPrintState extends State<BtPrint> {
               // if (taxPercentages.contains(
               //     '@' + dataParticulars[i]['igst'].toString() + ' %')) {
               // } else {
-              taxPercentages =
-                  '@ ' + dataParticulars[i]['igst'].toString() + ' %';
+              taxPercentages = '@ ${dataParticulars[i]['igst']} %';
               // }
             } else {
-              taxPercentages =
-                  '@ ' + dataParticulars[i]['igst'].toString() + ' %';
+              taxPercentages = '@ ${dataParticulars[i]['igst']} %';
             }
             var itemName = paper.width == PaperSize.mm80.width
                 ? dataParticulars[i]['itemname'].toString().trim().length > 26
@@ -3060,28 +3078,22 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(
                   text: itemName,
                   width: 7,
-                  styles:
-                      const PosStyles(height: PosTextSize.size1, bold: true)),
+                  styles: const PosStyles(height: PosTextSize.size2)),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName'] + '' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName']}' : dataParticulars[i]['Qty']}',
                   width: 1,
-                  styles:
-                      const PosStyles(height: PosTextSize.size1, bold: true)),
+                  styles: const PosStyles(height: PosTextSize.size2)),
               PosColumn(
                   text: '${dataParticulars[i]['Rate']}',
                   width: 2,
                   styles: const PosStyles(
-                      align: PosAlign.right,
-                      height: PosTextSize.size1,
-                      bold: true)),
+                      align: PosAlign.right, height: PosTextSize.size2)),
               PosColumn(
                   text: '${dataParticulars[i]['Total']}',
                   width: 2,
                   styles: const PosStyles(
-                      align: PosAlign.right,
-                      height: PosTextSize.size1,
-                      bold: true)),
+                      align: PosAlign.right, height: PosTextSize.size2)),
             ]);
             totalQty += dataParticulars[i]['Qty'];
             totalRate +=
@@ -3123,16 +3135,25 @@ class _BtPrintState extends State<BtPrint> {
           }
           bytes += ticket.hr();
           bytes += ticket.row([
-            PosColumn(text: 'Total ', width: 3),
-            PosColumn(text: '$totalQty', width: 3),
+            PosColumn(
+                text: 'Total ',
+                width: 3,
+                styles: const PosStyles(height: PosTextSize.size2)),
+            PosColumn(
+                text: '$totalQty',
+                width: 3,
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 3,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
             PosColumn(
                 text: '${dataInformation['Total']}',
                 width: 3,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
           // bytes += ticket.row([
@@ -3179,7 +3200,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -3204,7 +3225,7 @@ class _BtPrintState extends State<BtPrint> {
                 (bytes += ticket.text(companySettings.add2!,
                     styles: const PosStyles(align: PosAlign.center)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -3222,7 +3243,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -3238,7 +3259,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -3292,7 +3313,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: itemName, width: 7),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName'] + '' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName']}' : dataParticulars[i]['Qty']}',
                   width: 1,
                   styles: const PosStyles(align: PosAlign.right)),
               PosColumn(
@@ -3358,7 +3379,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(
                   text: '${otherAmount[i]['LedName']} :',
                   width: 6,
-                  styles: const PosStyles(align: PosAlign.right
+                  styles: const PosStyles(align: PosAlign.right, bold: true
                       // height: PosTextSize.size2,
                       // width: PosTextSize.size2,
                       )),
@@ -3366,11 +3387,10 @@ class _BtPrintState extends State<BtPrint> {
                   text: double.tryParse(otherAmount[i]['Amount'].toString())!
                       .toStringAsFixed(2),
                   width: 6,
-                  styles: const PosStyles(
-                    align: PosAlign.right,
-                    // height: PosTextSize.size2,
-                    // width: PosTextSize.size2,
-                  )),
+                  styles: const PosStyles(align: PosAlign.right, bold: true
+                      // height: PosTextSize.size2,
+                      // width: PosTextSize.size2,
+                      )),
             ]);
           }
         }
@@ -3380,7 +3400,8 @@ class _BtPrintState extends State<BtPrint> {
               text: 'Net Amount :',
               width: 6,
               styles: const PosStyles(
-                  // height: PosTextSize.size2, width: PosTextSize.size2,
+                  height: PosTextSize.size2,
+                  width: PosTextSize.size2,
                   bold: true,
                   align: PosAlign.right)),
           PosColumn(
@@ -3389,14 +3410,15 @@ class _BtPrintState extends State<BtPrint> {
               width: 6,
               styles: const PosStyles(
                   align: PosAlign.right,
-                  // height: PosTextSize.size2,
-                  // width: PosTextSize.size2,
+                  height: PosTextSize.size2,
+                  width: PosTextSize.size2,
                   bold: true)),
         ]);
         bytes += ticket.hr();
         bytes += ticket.text(
             'Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}',
-            linesAfter: 1);
+            linesAfter: 1,
+            styles: const PosStyles(bold: true));
 
         if (taxSale) {
           bytes += ticket.hr();
@@ -3405,33 +3427,40 @@ class _BtPrintState extends State<BtPrint> {
                   PosColumn(
                       text: 'GST %',
                       width: 3,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                   PosColumn(
                       text: 'Taxable',
                       width: 3,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                   PosColumn(
                       text: 'CGST Amt',
                       width: 3,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                   PosColumn(
                       text: 'SGST Amt',
                       width: 3,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                 ])
               : ticket.row([
                   PosColumn(
                       text: 'VAT %',
                       width: 4,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                   PosColumn(
                       text: 'Taxable',
                       width: 4,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                   PosColumn(
                       text: 'Vat Amt',
                       width: 4,
-                      styles: const PosStyles(align: PosAlign.center)),
+                      styles:
+                          const PosStyles(align: PosAlign.center, bold: true)),
                 ]);
           bytes += ticket.hr();
           for (var i = 0; i < taxableData.length; i++) {
@@ -3440,33 +3469,40 @@ class _BtPrintState extends State<BtPrint> {
                     PosColumn(
                         text: '${taxableData[i]['tax'].toString()} %',
                         width: 3,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                     PosColumn(
                         text: '${taxableData[i]['taxable'].toStringAsFixed(2)}',
                         width: 3,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                     PosColumn(
                         text: '${taxableData[i]['CGST'].toStringAsFixed(2)}',
                         width: 3,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                     PosColumn(
                         text: '${taxableData[i]['SGST'].toStringAsFixed(2)}',
                         width: 3,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                   ])
                 : ticket.row([
                     PosColumn(
                         text: '${taxableData[i]['tax'].toString()} %',
                         width: 4,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                     PosColumn(
                         text: '${taxableData[i]['taxable'].toStringAsFixed(2)}',
                         width: 4,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                     PosColumn(
                         text: '${taxableData[i]['IGST'].toStringAsFixed(2)}',
                         width: 4,
-                        styles: const PosStyles(align: PosAlign.right)),
+                        styles:
+                            const PosStyles(align: PosAlign.right, bold: true)),
                   ]);
             bytes += ticket.hr();
           }
@@ -3479,40 +3515,46 @@ class _BtPrintState extends State<BtPrint> {
             PosColumn(
                 text: 'CashReceived : ',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
             PosColumn(
                 text: '${dataInformation['CashReceived']}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
           ]);
           bytes += ticket.row([
             PosColumn(
-                text: 'Old Balance : ${dataInformation['Balance']}',
+                text: 'Old Balance : ${dataInformation['LedgerBalance']}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
             PosColumn(
                 text:
-                    'Balance : ${(double.tryParse(dataInformation['Balance'].toString()))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)}',
+                    'Balance : ${dataInformation['Balance'].toStringAsFixed()}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
           ]);
         }
 
         // ticket.feed(1);
-        bytes += ticket.text('${bill['message']}',
-            styles: const PosStyles(align: PosAlign.center));
+        bytes += ticket.row([
+          PosColumn(
+              text: '${bill['message']}',
+              width: 12,
+              styles: const PosStyles(align: PosAlign.center))
+        ]);
 
         if (isQrCodeKSA) {
           // Print QR Code using native function
           // bytes += ticket.qrcode('example.com');
           if (taxSale) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -3526,9 +3568,7 @@ class _BtPrintState extends State<BtPrint> {
                 companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -3545,11 +3585,12 @@ class _BtPrintState extends State<BtPrint> {
         // ticket.cut();
         // FirebaseCrashlytics.instance
         //     .setCustomKey('str_key', 'bt print complited');
+        bytes += ticket.rawBytes([0], isKanji: false);
         bytes += ticket.feed(2);
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -3613,11 +3654,10 @@ class _BtPrintState extends State<BtPrint> {
         ComSettings.getStatus('key-print-balance', settings);
     bool isEsQrCodeKSA =
         ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-    int? printCopy =
-        Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
-    int? printerModel = Settings.getValue<int>(
-        'key-dropdown-printer-model-view',
-        defaultValue: 0);
+    int printCopy = Settings.getValue<int>('key-dropdown-print-copy-view',
+        defaultValue: 0)!;
+    int printerModel = Settings.getValue<int>('key-dropdown-printer-model-view',
+        defaultValue: 0)!;
     // for (int pCopy = 0; pCopy <= printCopy; pCopy++) {
     // if (taxSale) {
     //   _taxableData(dataParticulars);
@@ -3626,7 +3666,7 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -3653,7 +3693,7 @@ class _BtPrintState extends State<BtPrint> {
           if (companySettings.telephone.toString().trim().isNotEmpty ||
               companySettings.mobile.toString().trim().isNotEmpty) {
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center));
           }
           // bytes += ticket.text(
@@ -3672,7 +3712,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.left, bold: true)),
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 6,
                 styles: const PosStyles(align: PosAlign.right, bold: true)),
           ]);
@@ -3745,9 +3785,13 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Total : ', width: 5, styles: PosStyles(bold: true)),
+                text: 'Total : ',
+                width: 5,
+                styles: const PosStyles(bold: true)),
             PosColumn(
-                text: '$totalQty', width: 2, styles: PosStyles(bold: true)),
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(bold: true)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 2,
@@ -3799,7 +3843,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -3825,7 +3869,7 @@ class _BtPrintState extends State<BtPrint> {
                     styles:
                         const PosStyles(align: PosAlign.center, bold: true)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center, bold: true));
             // bytes += ticket.text(
             //     companyTaxMode == 'INDIA'
@@ -3846,7 +3890,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -3864,7 +3908,7 @@ class _BtPrintState extends State<BtPrint> {
             bytes += ticket.row([
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 12,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
             ]);
@@ -3892,7 +3936,8 @@ class _BtPrintState extends State<BtPrint> {
 
           bytes += ticket.row([
             PosColumn(text: ' ', width: 1),
-            PosColumn(text: 'Qty', width: 3, styles: PosStyles(bold: true)),
+            PosColumn(
+                text: 'Qty', width: 3, styles: const PosStyles(bold: true)),
             PosColumn(
                 text: 'Price',
                 width: 4,
@@ -3913,7 +3958,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(text: '', width: 1),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName'] + ')' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + ' (' + dataParticulars[i]['unitName']})' : dataParticulars[i]['Qty']}',
                   width: 3,
                   styles: const PosStyles(align: PosAlign.left, bold: true)),
               PosColumn(
@@ -4031,8 +4076,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: double.tryParse(dataInformation['Balance'].toString())!
-                      .toStringAsFixed(2),
+                  text: dataInformation['LedgerBalance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       // height: PosTextSize.size2, width: PosTextSize.size2,
@@ -4088,13 +4132,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: (double.tryParse(
-                              dataInformation['Balance'].toString())! +
-                          (double.tryParse(
-                                  dataInformation['GrandTotal'].toString())! -
-                              double.tryParse(
-                                  dataInformation['CashReceived'].toString())!))
-                      .toStringAsFixed(2),
+                  text: dataInformation['Balance'].toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -4146,7 +4184,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -4154,45 +4192,50 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
-              align: PosAlign.center,
-              bold: true,
-              // height: PosTextSize.size2,
-              // width: PosTextSize.size2,
-            ),
+                align: PosAlign.center, bold: true, height: PosTextSize.size2),
           );
           bytes += ticket.text('');
 
           if (companySettings.add1.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add1!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add2.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add2!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add3.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add3!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.add4.toString().trim().isNotEmpty) {
             bytes += ticket.text(companySettings.add4!,
-                styles: const PosStyles(align: PosAlign.center));
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
           if (companySettings.telephone.toString().trim().isNotEmpty ||
               companySettings.mobile.toString().trim().isNotEmpty) {
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
-                styles: const PosStyles(align: PosAlign.center));
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
+                styles: const PosStyles(align: PosAlign.center, bold: true));
           }
-          // bytes += ticket.text(
-          //     companyTaxMode == 'INDIA'
-          //         ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
-          //         : 'TRN : ${ComSettings.getValue('GST-NO', settings)}',
-          //     styles: const PosStyles(align: PosAlign.center));
+          bytes += ticket.text(
+              companyTaxMode == 'INDIA'
+                  ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
+                  : companyTaxMode == 'GULF'
+                      ? 'TRN : ${ComSettings.getValue('GST-NO', settings)}'
+                      : 'TaxNo : ${ComSettings.getValue('GST-NO', settings)}',
+              styles: const PosStyles(
+                  align: PosAlign.center,
+                  bold: true,
+                  height: PosTextSize.size2));
           bytes += ticket.text(invoiceHead!,
-              styles: const PosStyles(align: PosAlign.center, bold: true));
+              styles: const PosStyles(
+                  align: PosAlign.center,
+                  bold: true,
+                  height: PosTextSize.size2,
+                  width: PosTextSize.size2));
           // ticket.text('Invoice No : ${dataInformation['InvoiceNo']}',
           //     styles: const PosStyles(align: PosAlign.left));
           bytes += ticket.hr();
@@ -4200,18 +4243,24 @@ class _BtPrintState extends State<BtPrint> {
             PosColumn(
                 text: 'Invoice No : ${dataInformation['InvoiceNo']}',
                 width: 12,
-                styles: const PosStyles(align: PosAlign.left)),
+                styles: const PosStyles(
+                    align: PosAlign.left,
+                    bold: true,
+                    height: PosTextSize.size2)),
           ]);
           bytes += ticket.row([
             PosColumn(
                 text:
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                    'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                 width: 12,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.left,
+                    bold: true,
+                    height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
           bytes += ticket.text('Bill To : ${dataInformation['ToName']}',
-              styles: const PosStyles(align: PosAlign.left));
+              styles: const PosStyles(align: PosAlign.left, bold: true));
           //don't use it if (isEsQrCodeKSA) {
           // if (dataInformation['gstno'].toString().trim().isNotEmpty) {
           //   bytes += ticket.text(
@@ -4221,40 +4270,131 @@ class _BtPrintState extends State<BtPrint> {
           //       styles: const PosStyles(align: PosAlign.left));
           // }
           // }
+          if (dataInformation['gstno'].toString().trim().isNotEmpty) {
+            bytes += ticket.text(
+                companyTaxMode == 'INDIA'
+                    ? 'GSTNO : ${dataInformation['gstno'].toString().trim()}'
+                    : companyTaxMode == 'GULF'
+                        ? 'TRN : ${dataInformation['gstno'].toString().trim()}'
+                        : 'TaxNo : ${dataInformation['gstno'].toString().trim()}',
+                styles: const PosStyles(align: PosAlign.left, bold: true));
+          }
           bytes += ticket.hr();
           bytes += ticket.row([
-            PosColumn(text: 'Description', width: 7),
-            PosColumn(text: 'Qty', width: 1),
+            PosColumn(
+                text: 'Description',
+                width: 6,
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
+            PosColumn(
+                text: 'Qty',
+                width: 1,
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
             PosColumn(
                 text: 'Price',
                 width: 2,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
+            PosColumn(
+                text: 'Disc',
+                width: 1,
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
             PosColumn(
                 text: 'Total',
                 width: 2,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(bold: true, height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
-          double totalQty = 0, totalRate = 0;
-
-          // bytes += ticket.hr();
+          double totalQty = 0, totalRate = 0, totalDisc = 0;
+          for (var i = 0; i < dataParticulars.length; i++) {
+            if (double.tryParse(dataParticulars[i]['igst'].toString())! > 0) {
+              // if (taxPercentages.contains(
+              //     '@' + dataParticulars[i]['igst'].toString() + ' %')) {
+              // } else {
+              taxPercentages = '@ ${dataParticulars[i]['igst']} %';
+              // }
+            } else {
+              taxPercentages = '@ ${dataParticulars[i]['igst']} %';
+            }
+            var itemName = paper.width == PaperSize.mm80.width
+                ? dataParticulars[i]['itemname'].toString().trim().length > 26
+                    ? dataParticulars[i]['itemname']
+                        .toString()
+                        .trim()
+                        .characters
+                        .take(26)
+                        .toString()
+                    : dataParticulars[i]['itemname'].toString()
+                : dataParticulars[i]['itemname'].toString().trim().length > 12
+                    ? dataParticulars[i]['itemname']
+                        .toString()
+                        .trim()
+                        .characters
+                        .take(12)
+                        .toString()
+                    : dataParticulars[i]['itemname'].toString();
+            bytes += ticket.row([
+              PosColumn(
+                  text: itemName,
+                  width: 6,
+                  styles: const PosStyles(height: PosTextSize.size2)),
+              PosColumn(
+                  text:
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName']}' : dataParticulars[i]['Qty']}',
+                  width: 1,
+                  styles: const PosStyles(height: PosTextSize.size2)),
+              PosColumn(
+                  text: '${dataParticulars[i]['Rate']}',
+                  width: 2,
+                  styles: const PosStyles(
+                      align: PosAlign.right, height: PosTextSize.size2)),
+              PosColumn(
+                  text: '${dataParticulars[i]['Disc']}',
+                  width: 1,
+                  styles: const PosStyles(
+                      align: PosAlign.right, height: PosTextSize.size2)),
+              PosColumn(
+                  text: '${dataParticulars[i]['Total']}',
+                  width: 2,
+                  styles: const PosStyles(
+                      align: PosAlign.right, height: PosTextSize.size2)),
+            ]);
+            totalQty += dataParticulars[i]['Qty'];
+            totalRate +=
+                double.tryParse(dataParticulars[i]['Rate'].toString())!;
+            totalDisc +=
+                double.tryParse(dataParticulars[i]['Disc'].toString())!;
+          }
+          bytes += ticket.hr();
           bytes += ticket.row([
-            PosColumn(text: 'Total ', width: 3),
-            PosColumn(text: '$totalQty', width: 3),
+            PosColumn(
+                text: 'Total ',
+                width: 3,
+                styles: const PosStyles(height: PosTextSize.size2)),
+            PosColumn(
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
-                width: 3,
-                styles: const PosStyles(align: PosAlign.right)),
+                width: 2,
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
+            PosColumn(
+                text: totalDisc.toStringAsFixed(2),
+                width: 2,
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
             PosColumn(
                 text: '${dataInformation['Total']}',
                 width: 3,
-                styles: const PosStyles(align: PosAlign.right)),
+                styles: const PosStyles(
+                    align: PosAlign.right, height: PosTextSize.size2)),
           ]);
           bytes += ticket.hr();
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -4269,7 +4409,7 @@ class _BtPrintState extends State<BtPrint> {
                 (bytes += ticket.text(companySettings.add2!,
                     styles: const PosStyles(align: PosAlign.center)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center));
 
             bytes += ticket.text(invoiceHead!,
@@ -4281,7 +4421,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -4295,7 +4435,7 @@ class _BtPrintState extends State<BtPrint> {
                   styles: const PosStyles(align: PosAlign.left)),
               PosColumn(
                   text:
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
+                      'Date : ${'${DateUtil.dateDMY(dataInformation['DDate'])} ${DateUtil.timeHMSA(dataInformation['BTime'])}'}',
                   width: 6,
                   styles: const PosStyles(align: PosAlign.right)),
             ]);
@@ -4314,11 +4454,15 @@ class _BtPrintState extends State<BtPrint> {
           }
           bytes += ticket.hr();
           bytes += ticket.row([
-            PosColumn(text: 'Description', width: 7),
+            PosColumn(text: 'Description', width: 6),
             PosColumn(text: 'Qty', width: 1),
             PosColumn(
                 text: 'Price',
                 width: 2,
+                styles: const PosStyles(align: PosAlign.right)),
+            PosColumn(
+                text: 'Disc',
+                width: 1,
                 styles: const PosStyles(align: PosAlign.right)),
             PosColumn(
                 text: 'Total',
@@ -4326,7 +4470,7 @@ class _BtPrintState extends State<BtPrint> {
                 styles: const PosStyles(align: PosAlign.right)),
           ]);
           bytes += ticket.hr();
-          double totalQty = 0, totalRate = 0;
+          double totalQty = 0, totalRate = 0, totalDisc = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             var itemName = paper.width == PaperSize.mm80.width
                 ? dataParticulars[i]['itemname'].toString().trim().length > 26
@@ -4346,10 +4490,10 @@ class _BtPrintState extends State<BtPrint> {
                         .toString()
                     : dataParticulars[i]['itemname'].toString();
             bytes += ticket.row([
-              PosColumn(text: itemName, width: 7),
+              PosColumn(text: itemName, width: 6),
               PosColumn(
                   text:
-                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName'] + '' : dataParticulars[i]['Qty']}',
+                      '${dataParticulars[i]['unitName'].toString().isNotEmpty ? '${dataParticulars[i]['Qty'].toString() + '' + dataParticulars[i]['unitName']}' : dataParticulars[i]['Qty']}',
                   width: 1,
                   styles: const PosStyles(align: PosAlign.right)),
               PosColumn(
@@ -4357,6 +4501,12 @@ class _BtPrintState extends State<BtPrint> {
                       .toStringAsFixed(2),
                   width: 2,
                   styles: const PosStyles(align: PosAlign.right)),
+              PosColumn(
+                  text: double.tryParse(dataParticulars[i]['Disc'].toString())!
+                      .toStringAsFixed(2),
+                  width: 1,
+                  styles: const PosStyles(
+                      align: PosAlign.right, height: PosTextSize.size2)),
               PosColumn(
                   text: double.tryParse(dataParticulars[i]['Total'].toString())!
                       .toStringAsFixed(2),
@@ -4366,25 +4516,31 @@ class _BtPrintState extends State<BtPrint> {
             totalQty += dataParticulars[i]['Qty'];
             totalRate +=
                 double.tryParse(dataParticulars[i]['Rate'].toString())!;
+            totalDisc +=
+                double.tryParse(dataParticulars[i]['Disc'].toString())!;
           }
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
                 text: 'Sub =',
-                width: 2,
+                width: 3,
                 styles: const PosStyles(align: PosAlign.left)),
             PosColumn(
                 text: '$totalQty',
-                width: 3,
+                width: 2,
                 styles: const PosStyles(align: PosAlign.left)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
-                width: 3,
+                width: 2,
+                styles: const PosStyles(align: PosAlign.right)),
+            PosColumn(
+                text: totalDisc.toStringAsFixed(2),
+                width: 2,
                 styles: const PosStyles(align: PosAlign.right)),
             PosColumn(
                 text: double.tryParse(dataInformation['Total'].toString())!
                     .toStringAsFixed(2),
-                width: 4,
+                width: 3,
                 styles: const PosStyles(align: PosAlign.right)),
           ]);
           bytes += ticket.hr();
@@ -4411,7 +4567,7 @@ class _BtPrintState extends State<BtPrint> {
               PosColumn(
                   text: '${otherAmount[i]['LedName']} :',
                   width: 6,
-                  styles: const PosStyles(align: PosAlign.right
+                  styles: const PosStyles(align: PosAlign.right, bold: true
                       // height: PosTextSize.size2,
                       // width: PosTextSize.size2,
                       )),
@@ -4419,11 +4575,10 @@ class _BtPrintState extends State<BtPrint> {
                   text: double.tryParse(otherAmount[i]['Amount'].toString())!
                       .toStringAsFixed(2),
                   width: 6,
-                  styles: const PosStyles(
-                    align: PosAlign.right,
-                    // height: PosTextSize.size2,
-                    // width: PosTextSize.size2,
-                  )),
+                  styles: const PosStyles(align: PosAlign.right, bold: true
+                      // height: PosTextSize.size2,
+                      // width: PosTextSize.size2,
+                      )),
             ]);
           }
         }
@@ -4433,7 +4588,8 @@ class _BtPrintState extends State<BtPrint> {
               text: 'Net Amount :',
               width: 6,
               styles: const PosStyles(
-                  // height: PosTextSize.size2, width: PosTextSize.size2,
+                  height: PosTextSize.size2,
+                  width: PosTextSize.size2,
                   bold: true,
                   align: PosAlign.right)),
           PosColumn(
@@ -4442,14 +4598,15 @@ class _BtPrintState extends State<BtPrint> {
               width: 6,
               styles: const PosStyles(
                   align: PosAlign.right,
-                  // height: PosTextSize.size2,
+                  height: PosTextSize.size2,
                   // width: PosTextSize.size2,
                   bold: true)),
         ]);
         bytes += ticket.hr();
         bytes += ticket.text(
             'Amount in Words: ${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}',
-            linesAfter: 1);
+            linesAfter: 1,
+            styles: const PosStyles(bold: true));
 
         if (Settings.getValue<bool>('key-print-balance',
             defaultValue: false)!) {
@@ -4459,22 +4616,26 @@ class _BtPrintState extends State<BtPrint> {
             PosColumn(
                 text: 'CashReceived : ',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
             PosColumn(
                 text: '${dataInformation['CashReceived']}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
           ]);
           bytes += ticket.row([
             PosColumn(
-                text: 'Old Balance : ${dataInformation['Balance']}',
+                text: 'Old Balance : ${dataInformation['LedgerBalance']}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
             PosColumn(
                 text:
-                    'Balance : ${(double.tryParse(dataInformation['Balance'].toString()))! + (double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!)}',
+                    'Balance : ${dataInformation['Balance'].toStringAsFixed()}',
                 width: 6,
-                styles: const PosStyles(align: PosAlign.center)),
+                styles: const PosStyles(
+                    align: PosAlign.center, height: PosTextSize.size2)),
           ]);
         }
         if (Settings.getValue<bool>('key-print-bank-details',
@@ -4492,20 +4653,22 @@ class _BtPrintState extends State<BtPrint> {
         }
 
         // ticket.feed(1);
-        bytes += ticket.text('${bill['message']}',
-            styles: const PosStyles(align: PosAlign.center));
+        bytes += ticket.row([
+          PosColumn(
+              text: '${bill['message']}',
+              width: 12,
+              styles: const PosStyles(align: PosAlign.center))
+        ]);
 
         if (isQrCodeKSA) {
           // Print QR Code using native function
           // bytes += ticket.qrcode('example.com');
           if (taxSale) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -4516,12 +4679,10 @@ class _BtPrintState extends State<BtPrint> {
                 ComSettings.appSettings('int', 'key-dropdown-print-line', 1));
           } else if (isEsQrCodeKSA) {
             bytes += ticket.qrcode(SaudiConversion.getBase64(
-                companySettings.name!,
+                companySettings.name,
                 ComSettings.getValue('GST-NO', settings),
                 DateUtil.dateTimeQrDMY(
-                    DateUtil.datedYMD(dataInformation['DDate']) +
-                        ' ' +
-                        DateUtil.timeHMS(dataInformation['BTime'])),
+                    '${DateUtil.datedYMD(dataInformation['DDate'])} ${DateUtil.timeHMS(dataInformation['BTime'])}'),
                 double.tryParse(dataInformation['GrandTotal'].toString())!
                     .toStringAsFixed(2),
                 (double.tryParse(dataInformation['CGST'].toString())! +
@@ -4540,7 +4701,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -4598,9 +4759,7 @@ class _BtPrintState extends State<BtPrint> {
     // var dataSerialNO = bill['SerialNO'];,
     // var dataDeliveryNote = bill['DeliveryNote'];
     // var otherAmount = bill['otherAmount'];
-    var BalanceAmount = bill['balance'] == 'null'
-        ? '0'
-        : bill['balance'].toString().split(' ')[0].toString();
+    var BalanceAmount = bill['Balance'].toString();
     var ledgerName = mainAccount
         .firstWhere(
           (element) =>
@@ -4610,7 +4769,7 @@ class _BtPrintState extends State<BtPrint> {
         )['LedName']
         .toString();
     // header
-    var taxSale = false;
+    bool taxSale = false;
     // salesTypeData.type == 'SALES-ES'
     //     ? false
     //     : salesTypeData.type == 'SALES-Q'
@@ -4623,17 +4782,16 @@ class _BtPrintState extends State<BtPrint> {
     bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
     bool isEsQrCodeKSA =
         ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-    int? printCopy =
-        Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
-    int? printerModel = Settings.getValue<int>(
-        'key-dropdown-printer-model-view',
-        defaultValue: 0);
+    int printCopy = Settings.getValue<int>('key-dropdown-print-copy-view',
+        defaultValue: 0)!;
+    int printerModel = Settings.getValue<int>('key-dropdown-printer-model-view',
+        defaultValue: 0)!;
     // for (int pCopy = 0; pCopy <= printCopy; pCopy++) {
     if (printerSize == "2") {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -4648,7 +4806,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center, bold: true));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
               styles: const PosStyles(align: PosAlign.center, bold: true));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -4706,11 +4864,9 @@ class _BtPrintState extends State<BtPrint> {
           double totalQty = 0, totalRate = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['IGST'].toString())! > 0) {
-              if (taxPercentages.contains(
-                  '@' + dataParticulars[i]['IGST'].toString() + ' %')) {
+              if (taxPercentages.contains('@${dataParticulars[i]['IGST']} %')) {
               } else {
-                taxPercentages +=
-                    '@' + dataParticulars[i]['IGST'].toString() + ' %,';
+                taxPercentages += '@${dataParticulars[i]['IGST']} %,';
               }
             }
             var itemName = dataParticulars[i]['ProductName'].toString();
@@ -4736,9 +4892,13 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Total : ', width: 5, styles: PosStyles(bold: true)),
+                text: 'Total : ',
+                width: 5,
+                styles: const PosStyles(bold: true)),
             PosColumn(
-                text: '$totalQty', width: 2, styles: PosStyles(bold: true)),
+                text: '$totalQty',
+                width: 2,
+                styles: const PosStyles(bold: true)),
             PosColumn(
                 text: totalRate.toStringAsFixed(2),
                 width: 2,
@@ -4769,7 +4929,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                     // height: PosTextSize.size3,
@@ -4790,7 +4950,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -4826,7 +4986,7 @@ class _BtPrintState extends State<BtPrint> {
                     styles:
                         const PosStyles(align: PosAlign.center, bold: true)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center, bold: true));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -4891,7 +5051,8 @@ class _BtPrintState extends State<BtPrint> {
 
           bytes += ticket.row([
             PosColumn(text: ' ', width: 1),
-            PosColumn(text: 'Qty', width: 3, styles: PosStyles(bold: true)),
+            PosColumn(
+                text: 'Qty', width: 3, styles: const PosStyles(bold: true)),
             PosColumn(
                 text: 'Price',
                 width: 4,
@@ -5153,7 +5314,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -5161,7 +5322,7 @@ class _BtPrintState extends State<BtPrint> {
       try {
         if (taxSale) {
           bytes += ticket.text(
-            companySettings.name!,
+            companySettings.name,
             styles: const PosStyles(
               align: PosAlign.center,
               bold: true,
@@ -5188,7 +5349,7 @@ class _BtPrintState extends State<BtPrint> {
               styles: const PosStyles(align: PosAlign.center));
           companySettings.add2.toString().trim().isNotEmpty ?? (bytes += text3);
           bytes += ticket.text(
-              'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+              'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
               styles: const PosStyles(align: PosAlign.center));
           bytes += ticket.text(
               companyTaxMode == 'INDIA'
@@ -5240,11 +5401,9 @@ class _BtPrintState extends State<BtPrint> {
           double totalQty = 0, totalRate = 0;
           for (var i = 0; i < dataParticulars.length; i++) {
             if (double.tryParse(dataParticulars[i]['IGST'].toString())! > 0) {
-              if (taxPercentages.contains(
-                  '@' + dataParticulars[i]['IGST'].toString() + ' %')) {
+              if (taxPercentages.contains('@${dataParticulars[i]['IGST']} %')) {
               } else {
-                taxPercentages +=
-                    '@' + dataParticulars[i]['IGST'].toString() + ' %,';
+                taxPercentages += '@${dataParticulars[i]['IGST']} %,';
               }
             }
             var itemName = paper.width == PaperSize.mm80.width
@@ -5317,7 +5476,7 @@ class _BtPrintState extends State<BtPrint> {
           bytes += ticket.hr();
           bytes += ticket.row([
             PosColumn(
-                text: 'Tax : ' + taxPercentages,
+                text: 'Tax : $taxPercentages',
                 width: 6,
                 styles: const PosStyles(
                   // height: PosTextSize.size3,
@@ -5339,7 +5498,7 @@ class _BtPrintState extends State<BtPrint> {
         } else {
           if (ComSettings.appSettings('bool', 'key-print-header-es', false)) {
             bytes += ticket.text(
-              companySettings.name!,
+              companySettings.name,
               styles: const PosStyles(
                 align: PosAlign.center,
                 bold: true,
@@ -5364,7 +5523,7 @@ class _BtPrintState extends State<BtPrint> {
                 (bytes += ticket.text(companySettings.add2!,
                     styles: const PosStyles(align: PosAlign.center)));
             bytes += ticket.text(
-                'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
                 styles: const PosStyles(align: PosAlign.center));
             bytes += ticket.text(
                 companyTaxMode == 'INDIA'
@@ -5584,7 +5743,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -5611,7 +5770,7 @@ class _BtPrintState extends State<BtPrint> {
     if (printerSize == "2") {
       try {
         bytes += ticket.text(
-          companySettings.name!,
+          companySettings.name,
           styles: const PosStyles(
             align: PosAlign.center,
             bold: true,
@@ -5631,12 +5790,14 @@ class _BtPrintState extends State<BtPrint> {
             (bytes += ticket.text(companySettings.add2!,
                 styles: const PosStyles(align: PosAlign.center, bold: true)));
         bytes += ticket.text(
-            'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+            'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
             styles: const PosStyles(align: PosAlign.center, bold: true));
         bytes += ticket.text(
             companyTaxMode == 'INDIA'
                 ? 'GSTNO : ${ComSettings.getValue('GST-NO', settings)}'
-                : 'TRN : ${ComSettings.getValue('GST-NO', settings)}',
+                : companyTaxMode == 'GULF'
+                    ? 'TRN : ${ComSettings.getValue('GST-NO', settings)}'
+                    : 'TAX No : ${ComSettings.getValue('GST-NO', settings)}',
             styles: const PosStyles(align: PosAlign.center, bold: true));
         bytes += ticket.text(invoiceHead!,
             styles: const PosStyles(align: PosAlign.center, bold: true));
@@ -5718,8 +5879,8 @@ class _BtPrintState extends State<BtPrint> {
           ]);
         } else {
           if (ledgerName != 'CASH') {
-            var bal = bill['oldBalance'].toString().split(' ')[0];
-            double oldBalance = double.tryParse(bal.toString())!;
+            // var bal = bill['oldBalance'].toString().split(' ')[0];
+            double oldBalance = double.tryParse(bill['oldBalance'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Total :',
@@ -5759,8 +5920,7 @@ class _BtPrintState extends State<BtPrint> {
                 bold: true,
               ),
             );
-            double balance =
-                oldBalance - double.tryParse(bill['total'].toString())!;
+            double balance = double.tryParse(bill['balance'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Balance :',
@@ -5808,14 +5968,14 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
     } else {
       try {
         bytes += ticket.text(
-          companySettings.name!,
+          companySettings.name,
           styles: const PosStyles(
             align: PosAlign.center,
             bold: true,
@@ -5835,7 +5995,7 @@ class _BtPrintState extends State<BtPrint> {
             (bytes += ticket.text(companySettings.add2!,
                 styles: const PosStyles(align: PosAlign.center, bold: true)));
         bytes += ticket.text(
-            'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+            'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
             styles: const PosStyles(align: PosAlign.center, bold: true));
         bytes += ticket.text(
             companyTaxMode == 'INDIA'
@@ -5962,11 +6122,11 @@ class _BtPrintState extends State<BtPrint> {
                 bold: true,
               ),
             );
-            double? balance = oldBalance > 0
+            double balance = oldBalance > 0
                 ? oldBalance > double.tryParse(bill['total'].toString())!
                     ? (oldBalance - double.tryParse(bill['total'].toString())!)
                     : double.tryParse(bill['total'].toString())! - oldBalance
-                : double.tryParse(bill['total'].toString());
+                : double.tryParse(bill['total'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Balance :',
@@ -5976,7 +6136,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: balance!.toStringAsFixed(2),
+                  text: balance.toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -6014,7 +6174,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -6042,7 +6202,7 @@ class _BtPrintState extends State<BtPrint> {
     if (printerSize == "2") {
       try {
         bytes += ticket.text(
-          companySettings.name!,
+          companySettings.name,
           styles: const PosStyles(
             align: PosAlign.center,
             bold: true,
@@ -6062,7 +6222,7 @@ class _BtPrintState extends State<BtPrint> {
             (bytes += ticket.text(companySettings.add2!,
                 styles: const PosStyles(align: PosAlign.center, bold: true)));
         bytes += ticket.text(
-            'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+            'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
             styles: const PosStyles(align: PosAlign.center, bold: true));
         bytes += ticket.text(
             companyTaxMode == 'INDIA'
@@ -6149,8 +6309,8 @@ class _BtPrintState extends State<BtPrint> {
           ]);
         } else {
           if (ledgerName != 'CASH') {
-            var bal = bill['oldBalance'].toString().split(' ')[0];
-            double oldBalance = double.tryParse(bal.toString())!;
+            // var bal = bill['oldBalance'].toString().split(' ')[0];
+            double oldBalance = double.tryParse(bill['oldBalance'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Total :',
@@ -6190,10 +6350,7 @@ class _BtPrintState extends State<BtPrint> {
                 bold: true,
               ),
             );
-            double? balance =
-                oldBalance > double.tryParse(bill['total'].toString())!
-                    ? (oldBalance - double.tryParse(bill['total'].toString())!)
-                    : double.tryParse(bill['total'].toString());
+            double balance = double.tryParse(bill['balance'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Balance :',
@@ -6203,7 +6360,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: balance!.toStringAsFixed(2),
+                  text: balance.toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -6241,14 +6398,14 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
     } else {
       try {
         bytes += ticket.text(
-          companySettings.name!,
+          companySettings.name,
           styles: const PosStyles(
             align: PosAlign.center,
             bold: true,
@@ -6268,7 +6425,7 @@ class _BtPrintState extends State<BtPrint> {
             (bytes += ticket.text(companySettings.add2!,
                 styles: const PosStyles(align: PosAlign.center, bold: true)));
         bytes += ticket.text(
-            'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
+            'Tel : ${'${companySettings.telephone},${companySettings.mobile}'}',
             styles: const PosStyles(align: PosAlign.center, bold: true));
         bytes += ticket.text(
             companyTaxMode == 'INDIA'
@@ -6395,10 +6552,10 @@ class _BtPrintState extends State<BtPrint> {
                 bold: true,
               ),
             );
-            double? balance =
+            double balance =
                 oldBalance > double.tryParse(bill['total'].toString())!
                     ? (oldBalance - double.tryParse(bill['total'].toString())!)
-                    : double.tryParse(bill['total'].toString());
+                    : double.tryParse(bill['total'].toString())!;
             bytes += ticket.row([
               PosColumn(
                   text: 'Balance :',
@@ -6408,7 +6565,7 @@ class _BtPrintState extends State<BtPrint> {
                       bold: true,
                       align: PosAlign.right)),
               PosColumn(
-                  text: balance!.toStringAsFixed(2),
+                  text: balance.toStringAsFixed(2),
                   width: 6,
                   styles: const PosStyles(
                       align: PosAlign.right,
@@ -6446,7 +6603,7 @@ class _BtPrintState extends State<BtPrint> {
         return bytes;
       } catch (e, s) {
         FirebaseCrashlytics.instance
-            .recordError(e, s, reason: 'bt print:' + ticket.toString());
+            .recordError(e, s, reason: 'bt print:$ticket');
         bytes += ticket.feed(2);
         return bytes;
       }
@@ -6481,9 +6638,38 @@ class _BtPrintState extends State<BtPrint> {
       return bytes;
     } catch (e, s) {
       FirebaseCrashlytics.instance
-          .recordError(e, s, reason: 'bt print:' + ticket.toString());
+          .recordError(e, s, reason: 'bt print:$ticket');
       bytes += ticket.feed(2);
       return bytes;
+    }
+  }
+
+  @override
+  void dispose() {
+    printerManager.stopScan();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  String defaultPrinter = '';
+  void initDefaultData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    defaultPrinter = pref.getString('defaultPrinter') ?? '';
+  }
+
+  void setDefaultPrinter() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString('defaultPrinter', defaultPrinter);
+  }
+
+  void printDefault() {
+    if (mounted) {
+      if (defaultPrinter.isNotEmpty) {
+        PrinterBluetooth device =
+            _devices.firstWhere((element) => element.name == defaultPrinter);
+
+        _setPrinter(device);
+      }
     }
   }
 }

@@ -115,277 +115,301 @@ class _OwnerHomeState extends State<OwnerHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bagroundColor,
-        appBar: AppBar(
-          title: const Text("SherAcc"),
-          // brightness: Brightness.dark,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                _handleLogout();
-              },
-            ),
-            IconButton(
+    return WillPopScope(
+      onWillPop: showExitPopup,
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+          appBar: AppBar(
+            title: const Text("SherAcc"),
+            // brightness: Brightness.dark,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
                 onPressed: () {
-                  // Navigator.pushNamed(context, '/salesManList');
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          const SalesManSettings()));
+                  _handleLogout();
                 },
-                icon: const Icon(Icons.settings))
-          ],
-          elevation: .1,
-        ),
-        body:
-            // );
-// }
+              ),
+              IconButton(
+                  onPressed: () {
+                    // Navigator.pushNamed(context, '/salesManList');
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) =>
+                            const SalesManSettings()));
+                  },
+                  icon: const Icon(Icons.settings))
+            ],
+            elevation: .1,
+          ),
+          body:
+              // );
+      // }
+      
+              // @override
+              // Widget build(BuildContext context) {
+              GridView.count(
+            primary: false,
+            padding: const EdgeInsets.all(20),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            crossAxisCount: MediaQuery.of(context).size.width > 500
+                ? (MediaQuery.of(context).size.width ~/ 250).toInt()
+                : (MediaQuery.of(context).size.width ~/ 150).toInt(),
+            children: <Widget>[
+              GestureDetector(
+                child: Card(
+                  surfaceTintColor: grey,
+                color: white,
+                elevation: 4,
+                  child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                          image: const DecorationImage(
+                              image: AssetImage('assets/icons/ic_lrdger_report.png'),
+                              scale: 1.9
+                              ),
+                            borderRadius: BorderRadius.circular(50),
+                            color: const Color(0xff0008B3)),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Ledger Report',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+                ),
+                onTap: () {
+                  argumentsPass = {'mode': 'ledger'};
+                  Navigator.pushNamed(
+                    context,
+                    '/select_ledger',
+                  );
+                },
+              ),
+              GestureDetector(
+                child: Card(
+                   surfaceTintColor: grey,
+                color: white,
+                elevation: 4,
+                  child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                          image: const DecorationImage(
+                              image: AssetImage('assets/icons/ic_daybook.png'),
+                              scale: 1.9
+                              ),
+                            borderRadius: BorderRadius.circular(50),
+                            color: const Color(0xff0008B3)),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Day Book',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+                ),
+                onTap: () {
+                  argumentsPass = {'mode': 'CashBook'};
+                  Navigator.pushNamed(
+                    context,
+                    '/select_ledger',
+                  );
+                },
+              ),
+              // GestureDetector(
+              //   child: Card(
+              //     elevation: 5.0,
+              //     child: Container(
+              //       padding: const EdgeInsets.all(0),
+              //       child: Column(
+              //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //         children: <Widget>[
+              //           new Icon(
+              //             Icons.account_balance_rounded,
+              //             color: Colors.red[300],
+              //             size: 90.0,
+              //           ),
+              //           Text(
+              //             'Trial Balance',
+              //             style: TextStyle(
+              //                 color: Colors.black, fontWeight: FontWeight.bold),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ),
+              //   onTap: () {
+              //     argumentsPass = {'mode': 'TrialBalance'};
+              //     Navigator.pushNamed(
+              //       context,
+              //       '/select_ledger',
+              //     );
+              //   },
+              // ),
+              // GestureDetector(
+              //   child: Card(
+              //     elevation: 5.0,
+              //     child: Container(
+              //       padding: const EdgeInsets.all(0),
+              //       child: Column(
+              //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+              //         children: <Widget>[
+              //           new Icon(
+              //             Icons.show_chart_rounded,
+              //             color: Colors.green[300],
+              //             size: 90.0,
+              //           ),
+              //           Text(
+              //             'Cash Flow',
+              //             style: TextStyle(
+              //                 color: Colors.black, fontWeight: FontWeight.bold),
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //   ),
+              //   onTap: () {
+              //     argumentsPass = {'mode': 'CashFlow'};
+              //     Navigator.pushNamed(
+              //       context,
+              //       '/select_ledger',
+              //     );
+              //   },
+              // ),
+              GestureDetector(
+                child: Card(
+                   surfaceTintColor: grey,
+                color: white,
+                elevation: 4,
+                  child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                          image: const DecorationImage(
+                              image: AssetImage('assets/icons/ic_fund_flow.png'),
+                              scale: 1.9
+                              ),
+                            borderRadius: BorderRadius.circular(50),
+                            color: const Color(0xff0008B3)),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'Fund Flow',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+                ),
+                onTap: () {
+                  argumentsPass = {'mode': 'FundFlow'};
+                  Navigator.pushNamed(
+                    context,
+                    '/select_ledger',
+                  );
+                },
+              ),
+              GestureDetector(
+                child: Card(
+                   surfaceTintColor: grey,
+                color: white,
+                elevation: 4,
+                  child: Container(
+                  padding: const EdgeInsets.all(0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Container(
+                        width: 77,
+                        height: 77,
+                        decoration: BoxDecoration(
+                          image: const DecorationImage(
+                              image: AssetImage('assets/icons/ic_other.png'),
+                              scale: 1.9
+                              ),
+                            borderRadius: BorderRadius.circular(50),
+                            color: const Color(0xff0008B3)),
+                        // child: Image.asset(iconsUrl),
+                      ),
+                      const Text(
+                        'More',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                      ),
+                    ],
+                  ),
+                ),
+                ),
+                onTap: () {
+                  _showDialog(context);
+                  //Ledger_ReportProject
+                  //ReceivblesDebitOnly,
+                  //ReceivblesCreditOnly
+                  //ReceivblesDebitOnlySalesman
+                  //ReceivblesCreditOnlySalesman
+                  //Cash Book Projection
+                  //Trial_G_l
+                  //Trial_G
+                  //Custom Summary
+                  //Ledger_Report_Qty
+                  //ShowBills
+                },
+              ),
+            ],
+          )),
+    );
+  }
 
-            // @override
-            // Widget build(BuildContext context) {
-            GridView.count(
-          primary: false,
-          padding: const EdgeInsets.all(20),
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          crossAxisCount: MediaQuery.of(context).size.width > 500
-              ? (MediaQuery.of(context).size.width ~/ 250).toInt()
-              : (MediaQuery.of(context).size.width ~/ 150).toInt(),
-          children: <Widget>[
-            GestureDetector(
-              child: Card(
-                surfaceTintColor: grey,
-              color: white,
-              elevation: 4,
-                child: Container(
-                padding: const EdgeInsets.all(0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                      width: 77,
-                      height: 77,
-                      decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage('assets/icons/ic_lrdger_report.png'),
-                            scale: 1.9
-                            ),
-                          borderRadius: BorderRadius.circular(50),
-                          color: const Color(0xff0008B3)),
-                      // child: Image.asset(iconsUrl),
-                    ),
-                    const Text(
-                      'Ledger Report',
-                      style: TextStyle(
-                          fontFamily: 'poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15),
-                    ),
-                  ],
-                ),
+    Future<bool> showExitPopup() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit an App?'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
               ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
               ),
-              onTap: () {
-                argumentsPass = {'mode': 'ledger'};
-                Navigator.pushNamed(
-                  context,
-                  '/select_ledger',
-                );
-              },
-            ),
-            GestureDetector(
-              child: Card(
-                 surfaceTintColor: grey,
-              color: white,
-              elevation: 4,
-                child: Container(
-                padding: const EdgeInsets.all(0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                      width: 77,
-                      height: 77,
-                      decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage('assets/icons/ic_daybook.png'),
-                            scale: 1.9
-                            ),
-                          borderRadius: BorderRadius.circular(50),
-                          color: const Color(0xff0008B3)),
-                      // child: Image.asset(iconsUrl),
-                    ),
-                    const Text(
-                      'Day Book',
-                      style: TextStyle(
-                          fontFamily: 'poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-              ),
-              onTap: () {
-                argumentsPass = {'mode': 'CashBook'};
-                Navigator.pushNamed(
-                  context,
-                  '/select_ledger',
-                );
-              },
-            ),
-            // GestureDetector(
-            //   child: Card(
-            //     elevation: 5.0,
-            //     child: Container(
-            //       padding: const EdgeInsets.all(0),
-            //       child: Column(
-            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //         children: <Widget>[
-            //           new Icon(
-            //             Icons.account_balance_rounded,
-            //             color: Colors.red[300],
-            //             size: 90.0,
-            //           ),
-            //           Text(
-            //             'Trial Balance',
-            //             style: TextStyle(
-            //                 color: Colors.black, fontWeight: FontWeight.bold),
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            //   onTap: () {
-            //     argumentsPass = {'mode': 'TrialBalance'};
-            //     Navigator.pushNamed(
-            //       context,
-            //       '/select_ledger',
-            //     );
-            //   },
-            // ),
-            // GestureDetector(
-            //   child: Card(
-            //     elevation: 5.0,
-            //     child: Container(
-            //       padding: const EdgeInsets.all(0),
-            //       child: Column(
-            //         mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //         children: <Widget>[
-            //           new Icon(
-            //             Icons.show_chart_rounded,
-            //             color: Colors.green[300],
-            //             size: 90.0,
-            //           ),
-            //           Text(
-            //             'Cash Flow',
-            //             style: TextStyle(
-            //                 color: Colors.black, fontWeight: FontWeight.bold),
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            //   onTap: () {
-            //     argumentsPass = {'mode': 'CashFlow'};
-            //     Navigator.pushNamed(
-            //       context,
-            //       '/select_ledger',
-            //     );
-            //   },
-            // ),
-            GestureDetector(
-              child: Card(
-                 surfaceTintColor: grey,
-              color: white,
-              elevation: 4,
-                child: Container(
-                padding: const EdgeInsets.all(0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                      width: 77,
-                      height: 77,
-                      decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage('assets/icons/ic_fund_flow.png'),
-                            scale: 1.9
-                            ),
-                          borderRadius: BorderRadius.circular(50),
-                          color: const Color(0xff0008B3)),
-                      // child: Image.asset(iconsUrl),
-                    ),
-                    const Text(
-                      'Fund Flow',
-                      style: TextStyle(
-                          fontFamily: 'poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-              ),
-              onTap: () {
-                argumentsPass = {'mode': 'FundFlow'};
-                Navigator.pushNamed(
-                  context,
-                  '/select_ledger',
-                );
-              },
-            ),
-            GestureDetector(
-              child: Card(
-                 surfaceTintColor: grey,
-              color: white,
-              elevation: 4,
-                child: Container(
-                padding: const EdgeInsets.all(0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    Container(
-                      width: 77,
-                      height: 77,
-                      decoration: BoxDecoration(
-                        image: const DecorationImage(
-                            image: AssetImage('assets/icons/ic_other.png'),
-                            scale: 1.9
-                            ),
-                          borderRadius: BorderRadius.circular(50),
-                          color: const Color(0xff0008B3)),
-                      // child: Image.asset(iconsUrl),
-                    ),
-                    const Text(
-                      'More',
-                      style: TextStyle(
-                          fontFamily: 'poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 15),
-                    ),
-                  ],
-                ),
-              ),
-              ),
-              onTap: () {
-                _showDialog(context);
-                //Ledger_ReportProject
-                //ReceivblesDebitOnly,
-                //ReceivblesCreditOnly
-                //ReceivblesDebitOnlySalesman
-                //ReceivblesCreditOnlySalesman
-                //Cash Book Projection
-                //Trial_G_l
-                //Trial_G
-                //Custom Summary
-                //Ledger_Report_Qty
-                //ShowBills
-              },
-            ),
-          ],
-        ));
+            ],
+          ),
+        ) ??
+        false;
   }
 
   void _showDialog(BuildContext context) {

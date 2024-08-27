@@ -81,6 +81,9 @@ class _LedgerState extends State<Ledger> {
     // salesManId = ComSettings.appSettings(
     //         'int', 'key-dropdown-default-salesman-view', 1) -
     //     1;
+    salesManId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-salesman-view', 1) -
+        1;
     locationId = ComSettings.appSettings(
             'int', 'key-dropdown-default-location-view', 2) -
         1;
@@ -91,6 +94,14 @@ class _LedgerState extends State<Ledger> {
     // if (isIn == null) {
     //   salesManList.add({'Auto': 0, 'Name': ''});
     // }
+       var isIn = salesManList.isEmpty
+        ? null
+        : salesManList.firstWhere((element) => element['Auto'] == salesManId,
+            orElse: () => null);
+    if (isIn == null) {
+      salesManList.add({'Auto': 0, 'Name': ''});
+    }
+
     String stateValue =
         ComSettings.getValue('COMP-STATE', settings) ?? _dropDownState;
     String stateCodeValue =
@@ -1120,6 +1131,7 @@ class _LedgerState extends State<Ledger> {
                                       );
                                     }).toList(),
                                     // value: salesManId.toString(),
+                                    value: salesManId.toString(),
                                     onChanged: (value) {
                                       setState(() {
                                         salesManId = int.parse(value!);

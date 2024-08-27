@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class ItemsPage extends StatefulWidget {
@@ -11,7 +13,18 @@ class ItemsPage extends StatefulWidget {
 class _ItemsPageState extends State<ItemsPage> {
   bool _showCategoryList = false;
   Map<String, int> selectedItems = {};
+  List<ProductPurchaseModel>? products;
+   DioService api = DioService();
+  //  List<String> names; 
   String _selectedCategory = "All"; 
+
+  // @override
+  // void initState(){
+  //   super.initState();
+  //  var data = api.fetchAllProductPurchase();
+  //  data.whenComplete(() => products);
+  //  products!.where((element) => element.itemName == names );
+  // }
 
   final Map<String, List<String>> _categoryItems = {
     "All": [
@@ -29,6 +42,13 @@ class _ItemsPageState extends State<ItemsPage> {
     "Beverages": ["Coca Cola", "Pepsi"],
     "Edible oil & Ghee": ["Sunflower Oil", "Olive Oil"],
   };
+
+  // Future<List<ProductPurchaseModel>>  allProducts(){
+  //  var data = api.fetchAllProductPurchase().then((value) => value);
+  //  data.whenComplete(() => products);
+   
+  //  return data;
+  // }
 
   @override
   Widget build(BuildContext context) {

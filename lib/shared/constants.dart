@@ -570,6 +570,18 @@ class UnitSettings {
     return name;
   }
 
+    static getOtherUnitName(int id) {
+    String name = '';
+    if (otherRegUnitList.isNotEmpty) {
+      var exist = otherRegUnitList.firstWhere((element) => element.id == id,
+          orElse: () => OtherRegistrationModel.emptyData());
+      if (exist != null) {
+        name = exist.name;
+      }
+    }
+    return name;
+  }
+  
   static getUnitId(String name) {
     int id = 0;
     if (unitListSettings.isNotEmpty) {
@@ -581,6 +593,19 @@ class UnitSettings {
     }
     return id;
   }
+  
+   static getOtherUnitId(String name) {
+    int id = 0;
+    if (otherRegUnitList.isNotEmpty) {
+      var exist = otherRegUnitList.firstWhere((element) => element.name == name,
+          orElse: () => OtherRegistrationModel.emptyData());
+      if (exist != null) {
+        id = exist.id;
+      }
+    }
+    return id;
+  }
+
 
   static getUnitListItemValue(int itemID, String type) {
     Object? value;

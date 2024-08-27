@@ -19,6 +19,9 @@
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="smartpos.deviceservice.permission.Printer" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
 
 
 <!--#docregion android-queries-->
@@ -49,6 +52,15 @@
         android:label="SherAcc ERP"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+
+        <!-- This is required -->
+       <service
+           android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+           android:stopWithTask="false"
+           android:foregroundServiceType="connectedDevice"
+           android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

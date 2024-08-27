@@ -138,6 +138,7 @@ class _SaleState extends ConsumerState<Sale> {
   final billingNameController = TextEditingController();
   final itemNameControl = TextEditingController();
   final FocusNode _focusNodeCashReceived = FocusNode();
+  String oldBalance = '0';
 
   GlobalKey<AutoCompleteTextFieldState<String>> keyName = GlobalKey();
   GlobalKey<AutoCompleteTextFieldState<String>> keySection = GlobalKey();
@@ -232,12 +233,7 @@ class _SaleState extends ConsumerState<Sale> {
     // });
 
     loadSettings();
-    // api.fetchDetailAmount().then((value) {
-    //   otherAmountList = value;
-    //   setState(() {
-    //     otherAmountLoaded = true;
-    //   });
-    // });
+ 
     api.getUnregisteredNameList().then((value) => unregisteredNameList = value);
     salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
@@ -301,12 +297,13 @@ class _SaleState extends ConsumerState<Sale> {
       }
       setState(() {
         cashBankACList.addAll(_dataTemp);
-        if (bankLedgerData != null) {
+          if (bankLedgerData != null) {
           bankLedgerData = cashBankACList.firstWhere(
-            (element) => element.name.toLowerCase() == bankLedgerName,
-            orElse: () => LedgerModel(id: 0, name: bankLedgerData.name),
-             );
-             bankLedgerName = bankLedgerData.name;
+            (element) =>
+                element.name.toLowerCase() == bankLedgerName!.toLowerCase(),
+            orElse: () => LedgerModel(id: 0, name: bankLedgerName!),
+          );
+          bankLedgerName = bankLedgerData.name;
         }
       });
     });
@@ -428,6 +425,18 @@ class _SaleState extends ConsumerState<Sale> {
     });
   }
   
+    getOldBalance(int id, String type, String entryNo) {
+    api
+        .getBalance(
+            id, 'CustomerOB', type, DateUtil.dateYMD(formattedDate), entryNo)
+        .then((obValue) {
+      setState(() {
+        oldBalance = obValue['oldBalance'].toString();
+        // balance = double.parse(obValue['balance'].toString());
+      });
+    });
+  }
+
 
   userDateCheck(String date) {
     if (keyEditAndDeleteAdminOnlyDaysBefore) {
@@ -1686,22 +1695,39 @@ class _SaleState extends ConsumerState<Sale> {
         'particular': items,
         'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
       };
-      api.editSale(body).then((result) {
-        if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
-          final bodyJsonAmount = {
-            'statement': 'SalesUpdate',
-            'entryNo': dataDynamic[0]['EntryNo'].toString(),
-            'data': otherAmount,
-            'date': order.dated.toString(),
-            'saleFormType': saleFormType,
-            'narration': order.narration,
-            'location': order.location.toString(),
-            'id': order.customerModel[0].id.toString(),
-            'fyId': currentFinancialYear!.id
-          };
-          debugPrint(bodyJsonAmount.toString());
-          if (salesTypeData!.accounts) {
-            api.addOtherAmount(bodyJsonAmount).then((retNotUsed) {
+      if (saleAccountId != '0' && order.cashAC != '0') {
+        api.editSale(body).then((result) {
+          if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
+            final bodyJsonAmount = {
+              'statement': 'SalesUpdate',
+              'entryNo': dataDynamic[0]['EntryNo'].toString(),
+              'data': otherAmount,
+              'date': order.dated.toString(),
+              'saleFormType': saleFormType,
+              'narration': order.narration,
+              'location': order.location.toString(),
+              'id': order.customerModel[0].id.toString(),
+              'fyId': currentFinancialYear!.id.toString()
+            };
+            if (salesTypeData!.accounts) {
+              api.addOtherAmount(bodyJsonAmount).then((retNotUsed) {
+                final bodyJson = {
+                  'statement': 'CheckPrint',
+                  'entryNo': dataDynamic[0]['EntryNo'].toString(),
+                  'sType': dataDynamic[0]['Type'].toString(),
+                  'grandTotal': ComSettings.appSettings(
+                          'bool', 'key-round-off-amount', false)
+                      ? grandTotal.toStringAsFixed(decimal)
+                      : grandTotal.roundToDouble().toString()
+                };
+                api.checkBill(bodyJson).then((data) {
+                  if (data) {
+                    clearCart();
+                    showMore(context, false);
+                  }
+                });
+              });
+            } else {
               final bodyJson = {
                 'statement': 'CheckPrint',
                 'entryNo': dataDynamic[0]['EntryNo'].toString(),
@@ -1717,33 +1743,19 @@ class _SaleState extends ConsumerState<Sale> {
                   showMore(context, false);
                 }
               });
+               }
+            setState(() {
+              _isLoading = false;
             });
           } else {
-            final bodyJson = {
-              'statement': 'CheckPrint',
-              'entryNo': dataDynamic[0]['EntryNo'].toString(),
-              'sType': dataDynamic[0]['Type'].toString(),
-              'grandTotal':
-                  ComSettings.appSettings('bool', 'key-round-off-amount', false)
-                      ? grandTotal.toStringAsFixed(decimal)
-                      : grandTotal.roundToDouble().toString()
-            };
-            api.checkBill(bodyJson).then((data) {
-              if (data) {
-                clearCart();
-                showMore(context, false);
-              }
-            });
+            showErrorDialog(context, result.toString());
           }
-          setState(() {
-            _isLoading = false;
-          });
-        } else {
-          showErrorDialog(context, result.toString());
-        }
-      }).catchError((e) {
-        showErrorDialog(context, e.toString());
-      });
+           }).catchError((e) {
+          showErrorDialog(context, e.toString());
+        });
+      } else {
+        Fluttertoast.showToast(msg: "select SalesAccount or CashAccount");
+      }
     }
   }
 
@@ -2388,9 +2400,9 @@ void _onTabTapped(int index) {
                                             ),
                                             InkWell(
                                               onTap: () {
-                                              //  var data = api.getSalesInvoiceNo(1, '').then((value) => value);
-                                              //  data.then((value) => value.)
-                                              // debugPrint(data.toString());
+                                              //  var data = api.getSalesInvoiceNo(1, '');
+                                             debugPrint((int.parse(invoiceNo) - 1).toString());
+
                                               },
                                               child: const Icon(Icons.arrow_back_ios_rounded,
                                               // size: 16,
@@ -3746,7 +3758,10 @@ void _onTabTapped(int index) {
                                       'Delete DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${ledgerModel!.id} ${CartItem.encodeCartToJson(cartItem)}',
                                       0);
                                       // deleteSaleData();
-                                  deleteSale(context);
+                                  // deleteSale(context);
+                                    if (currentFinancialYear != null) {
+                              deleteSale(context);
+                            }
                                 } else {
                                   Fluttertoast.showToast(
                                       msg: 'Please select at least one bill');
@@ -3811,7 +3826,10 @@ void _onTabTapped(int index) {
                                         _insert(
                                             'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
                                             0);
-                                        updateSale();
+                                        // updateSale();
+                                        if (currentFinancialYear != null) {
+                                               updateSale();
+                                           }
                                       } else {
                                         Fluttertoast.showToast(
                                           backgroundColor: red,
@@ -3851,7 +3869,11 @@ void _onTabTapped(int index) {
                                         _insert(
                                             'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
                                             0);
-                                        saveSale();
+                                        // saveSale();
+                                        if (currentFinancialYear != null) {
+                                             saveSale();
+                                          }
+
                                       } else {
                                         Fluttertoast.showToast(
                                           backgroundColor: red,

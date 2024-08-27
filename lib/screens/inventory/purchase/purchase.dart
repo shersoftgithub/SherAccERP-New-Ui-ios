@@ -4759,7 +4759,7 @@ class _PurchaseState extends State<Purchase> {
                             value: itemCodeViseChek,
                             onChanged: (value) {
                                                          setState(() {
-                            itemCodeViseChek = value!;
+                            itemCodeViseChek = value! ? true : false;
                                                          });
                             },)),
                         ),

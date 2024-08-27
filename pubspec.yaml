@@ -48,6 +48,10 @@ dependencies:
   flutter_colorpicker:
   form_field_validator:
   google_translate:
+  latlong2:
+  flutter_map:
+  geolocator:
+  flutter_foreground_task:
   http:
   hive_flutter:
   intl:

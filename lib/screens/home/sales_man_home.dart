@@ -210,846 +210,656 @@ class _SalesManHomeState extends State<SalesManHome> {
         }
       }
     }
-    return Scaffold(
-      backgroundColor: bagroundColor,
-        appBar: AppBar(
-          title: const Text("SherAcc"),
-          titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                _handleLogout();
-              },
+    return WillPopScope(
+      onWillPop: showExitPopup,
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+          appBar: AppBar(
+            title: const Text("SherAcc"),
+            titleTextStyle: const TextStyle(
+              fontFamily: 'poppins'
             ),
-            IconButton(
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
                 onPressed: () {
-                  var _pass = '';
-                  if (companyUserData!.userType.toUpperCase() == 'ADMIN' ||
-                      sherSoftPassword.toString().isEmpty) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            const SalesManSettings()));
-                  } else {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(
-                                  20.0,
-                                ),
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.only(
-                              top: 10.0,
-                            ),
-                            title: const Text(
-                              "Enter Code",
-                              style: TextStyle(fontSize: 24.0),
-                            ),
-                            content: SizedBox(
-                              height: 400,
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "Enter Your Code",
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: TextField(
-                                        decoration: const InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            hintText: 'Enter Code here',
-                                            labelText: 'Code'),
-                                        obscureText: true,
-                                        onChanged: (value) => _pass = value,
-                                      ),
-                                    ),
-                                    Container(
-                                      width: double.infinity,
-                                      height: 60,
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          if (_pass == sherSoftPassword) {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (BuildContext
-                                                            context) =>
-                                                        const SalesManSettings()));
-                                          } else {
-                                            Fluttertoast.showToast(
-                                                msg: 'incorrect code');
-                                            Navigator.of(context).pop();
-                                          }
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.black,
-                                          // fixedSize: Size(250, 50),
-                                        ),
-                                        child: const Text(
-                                          "Submit",
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        });
-                  }
+                  _handleLogout();
                 },
-                icon: const Icon(Icons.settings))
-          ],
-          elevation: .1,
-        ),
-        body: isExpired
-            ? _expireWidget(args, context)
-            : isExpireWarning
-                ? Center(
-                    child: _expireWarningWidget(args, context, daysLeft),
-                  )
-                : Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10
-                  ),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      Row(
-                        // crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children:  [
-                          const Text('Date',style: TextStyle(
-                            fontFamily: 'poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500
-                          ),),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              _selectDate();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 2
+              ),
+              IconButton(
+                  onPressed: () {
+                    var _pass = '';
+                    if (companyUserData!.userType.toUpperCase() == 'ADMIN' ||
+                        sherSoftPassword.toString().isEmpty) {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) =>
+                              const SalesManSettings()));
+                    } else {
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(
+                                    20.0,
+                                  ),
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
+                              contentPadding: const EdgeInsets.only(
+                                top: 10.0,
+                              ),
+                              title: const Text(
+                                "Enter Code",
+                                style: TextStyle(fontSize: 24.0),
+                              ),
+                              content: SizedBox(
+                                height: 400,
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "Enter Your Code",
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextField(
+                                          decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              hintText: 'Enter Code here',
+                                              labelText: 'Code'),
+                                          obscureText: true,
+                                          onChanged: (value) => _pass = value,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: double.infinity,
+                                        height: 60,
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            if (_pass == sherSoftPassword) {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (BuildContext
+                                                              context) =>
+                                                          const SalesManSettings()));
+                                            } else {
+                                              Fluttertoast.showToast(
+                                                  msg: 'incorrect code');
+                                              Navigator.of(context).pop();
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.black,
+                                            // fixedSize: Size(250, 50),
+                                          ),
+                                          child: const Text(
+                                            "Submit",
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Text(getToDay,
-                                    style: const TextStyle(
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 14,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),
-                                    ),
-                                    const SizedBox(
-                                      width: 4,
-                                    ),
-                                    const Icon(Icons.calendar_month,
-                                    size: 18,
-                                    color: grey,
-                                    )
-                                  ],
-                                ),
+                              ),
+                            );
+                          });
+                    }
+                  },
+                  icon: const Icon(Icons.settings))
+            ],
+            elevation: .1,
+          ),
+          body: isExpired
+              ? _expireWidget(args, context)
+              : isExpireWarning
+                  ? Center(
+                      child: _expireWarningWidget(args, context, daysLeft),
+                    )
+                  : Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10
+                    ),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        Row(
+                          // crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children:  [
+                            const Text('Date',style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500
+                            ),),
+                            const SizedBox(
+                              width: 4,
                             ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      // TextButton(
-                      //   child: Text('Date : $getToDay',
-                      //       style: const TextStyle(
-                      //         fontWeight: FontWeight.bold,
-                      //         fontSize: 20,
-                      //       )),
-                      //   onPressed: () => _selectDate(),
-                      // ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              var d = userControlData;
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
+                            InkWell(
+                              onTap: () {
+                                _selectDate();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 5,
                                   vertical: 2
                                 ),
-                                // decoration: BoxDecoration(
-                                //   border: Border.all(color: grey),
-                                //   borderRadius: BorderRadius.circular(3)
-                                //   ),
-                                  child: Text(args.username,
-                            style: const TextStyle(
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(getToDay,
+                                      style: const TextStyle(
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 14,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),
+                                      ),
+                                      const SizedBox(
+                                        width: 4,
+                                      ),
+                                      const Icon(Icons.calendar_month,
+                                      size: 18,
+                                      color: grey,
+                                      )
+                                    ],
+                                  ),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // TextButton(
+                        //   child: Text('Date : $getToDay',
+                        //       style: const TextStyle(
+                        //         fontWeight: FontWeight.bold,
+                        //         fontSize: 20,
+                        //       )),
+                        //   onPressed: () => _selectDate(),
+                        // ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                var d = userControlData;
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 2
+                                  ),
+                                  // decoration: BoxDecoration(
+                                  //   border: Border.all(color: grey),
+                                  //   borderRadius: BorderRadius.circular(3)
+                                  //   ),
+                                    child: Text(args.username,
+                              style: const TextStyle(
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    
-                      const SizedBox(
-                        height: 50,
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('SALE ORDER'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Sales Order',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              bool sType = true;
-                              salesTypeData = salesTypeList.firstWhere(
-                                  (element) =>
-                                      element.name == 'Sales Order Entry');
-                              bool isSimpleSales = ComSettings.appSettings(
-                                      'bool', 'key-simple-sales', false)
-                                  ? true
-                                  : false;
-                              args.active == "false"
-                                  ? _commonService.getTrialPeriod(args.atDate)
-                                      ? isSimpleSales
-                                          ? Navigator.pushNamed(
-                                              context, '/SimpleSale')
-                                          : Navigator.of(context)
-                                              .push(MaterialPageRoute(
-                                                  builder: (context) => Sale(
-                                                        oldSale: false,
-                                                        thisSale: sType,
-                                                      )))
-                                      : _expire(args, context)
-                                  : isSimpleSales
-                                      ? Navigator.pushNamed(
-                                          context, '/SimpleSale')
-                                      : Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                              builder: (context) => Sale(
-                                                    oldSale: false,
-                                                    thisSale: sType,
-                                                  )));
-                            },
-                          ),
+                          ],
                         ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('SALE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Sales',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              bool sType = isEstimateDataBase;
-                                            
-                              salesTypeData = ComSettings.appSettings('bool',
-                                      'key-switch-sales-form-set', false)
-                                  ? salesTypeList.firstWhere((element) =>
-                                      element.name ==
-                                      ComSettings.salesFormList(
-                                              'key-item-sale-form-', false)[0]
-                                          .name)
-                                  : salesTypeList.firstWhere((element) =>
-                                      element.name == 'Sales Estimate Entry');
-                              bool isSimpleSales = ComSettings.appSettings(
-                                      'bool', 'key-simple-sales', false)
-                                  ? true
-                                  : false;
-                              args.active == "false"
-                                  ? _commonService.getTrialPeriod(args.atDate)
-                                      ? isSimpleSales
-                                          ? Navigator.pushNamed(
-                                              context, '/SimpleSale')
-                                          : Navigator.of(context)
-                                              .push(MaterialPageRoute(
-                                                  builder: (context) => Sale(
-                                                        oldSale: false,
-                                                        thisSale: sType,
-                                                      )))
-                                      : _expire(args, context)
-                                  : isSimpleSales
-                                      ? Navigator.pushNamed(
-                                          context, '/SimpleSale')
-                                      : Navigator.of(context)
-                                          .push(MaterialPageRoute(
-                                              builder: (context) => Sale(
-                                                    oldSale: false,
-                                                    thisSale: sType,
-                                                  )));
-                            },
-                          ),
+                      
+                        const SizedBox(
+                          height: 50,
                         ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('RECEIPT'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Receipt',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              args.active == "false"
-                                  ? _commonService.getTrialPeriod(args.atDate)
-                                      ? Navigator.pushNamed(
-                                          context, '/RPVoucher',
-                                          arguments: {'voucher': 'Receipt'})
-                                      : _expire(args, context)
-                                  : Navigator.pushNamed(context, '/RPVoucher',
-                                      arguments: {'voucher': 'Receipt'});
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                          visible: ComSettings.userControl('RECEIPT ORDER'),
+                        Visibility(
+                          visible: ComSettings.userControl('SALE ORDER'),
                           child: Container(
                             margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
                             child: TextButton(
-                              child: const Text('Receipt Order',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                              child: const Text('Sales Order',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                bool sType = true;
+                                salesTypeData = salesTypeList.firstWhere(
+                                    (element) =>
+                                        element.name == 'Sales Order Entry');
+                                bool isSimpleSales = ComSettings.appSettings(
+                                        'bool', 'key-simple-sales', false)
+                                    ? true
+                                    : false;
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? isSimpleSales
+                                            ? Navigator.pushNamed(
+                                                context, '/SimpleSale')
+                                            : Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                                    builder: (context) => Sale(
+                                                          oldSale: false,
+                                                          thisSale: sType,
+                                                        )))
+                                        : _expire(args, context)
+                                    : isSimpleSales
+                                        ? Navigator.pushNamed(
+                                            context, '/SimpleSale')
+                                        : Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                                builder: (context) => Sale(
+                                                      oldSale: false,
+                                                      thisSale: sType,
+                                                    )));
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('SALE'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Sales',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                bool sType = isEstimateDataBase;
+                                              
+                                salesTypeData = ComSettings.appSettings('bool',
+                                        'key-switch-sales-form-set', false)
+                                    ? salesTypeList.firstWhere((element) =>
+                                        element.name ==
+                                        ComSettings.salesFormList(
+                                                'key-item-sale-form-', false)[0]
+                                            .name)
+                                    : salesTypeList.firstWhere((element) =>
+                                        element.name == 'Sales Estimate Entry');
+                                bool isSimpleSales = ComSettings.appSettings(
+                                        'bool', 'key-simple-sales', false)
+                                    ? true
+                                    : false;
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? isSimpleSales
+                                            ? Navigator.pushNamed(
+                                                context, '/SimpleSale')
+                                            : Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                                    builder: (context) => Sale(
+                                                          oldSale: false,
+                                                          thisSale: sType,
+                                                        )))
+                                        : _expire(args, context)
+                                    : isSimpleSales
+                                        ? Navigator.pushNamed(
+                                            context, '/SimpleSale')
+                                        : Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                                builder: (context) => Sale(
+                                                      oldSale: false,
+                                                      thisSale: sType,
+                                                    )));
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('RECEIPT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Receipt',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
                               onPressed: () {
                                 args.active == "false"
                                     ? _commonService.getTrialPeriod(args.atDate)
                                         ? Navigator.pushNamed(
-                                            context, '/RPVoucher', arguments: {
-                                            'voucher': 'Receipt Order'
-                                          })
+                                            context, '/RPVoucher',
+                                            arguments: {'voucher': 'Receipt'})
                                         : _expire(args, context)
                                     : Navigator.pushNamed(context, '/RPVoucher',
-                                        arguments: {
-                                            'voucher': 'Receipt Order'
-                                          });
-                              },
-                            ),
-                          ),
-                        ),
-                      Visibility(
-                        visible: ComSettings.userControl('PAYMENT'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Payment',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              args.active == "false"
-                                  ? _commonService.getTrialPeriod(args.atDate)
-                                      ? Navigator.pushNamed(
-                                          context, '/RPVoucher',
-                                          arguments: {'voucher': 'Payment'})
-                                      : _expire(args, context)
-                                  : Navigator.pushNamed(context, '/RPVoucher',
-                                      arguments: {'voucher': 'Payment'});
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('PURCHASE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Purchase',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/purchase');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('ORDER LIST'),
-                        child: Container( 
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                          decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Order List',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/OrderList');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('SALE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Bill List',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/BillList');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('Order Item List'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Order Item List',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/OrderItemList');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('SALE RETURN'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Sales Return',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/salesReturn');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('DAMAGE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Damage Entry',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/damageEntry');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('LEDGER'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Ledger',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/ledger',
-                                  arguments: {'parent': ''});
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('JOURNAL'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Journal',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              args.active == "false"
-                                  ? _commonService.getTrialPeriod(args.atDate)
-                                      ? Navigator.pushNamed(
-                                          context, '/journal')
-                                      : _expire(args, context)
-                                  : Navigator.pushNamed(context, '/journal');
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('LEDGER REPORT'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Ledger Report',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              argumentsPass = {'mode': 'ledger'};
-                              Navigator.pushNamed(
-                                context,
-                                '/select_ledger',
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('GROUP LIST'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Group List',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              argumentsPass = {'mode': 'GroupList'};
-                              Navigator.pushNamed(
-                                context,
-                                '/select_ledger',
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('SALES REPORT'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Sales List',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/SalesList',
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('PAYMENT INVOICE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Payment Invoice',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/InvRPVoucher',
-                                  arguments: {'voucher': 'Payment Invoice'});
-                            },
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: ComSettings.userControl('RECEIPT INVOICE'),
-                        child: Container(
-                          margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                          child: TextButton(
-                            child: const Text('Receipt Invoice',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/InvRPVoucher',
-                                  arguments: {'voucher': 'Receipt Invoice'});
-                            },
-                          ),
-                        ),
-                      ),
-                       Visibility(
-                          visible: ComSettings.userControl('STOCK REPORT'),
-                          child: Container(
-                            margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                            child: TextButton(
-                              child: const Text('Stock Report',
-                                 style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/StockReport');
+                                        arguments: {'voucher': 'Receipt'});
                               },
                             ),
                           ),
                         ),
                         Visibility(
-                          visible: ComSettings.userControl('SALESMAN REPORT'),
+                            visible: ComSettings.userControl('RECEIPT ORDER'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Receipt Order',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  args.active == "false"
+                                      ? _commonService.getTrialPeriod(args.atDate)
+                                          ? Navigator.pushNamed(
+                                              context, '/RPVoucher', arguments: {
+                                              'voucher': 'Receipt Order'
+                                            })
+                                          : _expire(args, context)
+                                      : Navigator.pushNamed(context, '/RPVoucher',
+                                          arguments: {
+                                              'voucher': 'Receipt Order'
+                                            });
+                                },
+                              ),
+                            ),
+                          ),
+                        Visibility(
+                          visible: ComSettings.userControl('PAYMENT'),
                           child: Container(
                             margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
                             child: TextButton(
-                              child: const Text('SalesMan Report',
+                              child: const Text('Payment',
                                   style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
                               onPressed: () {
-                                argumentsPass = 'SalesMan';
-                                Navigator.pushNamed(
-                                  context,
-                                  '/salesManReport',
-                                );
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? Navigator.pushNamed(
+                                            context, '/RPVoucher',
+                                            arguments: {'voucher': 'Payment'})
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(context, '/RPVoucher',
+                                        arguments: {'voucher': 'Payment'});
                               },
                             ),
                           ),
                         ),
                         Visibility(
-                          visible: ComSettings.userControl('RECEIPT REPORT'),
+                          visible: ComSettings.userControl('PURCHASE'),
                           child: Container(
                             margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
                             child: TextButton(
-                              child: const Text('Receipt List',
-                                style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                              child: const Text('Purchase',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
                               onPressed: () {
-                                argumentsPass = {'mode': 'ReceiptList'};
+                                Navigator.pushNamed(context, '/purchase');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('ORDER LIST'),
+                          child: Container( 
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                            decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Order List',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/OrderList');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('SALE'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Bill List',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/BillList');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('Order Item List'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Order Item List',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/OrderItemList');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('SALE RETURN'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Sales Return',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/salesReturn');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('DAMAGE'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Damage Entry',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/damageEntry');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('LEDGER'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Ledger',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/ledger',
+                                    arguments: {'parent': ''});
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('JOURNAL'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Journal',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? Navigator.pushNamed(
+                                            context, '/journal')
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(context, '/journal');
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('LEDGER REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Ledger Report',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                argumentsPass = {'mode': 'ledger'};
                                 Navigator.pushNamed(
                                   context,
                                   '/select_ledger',
@@ -1059,26 +869,26 @@ class _SalesManHomeState extends State<SalesManHome> {
                           ),
                         ),
                         Visibility(
-                          visible: ComSettings.userControl('PAYMENT REPORT'),
+                          visible: ComSettings.userControl('GROUP LIST'),
                           child: Container(
                             margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
                             child: TextButton(
-                              child: const Text('Payment List',
-                                  style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                              child: const Text('Group List',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
                               onPressed: () {
-                                argumentsPass = {'mode': 'PaymentList'};
+                                argumentsPass = {'mode': 'GroupList'};
                                 Navigator.pushNamed(
                                   context,
                                   '/select_ledger',
@@ -1088,75 +898,268 @@ class _SalesManHomeState extends State<SalesManHome> {
                           ),
                         ),
                         Visibility(
-                          visible: ComSettings.userControl('PRICE LIST'),
+                          visible: ComSettings.userControl('SALES REPORT'),
                           child: Container(
                             margin: const EdgeInsets.only(
-                            bottom: 6
-                          ),
-                           decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
                             child: TextButton(
-                              child: const Text('Price List',
+                              child: const Text('Sales List',
                                   style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
                               onPressed: () {
-                                Navigator.pushNamed(context, '/priceList');
+                                Navigator.pushNamed(
+                                  context,
+                                  '/SalesList',
+                                );
                               },
                             ),
                           ),
                         ),
-                      Container(
-                        margin: const EdgeInsets.only(
-                            bottom: 6
+                        Visibility(
+                          visible: ComSettings.userControl('PAYMENT INVOICE'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Payment Invoice',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/InvRPVoucher',
+                                    arguments: {'voucher': 'Payment Invoice'});
+                              },
+                            ),
                           ),
-                         decoration: BoxDecoration(
-                            color: white,
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)
-                                ),
-                        child: TextButton(
-                          child: const Text('About',
-                              style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AboutSherSoft()),
-                            );
-                          },
                         ),
-                      ),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(3)
-                          )
+                        Visibility(
+                          visible: ComSettings.userControl('RECEIPT INVOICE'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Receipt Invoice',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/InvRPVoucher',
+                                    arguments: {'voucher': 'Receipt Invoice'});
+                              },
+                            ),
+                          ),
                         ),
-                          onPressed: () async {
-                            sentBachUpData();
-                          },
-                          child: const Text('Share Catch File', style: TextStyle(
-                                  color: kPrimaryColor,
-                                                                  fontFamily: 'poppins',
-                                                                  fontSize: 16,
-                                                                  fontWeight: FontWeight.w500
-                                                                ),))
-                    ],
-                  ),
-                ));
+                         Visibility(
+                            visible: ComSettings.userControl('STOCK REPORT'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Stock Report',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/StockReport');
+                                },
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: ComSettings.userControl('SALESMAN REPORT'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('SalesMan Report',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  argumentsPass = 'SalesMan';
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/salesManReport',
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: ComSettings.userControl('RECEIPT REPORT'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Receipt List',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  argumentsPass = {'mode': 'ReceiptList'};
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/select_ledger',
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: ComSettings.userControl('PAYMENT REPORT'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Payment List',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  argumentsPass = {'mode': 'PaymentList'};
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/select_ledger',
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: ComSettings.userControl('PRICE LIST'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Price List',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/priceList');
+                                },
+                              ),
+                            ),
+                          ),
+                        Container(
+                          margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                           decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                          child: TextButton(
+                            child: const Text('About',
+                                style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => AboutSherSoft()),
+                              );
+                            },
+                          ),
+                        ),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3)
+                            )
+                          ),
+                            onPressed: () async {
+                              sentBachUpData();
+                            },
+                            child: const Text('Share Catch File', style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),))
+                      ],
+                    ),
+                  )),
+    );
   }
 
   _expire(CompanyUser args, context) {
@@ -1229,6 +1232,26 @@ class _SalesManHomeState extends State<SalesManHome> {
         ),
       ),
     );
+  }
+    Future<bool> showExitPopup() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit an App?'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   _expireWarningWidget(CompanyUser args, context, int daysLeft) {

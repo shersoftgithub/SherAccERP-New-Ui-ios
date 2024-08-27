@@ -2993,111 +2993,125 @@ class _OpeningStockState extends State<OpeningStock> {
                           ? double.tryParse(controllerQuantity.text)
                           : quantity)!;
 
-                      if (editItem) {
-                        cartItem[position!].adCess = adCess;
-                        cartItem[position!].barcode = barcode;
-                        cartItem[position!].branch = branch;
-                        cartItem[position!].branchPer = branchPer;
-                        cartItem[position!].cDisc = cDisc;
-                        cartItem[position!].cGST = csGST;
-                        cartItem[position!].cdPer = cdPer;
-                        cartItem[position!].cess = cess;
-                        cartItem[position!].discount = discount;
-                        cartItem[position!].discountPercent = discountPer;
-                        // cartItem[position!].expDate = expDate;
-                        // cartItem[position!].expense = expense;
-                        cartItem[position!].fCess = fCess;
-                        cartItem[position!].fUnitId = fUnitId;
-                        cartItem[position!].fUnitValue = fUnitValue;
-                        cartItem[position!].free = free;
-                        cartItem[position!].gross = subTotal;
-                        cartItem[position!].iGST = iGST;
-                        // cartItem[position!].id = cartItem.length + 1;
-                        // cartItem[position!].itemId = productModel['slno'];
-                        // cartItem[position!].itemName = productModel['itemname'];
-                        // cartItem[position!].location = locationId;
-                        cartItem[position!].mrp = mrp;
-                        cartItem[position!].mrpPer = mrpPer;
-                        cartItem[position!].net = net;
-                        cartItem[position!].profitPer = profitPer;
-                        cartItem[position!].quantity = quantity;
-                        cartItem[position!].rRate = rRate;
-                        cartItem[position!].rate = rate;
-                        cartItem[position!].retail = retail;
-                        cartItem[position!].retailPer = retailPer;
-                        cartItem[position!].sGST = csGST;
-                        cartItem[position!].serialNo = serialNo;
-                        cartItem[position!].spRetail = spRetail;
-                        cartItem[position!].spRetailPer = spRetailPer;
-                        cartItem[position!].tax = tax;
-                        cartItem[position!].taxP = taxP;
-                        cartItem[position!].total = total;
-                        cartItem[position!].uniqueCode = uniqueCode;
-                        // cartItem[position!].unitId = unit.id;
-                        // cartItem[position!].unitName = unit.name;
-                        cartItem[position!].unitValue = unitValue;
-                        cartItem[position!].wholesale = wholeSale;
-                        cartItem[position!].wholesalePer = wholesalePer;
-                        if (ledgerModel != null) {
-                          cartItem[position!].supplierId = ledgerModel.id;
-                          cartItem[position!].supplier = ledgerModel.name;
+                      if (total > 0) {
+                        if (editItem) {
+                          cartItem[position!].adCess = adCess;
+                          cartItem[position!].barcode = barcode;
+                          cartItem[position!].branch = branch;
+                          cartItem[position!].branchPer = branchPer;
+                          cartItem[position!].cDisc = cDisc;
+                          cartItem[position!].cGST = csGST;
+                          cartItem[position!].cdPer = cdPer;
+                          cartItem[position!].cess = cess;
+                          cartItem[position!].discount = discount;
+                          cartItem[position!].discountPercent = discountPer;
+                          // cartItem[position!].expDate = expDate;
+                          // cartItem[position!].expense = expense;
+                          cartItem[position!].fCess = fCess;
+                          cartItem[position!].fUnitId = fUnitId;
+                          cartItem[position!].fUnitValue = fUnitValue;
+                          cartItem[position!].free = free;
+                          cartItem[position!].gross = subTotal;
+                          cartItem[position!].iGST = iGST;
+                          // cartItem[position!].id = cartItem.length + 1;
+                          // cartItem[position!].itemId = productModel['slno'];
+                          // cartItem[position!].itemName = productModel['itemname'];
+                          // cartItem[position!].location = locationId;
+                          cartItem[position!].mrp = mrp;
+                          cartItem[position!].mrpPer = mrpPer;
+                          cartItem[position!].net = net;
+                          cartItem[position!].profitPer = profitPer;
+                          cartItem[position!].quantity = quantity;
+                          cartItem[position!].rRate = rRate;
+                          cartItem[position!].rate = rate;
+                          cartItem[position!].retail = retail;
+                          cartItem[position!].retailPer = retailPer;
+                          cartItem[position!].sGST = csGST;
+                          cartItem[position!].serialNo = serialNo;
+                          cartItem[position!].spRetail = spRetail;
+                          cartItem[position!].spRetailPer = spRetailPer;
+                          cartItem[position!].tax = tax;
+                          cartItem[position!].taxP = taxP;
+                          cartItem[position!].total = total;
+                          cartItem[position!].uniqueCode = uniqueCode;
+                          // cartItem[position!].unitId = unit.id;
+                          // cartItem[position!].unitName = unit.name;
+                          cartItem[position!].unitValue = unitValue;
+                          cartItem[position!].wholesale = wholeSale;
+                          cartItem[position!].wholesalePer = wholesalePer;
+                          if (ledgerModel != null) {
+                            cartItem[position!].supplierId = ledgerModel.id;
+                            cartItem[position!].supplier = ledgerModel.name;
+                          }
+                        } else {
+                          cartItem.add(CartItemOP(
+                              adCess: adCess,
+                              barcode: barcode,
+                              branch: branch,
+                              branchPer: branchPer,
+                              cDisc: cDisc,
+                              cGST: csGST,
+                              cdPer: cdPer,
+                              cess: cess,
+                              discount: discount,
+                              discountPercent: discountPer,
+                              expDate: expDate,
+                              expense: expense,
+                              fCess: fCess,
+                              fUnitId: fUnitId,
+                              fUnitValue: fUnitValue,
+                              free: free,
+                              gross: subTotal,
+                              iGST: iGST,
+                              id: cartItem.length + 1,
+                              itemId: selectedItem.slNo,
+                              itemName: selectedItem.itemName,
+                              location: locationId,
+                              mrp: mrp,
+                              mrpPer: mrpPer,
+                              net: net,
+                              profitPer: profitPer,
+                              quantity: quantity,
+                              rRate: rRate,
+                              rate: rate,
+                              retail: retail,
+                              retailPer: retailPer,
+                              sGST: csGST,
+                              serialNo: serialNo,
+                              spRetail: spRetail,
+                              spRetailPer: spRetailPer,
+                              tax: tax,
+                              taxP: taxP,
+                              total: total,
+                              uniqueCode: uniqueCode,
+                              unitId: unit.id,
+                              unitName: unit.name,
+                              unitValue: unitValue,
+                              wholesale: wholeSale,
+                              wholesalePer: wholesalePer,
+                              supplierId:
+                                  ledgerModel != null ? ledgerModel.id : 0,
+                              supplier:
+                                  ledgerModel != null ? ledgerModel.name : ''));
                         }
-                      } else {
-                        cartItem.add(CartItemOP(
-                            adCess: adCess,
-                            barcode: barcode,
-                            branch: branch,
-                            branchPer: branchPer,
-                            cDisc: cDisc,
-                            cGST: csGST,
-                            cdPer: cdPer,
-                            cess: cess,
-                            discount: discount,
-                            discountPercent: discountPer,
-                            expDate: expDate,
-                            expense: expense,
-                            fCess: fCess,
-                            fUnitId: fUnitId,
-                            fUnitValue: fUnitValue,
-                            free: free,
-                            gross: subTotal,
-                            iGST: iGST,
-                            id: cartItem.length + 1,
-                            itemId: selectedItem!.slNo,
-                            itemName: selectedItem!.itemName,
-                            location: locationId,
-                            mrp: mrp,
-                            mrpPer: mrpPer,
-                            net: net,
-                            profitPer: profitPer,
-                            quantity: quantity,
-                            rRate: rRate,
-                            rate: rate,
-                            retail: retail,
-                            retailPer: retailPer,
-                            sGST: csGST,
-                            serialNo: serialNo,
-                            spRetail: spRetail,
-                            spRetailPer: spRetailPer,
-                            tax: tax,
-                            taxP: taxP,
-                            total: total,
-                            uniqueCode: uniqueCode,
-                            unitId: unit.id,
-                            unitName: unit.name,
-                            unitValue: unitValue,
-                            wholesale: wholeSale,
-                            wholesalePer: wholesalePer,
-                            supplierId:
-                                ledgerModel != null ? ledgerModel.id : 0,
-                            supplier:
-                                ledgerModel != null ? ledgerModel.name : ''));
-                      }
                       if (cartItem.isNotEmpty) {
                         // nextWidget = 0;
                         clearValue();
                         calculateTotal();
                         editItem = false;
+                      }
+                      }
+                      else{
+                          if (quantity <= 0) {
+                          showWarningAlertBox(context, 'Fill data quantity',
+                              '0 quantity not allowed');
+                        } else if (rate <= 0) {
+                          showWarningAlertBox(context, 'Fill data rate',
+                              '0 P Rate not allowed');
+                        } else {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 Total not allowed');
+                        }
                       }
                     });
                  },
@@ -3143,7 +3157,7 @@ class _OpeningStockState extends State<OpeningStock> {
                       quantity = (controllerQuantity.text.isNotEmpty
                           ? double.tryParse(controllerQuantity.text)
                           : quantity)!;
-
+                    if(totalItem > 0){
                       if (editItem) {
                         cartItem[position!].adCess = adCess;
                         cartItem[position!].barcode = barcode;
@@ -3249,6 +3263,19 @@ class _OpeningStockState extends State<OpeningStock> {
                         clearValue();
                         calculateTotal();
                         editItem = false;
+                      }
+                    }
+                         else {
+                          if (quantity <= 0) {
+                          showWarningAlertBox(context, 'Fill data quantity',
+                              '0 quantity not allowed');
+                        } else if (rate <= 0) {
+                          showWarningAlertBox(context, 'Fill data rate',
+                              '0 P Rate not allowed');
+                        } else {
+                          showWarningAlertBox(
+                              context, 'Fill data rate', '0 Total not allowed');
+                        }
                       }
                     });
                   },

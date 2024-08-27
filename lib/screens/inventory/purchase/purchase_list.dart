@@ -173,7 +173,7 @@ class _PurchaseListState extends State<PurchaseList> {
     controller.addListener(onScroll);
     List<dynamic> dataPType = [];
 
-     VoucherType voucherTypeData = voucherTypeList
+    VoucherType voucherTypeData = voucherTypeList
         .firstWhere((element) => element.voucher.toLowerCase() == 'purchase');
     dataPType.add({'id': voucherTypeData.id});
 
@@ -225,9 +225,9 @@ class _PurchaseListState extends State<PurchaseList> {
           taxGroupId,
           dataPType);
     } else {
-     var data = '['+ json.encode({
-            'sDate': '$sDate',
-            'eDate': '$eDate',
+     var dataJson = '[${json.encode({
+            'sDate': sDate,
+            'eDate': eDate,
             'branchId': locationsId,
             'statementType': statementType,
             'supplierId': supplierId,
@@ -243,10 +243,11 @@ class _PurchaseListState extends State<PurchaseList> {
             'purchaseType': dataPType != null
                 ? jsonEncode(dataPType)
                 : jsonEncode({'id': 0}),
-          })+ ']';
+          })}]';
+
       return FutureBuilder<List<dynamic>>(
         future: api.getPurchaseReport(
-           data),
+           dataJson),
         builder: (ctx, snapshot) {
           if (snapshot.hasData) {
             
@@ -818,7 +819,7 @@ class _PurchaseListState extends State<PurchaseList> {
     );
   }
 
-  int purchaseTypeListID = 0;
+  // int purchaseTypeListID = 0;
 
   Future _selectDate(String type) async {
     DateTime? picked = await showDatePicker(
@@ -1216,7 +1217,7 @@ class _PurchaseListState extends State<PurchaseList> {
       subcategoryId,
       salesManId,
       taxGroupId,
-      dataPType) async {
+      purchaseType) async {
     if (!lastRecord) {
       if ((dataDisplay.isEmpty || dataDisplay.length < totalRecords) &&
           !isLoadingData) {
@@ -1226,31 +1227,35 @@ class _PurchaseListState extends State<PurchaseList> {
 
         List tempList = [];
         var dataJsonS = '${'[${json.encode({
-              'statementType': 'PurchaseList',
+              'statementType': statementType.isEmpty ? '' : statementType,
               'sDate': sDate.isEmpty ? '' : sDate,
               'eDate': eDate.isEmpty ? '' : eDate,
-              'itemId': itemsId,
-              'customerId': supplierId,
-              'mfr': mfrId,
-              'category': categoryId,
-              'subcategory': subcategoryId,
-              'location': locationsId,
-              'project': projectId,
-              'salesman': salesManId,
-              'salesType': dataPType != null
-                  ? jsonEncode(dataPType)
+              'itemId': int.tryParse(itemsId.toString()),
+              'customerId': int.tryParse(supplierId.toString()),
+              'supplierId': int.tryParse(supplierId.toString()),
+              'mfr': int.tryParse(mfrId.toString()),
+              'category': int.tryParse(categoryId.toString()),
+              'subcategory': int.tryParse(subcategoryId.toString()),
+              'location': int.tryParse(locationsId.toString()),
+              'project': int.tryParse(projectId.toString()),
+              'salesman': int.tryParse(salesManId.toString()),
+              'salesType': purchaseType != null
+                  ? jsonEncode(purchaseType)
                   : jsonEncode({'id': 0}),
-              "page": page
+              "page": page,
+              'areaId': 0,
+              'groupId': 0,
+              'taxGroup': 0
             })}'}]';
         api.getListPageReport(dataJsonS).then((value) {
           final response = value;
           if (response.isNotEmpty) {
-          pageTotal = response[1][0]['Filtered'];
-          totalRecords = response[1][0]['Total'];
-          page++;
-          for (int i = 0; i < response[0].length; i++) {
-            tempList.add(response[0][i]);
-          }
+            pageTotal = response[1][0]['Filtered'];
+            totalRecords = response[1][0]['Total'];
+            page++;
+            for (int i = 0; i < response[0].length; i++) {
+              tempList.add(response[0][i]);
+            }
 
             dataDisplay.addAll(tempList);
             dataDisplayHead.addAll(response[1]);
@@ -1284,7 +1289,7 @@ class _PurchaseListState extends State<PurchaseList> {
       subcategoryId,
       salesManId,
       taxGroupId,
-      dataPType) {
+      purchaseType) {
      _getMoreData(
         locationsId,
         statementType,
@@ -1298,7 +1303,7 @@ class _PurchaseListState extends State<PurchaseList> {
         subcategoryId,
         salesManId,
         taxGroupId,
-        dataPType);
+        purchaseType);
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
@@ -1315,7 +1320,7 @@ class _PurchaseListState extends State<PurchaseList> {
             subcategoryId,
             salesManId,
             taxGroupId,
-            dataPType); 
+            purchaseType); 
       }
     });
 

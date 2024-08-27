@@ -1221,10 +1221,10 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
 //  double oldBalance =
 //         double.tryParse(dataInformation['LedgerBalance'].toString())!
 //             .toDouble();
-double oldBalance = dataInformation == null
-        ? 0.00
-        : double.tryParse(dataInformation['LedgerBalance'].toString())!
-            .toDouble();
+  double oldBalance = dataInformation != null
+        ? double.tryParse(dataInformation['LedgerBalance'].toString())!
+            .toDouble()
+        : 0;
     double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
 
   

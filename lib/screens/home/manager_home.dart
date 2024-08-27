@@ -151,259 +151,262 @@ class _ManagerHomeState extends State<ManagerHome>
         }
       }
     }
-    return DefaultTabController(
-        length: 10,
-        child: Scaffold(
-          appBar: AppBar(
-            titleSpacing: -30,
-            toolbarHeight: 80,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  _handleLogout();
-                },
-              )
-            ],
-            elevation: .1,
-            title:  Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: TabBar(
-                dividerColor: kPrimaryColor,
-                  indicator: const BoxDecoration(color: kPrimaryColor),
-                tabs: [
-                  Tab(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/today_icon.png'),
-                        const Text(
-                          'Today',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    ),
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/statement_icon.png',scale: 1.6,),
-                        const Text(
-                          'Statement',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/expence_icon.png',scale: 1.6,),
-                        const Text(
-                          'Expense',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/cash_bank_icon.png',scale: 1.6,),
-                        const Text(
-                          'Cash & Bank',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(
+    return WillPopScope(
+      onWillPop: showExitPopup,
+      child: DefaultTabController(
+          length: 10,
+          child: Scaffold(
+            appBar: AppBar(
+              titleSpacing: -30,
+              toolbarHeight: 80,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    _handleLogout();
+                  },
+                )
+              ],
+              elevation: .1,
+              title:  Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: TabBar(
+                  dividerColor: kPrimaryColor,
+                    indicator: const BoxDecoration(color: kPrimaryColor),
+                  tabs: [
+                    Tab(
                       child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/recivable_payable_icon.png',scale: 1.6,),
-                        const Text(
-                          'Recivable & Payable',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(
-                      child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/accounts_report_icon.png',),
-                        const Text(
-                          'Account Report',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(
-                      child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Inventory_report_icon.png'),
-                        const Text(
-                          'Inventory Report',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Report_icon.png'),
-                        const Text(
-                          'Report',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(
-                      child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Settings_icon.png'),
-                        const Text(
-                          'Settings',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/tools_icon.png'),
-                        const Text(
-                          'Tools',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                ],
-                isScrollable: true,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/today_icon.png'),
+                          const Text(
+                            'Today',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      ),
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/statement_icon.png',scale: 1.6,),
+                          const Text(
+                            'Statement',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/expence_icon.png',scale: 1.6,),
+                          const Text(
+                            'Expense',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/cash_bank_icon.png',scale: 1.6,),
+                          const Text(
+                            'Cash & Bank',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/recivable_payable_icon.png',scale: 1.6,),
+                          const Text(
+                            'Recivable & Payable',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/accounts_report_icon.png',),
+                          const Text(
+                            'Account Report',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Inventory_report_icon.png'),
+                          const Text(
+                            'Inventory Report',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Report_icon.png'),
+                          const Text(
+                            'Report',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Settings_icon.png'),
+                          const Text(
+                            'Settings',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/tools_icon.png'),
+                          const Text(
+                            'Tools',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                  ],
+                  isScrollable: true,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          ),
-          body: TabBarView(
-            children: [
-              (args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const DashPage()
-                      : _expire(args, context)
-                  : const DashPage()),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const Statement(isAppbar: false,)
-                      : _expire(args, context)
-                  : const Statement(isAppbar: false,),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const Expense(isAppbar: false,)
-                      : _expire(args, context)
-                  : const Expense(isAppbar: false,),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : CashAndBank(isAppbar: false,)
-                      : _expire(args, context)
-                  : CashAndBank(isAppbar: false,),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : ReceivablesAndPayables(isAppbar: false,)
-                      : _expire(args, context)
-                  : ReceivablesAndPayables(isAppbar: false,),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const AccountsReportMenu()
-                      : _expire(args, context)
-                  : const AccountsReportMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const InventoryReportMenu()
-                      : _expire(args, context)
-                  : const InventoryReportMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : Report()
-                      : _expire(args, context)
-                  : Report(),
-              const AppSettings(),
-              args.userType.toUpperCase() == 'ADMIN'
-                  ? const MoreWidget()
-                  : const MoreWidget2(),
-            ],
-          ),
-          // floatingActionButton: buildSpeedDial(args),
-        ));
+            body: TabBarView(
+              children: [
+                (args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const DashPage()
+                        : _expire(args, context)
+                    : const DashPage()),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const Statement(isAppbar: false,)
+                        : _expire(args, context)
+                    : const Statement(isAppbar: false,),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const Expense(isAppbar: false,)
+                        : _expire(args, context)
+                    : const Expense(isAppbar: false,),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : CashAndBank(isAppbar: false,)
+                        : _expire(args, context)
+                    : CashAndBank(isAppbar: false,),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : ReceivablesAndPayables(isAppbar: false,)
+                        : _expire(args, context)
+                    : ReceivablesAndPayables(isAppbar: false,),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const AccountsReportMenu()
+                        : _expire(args, context)
+                    : const AccountsReportMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const InventoryReportMenu()
+                        : _expire(args, context)
+                    : const InventoryReportMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : Report()
+                        : _expire(args, context)
+                    : Report(),
+                const AppSettings(),
+                args.userType.toUpperCase() == 'ADMIN'
+                    ? const MoreWidget()
+                    : const MoreWidget2(),
+              ],
+            ),
+            // floatingActionButton: buildSpeedDial(args),
+          )),
+    );
   }
 
   SpeedDial buildSpeedDial(CompanyUser args) {
@@ -533,6 +536,26 @@ class _ManagerHomeState extends State<ManagerHome>
         ),
       ],
     );
+  }
+    Future<bool> showExitPopup() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit an App?'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   void _showDialog(BuildContext context) {

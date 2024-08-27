@@ -110,6 +110,9 @@ class _SalesListState extends State<SalesList> {
   int valueType = 1;
   String area = '0', route = '0';
   dynamic areaModel, routeModel;
+  DataJson? location;
+  // List<ItemDataModel> areaDataList = [];
+  bool isBranchSelected = false;
 
   @override
   void initState() {
@@ -123,6 +126,32 @@ class _SalesListState extends State<SalesList> {
     //       .map((e) => e.key)
     //       .first;
     // }
+
+      // for (OtherRegistrationModel element in otherRegAreaList) {
+      //   areaDataList.add(
+      //       ItemDataModel(id: element.id, name: element.name, status: true));
+      // }
+      // api.getCityListBySalesMan(salesMan).then(
+      //   (valueResult) {
+      //     if (valueResult.isNotEmpty) {
+      //       areaDataList.clear();
+      //       for (Map element in valueResult) {
+      //         areaDataList.add(ItemDataModel(
+      //             id: element['id'],
+      //             name: (element['name'] ?? ''),
+      //             status: element['id'] == 0 ? false : true));
+      //       }
+      //     }
+      //   },
+      // );
+
+      int salesManId = ComSettings.appSettings(
+              'int', 'key-dropdown-default-salesman-view', 1) -
+          1;
+      if (salesManId > 0) {
+        salesMan = DataJson(id: salesManId, name: '');
+      }
+
     salesTypeDataList = salesTypeList;
   }
 
@@ -130,6 +159,7 @@ class _SalesListState extends State<SalesList> {
     setState(() {
       salesTypeDataList[index].stock = val;
     });
+    
   }
 
   List<Widget> _getChildren(data) {
@@ -182,6 +212,7 @@ class _SalesListState extends State<SalesList> {
                     salesMan != null;
                     taxGroup = null;
                     stockValuation = false;
+                    isBranchSelected = false;
                     supplier = null;
                     area = '0';
                     route = '0';
@@ -359,7 +390,12 @@ class _SalesListState extends State<SalesList> {
                                                                                                                                                         ? 'Price_Range_SalesReport'
                                                                                                                                                         : title == 'Custom ItemWise ||'
                                                                                                                                                           ? 'Custom ItemWise ||'
-                                                                                                                                                          : 'Sales_Summery';
+                                                                                                                                                          : title == 'Location Wise Summary'
+                                                                                                                                                            ? 'Location Wise Summary'
+                                                                                                                                                            : title == 'Location Wise Qty Total'
+                                                                                                                                                              ? 'Location Wise Qty Total'
+                                                                                                                                                              : 'Sales_Summery';
+
     for (var data in salesTypeDataList) {
       if (data.stock) dataSType.add({'id': data.id});
     }
@@ -372,6 +408,7 @@ class _SalesListState extends State<SalesList> {
       return _saleListData('SalesList', dataSType, title);
     } else {
       var locationData = [];
+      
       for (var data in locationList) {
         if (data.value.toString().isNotEmpty) {
           locationData.add({'id': data.key});

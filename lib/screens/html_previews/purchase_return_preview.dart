@@ -201,7 +201,6 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
     }
     voucherTypeData = voucherTypeList.firstWhere(
         (element) => element.voucher.toLowerCase() == 'purchase return');
-
     api
         .fetchPurchaseReturnInvoice(
             dataDynamic[0]['EntryNo'], '1', voucherTypeData!.id!)

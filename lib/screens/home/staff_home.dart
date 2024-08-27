@@ -178,192 +178,195 @@ class _StaffHomeState extends State<StaffHome> with TickerProviderStateMixin {
         }
       }
     }
-    return DefaultTabController(
-        length: 7,
-        child: Scaffold(
-          appBar: AppBar(
-            titleSpacing: -30,
-            toolbarHeight: 80,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  _handleLogout();
-                },
-              )
-            ],
-            elevation: .1,
-            title: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child:  TabBar(
-                dividerColor: kPrimaryColor,
-                    indicator: const BoxDecoration(color: kPrimaryColor),
-                tabs: [
-                  Tab(child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/today_icon.png'),
-                        const Text(
-                          'Today',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Inventory_icon.png'),
-                        const Text(
-                          'Inventory',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/accounts_icon.png'),
-                        const Text(
-                          'Accounts',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(
-                       child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/accounts_report_icon.png'),
-                        const Text(
-                          'Account Report',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab( child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Inventory_report_icon.png'),
-                        const Text(
-                          'Inventory Report',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab( child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/record_icon.png'),
-                        const Text(
-                          'Record List',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                  Tab(    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Image.asset('assets/icons/Settings_icon.png'),
-                        const Text(
-                          'Settings',
-                          style: TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13),
-                        ),
-                      ],
-                    ),),
-                ],
-                isScrollable: true,
-                labelStyle: TextStyle(fontWeight: FontWeight.bold),
+    return WillPopScope(
+      onWillPop: showExitPopup,
+      child: DefaultTabController(
+          length: 7,
+          child: Scaffold(
+            appBar: AppBar(
+              titleSpacing: -30,
+              toolbarHeight: 80,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () {
+                    _handleLogout();
+                  },
+                )
+              ],
+              elevation: .1,
+              title: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child:  TabBar(
+                  dividerColor: kPrimaryColor,
+                      indicator: const BoxDecoration(color: kPrimaryColor),
+                  tabs: [
+                    Tab(child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/today_icon.png'),
+                          const Text(
+                            'Today',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(  child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Inventory_icon.png'),
+                          const Text(
+                            'Inventory',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(  child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/accounts_icon.png'),
+                          const Text(
+                            'Accounts',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(
+                         child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/accounts_report_icon.png'),
+                          const Text(
+                            'Account Report',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab( child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Inventory_report_icon.png'),
+                          const Text(
+                            'Inventory Report',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab( child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/record_icon.png'),
+                          const Text(
+                            'Record List',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                    Tab(    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/icons/Settings_icon.png'),
+                          const Text(
+                            'Settings',
+                            style: TextStyle(
+                                fontFamily: 'poppins',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),),
+                  ],
+                  isScrollable: true,
+                  labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
-          ),
-          body: TabBarView(
-            children: [
-              (args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const DashPage()
-                      : _expire(args, context)
-                  : const DashPage()),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const InventoryMenu()
-                      : _expire(args, context)
-                  : const InventoryMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const AccountsMenu()
-                      : _expire(args, context)
-                  : const AccountsMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const AccountsReportMenu()
-                      : _expire(args, context)
-                  : const AccountsReportMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const InventoryReportMenu()
-                      : _expire(args, context)
-                  : const InventoryReportMenu(),
-              args.active == "false"
-                  ? _commonService.getTrialPeriod(args.atDate)
-                      ? isExpireWarning
-                          ? Center(
-                              child:
-                                  _expireWarningWidget(args, context, daysLeft),
-                            )
-                          : const RecordListMenu()
-                      : _expire(args, context)
-                  : const RecordListMenu(),
-              const AppSettings(),
-            ],
-          ),
-          floatingActionButton: buildSpeedDial(args),
-        ));
+            body: TabBarView(
+              children: [
+                (args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const DashPage()
+                        : _expire(args, context)
+                    : const DashPage()),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const InventoryMenu()
+                        : _expire(args, context)
+                    : const InventoryMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const AccountsMenu()
+                        : _expire(args, context)
+                    : const AccountsMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const AccountsReportMenu()
+                        : _expire(args, context)
+                    : const AccountsReportMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const InventoryReportMenu()
+                        : _expire(args, context)
+                    : const InventoryReportMenu(),
+                args.active == "false"
+                    ? _commonService.getTrialPeriod(args.atDate)
+                        ? isExpireWarning
+                            ? Center(
+                                child:
+                                    _expireWarningWidget(args, context, daysLeft),
+                              )
+                            : const RecordListMenu()
+                        : _expire(args, context)
+                    : const RecordListMenu(),
+                const AppSettings(),
+              ],
+            ),
+            floatingActionButton: buildSpeedDial(args),
+          )),
+    );
   }
 
   SpeedDial buildSpeedDial(CompanyUser args) {
@@ -496,6 +499,26 @@ class _StaffHomeState extends State<StaffHome> with TickerProviderStateMixin {
         ),
       ],
     );
+  }
+    Future<bool> showExitPopup() async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit an App?'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('No'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Yes'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   void _showDialog(BuildContext context) {

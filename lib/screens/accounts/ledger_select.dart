@@ -547,7 +547,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                             MaterialPageRoute(
                                 builder: (BuildContext context) => ReportView(
                                     _id.toString(),
-                                    '1',
+                                    (_ob ? '1' : '0'),
                                     DateUtil.dateDMY2YMD(fromDate),
                                     DateUtil.dateDMY2YMD(toDate),
                                     'ledger',
@@ -738,7 +738,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     builder: (BuildContext context) =>
                                         ReportView(
                                             _id.toString(),
-                                            '1',
+                                            (_ob ? '1' : '0'),
                                             DateUtil.dateDMY2YMD(fromDate),
                                             DateUtil.dateDMY2YMD(toDate),
                                             'Day Book',
@@ -898,7 +898,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     builder: (BuildContext context) =>
                                         ReportView(
                                             _id.toString(),
-                                            '1',
+                                            (_ob ? '1' : '0'),
                                             DateUtil.dateDMY2YMD(fromDate),
                                             DateUtil.dateDMY2YMD(toDate),
                                             'Trial Balance',
@@ -1045,7 +1045,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                             builder: (BuildContext context) =>
                                                 ReportView(
                                                     _id.toString(),
-                                                    '1',
+                                                    (_ob ? '1' : '0'),
                                                     DateUtil.dateDMY2YMD(
                                                         fromDate),
                                                     DateUtil.dateDMY2YMD(
@@ -1219,7 +1219,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                             builder: (BuildContext context) =>
                                                 ReportView(
                                                     _id.toString(),
-                                                    '1',
+                                                    (_ob ? '1' : '0'),
                                                     DateUtil.dateDMY2YMD(
                                                         fromDate),
                                                     DateUtil.dateDMY2YMD(
@@ -1359,7 +1359,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         context) =>
                                                     ReportView(
                                                         _id.toString(),
-                                                        '1',
+                                                        (_ob ? '1' : '0'),
                                                         DateUtil.dateDMY2YMD(
                                                             fromDate),
                                                         DateUtil.dateDMY2YMD(
@@ -1515,7 +1515,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             context) =>
                                                         ReportView(
                                                             _id.toString(),
-                                                            '1',
+                                                            (_ob ? '1' : '0'),
                                                             DateUtil
                                                                 .dateDMY2YMD(
                                                                     fromDate),
@@ -1827,7 +1827,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       'PV/RV Report',
                                                       'Salesman Wise Group List',
                                                       'Group List All Groups',
-                                                      'Balance Order By Date'
+                                                      'Balance Order By Date',
+                                                      'Summery Route Wise'
                                                     ].map((String items) {
                                                       return DropdownMenuItem(
                                                         value: items,
@@ -1850,7 +1851,9 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             'Summery Area Wise'
                                                                         ? 'SummeryAreaWise'
                                                                         : value ==
-                                                                                'Group & Ledger'
+                                                                               'Summery Route Wise'
+                                                                        ? 'SummeryRouteWise'
+                                                                            : value ==                                                                                 'Group & Ledger'
                                                                             ? 'Group_Ledger'
                                                                             : value == 'PV/RV Report'
                                                                                 ? 'PV/RV Report'
@@ -1878,6 +1881,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               ? 'SummeryBalanceOnly'
                                                               : 'SummeryZeroBalanceOnly'
                                                       : statement;
+                                                       if (sType ==
+                                                    'Summery Route Wise') {
+                                                  area = route;
+                                                }
                                                   Navigator.push(
                                                       context,
                                                       MaterialPageRoute(
@@ -1885,7 +1892,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   context) =>
                                                               ReportView(
                                                                   _id.toString(),
-                                                                  '1',
+                                                                  (_ob ? '1' : '0'),
                                                                   DateUtil
                                                                       .dateDMY2YMD(
                                                                           fromDate),
@@ -2003,9 +2010,11 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         }).toList(),
                                                         value: routeModel,
                                                         onChanged: (value) {
-                                                          routeModel = value;
-                                                          route = value!.id
-                                                              .toString();
+                                                          setState(() {
+                                                        routeModel = value;
+                                                        route =
+                                                            value!.id.toString();
+                                                      });
                                                         },
                                                       ),
                                                     ),
@@ -2236,7 +2245,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             MaterialPageRoute(
                                                                 builder: (BuildContext context) => ReportView(
                                                                     '0',
-                                                                    '1',
+                                                                    (_ob ? '1': '0'),
                                                                     DateUtil.dateDMY2YMD(
                                                                         fromDate),
                                                                     DateUtil.dateDMY2YMD(
@@ -2527,7 +2536,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 MaterialPageRoute(
                                                                     builder: (BuildContext context) => ReportView(
                                                                         '0',
-                                                                        '1',
+                                                                        (_ob ? '1' : '0'),
                                                                         DateUtil.dateDMY2YMD(
                                                                             fromDate),
                                                                         DateUtil.dateDMY2YMD(
@@ -2803,7 +2812,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     MaterialPageRoute(
                                                                         builder: (BuildContext context) => ReportView(
                                                                             '0',
-                                                                            '1',
+                                                                            (_ob ? '1' : '0'),
                                                                             DateUtil.dateDMY2YMD(
                                                                                 fromDate),
                                                                             DateUtil.dateDMY2YMD(
@@ -3098,7 +3107,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         MaterialPageRoute(
                                                                             builder: (BuildContext context) => ReportView(
                                                                                 selectedItem.id.toString(),
-                                                                                '1',
+                                                                                (_ob ? '1' : '0'),
                                                                                 DateUtil.dateDMY2YMD(fromDate),
                                                                                 DateUtil.dateDMY2YMD(toDate),
                                                                                 mode,
@@ -3342,7 +3351,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           () {
                                                                         Navigator.push(
                                                                             context,
-                                                                            MaterialPageRoute(builder: (BuildContext context) => ReportView('0', '1', DateUtil.dateDMY2YMD(fromDate), DateUtil.dateDMY2YMD(toDate), statement, '', statement, salesMan, locationId != null ? [locationId.id] : [_dropDownBranchId], area!, route!)));
+                                                                          MaterialPageRoute(builder: (BuildContext context) =>
+                                                                           ReportView('0', (_ob ? '1' : '0'),
+                                                                            DateUtil.dateDMY2YMD(fromDate),
+                                                                            DateUtil.dateDMY2YMD(toDate), statement, '', 
+                                                                          statement, salesMan, locationId != null ?
+                                                                           [locationId.id] : [_dropDownBranchId], area!, route!)));
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
@@ -3528,7 +3542,11 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           () {
                                                                         Navigator.push(
                                                                             context,
-                                                                            MaterialPageRoute(builder: (BuildContext context) => ReportView('0', '1', DateUtil.dateDMY2YMD(fromDate), DateUtil.dateDMY2YMD(toDate), statement, '', statement, salesMan, locationId != null ? [locationId.id] : [_dropDownBranchId], area!, route!)));
+                                                                            MaterialPageRoute(builder: (BuildContext context) =>
+                                                                             ReportView('0', (_ob ? '1' : '0'),
+                                                                             DateUtil.dateDMY2YMD(fromDate), DateUtil.dateDMY2YMD(toDate),
+                                                                             statement, '', statement, salesMan, locationId != null ?
+                                                                            [locationId.id] : [_dropDownBranchId], area!, route!)));
                                                                       },
                                                                       style:
                                                                           ButtonStyle(

@@ -238,55 +238,6 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         loadAsset();
         _isLoading = false;
 
-        List itemIdList = [];
-        // for (var u in dataParticularsAll) {
-        //   if (itemIdList.contains(u["itemId"].toString().trim())) {
-        //     int index = dataParticulars.indexWhere((i) =>
-        //         i['itemId'].toString().trim() == u['itemId'].toString().trim());
-        //     double qty =
-        //         double.tryParse(dataParticulars[index]['Qty'].toString()) +
-        //             double.tryParse(u['Qty'].toString());
-        //     // dataParticulars[index]['hsncode'] = hsncode;
-        //     dataParticulars[index]['Qty'] = qty;
-        //     dataParticulars[index]['Net'] = qty *
-        //         double.tryParse(dataParticulars[index]['RealRate'].toString());
-        //     dataParticulars[index]['CGST'] =
-        //         double.tryParse(dataParticulars[index]['CGST'].toString()) +
-        //             double.tryParse(u['CGST'].toString());
-        //     dataParticulars[index]['SGST'] =
-        //         double.tryParse(dataParticulars[index]['SGST'].toString()) +
-        //             double.tryParse(u['SGST'].toString());
-        //     dataParticulars[index]['IGST'] =
-        //         double.tryParse(dataParticulars[index]['IGST'].toString()) +
-        //             double.tryParse(u['IGST'].toString());
-        //     dataParticulars[index]['Total'] =
-        //         double.tryParse(dataParticulars[index]['Total'].toString()) +
-        //             double.tryParse(u['Total'].toString());
-        //     dataParticulars[index]['GrossValue'] = double.tryParse(
-        //             dataParticulars[index]['GrossValue'].toString()) +
-        //         double.tryParse(u['GrossValue'].toString());
-        //     dataParticulars[index]['cess'] =
-        //         double.tryParse(dataParticulars[index]['cess'].toString()) +
-        //             double.tryParse(u['cess'].toString());
-        //     dataParticulars[index]['adcess'] =
-        //         double.tryParse(dataParticulars[index]['adcess'].toString()) +
-        //             double.tryParse(u['adcess'].toString());
-        //     dataParticulars[index]['Disc'] =
-        //         double.tryParse(dataParticulars[index]['Disc'].toString()) +
-        //             double.tryParse(u['Disc'].toString());
-        //     dataParticulars[index]['DiscPersent'] = double.tryParse(
-        //             dataParticulars[index]['DiscPersent'].toString()) +
-        //         double.tryParse(u['DiscPersent'].toString());
-        //     dataParticulars[index]['Fcess'] =
-        //         double.tryParse(dataParticulars[index]['Fcess'].toString()) +
-        //             double.tryParse(u['Fcess'].toString());
-        //   } else {
-        //     itemIdList.add(u['itemId'].toString().trim());
-        //     dataParticulars.add(u);
-        //   }
-        // }
-
-
           AppSettingsMap mapCash = cashAccount.firstWhere(
             (element) => 
          element.key.toString() == dataInformation['Customer'].toString(),
@@ -352,15 +303,6 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                 onPressed: () {
                   setState(
                     () {
-                      // Future.delayed(const Duration(milliseconds: 1000), () {
-                      // _createPDF(
-                      //         title +
-                      //             '_ref_${dataInformation['RealEntryNo']}',
-                      //         companySettings,
-                      //         settings,
-                      //         data,
-                      //         customerBalance)
-                      //     .then((value) =>
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (_) => PDFScreen(
                                 pathPDF: pdfPath,
@@ -397,21 +339,6 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                     '/select_ledger',
                   );
                 }),
-            // IconButton(
-            //     icon: const Icon(Icons.picture_in_picture),
-            //     onPressed: () {
-            //       sample image for test
-            //       _capturePng().then((value) async {
-            //         // Path tempDir = await getTemporaryDirectzory();
-            //         var tempDir = await getTemporaryDirectory();
-            //         var path = '${tempDir.path}/image.png';
-            //         var iss = await File(path).exists();
-            //         if (iss)
-            //           OpenFile.open(path);
-            //         File files = await File(path).create();
-            //         await files.writeAsBytesSync(value);
-            //       });
-            //     }),
             IconButton(
                 icon: const Icon(Icons.print),
                 onPressed: () {
@@ -491,24 +418,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
   }
 
   var pdfPath = '';
-  generatepdfWidget(title) {
-    // return Container(child: pw.PdfPreview(
-    //     maxPageWidth: 700,
-    //     build: (format) => examples[_tab].builder(format, _data),
-    //     actions: actions,
-    //     onPrinted: _showPrintedToast,
-    //     onShared: _showSharedToast,
-    //   ),);
 
-    // Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (_) => PDFScreen(
-    //           pathPDF: value,
-    //           subject: title,
-    //           text: 'this is ' + title,
-    //         )));
-  }
-
- 
   invoiceGenerate(context) {
     bool isLoading = false;
     var taxSale = salesTypeData!.tax;
@@ -1276,47 +1186,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                               color: Colors.black,
                               fontSize: 25,
                               fontWeight: FontWeight.bold)),
-                      // /*company*/
-                      // Row(
-                      //   children: [
-                      //     Text(companySettings.name'],
-                      //         style: TextStyle(
-                      //             color: Colors.black,
-                      //             fontSize: 22,
-                      //             fontWeight: FontWeight.bold)),
-                      //   ],
-                      // ),
-                      // Row(
-                      //   children: [
-                      //     Text(companySettings.add1'] +
-                      //         ',' +
-                      //         companySettings.add2']),
-                      //   ],
-                      // ),
-                      // Row(
-                      //   children: [
-                      //     Text(companySettings.telephone'] +
-                      //         ',' +
-                      //         companySettings.mobile']),
-                      //   ],
-                      // ),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //   children: [
-                      //     Text(Settings.getValue('GST-NO', settings)),
-                      //     Text('Date : ' + DateUtil.dateDMY(dataInformation['DDate'])),
-                      //   ],
-                      // ),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //   children: [
-                      //     Text(companySettings.pin']),
-                      //     Text('Invoice : ' + dataInformation['InvoiceNo']),
-                      //   ],
-                      // ),
-                      /*customer*/
-                      // Container(child: Text(' ')
-                      // ),
+                     
                       Row(
                         children: [
                           const Text('BILL To :- ',
@@ -5584,51 +5454,7 @@ _showPrinterSize(BuildContext context, title, companySettings, settings, data,
     byteImage) async {
   _asyncSimpleDialog(context).then((value) => printBluetooth(
       context, title, companySettings, settings, data, byteImage, value));
-  // return await showDialog(
-  //   context: context,
-  //   builder: (context) => AlertDialog(
-  //     title: const Text('Printer Size'),
-  //     // content: const Text('Do you want to logout'),
-  //     // return showDialog(
-  //     //     context: context,
-  //     //     builder: (context) {
-  //     //       return AlertDialog(
-  //     //         title: const Text('Printer Size'),
-  //     content: SizedBox(
-  //         width: double.minPositive,
-  //         child: Expanded(
-  //           child: ListView.builder(
-  //             shrinkWrap: true,
-  //             itemCount: newDataList == null ? 0 : newDataList.length,
-  //             itemBuilder: (BuildContext context, int index) {
-  //               return ListTile(
-  //                   title: Text(newDataList[index]),
-  //                   onTap: () {
-  //                     var bill = data['Information'][0];
-  //                     var ledgerName = mainAccount
-  //                         .firstWhere(
-  //                           (element) =>
-  //                               element['LedCode'].toString() ==
-  //                               bill['Customer'].toString(),
-  //                           orElse: () => {'LedName': bill['ToName']},
-  //                         )['LedName']
-  //                         .toString();
-  //                     if (ledgerName != 'CASH') {
-  //                       var a = 'Not a cash bill';
-  //                       debugPrint('**************************$a');
-  //                     } else {
-  //                       var b = 'cash bill';
-  //                       debugPrint('**************************$b');
-  //                     }
-
-  //                     printBluetooth(context, title, companySettings, settings,
-  //                         data, byteImage, newDataList[index]);
-  //                   });
-  //             },
-  //           ),
-  //         )),
-  //   ),
-  // );
+ 
 }
 
 Future<String?> _asyncSimpleDialog(BuildContext context) async {
@@ -15500,7 +15326,7 @@ Future<pw.Document> makePDF(
                       calculateEstTotalAmount(dataParticulars);
                   double totalEstQuantity =
                       calculateEstTotalQuantity(dataParticulars);
-                  final int totalRowCount = pdfLineSpace > 0 ? pdfLineSpace : 6;
+                  final int totalRowCount = pdfLineSpace > 0 ? pdfLineSpace : 25;
                   final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed
@@ -16360,7 +16186,7 @@ Future<pw.Document> makePDF(
                       calculateEstTotalQuantity(dataParticulars);
                   final int totalRowCount = pdfLineSpace > 0
                       ? pdfLineSpace
-                      : 10; // Desired total row count
+                      : 41; // Desired total row count
                   final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed
@@ -19030,7 +18856,7 @@ _buildEstimateFooter(pw.Context context, dataBankLedger, dataInformation,
 }
 
 _buildEstimateHeader(
-    company, companySettings, dataLedger, dataInformation, bool isHeading) {
+    company, cSettings, dataLedger, dataInformation, bool isHeading) {
   var companyState = ComSettings.getValue('COMP-STATE', company);
   var companyStateCode = ComSettings.getValue('COMP-STATECODE', company);
   var companyTaxNo = ComSettings.getValue('GST-NO', company);
@@ -19046,8 +18872,8 @@ _buildEstimateHeader(
                   width: 2),
             ),
             child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Padding(
                   padding: const pw.EdgeInsets.only(top: 5),
@@ -19055,50 +18881,66 @@ _buildEstimateHeader(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        company.name,
+                        cSettings..name,
                         style: pw.TextStyle(
                             fontSize: 15, fontWeight: pw.FontWeight.bold),
                       ),
                       pw.Text(
-                        company.add1,
+                        cSettings..add1,
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        company.add2,
+                        cSettings..add2,
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        company.email,
+                        cSettings..email,
                         style: const pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
-                        company.mobile,
+                        cSettings..mobile,
                         style: const pw.TextStyle(fontSize: 8),
+                      ),
+                       pw.SizedBox(
+                        height: 5,
+                      ),
+                      pw.Text(
+                        "GST No : $companyTaxNo",
+                        style: pw.TextStyle(
+                            fontSize: 12, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.SizedBox(
+                        height: 10,
+                      ),
+                      pw.Text(
+                        "State      : $companyState       $companyStateCode",
+                        style: pw.TextStyle(
+                            fontSize: 12, fontWeight: pw.FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.SizedBox(
-                      height: 5,
-                    ),
-                    pw.Text(
-                      "GST No : $companyTaxNo",
-                      style: pw.TextStyle(
-                          fontSize: 12, fontWeight: pw.FontWeight.bold),
-                    ),
-                    pw.SizedBox(
-                      height: 10,
-                    ),
-                    pw.Text(
-                      "State / code: ${companyState}    ${companyStateCode}",
-                      style: pw.TextStyle(
-                          fontSize: 12, fontWeight: pw.FontWeight.bold),
-                    ),
-                  ],
-                ),
+                // pw.Column(
+                //   crossAxisAlignment: pw.CrossAxisAlignment.start,
+                //   children: [
+                //     pw.SizedBox(
+                //       height: 5,
+                //     ),
+                //     pw.Text(
+                //       "GST No : $companyTaxNo",
+                //       style: pw.TextStyle(
+                //           fontSize: 12, fontWeight: pw.FontWeight.bold),
+                //     ),
+                //     pw.SizedBox(
+                //       height: 10,
+                //     ),
+                //     pw.Text(
+                //       "State / code: ${companyState}    ${companyStateCode}",
+                //       style: pw.TextStyle(
+                //           fontSize: 12, fontWeight: pw.FontWeight.bold),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           )

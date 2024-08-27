@@ -62,6 +62,7 @@ class _SalesReturnState extends State<SalesReturn> {
       keyItemsVariantStock = false,
       buttonEvent = false,
       isFreeItem = false,
+      isAdminUser = false,
       loading = false,
       newSalesReturn = false,
       productTracking = false,
@@ -79,6 +80,7 @@ class _SalesReturnState extends State<SalesReturn> {
   List<dynamic> _ledger = [];
   List<ProductPurchaseModel> itemDisplay = [];
   List<ProductPurchaseModel> items = [];
+  List<UnitModel> unitList = [];
   int saleAccount = 0;
   int lId = 0, groupId = 0, acId = 0;
   var salesManId = 0;
@@ -2122,7 +2124,7 @@ bool isPrateEdited = false;
   addItemWidget(){
     int locationId = lId.toString().trim().isNotEmpty ? lId : 1;
     
-    List<UnitModel> unitList = [];
+    
      if (editItem) {
       selectedProducteId = cartModel!.itemId;
       productModelPrize = fetchedPrice;

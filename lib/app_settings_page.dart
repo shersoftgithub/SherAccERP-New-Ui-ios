@@ -1057,11 +1057,8 @@ class AppSettings extends StatelessWidget {
                                           fontFamily: 'poppins'),
                                       settingKey:
                                           'key-dropdown-item-default-sku-view',
-                                      values: unitListSettings.isNotEmpty
-                                          ? {
-                                              for (var e in unitListSettings)
-                                                e.key + 1: e.value
-                                            }
+                                          values: unitListSettings.isNotEmpty
+                      ? {for (var e in unitListSettings) e.key + 1: e.value}
                                           : {
                                               2: '',
                                             },
@@ -1877,7 +1874,7 @@ class AppSettings extends StatelessWidget {
                           fontWeight: FontWeight.w500),
                       // subtitle: 'Pdf Settings',
                       child: SettingsScreen(
-                        title: 'Pinter Settings',
+                        title: 'Pdf Settings',
                         children: [
                           Container(
                              width: MediaQuery.sizeOf(context).width,
