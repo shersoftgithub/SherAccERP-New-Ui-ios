@@ -40,7 +40,7 @@ dependencies:
   firebase_messaging:
   flutter_bluetooth_basic:
   firebase_in_app_messaging:
-  firebase_core: ^2.25.4
+  firebase_core: ^3.4.0
   firebase_crashlytics:
   firebase_core_platform_interface:
   flutter_speed_dial:
@@ -48,10 +48,6 @@ dependencies:
   flutter_colorpicker:
   form_field_validator:
   google_translate:
-  latlong2:
-  flutter_map:
-  geolocator:
-  flutter_foreground_task:
   http:
   hive_flutter:
   intl:
@@ -63,7 +59,7 @@ dependencies:
   flutter_staggered_grid_view:
   # flutter_sparkline:
   # flutter_settings_screens:
-  flutter_settings_screen_ex: ^0.0.1+5
+  flutter_settings_screen_ex: 
   flutter_awesome_alert_box:
   # flutter_sunmi_printer:
   open_file:
@@ -96,7 +92,7 @@ dependencies:
   easy_autocomplete: ^1.6.0
   flutter_riverpod: ^2.5.1
   build_runner: ^2.4.9
-  riverpod_generator: ^2.4.0
+  riverpod_generator: ^2.4.3
   riverpod_annotation: ^2.3.5
   flutter_async_autocomplete: ^0.1.1
   easy_pie_chart: ^1.0.0
@@ -104,6 +100,11 @@ dependencies:
   dotted_border: ^2.1.0
   dotted_decoration: ^2.0.0
   flutter_hooks: ^0.20.5
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  hooks_riverpod: ^2.5.2
  
 
 dev_dependencies:

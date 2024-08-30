@@ -1,4 +1,6 @@
-**/.g.dart
+# Generated Code
+**/*.g.dart
+**/*.freezed.dart
 
 # Miscellaneous
 *.class

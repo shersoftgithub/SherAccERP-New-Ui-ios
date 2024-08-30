@@ -1,69 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
+import 'package:sheraccerp/pos/models/pos_cart_model.dart';
+import 'package:sheraccerp/pos/pages/home_page.dart';
+import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
-class ItemsPage extends StatefulWidget {
+class ItemsPage extends StatefulHookConsumerWidget {
   const ItemsPage({super.key});
 
   @override
-  State<ItemsPage> createState() => _ItemsPageState();
+  ConsumerState<ItemsPage> createState() => _ItemsPageState();
 }
 
-class _ItemsPageState extends State<ItemsPage> {
+class _ItemsPageState extends ConsumerState<ItemsPage> {
+  final TextEditingController searchController = TextEditingController();
+  List<DataJson> categoryDataList = [];
+  List<String> categoryList = [];
+  List<PosCartModel> cartItem = [];
   bool _showCategoryList = false;
   Map<String, int> selectedItems = {};
   List<ProductPurchaseModel>? products;
-   DioService api = DioService();
-  //  List<String> names; 
-  String _selectedCategory = "All"; 
+  List<ProductPurchaseModel>? filteredProducts; 
+  DioService api = DioService();
+  String _selectedCategory = "All";
+  bool _isLoading = true;
 
-  // @override
-  // void initState(){
-  //   super.initState();
-  //  var data = api.fetchAllProductPurchase();
-  //  data.whenComplete(() => products);
-  //  products!.where((element) => element.itemName == names );
-  // }
-
-  final Map<String, List<String>> _categoryItems = {
-    "All": [
-      "Ajmi puttu podi",
-      "Aatta Flour",
-      "Salt & Sugar",
-      "Bakery Bread",
-      "Dairy Milk",
-      "Coca Cola",
-      "Pepsi",
-      "Sunflower Oil",
-      "Olive Oil"
-    ],
-    "Bakery & Dairy": ["Bakery Bread", "Dairy Milk"],
-    "Beverages": ["Coca Cola", "Pepsi"],
-    "Edible oil & Ghee": ["Sunflower Oil", "Olive Oil"],
+  final Map<String, List<ProductPurchaseModel>> _categoryItems = {
+    "All": [],
   };
 
-  // Future<List<ProductPurchaseModel>>  allProducts(){
-  //  var data = api.fetchAllProductPurchase().then((value) => value);
-  //  data.whenComplete(() => products);
-   
-  //  return data;
-  // }
+  @override
+  void initState() {
+    super.initState();
+    loadSettings();
+    _fetchProducts();
+    categoryDataList
+        .addAll(DataJson.fromJsonListX(otherRegistrationList[0]['category']));
+    
+    categoryList.addAll(categoryDataList
+        .map((item) => item.name)
+        .where((name) => name != null)
+        .cast<String>()
+        .toList());
+
+    for (String category in categoryList) {
+      _categoryItems[category] = [];
+    }
+  }
+  
+  CompanyInformation companySettings = CompanyInformation.emptyData();
+  List<CompanySettings> settings = [];
+
+  loadSettings() {
+    companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
+    settings = ScopedModel.of<MainModel>(context).getSettings();
+  }
+
+  Future<void> _fetchProducts() async {
+    products = await api.fetchAllProductPurchase();
+    filteredProducts = products; 
+    _categorizeProducts();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  void _categorizeProducts() {
+    _categoryItems["All"] = products ?? [];
+  }
+
+  void filterProducts(String query) {
+    if (query.isEmpty) {
+      filteredProducts = _categoryItems[_selectedCategory];
+    } else {
+      filteredProducts = _categoryItems[_selectedCategory]
+          !.where((product) =>
+              product.itemName?.toLowerCase().contains(query.toLowerCase()) ?? false)
+          .toList();
+    }
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<String> _itemList = _categoryItems[_selectedCategory] ?? [];
+    debugPrint(cartItem.length.toString());
+    final isExpanded = useState<bool>(false);
+    final List<ProductPurchaseModel> _itemList = filteredProducts ?? [];
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
         centerTitle: true,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios, color: white),
-        ),
+        // leading: IconButton(
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        //   icon: const Icon(Icons.arrow_back_ios, color: white),
+        // ),
         title: const Text(
           'Items',
           style: TextStyle(
@@ -71,6 +111,28 @@ class _ItemsPageState extends State<ItemsPage> {
             color: white,
           ),
         ),
+        bottom: isExpanded.value
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(40),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: TextField(
+                    style: const TextStyle(color: white),
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Search..',
+                      hintStyle: TextStyle(color: white,fontFamily: 'poppins'),
+                      constraints: BoxConstraints(maxHeight: 45),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      filterProducts(value);
+                    },
+                  ),
+                ),
+              )
+            : null,
         actions: [
           IconButton(
             onPressed: () {
@@ -81,113 +143,140 @@ class _ItemsPageState extends State<ItemsPage> {
             icon: const Icon(Icons.menu, color: white),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              isExpanded.value = !isExpanded.value;
+            },
             icon: const Icon(Icons.search, color: white),
           ),
         ],
       ),
-      body: Row(
-        children: [
-          if (_showCategoryList)
-            Container(
-              color: bagroundColor,
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width / 2.9,
-              child: ListView.builder(
-                itemCount: _categoryItems.keys.length,
-                itemBuilder: (context, index) {
-                  String category = _categoryItems.keys.elementAt(index);
-                  return ListTile(
-                    title: Text(category),
-                    tileColor: _selectedCategory == category ? kPrimaryColor : null, 
-                    textColor: _selectedCategory == category ? kPrimaryColor : null,
-                    trailing: category == 'All' ? InkWell(
-                      onTap: () {
-                        setState(() {
-                          _showCategoryList = false;
-                        });
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Row(
+              children: [
+                if (_showCategoryList)
+                  Container(
+                    color: bagroundColor,
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width / 2.9,
+                    child: ListView.builder(
+                      itemCount: _categoryItems.keys.length,
+                      itemBuilder: (context, index) {
+                        String category = _categoryItems.keys.elementAt(index);
+                        return ListTile(
+                          title: Text(category),
+                          tileColor: _selectedCategory == category ? kPrimaryColor : null,
+                          textColor: _selectedCategory == category ? kPrimaryColor : null,
+                          trailing: category == 'All'
+                              ? InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _showCategoryList = false;
+                                    });
+                                  },
+                                  child: const Icon(Icons.keyboard_double_arrow_left))
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = category;
+                              filterProducts(searchController.text); 
+                            });
+                          },
+                        );
                       },
-                      child: const Icon(Icons.keyboard_double_arrow_left))
-                      :null,
-                    onTap: () {
-                      setState(() {
-                        _selectedCategory = category;
-                        // _showCategoryList = false; 
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Align(
-                alignment: Alignment.center,
-                child: Wrap(
-                  children: _itemList.map((item) {
-                    return Container(
-                      padding: const EdgeInsets.all(4),
-                      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                      width: MediaQuery.of(context).size.width / 3.5,
-                      constraints: const BoxConstraints(minHeight: 90, maxHeight: 120),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: grey),
-                        borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Wrap(
+                        children: _itemList.map((item) {
+                          return Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                            width: MediaQuery.of(context).size.width / 3.5,
+                            constraints: const BoxConstraints(minHeight: 90, maxHeight: 120),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: grey),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: IntrinsicHeight(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    item.itemName ?? '',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    "\u{20B9} ${item.itemCode ?? 0}", // Assuming price is in the model
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                     setState(() {
+                                      ref.read(cartItemProvider.notifier).addItem(
+                                        PosCartModel(id: item.slNo.toString(), name: item.itemName, quantity: 1)
+                                      );
+                                      // cartItem.add(PosCartModel(id: '', name: item.itemName, quantity: 1));
+                                      // addProduct(PosCartModel(
+                                      //   id: '',
+                                      //   name: item.itemName,
+                                      //    quantity: 1,
+                                      // ), 1);
+                                      // cartItem.add(PosCartItem(
+                                      //     itemName: item.itemName,quantity: 1,id: cartItem.length +1));
+                                    });
+                                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => PosHomePage(selectedItems: selectedItems),));
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      decoration: BoxDecoration(
+                                        color: kPrimaryColor,
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text('Add', style: TextStyle(color: white)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      child: IntrinsicHeight(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              item,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'poppins',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const Text(
-                              "\u{20B9} 200",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () {
-                                 setState(() {
-      if (selectedItems.containsKey(item)) {
-        selectedItems[item] = selectedItems[item]! + 1; // Increase quantity
-      } else {
-        selectedItems[item] = 1; // Add item with quantity 1
-      }
-    });
-                              },
-                              child: Container(
-                                width: MediaQuery.of(context).size.width,
-                                decoration: BoxDecoration(
-                                  color: kPrimaryColor,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text('Add', style: TextStyle(color: white)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
+   void addProduct(product, int index) {
+    index = cartItem.indexWhere((i) => i == product.itemId);
+    // if (index != -1) {
+      // updateProduct(product, product.quantity + 1, index);
+    // } else {
+      cartItem.add(product);
+    // }
+  }
+
+  // void addProduct(PosCartItem product, int index) {
+  //   index = cartItem.indexWhere((element) => element.itemName == product.itemName);
+  //   if (index == -1) {
+  //     cartItem.add(product);
+  //   }
+  // }
 }

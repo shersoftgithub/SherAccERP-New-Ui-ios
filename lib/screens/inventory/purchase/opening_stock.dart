@@ -1598,7 +1598,7 @@ class _OpeningStockState extends State<OpeningStock> {
                                 return Text('Error: ${snapshot.error}');
                               }
                               //  else if (snapshot.connectionState == ConnectionState.waiting){
-                              //    isLoading == true;
+                              //    isLoading == true; 
                               // }
                               else if (!snapshot.hasData) {
                                 return const Text('No data found');
