@@ -1,13 +1,24 @@
+import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/models/company.dart';
+import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/models/stock_item.dart';
+import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
+import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/payment_details_page.dart';
 import 'package:sheraccerp/pos/pages/qr_view_page.dart';
 import 'package:sheraccerp/pos/widgets/drawer_widget.dart';
+import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class PosHomePage extends StatefulHookConsumerWidget {
@@ -19,13 +30,84 @@ class PosHomePage extends StatefulHookConsumerWidget {
 }
 
 class _PosHomePageState extends ConsumerState<PosHomePage> {
+  final TextEditingController quantityController = TextEditingController();
   List<PosCartModel> cartItem = [];
+   DateTime now = DateTime.now();
+  String? formattedDate;
+  DioService api = DioService();
+  List<StockItem>? fetchStockProducts;
+  List<StockProduct>? fetchStockVariant;
+  List<ProductPurchaseModel>? products;
+  bool _isLoading = false;
+  String _toDay ='';
+String get getToDay => _toDay!;
 
    @override
    void initState(){
-    ComSettings().fetchOtherData();
     super.initState();
+    
+     formattedDate =
+        getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
+
+      ComSettings().fetchOtherData();
+      loadSettings();
+      _fetchStockProducts();
+      // _fetchStockVariant();
+        
+    
    }
+
+   @override
+   void dispose(){
+    quantityController.clear();
+    super.dispose();
+   }
+
+  CompanyInformation companySettings = CompanyInformation.emptyData();
+  List<CompanySettings> settings = [];
+
+  loadSettings() {
+    companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
+    settings = ScopedModel.of<MainModel>(context).getSettings();
+  }
+
+
+  // Future<void> _fetchStockProducts() async {
+  //   // products = await api.fetchAllProductPurchase();
+  //   fetchStockProducts = await api.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate));
+  // //  fetchStockVariant = fetchStockProducts!.where((element) => api.fetchStockVariant(element.id!),);
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
+
+  Future<void> _fetchStockProducts() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  fetchStockProducts = await api.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate));
+
+  fetchStockVariant = [];
+  for (var product in fetchStockProducts!) {
+    var variant = await api.fetchStockVariant(product.id!);
+    if (variant != null) {
+      fetchStockVariant!.addAll(variant);
+    }
+  }
+
+  setState(() {
+    _isLoading = false;
+  });
+}
+
+
+  // Future<void> _fetchStockVariant() async {
+  //   fetchStockVariant = await api.fetchStockVariant();
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
 
    Future<bool> showExitPopup() async {
     return await showDialog(
@@ -54,13 +136,17 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    List<StockItem> _itemList = fetchStockProducts ?? [];
+    List<StockProduct> _variantList = fetchStockVariant ?? [];
+    // final List<ProductPurchaseModel> _itemList = products ?? [];
     final cartModel = ref.watch(cartItemProvider);
-    debugPrint(cartItem.length.toString());
-         final _quantity = useState('');
+    // debugPrint(cartItem.length.toString()); 
+         var _quantity = useState('');
 
 
     void _handleNumberPressed(String number) {
-      _quantity.value += number;
+    quantityController.text =  _quantity.value += number;
+    debugPrint(number);
       // widget.onQuantityChanged(_quantity.value);
     }
 
@@ -69,6 +155,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       // widget.onQuantityChanged('');
     }
      final isExpanded = useState<bool>(true);
+     debugPrint(fetchStockVariant.toString());
 
     return  WillPopScope(
       onWillPop: showExitPopup,
@@ -79,7 +166,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
           child: Scaffold(
             backgroundColor: bagroundColor,
             key: scaffoldKey,
-            drawer: DrawerWidget(),
+            drawer: const DrawerWidget(),
             appBar: AppBar(
               toolbarHeight: 80,
              leading: Align(
@@ -90,256 +177,412 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
              ),
              backgroundColor: kPrimaryColor,
             ),
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 10
-                ),
-                child: Column(
-                  children: [
-                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 3,
-                      vertical: 8
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: white,
-                    ),
-                    height: MediaQuery.of(context).size.height,
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
+            body: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 10
+              ),
+              child: Container(
+               padding: const EdgeInsets.symmetric(
+                 horizontal: 3,
+                 vertical: 8
+               ),
+               decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(3),
+                 color: white,
+               ),
+               height: MediaQuery.of(context).size.height,
+               width: MediaQuery.of(context).size.width,
+               child: ListView(
+                // scrollDirection: Axis.vertical,
+                // physics: BouncingScrollPhysics(),
+                 children: [
+                   SizedBox(
+                     width: MediaQuery.of(context).size.width,
+                     child: Row(
+                       children: [
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/7,
+                           child: const Text('Barcode',
+                           overflow: TextOverflow.ellipsis,
+                           // textScaler: TextScaler.linear(.9),
+                                                 style: TextStyle(
+                                                   fontFamily: 'poppins',
+                                                   // fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: grey
+                                                 ),
+                           ),
+                         ),
+                         const Spacer(),
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/4,
+                           child: const Center(
+                             child: Text('Item Name',
+                             overflow: TextOverflow.ellipsis,
+                             // textScaler: TextScaler.linear(.9),
+                                                   style: TextStyle(
+                                                     fontFamily: 'poppins',
+                                                     // fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: grey
+                                                   ),
+                             ),
+                           ),
+                         ),
+                         const Spacer(),
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/9,
+                           child: const Center(
+                             child: Text('Qty',
+                             overflow: TextOverflow.ellipsis,
+                             // textScaler: TextScaler.linear(.9),
+                                                   style: TextStyle(
+                                                     fontFamily: 'poppins',
+                                                     // fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: grey
+                                                   ),
+                             ),
+                           ),
+                         ),
+                         const Spacer(),
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/7,
+                           child: const Center(
+                             child: Text('Rate',
+                             overflow: TextOverflow.ellipsis,
+                             // textScaler: TextScaler.linear(.9),
+                                                   style: TextStyle(
+                                                     fontFamily: 'poppins',
+                                                     // fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: grey
+                                                   ),
+                             ),
+                           ),
+                         ),
+                         const Spacer(),
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/7,
+                           child: const Center(
+                             child: Text('Total',
+                             overflow: TextOverflow.ellipsis,
+                             // textScaler: TextScaler.linear(.9),
+                                                   style: TextStyle(
+                                                     fontFamily: 'poppins',
+                                                     // fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: grey
+                                                   ),
+                             ),
+                           ),
+                         ),
+                         SizedBox(
+                           width: MediaQuery.of(context).size.width/15,
+                           child: const Center(
+                             child: Text(' ',
+                             overflow: TextOverflow.ellipsis,
+                             // textScaler: TextScaler.linear(.9),
+                                                   style: TextStyle(
+                                                     fontFamily: 'poppins',
+                                                     // fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: grey
+                                                   ),
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                   const Divider(),
+                   // items list
+                   cartModel.isNotEmpty
+                    ? Column(
+                     mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: Row(
+                        ListView.separated(
+                          reverse: true,
+                          // scrollDirection:Axis.vertical , 
+                         physics: BouncingScrollPhysics(),
+                         shrinkWrap: true,
+                         separatorBuilder: (context, index) => const Divider(),
+                         itemCount: cartModel.length,
+                         itemBuilder: (context, index) {
+                          final item = cartModel[index];
+                          double? quantity = double.tryParse(cartModel[index].quantity.toString() );
+                          double? rate = double.tryParse(cartModel[index].rate.toString());
+            
+                           // final item = cartItem![index];
+                                      //                String itemName = widget.selectedItems.keys.elementAt(index);
+                                      // int quantity = widget.selectedItems[itemName]!;
+                           return InkWell(
+                            onTap: () {
+                              debugPrint(index.toString());
+                          showDialog(
+                            context: context, builder: (context) =>
+                             AlertDialog(
+                            
+                              title: Text('Edit Item'),
+                              titleTextStyle: TextStyle(
+                                fontFamily: 'poppins',
+                                fontSize: 18,
+                                color: black
+                              ),
+                              content: Container(
+                                height: MediaQuery.of(context).size.height/2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Item Name',
+                                     style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 4,
+                                    ),
+                                     Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 8
+                                      ),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: grey
+                                        ),
+                                        borderRadius: BorderRadius.circular(3)
+                                      ),
+                                      width: MediaQuery.of(context).size.width,
+                                       child: Text(cartModel[index].name,
+                                       style: const TextStyle(
+                                          fontFamily: 'poppins'
+                                        ),
+                                                                           ),
+                                     ),
+                                     const SizedBox(
+                                      height: 8,
+                                    ),
+                                       const Text('Quantity',
+                                     style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+                                    TextField(
+                                      style: TextStyle(
+                                        fontFamily: 'poppins'
+                                      ),
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(
+                                          vertical: 8,
+                                          horizontal: 5
+                                        )
+                                      ),
+                                      controller: TextEditingController(
+                                        text: cartModel[index].quantity.toString()
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                             ),);
+                            },
+                             child: SizedBox(
+                               width: MediaQuery.of(context).size.width,
+                               // height: 40,
+                               child: Row(
+                                 children: [
+                                    SizedBox(
+                                 width: MediaQuery.of(context).size.width/7,
+                                 child: const Text('01233212',
+                                 maxLines: null,
+                                 // textScaler: TextScaler.linear(.9),
+                                 overflow: TextOverflow.ellipsis,
+                                                       style: TextStyle(
+                                                         fontFamily: 'poppins',
+                                                         // fontSize: 13,
+                                                          fontWeight: FontWeight.w500,
+                                                       ),
+                                 ),
+                               ),
+                               const Spacer(),
+                               SizedBox(
+                                 width: MediaQuery.of(context).size.width/4,
+                                 child:  Center(
+                                   child: Text(cartModel[index].name ?? '',
+                                   // textScaler: TextScaler.linear(.9),
+                                   maxLines: null,
+                                   textAlign: TextAlign.justify,
+                                   overflow: TextOverflow.ellipsis,
+                                                         style: const TextStyle(
+                                                           fontFamily: 'poppins',
+                                                           // color: grey,
+                                                           // fontSize: 13,
+                                                            fontWeight: FontWeight.w500,
+                                                         ),
+                                   ),
+                                 ),
+                               ),
+                               const Spacer(),
+                               SizedBox(
+                                 width: MediaQuery.of(context).size.width/9,
+                                 child: Center(
+                                   child: Text(cartModel[index].quantity.toString(),
+                                   // textScaler: TextScaler.linear(.9),
+                                   overflow: TextOverflow.ellipsis,
+                                                         style: const TextStyle(
+                                                           fontFamily: 'poppins',
+                                                           // color: grey,
+                                                           // fontSize: 13,
+                                                            fontWeight: FontWeight.w500,
+                                                         ),
+                                   ),
+                                 ),
+                                 //  Container(
+                                 //   decoration: DottedDecoration(
+                                 //                               color: black,
+                                 //                               strokeWidth: 1,
+                                 //                               linePosition: LinePosition.bottom,
+                                 //                             ),
+                                 //   child:  TextField(
+                                 //     controller: TextEditingController(
+                                 //       text: quantityController.text
+                                 //     ),
+                                 //     textAlign: TextAlign.center,
+                                 //     // clipBehavior: Clip.hardEdge,
+                                 //     decoration: InputDecoration(
+                                 //       border:OutlineInputBorder(
+                                 //         borderSide: BorderSide.none
+                                 //       ),
+                                 //       constraints: BoxConstraints(
+                                 //         maxHeight: 15
+                                 //       ),
+                                 //       contentPadding: EdgeInsets.symmetric(
+                                 //         vertical: -5
+                                 //       )
+                                 //     ),
+                                 //   ),
+                                 // ),
+                               ),
+                               const Spacer(),
+                               SizedBox(
+                                 width: MediaQuery.of(context).size.width/7,
+                                 child:  Center(
+                                   child: Text(cartModel[index].rate.toString() ,
+                                   // textScaler: TextScaler.linear(.9),
+                                   overflow: TextOverflow.ellipsis,
+                                                         style: TextStyle(
+                                                           fontFamily: 'poppins',
+                                                           // fontSize: 13,
+                                                            fontWeight: FontWeight.w500,
+                                                         ),
+                                   ),
+                                 ),
+                               ),
+                               const Spacer(),
+                               SizedBox(
+                                 width: MediaQuery.of(context).size.width/7,
+                                 child:  Center(
+                                   child: Text(((quantity ?? 0) * (rate ?? 0)).toString(),
+                                   overflow: TextOverflow.ellipsis,
+                                   // textScaler: TextScaler.linear(.9),
+                                                         style: TextStyle(
+                                                           fontFamily: 'poppins',
+                                                           // fontSize: 13,
+                                                            fontWeight: FontWeight.w500,
+                                                         ),
+                                   ),
+                                 ),
+                               ),
+                               SizedBox(
+                                 width: MediaQuery.of(context).size.width/15,
+                                 child:    InkWell(
+                                 onTap: () { 
+                                  setState(() {
+                                    // cartModel.removeAt(index);
+                                    ref.read(cartItemProvider.notifier).removeItem(item);
+                                  });
+                                 },
+                                 
+                                 child: const Icon(
+                                   Icons.remove,color: red,
+                                   size: 16,
+                                   ),
+                               )
+                               ),
+                                 ],
+                               ),
+                             ),
+                           );
+                         },
+                         ),
+                         const SizedBox(
+                           height: 20,
+                         ),
+                          Row(
+                           mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Text('Barcode',
-                                overflow: TextOverflow.ellipsis,
-                                // textScaler: TextScaler.linear(.9),
-                                                      style: TextStyle(
-                                                        fontFamily: 'poppins',
-                                                        // fontSize: 13,
-                                                         fontWeight: FontWeight.w500,
-                                                         color: grey
-                                                      ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/4,
-                                child: const Center(
-                                  child: Text('Item Name',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                           color: grey
+                              InkWell(
+                               onTap: () {
+                                    setState(() {
+                                      ref.read(holdItemProvider.notifier).addHoldList(cartModel);
+                                     //  cartModel.clear();
+                                     //  ref.read(cartItemProvider.notifier).clearAllCartItems();
+                                      // final holdModel = ref.watch(holdItemProvider);
+                                      // debugPrint('hold list =====  ${holdModel.toString()}');
+                                   });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Items added to hold list')),
+                                  );
+                               //    setState(() {
+                               //   //    for (var item in cartModel) {
+                               //   //      ref.read(holdItemProvider.notifier).addHoldItem(
+                               //   //      PosCartModel(id: item.id, name: item.name, quantity: item.quantity),
+                               //   //    ); 
+                               //   //  }
+                               //    ref.read(holdItemProvider.notifier).addHoldList(cartModel);
+                               //    cartModel.clear();
+                               //     final holdModel = ref.watch(holdItemProvider);
+                               //     debugPrint('hold list =====  ${holdModel.toString()}');
+                               // });
+                               },
+                                child: Container(
+                                                            padding: EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 4
+                                                            ),
+                                                             decoration: BoxDecoration(
+                                                          color: kPrimaryColor,
+                                                          borderRadius: BorderRadius.circular(3)
                                                         ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/9,
-                                child: const Center(
-                                  child: Text('Qty',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
+                                                        child: Center(child: Text('Hold',
                                                         style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                           color: grey
+                                                         fontSize: 16,
+                                                         fontFamily: 'poppins',
+                                                         color: white
                                                         ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Center(
-                                  child: Text('Rate',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                           color: grey
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Center(
-                                  child: Text('Total',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                           color: grey
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/15,
-                                child: const Center(
-                                  child: Text(' ',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                           color: grey
-                                                        ),
-                                  ),
-                                ),
+                                                        )),
+                                                          ),
                               ),
                             ],
                           ),
-                        ),
-                        const Divider(),
-                        // items list
-                        cartModel.isNotEmpty
-                         ?ListView.separated(
-                          physics: BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          separatorBuilder: (context, index) => const Divider(),
-                          itemCount: cartModel.length,
-                          itemBuilder: (context, index) {
-                            // final item = cartItem![index];
-              //                String itemName = widget.selectedItems.keys.elementAt(index);
-              // int quantity = widget.selectedItems[itemName]!;
-                            return SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              // height: 40,
-                              child: Row(
-                                children: [
-                                   SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Text('01233212',
-                                maxLines: null,
-                                // textScaler: TextScaler.linear(.9),
-                                overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontFamily: 'poppins',
-                                                        // fontSize: 13,
-                                                         fontWeight: FontWeight.w500,
-                                                      ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/4,
-                                child:  Center(
-                                  child: Text(cartModel[index].name ?? '',
-                                  // textScaler: TextScaler.linear(.9),
-                                  maxLines: null,
-                                  textAlign: TextAlign.justify,
-                                  overflow: TextOverflow.ellipsis,
-                                                        style: const TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // color: grey,
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/9,
-                                child:  Center(
-                                  child: Text(cartModel[index].quantity.toString(),
-                                  // textScaler: TextScaler.linear(.9),
-                                  overflow: TextOverflow.ellipsis,
-                                                        style: const TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // color: grey,
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Center(
-                                  child: Text('200',
-                                  // textScaler: TextScaler.linear(.9),
-                                  overflow: TextOverflow.ellipsis,
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              const Spacer(),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/7,
-                                child: const Center(
-                                  child: Text('400',
-                                  overflow: TextOverflow.ellipsis,
-                                  // textScaler: TextScaler.linear(.9),
-                                                        style: TextStyle(
-                                                          fontFamily: 'poppins',
-                                                          // fontSize: 13,
-                                                           fontWeight: FontWeight.w500,
-                                                        ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width/15,
-                                child:    InkWell(
-                                onTap: () { 
-                                 setState(() {
-                                    cartModel.removeAt(index);
-                                 });
-                                },
-                                child: Icon(
-                                  Icons.close,color: red,
-                                  size: 16,
-                                  ),
-                              )
-                              ),
-                              // InkWell(
-                              //   onTap: () { 
-                                  
-                              //   },
-                              //   child: Icon(
-                              //     Icons.close,color: red,
-                              //     size: 15,
-                              //     ),
-                              // )
-                                ],
-                              ),
-                            );
-                          },) 
-                          : SizedBox()
+                          // const SizedBox(
+                          //   height: 200,
+                          // )
                       ],
-                    ),
-                   )
-                  ],
-                ),
+                    ) 
+                     : const SizedBox(),
+                 ],
+               ),
               ),
             ),
-            extendBody: true,
+            // extendBody: true,
             bottomNavigationBar: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -373,7 +616,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                               ref.read(cartItemProvider.notifier).removeAllCartItem(cartModel.length);
                             });
                           },
-                          child: const Text('Clear all ',
+                          child: const Text('Clear all     ',
                           // textScaler: TextScaler.linear(.9),
                           style: TextStyle(
                             fontFamily: 'poppins',
@@ -397,9 +640,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                           ),
                         ),
                           const Spacer(),
-                           Text('Total Qty: ${cartModel.length}',
+                           Text('Total Item: ${cartModel.length}',
                           // textScaler: TextScaler.linear(.9),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: 'poppins',
                             // fontSize: 13,
                             fontWeight: FontWeight.w500
@@ -604,8 +847,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '+1',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -627,8 +870,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '7',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -650,8 +893,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '4',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -673,8 +916,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '1',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -696,8 +939,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '0',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -722,8 +965,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '-1',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -745,8 +988,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '8',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -768,8 +1011,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '5',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -791,8 +1034,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '2',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -814,8 +1057,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '00',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -840,8 +1083,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '+5',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -863,8 +1106,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '9',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -886,8 +1129,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '6',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -909,8 +1152,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '3',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -932,8 +1175,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '.',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,color: black, fontSize: 22),
@@ -957,8 +1200,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                '+10',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -1022,8 +1265,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                    borderRadius: BorderRadius.circular(5),
                                                  color: const Color(0xffeeeff3),
                                              ),
-                                             child: Center(
-                                              child: const Text(
+                                             child: const Center(
+                                              child: Text(
                                                'Add',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.bold,
@@ -1043,21 +1286,82 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                       horizontal: 4
                                     ),
                                     // height: MediaQuery.of(context).size.height,
-                                    // color: blue, 
-                                    child: GridView.builder(
+                                    // color: blue,  
+                                    child: _isLoading ? const Center(child: CircularProgressIndicator())
+                                                : GridView.builder(
                                       gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        mainAxisExtent: 80,
+                                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                                        // mainAxisExtent: 120,
                                         mainAxisSpacing: 8,
-                                      crossAxisCount: 3,crossAxisSpacing: 8),
+                                        crossAxisSpacing: 8,
+                                        maxCrossAxisExtent:140 ),
+                                      // const 
+                                      // SliverGridDelegateWithFixedCrossAxisCount(
+                                      //   mainAxisExtent: 80,
+                                      //   mainAxisSpacing: 8,
+                                      // crossAxisCount: 3,crossAxisSpacing: 8),
+                                      itemCount: _itemList.length,
                                        itemBuilder: (context, index) {
-                                        return Container(
+                                        final item = _itemList[index];
+                                        final itemVariant = _variantList[index];
+                                          return  Container(
+                                            constraints: const BoxConstraints(
+                                              // maxHeight: 120
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 6
+                                            ),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(5),
                                             color: const Color(0xffeeeff3)
                                           ),
+                                          child: IntrinsicHeight(
+                                            child: Column(
+                                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                            children: [
+                                                                              Text(
+                                                                                item.name ?? '',
+                                                                                textAlign: TextAlign.center,
+                                                                                style: const TextStyle(
+                                                                                  fontFamily: 'poppins',
+                                                                                  fontWeight: FontWeight.w500,
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                "\u{20B9} ${itemVariant.sellingPrice ?? 0}", // Assuming price is in the model
+                                                                                style: const TextStyle(
+                                                                                  fontWeight: FontWeight.w400,
+                                                                                ),
+                                                                              ),
+                                                                              InkWell(
+                                                                                onTap: () {
+                                                                                 setState(() {
+                                                                                  ref.read(cartItemProvider.notifier).addItem(
+                                                                                    PosCartModel(id: item.id.toString(), name: item.name!, quantity: 1, rate: itemVariant.sellingPrice!)
+                                                                                  );
+                                                                                });
+                                                                                },
+                                                                                child: Container(
+                                                                                  width: MediaQuery.of(context).size.width,
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: kPrimaryColor,
+                                                                                    borderRadius: BorderRadius.circular(3),
+                                                                                  ),
+                                                                                  child: const Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                                                    mainAxisSize: MainAxisSize.min,
+                                                                                    children: [
+                                            Text('Add', style: TextStyle(color: white)),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                          ),
                                          );
-                                       },),
+                                       },)
                                   ),
                                 ]),
                               )
@@ -1155,7 +1459,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(
                                 builder: (context) => 
-                                PaymentPage(),
+                                const PaymentPage(),
                                 ));
                             },
                             child: Container(

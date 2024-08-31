@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:sheraccerp/models/company.dart';
+import 'package:intl/intl.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/models/stock_item.dart';
+import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/home_page.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class ItemsPage extends StatefulHookConsumerWidget {
@@ -26,24 +27,30 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   List<PosCartModel> cartItem = [];
   bool _showCategoryList = false;
   Map<String, int> selectedItems = {};
-  List<ProductPurchaseModel>? products;
-  List<ProductPurchaseModel>? filteredProducts; 
+  List<StockItem>? products;
+  List<StockItem>? filteredProducts;
+  List<StockProduct>? fetchStockVariant;
   DioService api = DioService();
   String _selectedCategory = "All";
+  String _toDay = '';
+  String get getToDay => _toDay!;
+  DateTime now = DateTime.now();
+  String? formattedDate;
   bool _isLoading = true;
 
-  final Map<String, List<ProductPurchaseModel>> _categoryItems = {
+  final Map<String, List<StockItem>> _categoryItems = {
     "All": [],
   };
 
   @override
   void initState() {
     super.initState();
-    loadSettings();
+    formattedDate =
+        getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
     _fetchProducts();
     categoryDataList
         .addAll(DataJson.fromJsonListX(otherRegistrationList[0]['category']));
-    
+
     categoryList.addAll(categoryDataList
         .map((item) => item.name)
         .where((name) => name != null)
@@ -54,18 +61,22 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
       _categoryItems[category] = [];
     }
   }
-  
-  CompanyInformation companySettings = CompanyInformation.emptyData();
-  List<CompanySettings> settings = [];
-
-  loadSettings() {
-    companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
-    settings = ScopedModel.of<MainModel>(context).getSettings();
-  }
 
   Future<void> _fetchProducts() async {
-    products = await api.fetchAllProductPurchase();
-    filteredProducts = products; 
+    setState(() {
+      _isLoading = true;
+    });
+
+    products = await api.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate));
+    filteredProducts = products;
+    fetchStockVariant = [];
+    for (var product in products!) {
+      var variants = await api.fetchStockVariant(product.id!);
+      if (variants != null) {
+        fetchStockVariant!.addAll(variants);
+      }
+    }
+
     _categorizeProducts();
     setState(() {
       _isLoading = false;
@@ -82,7 +93,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
     } else {
       filteredProducts = _categoryItems[_selectedCategory]
           !.where((product) =>
-              product.itemName?.toLowerCase().contains(query.toLowerCase()) ?? false)
+              product.name?.toLowerCase().contains(query.toLowerCase()) ??
+              false)
           .toList();
     }
     setState(() {});
@@ -92,18 +104,13 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   Widget build(BuildContext context) {
     debugPrint(cartItem.length.toString());
     final isExpanded = useState<bool>(false);
-    final List<ProductPurchaseModel> _itemList = filteredProducts ?? [];
+    final List<StockItem> _itemList = filteredProducts ?? [];
+    List<StockProduct> _variantList = fetchStockVariant ?? [];
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: kPrimaryColor,
         centerTitle: true,
-        // leading: IconButton(
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        //   icon: const Icon(Icons.arrow_back_ios, color: white),
-        // ),
         title: const Text(
           'Items',
           style: TextStyle(
@@ -115,15 +122,17 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(40),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: TextField(
                     style: const TextStyle(color: white),
                     controller: searchController,
                     decoration: const InputDecoration(
                       hintText: 'Search..',
-                      hintStyle: TextStyle(color: white,fontFamily: 'poppins'),
+                      hintStyle: TextStyle(color: white, fontFamily: 'poppins'),
                       constraints: BoxConstraints(maxHeight: 45),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 5, vertical: 5),
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -165,8 +174,12 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                         String category = _categoryItems.keys.elementAt(index);
                         return ListTile(
                           title: Text(category),
-                          tileColor: _selectedCategory == category ? kPrimaryColor : null,
-                          textColor: _selectedCategory == category ? kPrimaryColor : null,
+                          tileColor: _selectedCategory == category
+                              ? kPrimaryColor
+                              : null,
+                          textColor: _selectedCategory == category
+                              ? kPrimaryColor
+                              : null,
                           trailing: category == 'All'
                               ? InkWell(
                                   onTap: () {
@@ -174,12 +187,13 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                       _showCategoryList = false;
                                     });
                                   },
-                                  child: const Icon(Icons.keyboard_double_arrow_left))
+                                  child: const Icon(
+                                      Icons.keyboard_double_arrow_left))
                               : null,
                           onTap: () {
                             setState(() {
                               _selectedCategory = category;
-                              filterProducts(searchController.text); 
+                              filterProducts(searchController.text);
                             });
                           },
                         );
@@ -192,49 +206,60 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                       alignment: Alignment.center,
                       child: Wrap(
                         children: _itemList.map((item) {
+                          // Find the variant for the current item
+                          StockProduct? variant = _variantList.firstWhere(
+                              (variant) => variant.itemId == item.id,
+                              orElse: () => StockProduct());
+
                           return Container(
                             padding: const EdgeInsets.all(4),
-                            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 4),
                             width: MediaQuery.of(context).size.width / 3.5,
-                            constraints: const BoxConstraints(minHeight: 90, maxHeight: 120),
+                            constraints: const BoxConstraints(
+                                minHeight: 90, maxHeight: 120),
                             decoration: BoxDecoration(
                               border: Border.all(color: grey),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: IntrinsicHeight(
                               child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    item.itemName ?? '',
+                                    item.name ?? '',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontFamily: 'poppins',
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
+                                  // Display price from the variant
                                   Text(
-                                    "\u{20B9} ${item.itemCode ?? 0}", // Assuming price is in the model
+                                    "\u{20B9} ${variant.sellingPrice ?? 0}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                     ),
                                   ),
                                   InkWell(
                                     onTap: () {
-                                     setState(() {
-                                      ref.read(cartItemProvider.notifier).addItem(
-                                        PosCartModel(id: item.slNo.toString(), name: item.itemName, quantity: 1)
-                                      );
-                                      // cartItem.add(PosCartModel(id: '', name: item.itemName, quantity: 1));
-                                      // addProduct(PosCartModel(
-                                      //   id: '',
-                                      //   name: item.itemName,
-                                      //    quantity: 1,
-                                      // ), 1);
-                                      // cartItem.add(PosCartItem(
-                                      //     itemName: item.itemName,quantity: 1,id: cartItem.length +1));
-                                    });
-                                      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => PosHomePage(selectedItems: selectedItems),));
+                                      setState(() {
+                                        ref
+                                            .read(cartItemProvider.notifier)
+                                            .addItem(PosCartModel(
+                                                id: item.id.toString(),
+                                                name: item.name!,
+                                                quantity: 1,
+                                                rate: variant.sellingPrice ?? 0));
+                                      });
+                                      Navigator.of(context)
+                                          .pushReplacement(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      PosHomePage(
+                                                          selectedItems:
+                                                              selectedItems)));
                                     },
                                     child: Container(
                                       width: MediaQuery.of(context).size.width,
@@ -243,10 +268,12 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                         borderRadius: BorderRadius.circular(3),
                                       ),
                                       child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text('Add', style: TextStyle(color: white)),
+                                          Text('Add',
+                                              style: TextStyle(color: white)),
                                         ],
                                       ),
                                     ),
@@ -264,19 +291,4 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
             ),
     );
   }
-   void addProduct(product, int index) {
-    index = cartItem.indexWhere((i) => i == product.itemId);
-    // if (index != -1) {
-      // updateProduct(product, product.quantity + 1, index);
-    // } else {
-      cartItem.add(product);
-    // }
-  }
-
-  // void addProduct(PosCartItem product, int index) {
-  //   index = cartItem.indexWhere((element) => element.itemName == product.itemName);
-  //   if (index == -1) {
-  //     cartItem.add(product);
-  //   }
-  // }
 }

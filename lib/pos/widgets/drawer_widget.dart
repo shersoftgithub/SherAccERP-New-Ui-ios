@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
+import 'package:sheraccerp/pos/pages/hold_list_page.dart';
 import 'package:sheraccerp/pos/pages/items_page.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
@@ -89,6 +91,7 @@ class DrawerWidget extends StatelessWidget {
           leading: Image.asset('assets/icons/ic_hold.png',scale: 3.3,color: black,),
           title: const Text('Hold'),
           onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => HoldList(),));
           },
         ),
       ),

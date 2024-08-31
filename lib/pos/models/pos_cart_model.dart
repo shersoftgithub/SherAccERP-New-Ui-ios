@@ -9,6 +9,7 @@ class PosCartModel  with _$PosCartModel{
   factory PosCartModel({
     required String id,
     required String name,
+    required double rate,
     required int quantity
   }) = _PosCartModel;
 
