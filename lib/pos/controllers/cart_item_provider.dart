@@ -57,6 +57,17 @@ class CartItem extends _$CartItem{
       }
     }
   }
+    void updateItem(PosCartModel updatedItem) {
+    final existingItemIndex = state.indexWhere((item) => item.id == updatedItem.id);
+
+    if (existingItemIndex != -1) {
+      state = [
+        ...state.sublist(0, existingItemIndex),
+        updatedItem,
+        ...state.sublist(existingItemIndex + 1),
+      ];
+    }
+  }
   
   void removeAllCartItem(int index){
     state.removeRange(0, index);
@@ -65,3 +76,4 @@ class CartItem extends _$CartItem{
     state = [];
   }
 }
+

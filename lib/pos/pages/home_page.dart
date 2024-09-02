@@ -13,6 +13,7 @@ import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/payment_details_page.dart';
+import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/pos/pages/qr_view_page.dart';
 import 'package:sheraccerp/pos/widgets/drawer_widget.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
@@ -38,6 +39,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   List<StockItem>? fetchStockProducts;
   List<StockProduct>? fetchStockVariant;
   List<ProductPurchaseModel>? products;
+   final TextEditingController _barcodeController = TextEditingController();
+  Future<List<StockProduct>>? _productsFuture;
+  List<StockProduct> _cart = [];
   bool _isLoading = false;
   String _toDay ='';
 String get getToDay => _toDay!;
@@ -69,6 +73,18 @@ String get getToDay => _toDay!;
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
+  }
+    void _fetchProducts() {
+    final barcode = _barcodeController.text;
+    setState(() {
+      _productsFuture = api.fetchStockProductByBarcode(barcode);
+    });
+  }
+
+  void _addToCart(StockProduct product) {
+    setState(() {
+      _cart.add(product);
+    });
   }
 
 
@@ -140,6 +156,11 @@ String get getToDay => _toDay!;
     List<StockProduct> _variantList = fetchStockVariant ?? [];
     // final List<ProductPurchaseModel> _itemList = products ?? [];
     final cartModel = ref.watch(cartItemProvider);
+    final selectedRateType = ref.watch(rateTypeProvider);
+    
+     double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity);
+     double gstVat = totalAmount * 0.10;
+     double grandTotal = totalAmount + gstVat;
     // debugPrint(cartItem.length.toString()); 
          var _quantity = useState('');
 
@@ -155,7 +176,7 @@ String get getToDay => _toDay!;
       // widget.onQuantityChanged('');
     }
      final isExpanded = useState<bool>(true);
-     debugPrint(fetchStockVariant.toString());
+    //  debugPrint(fetchStockVariant.toString());
 
     return  WillPopScope(
       onWillPop: showExitPopup,
@@ -305,7 +326,7 @@ String get getToDay => _toDay!;
                         ListView.separated(
                           reverse: true,
                           // scrollDirection:Axis.vertical , 
-                         physics: BouncingScrollPhysics(),
+                         physics: const BouncingScrollPhysics(),
                          shrinkWrap: true,
                          separatorBuilder: (context, index) => const Divider(),
                          itemCount: cartModel.length,
@@ -313,85 +334,157 @@ String get getToDay => _toDay!;
                           final item = cartModel[index];
                           double? quantity = double.tryParse(cartModel[index].quantity.toString() );
                           double? rate = double.tryParse(cartModel[index].rate.toString());
+                          
             
                            // final item = cartItem![index];
                                       //                String itemName = widget.selectedItems.keys.elementAt(index);
                                       // int quantity = widget.selectedItems[itemName]!;
                            return InkWell(
                             onTap: () {
-                              debugPrint(index.toString());
                           showDialog(
-                            context: context, builder: (context) =>
-                             AlertDialog(
-                            
-                              title: Text('Edit Item'),
-                              titleTextStyle: TextStyle(
-                                fontFamily: 'poppins',
-                                fontSize: 18,
-                                color: black
-                              ),
-                              content: Container(
-                                height: MediaQuery.of(context).size.height/2,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('Item Name',
-                                     style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
-                                     Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 5,
-                                        vertical: 8
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: grey
-                                        ),
-                                        borderRadius: BorderRadius.circular(3)
-                                      ),
-                                      width: MediaQuery.of(context).size.width,
-                                       child: Text(cartModel[index].name,
-                                       style: const TextStyle(
-                                          fontFamily: 'poppins'
-                                        ),
-                                                                           ),
-                                     ),
-                                     const SizedBox(
-                                      height: 8,
-                                    ),
-                                       const Text('Quantity',
-                                     style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
-                                    TextField(
-                                      style: TextStyle(
-                                        fontFamily: 'poppins'
-                                      ),
-                                      decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(
-                                          vertical: 8,
-                                          horizontal: 5
-                                        )
-                                      ),
-                                      controller: TextEditingController(
-                                        text: cartModel[index].quantity.toString()
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                             ),);
+                            context: context, builder: (context) {
+                                double quantity = cartModel[index].quantity.toDouble();
+                                double price = cartModel[index].rate.toDouble() * quantity;
+                                TextEditingController quantityController = TextEditingController(text: quantity.toString());
+                                TextEditingController priceController = TextEditingController(text: price.toStringAsFixed(2));
+
+                              return StatefulBuilder(
+      builder: (context, setState) {
+        return AlertDialog(
+          title: const Text('Edit Item'),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins',
+            fontSize: 18,
+            color: black,
+          ),
+          content: Container(
+            height: MediaQuery.of(context).size.height / 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Item Name',
+                  style: TextStyle(fontFamily: 'poppins', fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: grey),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  width: MediaQuery.of(context).size.width,
+                  child: Text(
+                    cartModel[index].name,
+                    style: const TextStyle(fontFamily: 'poppins'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Quantity',
+                  style: TextStyle(fontFamily: 'poppins', fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          if (quantity > 1) {
+                            quantity--;
+                            price = quantity * cartModel[index].rate.toDouble();
+                            quantityController.text = quantity.toString();
+                            priceController.text = price.toStringAsFixed(2);
+                          }
+                        });
+                      },
+                      icon: const Icon(Icons.remove),
+                    ),
+                    SizedBox(
+                      width: 100, 
+                      child: TextField(
+                        controller: quantityController,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontFamily: 'poppins'),
+                        decoration: const InputDecoration(
+                           constraints: BoxConstraints(maxHeight: 40),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 5,
+                    ),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            quantity = double.tryParse(value) ?? quantity;
+                            price = quantity * cartModel[index].rate.toDouble();
+
+                            priceController.text = price.toStringAsFixed(2);
+                          });
+                        },
+
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          quantity++;
+                          price = quantity * cartModel[index].rate.toDouble();
+                          quantityController.text = quantity.toString();
+                          priceController.text = price.toStringAsFixed(2);
+                        });
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Price',
+                  style: TextStyle(fontFamily: 'poppins', fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: priceController,
+                  // textAlign: TextAlign.center,
+                  readOnly: true, 
+                  style: const TextStyle(fontFamily: 'poppins'),
+                  decoration: const InputDecoration(
+                    constraints: BoxConstraints(maxHeight: 40),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(cartItemProvider.notifier).updateItem(
+                  cartModel[index].copyWith(
+                    quantity: quantity.toInt(),
+                  ),
+                );
+                Navigator.pop(context);
+              },
+              child: const Text('Update'),
+            ),
+          ],
+        );
+      },
+    );
+                            },);
                             },
                              child: SizedBox(
                                width: MediaQuery.of(context).size.width,
@@ -477,7 +570,7 @@ String get getToDay => _toDay!;
                                    child: Text(cartModel[index].rate.toString() ,
                                    // textScaler: TextScaler.linear(.9),
                                    overflow: TextOverflow.ellipsis,
-                                                         style: TextStyle(
+                                                         style: const TextStyle(
                                                            fontFamily: 'poppins',
                                                            // fontSize: 13,
                                                             fontWeight: FontWeight.w500,
@@ -492,7 +585,7 @@ String get getToDay => _toDay!;
                                    child: Text(((quantity ?? 0) * (rate ?? 0)).toString(),
                                    overflow: TextOverflow.ellipsis,
                                    // textScaler: TextScaler.linear(.9),
-                                                         style: TextStyle(
+                                                         style: const TextStyle(
                                                            fontFamily: 'poppins',
                                                            // fontSize: 13,
                                                             fontWeight: FontWeight.w500,
@@ -538,7 +631,7 @@ String get getToDay => _toDay!;
                                       // debugPrint('hold list =====  ${holdModel.toString()}');
                                    });
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Items added to hold list')),
+                                    const SnackBar(content: Text('Items added to hold list')),
                                   );
                                //    setState(() {
                                //   //    for (var item in cartModel) {
@@ -553,7 +646,7 @@ String get getToDay => _toDay!;
                                // });
                                },
                                 child: Container(
-                                                            padding: EdgeInsets.symmetric(
+                                                            padding: const EdgeInsets.symmetric(
                                                               horizontal: 6,
                                                               vertical: 4
                                                             ),
@@ -561,7 +654,7 @@ String get getToDay => _toDay!;
                                                           color: kPrimaryColor,
                                                           borderRadius: BorderRadius.circular(3)
                                                         ),
-                                                        child: Center(child: Text('Hold',
+                                                        child: const Center(child: Text('Hold',
                                                         style: TextStyle(
                                                          fontSize: 16,
                                                          fontFamily: 'poppins',
@@ -759,74 +852,153 @@ String get getToDay => _toDay!;
                               ]),
                               Expanded(
                                 child: TabBarView(children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4
-                                    ),
-                                    // height: MediaQuery.of(context).size.height,
-                                    // color: red,
-                                    child:  Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.only(
-                                            top: 4
-                                          ),
-                                          child: Text('Barcode',
-                                          style: TextStyle(
-                                            fontFamily: 'poppins'
-                                          ),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        const Expanded(
-                                                          child: TextField(
-                                                            // autofocus: true,
-                                                            decoration: InputDecoration(
-                                                              contentPadding: EdgeInsets.symmetric(
-                                                                horizontal: 5,
-                                                                vertical: 3
-                                                              ),
-                                                              constraints: BoxConstraints(
-                                                                maxHeight: 28
-                                                              ),
-                                                              border: OutlineInputBorder(
-                                                              )
-                                                            ),
-                                                          )
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        InkWell(
-                                                          onTap: () async{
-                                                             final Barcode? scannedData = await Navigator.push(
-                                                                 context,
-                                                             MaterialPageRoute(
-                                                             builder: (context) => const QRViewPage(),
-                                                           ),
-                                                         );
-                                                            debugPrint('adsfdv');
-                                                          },
-                                                          child: Container(
-                                                            padding: const EdgeInsets.all(2),
-                                                            decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(5),
-                                                              border: Border.all(
-                                                                color: grey
-                                                              )
-                                                            ),
-                                                            child: const Icon(Icons.qr_code_scanner_rounded,
-                                                            size: 20,
-                                                            color: grey,
-                                                            )),
-                                                        )
-                                      ],
-                                    ),
-                                  ),
+                                 Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text('Barcode', style: TextStyle(fontFamily: 'poppins')),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: TextField(
+                  controller: _barcodeController,
+                  decoration: InputDecoration(
+                    suffixIconConstraints: const BoxConstraints(maxHeight: 28),
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: InkWell(
+                        onTap: _fetchProducts,
+                        child: const Icon(Icons.search_off_outlined),
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                    constraints: const BoxConstraints(maxHeight: 35),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: () async {
+                  final Barcode? scannedData = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QRViewPage(),
+                    ),
+                  );
+                  debugPrint('Scanned Data: ${scannedData?.code}');
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_scanner_rounded,
+                    size: 22,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          FutureBuilder<List<StockProduct>>(
+            future: _productsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return AlertDialog(
+                  title: const Text(
+                    'An Error Occurred!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                  content: Text(
+                    "${snapshot.error}",
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                );
+              } 
+              else if (snapshot.hasData) {
+                if (snapshot.data!.isNotEmpty) {
+                  return Column(
+                    children: snapshot.data!.map((product) {
+                         double? rate = selectedRateType == 'MRP' ? product.sellingPrice 
+                                                     : selectedRateType == 'WHOLESALE' ? product.wholeSalePrice 
+                                                       : selectedRateType == 'RETAIL' ? product.retailPrice 
+                                                         : selectedRateType == 'SPRETAIL' ? product.spRetailPrice
+                                                           : product.retailPrice ;
+                      return InkWell(
+                        onTap: () {
+                         
+                            setState(() {
+                               ref.read(cartItemProvider.notifier).addItem(
+                               PosCartModel(id: product.itemId.toString(), name: product.name!, quantity: 1, rate: rate!)
+                              );
+                            });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 3
+                          ),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                                          // boxShadow: [
+                                          //   BoxShadow(
+                                          //     color: Colors.grey.shade400,
+                                          //     blurRadius: 5,
+                                          //     spreadRadius: .8,
+                                          //   )
+                                          // ],
+                                          border: Border.all(
+                                              color: grey, width: .5),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          color:
+                                              Colors.grey.withOpacity(.1)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Name  : ${product.name!}',
+                              maxLines: null,
+                              style: const TextStyle(
+                                fontFamily: 'poppins'
+                              ),
+                              ),
+                              Text('Price     : \u{20B9} ${rate.toString()}',
+                              style: const TextStyle(
+                                // fontFamily: 'poppins'
+                              ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                } else {
+                  return Center(
+                    child: const Text('Barcode not found...'),
+                  );
+                }
+              } else {
+                return const Text('');
+              }
+            },
+          ),
+        ],
+      ),
+    ),
                                   Container(
                                     // height: MediaQuery.of(context).size.height,
                                     // color: green,
@@ -1304,6 +1476,11 @@ String get getToDay => _toDay!;
                                        itemBuilder: (context, index) {
                                         final item = _itemList[index];
                                         final itemVariant = _variantList[index];
+                                        double? rate = selectedRateType == 'MRP' ? itemVariant.sellingPrice 
+                                                     : selectedRateType == 'WHOLESALE' ? itemVariant.wholeSalePrice 
+                                                       : selectedRateType == 'RETAIL' ? itemVariant.retailPrice 
+                                                         : selectedRateType == 'SPRETAIL' ? itemVariant.spRetailPrice
+                                                           : itemVariant.retailPrice ;
                                           return  Container(
                                             constraints: const BoxConstraints(
                                               // maxHeight: 120
@@ -1329,7 +1506,7 @@ String get getToDay => _toDay!;
                                                                                 ),
                                                                               ),
                                                                               Text(
-                                                                                "\u{20B9} ${itemVariant.sellingPrice ?? 0}", // Assuming price is in the model
+                                                                                "\u{20B9} ${rate ?? 0}", // Assuming price is in the model
                                                                                 style: const TextStyle(
                                                                                   fontWeight: FontWeight.w400,
                                                                                 ),
@@ -1388,7 +1565,7 @@ String get getToDay => _toDay!;
                           Row(
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width/1.5,
+                                width: MediaQuery.of(context).size.width/1.53,
                                 child: const Text('Total',
                                 style: TextStyle(
                                 fontFamily: 'poppins',
@@ -1407,8 +1584,8 @@ String get getToDay => _toDay!;
                                  ),
                               ),
                               const Spacer(),
-                              const Text('1234567890',
-                               style: TextStyle(
+                               Text(totalAmount.toStringAsFixed(2),
+                               style: const TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w300,
                                 color: white,
@@ -1423,7 +1600,7 @@ String get getToDay => _toDay!;
                           Row(
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width/1.5,
+                                width: MediaQuery.of(context).size.width/1.53,
                                 child: const Text('GST/VAT',
                                 style: TextStyle(
                                 fontFamily: 'poppins',
@@ -1442,8 +1619,8 @@ String get getToDay => _toDay!;
                                  ),
                               ),
                               const Spacer(),
-                              const Text('1234567890',
-                               style: TextStyle(
+                               Text(gstVat.toStringAsFixed(2),
+                               style: const TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w300,
                                 color: white,
@@ -1475,7 +1652,7 @@ String get getToDay => _toDay!;
                              child:  Row(
                               children: [
                                 SizedBox(
-                                  width: MediaQuery.of(context).size.width/1.53,
+                                  width: MediaQuery.of(context).size.width/1.56,
                                   child: const Text('Grand Total',
                                   style: TextStyle(
                                   fontFamily: 'poppins',
@@ -1492,8 +1669,8 @@ String get getToDay => _toDay!;
                                    ),
                                 ),
                                 const Spacer(),
-                                const Text('1234567890',
-                                 style: TextStyle(
+                                 Text(grandTotal.toStringAsFixed(2),
+                                 style: const TextStyle(
                                   fontFamily: 'poppins',
                                   fontWeight: FontWeight.w500,
                                   fontSize: 15

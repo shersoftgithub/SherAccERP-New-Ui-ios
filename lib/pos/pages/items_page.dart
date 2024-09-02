@@ -8,6 +8,7 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/home_page.dart';
+import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -102,8 +103,9 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(cartItem.length.toString());
+    // debugPrint(cartItem.length.toString());
     final isExpanded = useState<bool>(false);
+    final selectedRateType = ref.watch(rateTypeProvider);
     final List<StockItem> _itemList = filteredProducts ?? [];
     List<StockProduct> _variantList = fetchStockVariant ?? [];
 
@@ -211,6 +213,12 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                               (variant) => variant.itemId == item.id,
                               orElse: () => StockProduct());
 
+                              double? rate = selectedRateType == 'MRP' ? variant.sellingPrice 
+                                                     : selectedRateType == 'WHOLESALE' ? variant.wholeSalePrice 
+                                                       : selectedRateType == 'RETAIL' ? variant.retailPrice 
+                                                         : selectedRateType == 'SPRETAIL' ? variant.spRetailPrice
+                                                           : variant.retailPrice ;
+
                           return Container(
                             padding: const EdgeInsets.all(4),
                             margin: const EdgeInsets.symmetric(
@@ -235,9 +243,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  // Display price from the variant
                                   Text(
-                                    "\u{20B9} ${variant.sellingPrice ?? 0}",
+                                    "\u{20B9} ${rate ?? 0}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                     ),

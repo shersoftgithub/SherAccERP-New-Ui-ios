@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
 import 'package:sheraccerp/pos/pages/hold_list_page.dart';
 import 'package:sheraccerp/pos/pages/items_page.dart';
+import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class DrawerWidget extends StatelessWidget {
@@ -92,6 +93,19 @@ class DrawerWidget extends StatelessWidget {
           title: const Text('Hold'),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => HoldList(),));
+          },
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListTile(
+          shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)
+                  ),
+          leading: Image.asset('assets/icons/ic_settings.png',scale: 3.3,color: black,),
+          title: const Text('Settings'),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PosSettingsPage(),));
           },
         ),
       ),
