@@ -15,8 +15,7 @@ class CartItem extends _$CartItem{
   // void addItem(PosCartModel cartModel){
   //   state = [...state,cartModel];
   // }
-
-  void addItem(PosCartModel cartModel) {
+ void addItem(PosCartModel cartModel) {
     final existingItemIndex = state.indexWhere((item) => item.id == cartModel.id);
 
     if (existingItemIndex != -1) {
@@ -30,9 +29,21 @@ class CartItem extends _$CartItem{
         ...state.sublist(existingItemIndex + 1),
       ];
     } else {
-      state = [...state, cartModel];
+      double taxPercentage = cartModel.tax ?? 0;
+      double priceBeforeTax = cartModel.rate / (1 + (taxPercentage / 100));
+      double taxValue = cartModel.rate - priceBeforeTax;
+
+      state = [
+        ...state,
+        cartModel.copyWith(
+          realPrice: cartModel.rate,
+          rate: priceBeforeTax,
+          tax: taxValue,
+        ),
+      ];
     }
   }
+
 
    void removeItem(PosCartModel cartModel) {
     final existingItemIndex = state.indexWhere((item) => item.id == cartModel.id);
@@ -57,6 +68,7 @@ class CartItem extends _$CartItem{
       }
     }
   }
+
     void updateItem(PosCartModel updatedItem) {
     final existingItemIndex = state.indexWhere((item) => item.id == updatedItem.id);
 

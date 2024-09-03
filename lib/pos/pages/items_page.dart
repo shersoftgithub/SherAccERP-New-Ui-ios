@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
-import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -33,8 +31,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   List<StockProduct>? fetchStockVariant;
   DioService api = DioService();
   String _selectedCategory = "All";
-  String _toDay = '';
-  String get getToDay => _toDay!;
+  // String _toDay = '';
+  // String get getToDay => _toDay!;
   DateTime now = DateTime.now();
   String? formattedDate;
   bool _isLoading = true;
@@ -224,8 +222,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 4, vertical: 4),
                             width: MediaQuery.of(context).size.width / 3.5,
-                            constraints: const BoxConstraints(
-                                minHeight: 90, maxHeight: 120),
+                            // constraints: const BoxConstraints(
+                            //     minHeight: 90, maxHeight: 120),
                             decoration: BoxDecoration(
                               border: Border.all(color: grey),
                               borderRadius: BorderRadius.circular(3),
@@ -244,7 +242,13 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                     ),
                                   ),
                                   Text(
-                                    "\u{20B9} ${rate ?? 0}",
+                                    "Price \u{20B9} ${rate ?? 0}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Tax ${variant.tax!.toStringAsFixed(0) ?? 0}%",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -255,18 +259,21 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                         ref
                                             .read(cartItemProvider.notifier)
                                             .addItem(PosCartModel(
+                                              realPrice: rate!,
+                                              code: item.code,
                                                 id: item.id.toString(),
                                                 name: item.name!,
+                                                tax: variant.tax!,
                                                 quantity: 1,
-                                                rate: variant.sellingPrice ?? 0));
+                                                rate: rate ?? 0));
                                       });
-                                      Navigator.of(context)
-                                          .pushReplacement(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      PosHomePage(
-                                                          selectedItems:
-                                                              selectedItems)));
+                                      // Navigator.of(context)
+                                      //     .pushReplacement(
+                                      //         MaterialPageRoute(
+                                      //             builder: (context) =>
+                                      //                 PosHomePage(
+                                      //                     selectedItems:
+                                      //                         selectedItems)));
                                     },
                                     child: Container(
                                       width: MediaQuery.of(context).size.width,

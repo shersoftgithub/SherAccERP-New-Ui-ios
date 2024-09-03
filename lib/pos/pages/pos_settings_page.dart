@@ -6,7 +6,17 @@ import 'package:sheraccerp/util/res_color.dart';
 
 final rateTypeProvider = StateProvider<String>((ref) => 'RETAIL'); 
 
-final locationProvider = StateProvider<String?>((ref) => null);
+final locationProvider = StateProvider<String?>((ref) {
+  // Fetch the default location ID from settings
+  final defaultLocationId = ComSettings.appSettings('int', 'key-dropdown-default-location-view', 2) - 1;
+  return null; // Default value will be set in initState
+});
+
+final isTaxProvider = StateProvider<bool>((ref) => true); 
+
+final salesmanProvider = StateProvider<int>((ref) {
+  return ComSettings.appSettings('int', 'key-dropdown-default-salesman-view', 1) - 1;
+});
 
 class PosSettingsPage extends ConsumerStatefulWidget {
   const PosSettingsPage({super.key});
@@ -17,24 +27,33 @@ class PosSettingsPage extends ConsumerStatefulWidget {
 
 class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
   List<DataJson> locationDataList = [];
+  List<DataJson> salesmanDataList = [];
   List<String> locationList = [];
+  List<String> salesmanList = [];
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     locationDataList.addAll(DataJson.fromJsonListX(otherRegistrationList[0]['location']));
-
     locationList = locationDataList
         .map((item) => item.name)
         .where((name) => name != null)
         .cast<String>()
         .toList();
 
-    int defaultLocationId = ComSettings.appSettings('int', 'key-dropdown-default-location-view', 2) - 1;
-    
+    salesmanDataList = DataJson.fromJsonListX(otherRegistrationList[0]['salesMan']);
+    salesmanList = salesmanDataList
+        .map((item) => item.name)
+        .where((name) => name != null)
+        .cast<String>()
+        .toList();
+
+    final defaultLocationId = ComSettings.appSettings('int', 'key-dropdown-default-location-view', 2) - 1;
     if (defaultLocationId >= 0 && defaultLocationId < locationList.length) {
-      ref.read(locationProvider.notifier).state = locationList[defaultLocationId];
+    Future.delayed(Duration.zero ,() {
+        ref.read(locationProvider.notifier).state = locationList[defaultLocationId];
+    },);
     }
   }
 
@@ -42,7 +61,8 @@ class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
   Widget build(BuildContext context) {
     final selectedRateType = ref.watch(rateTypeProvider);
     final selectedLocation = ref.watch(locationProvider);
-    debugPrint(locationList.toString());
+    final isTax = ref.watch(isTaxProvider);
+    final selectedSalesmanId = ref.watch(salesmanProvider);
 
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -61,7 +81,7 @@ class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Rate Type',
+              ' Rate Type',
               style: TextStyle(fontFamily: 'poppins'),
             ),
             const SizedBox(height: 4),
@@ -94,9 +114,9 @@ class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             const Text(
-              'Location',
+              ' Location',
               style: TextStyle(fontFamily: 'poppins'),
             ),
             const SizedBox(height: 4),
@@ -129,12 +149,71 @@ class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            const Text(
+              ' Salesman',
+              style: TextStyle(fontFamily: 'poppins'),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5),
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                border: Border.all(color: grey),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  hint: const Text('Select Salesman'),
+                  style: const TextStyle(
+                    fontFamily: 'poppins',
+                    color: black,
+                    fontSize: 15,
+                  ),
+                  items: salesmanList.asMap().entries.map((entry) {
+                    int idx = entry.key;
+                    String name = entry.value;
+                    return DropdownMenuItem<int>(
+                      value: idx,
+                      child: Text(name),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    ref.read(salesmanProvider.notifier).state = value!;
+                    debugPrint('Selected Salesman: $value');
+                  },
+                  value: selectedSalesmanId,
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text(
+                  'Tax',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 15,
+                  ),
+                ),
+                Checkbox(
+                  activeColor: kPrimaryColor,
+                  value: isTax,
+                  onChanged: (value) {
+                    ref.read(isTaxProvider.notifier).state = value!;
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+
+
 
 
 // import 'package:flutter/material.dart';
@@ -148,7 +227,7 @@ class _PosSettingsPageState extends ConsumerState<PosSettingsPage> {
 // class PosSettingsPage extends ConsumerStatefulWidget {
 //   const PosSettingsPage({super.key});
 
-//   @override
+//   @override 
 //   ConsumerState<PosSettingsPage> createState() => _PosSettingsPageState();
 // }
 

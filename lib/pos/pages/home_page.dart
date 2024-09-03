@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/stock_item.dart';
@@ -12,6 +13,7 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
+import 'package:sheraccerp/pos/pages/hold_list_page.dart';
 import 'package:sheraccerp/pos/pages/payment_details_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/pos/pages/qr_view_page.dart';
@@ -43,13 +45,15 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   Future<List<StockProduct>>? _productsFuture;
   List<StockProduct> _cart = [];
   bool _isLoading = false;
-  String _toDay ='';
-String get getToDay => _toDay!;
+//   String _toDay ='';
+// String get getToDay => _toDay!;
 
    @override
    void initState(){
     super.initState();
     
+    setToDay = DateFormat('dd-MM-yyyy').format(now);
+
      formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
@@ -57,8 +61,9 @@ String get getToDay => _toDay!;
       loadSettings();
       _fetchStockProducts();
       // _fetchStockVariant();
-        
+      
     
+    load(); 
    }
 
    @override
@@ -78,6 +83,16 @@ String get getToDay => _toDay!;
     final barcode = _barcodeController.text;
     setState(() {
       _productsFuture = api.fetchStockProductByBarcode(barcode);
+    });
+  }
+    String _regId = "", firm = "", firmCode = "", fId = "";
+  load() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    setState(() {
+      _regId = (pref.getString('regId') ?? "");
+      firm = (pref.getString('CompanyName') ?? "");
+      firmCode = (pref.getString('CustomerCode') ?? "");
+      fId = (pref.getString('fId') ?? "");
     });
   }
 
@@ -157,10 +172,15 @@ String get getToDay => _toDay!;
     // final List<ProductPurchaseModel> _itemList = products ?? [];
     final cartModel = ref.watch(cartItemProvider);
     final selectedRateType = ref.watch(rateTypeProvider);
+    final isTax = ref.watch(isTaxProvider);
     
-     double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity);
-     double gstVat = totalAmount * 0.10;
-     double grandTotal = totalAmount + gstVat;
+  double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity);
+
+  double totalTax = isTax
+      ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity)
+      : 0.0;
+
+     double grandTotal = totalAmount + totalTax;
     // debugPrint(cartItem.length.toString()); 
          var _quantity = useState('');
 
@@ -334,11 +354,6 @@ String get getToDay => _toDay!;
                           final item = cartModel[index];
                           double? quantity = double.tryParse(cartModel[index].quantity.toString() );
                           double? rate = double.tryParse(cartModel[index].rate.toString());
-                          
-            
-                           // final item = cartItem![index];
-                                      //                String itemName = widget.selectedItems.keys.elementAt(index);
-                                      // int quantity = widget.selectedItems[itemName]!;
                            return InkWell(
                             onTap: () {
                           showDialog(
@@ -493,9 +508,10 @@ String get getToDay => _toDay!;
                                  children: [
                                     SizedBox(
                                  width: MediaQuery.of(context).size.width/7,
-                                 child: const Text('01233212',
+                                 child:  Text(cartModel[index].code?? '',
                                  maxLines: null,
                                  // textScaler: TextScaler.linear(.9),
+                                 textAlign: TextAlign.center,
                                  overflow: TextOverflow.ellipsis,
                                                        style: TextStyle(
                                                          fontFamily: 'poppins',
@@ -537,37 +553,12 @@ String get getToDay => _toDay!;
                                                          ),
                                    ),
                                  ),
-                                 //  Container(
-                                 //   decoration: DottedDecoration(
-                                 //                               color: black,
-                                 //                               strokeWidth: 1,
-                                 //                               linePosition: LinePosition.bottom,
-                                 //                             ),
-                                 //   child:  TextField(
-                                 //     controller: TextEditingController(
-                                 //       text: quantityController.text
-                                 //     ),
-                                 //     textAlign: TextAlign.center,
-                                 //     // clipBehavior: Clip.hardEdge,
-                                 //     decoration: InputDecoration(
-                                 //       border:OutlineInputBorder(
-                                 //         borderSide: BorderSide.none
-                                 //       ),
-                                 //       constraints: BoxConstraints(
-                                 //         maxHeight: 15
-                                 //       ),
-                                 //       contentPadding: EdgeInsets.symmetric(
-                                 //         vertical: -5
-                                 //       )
-                                 //     ),
-                                 //   ),
-                                 // ),
-                               ),
+                                 ),
                                const Spacer(),
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/7,
                                  child:  Center(
-                                   child: Text(cartModel[index].rate.toString() ,
+                                   child: Text(cartModel[index].realPrice.toString() ,
                                    // textScaler: TextScaler.linear(.9),
                                    overflow: TextOverflow.ellipsis,
                                                          style: const TextStyle(
@@ -582,7 +573,7 @@ String get getToDay => _toDay!;
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/7,
                                  child:  Center(
-                                   child: Text(((quantity ?? 0) * (rate ?? 0)).toString(),
+                                   child: Text(((quantity ?? 0) * (cartModel[index].realPrice ?? 0)).toString(),
                                    overflow: TextOverflow.ellipsis,
                                    // textScaler: TextScaler.linear(.9),
                                                          style: const TextStyle(
@@ -598,8 +589,8 @@ String get getToDay => _toDay!;
                                  child:    InkWell(
                                  onTap: () { 
                                   setState(() {
-                                    // cartModel.removeAt(index);
-                                    ref.read(cartItemProvider.notifier).removeItem(item);
+                                    cartModel.removeAt(index);
+                                    // ref.read(cartItemProvider.notifier).removeItem(item);
                                   });
                                  },
                                  
@@ -623,27 +614,18 @@ String get getToDay => _toDay!;
                             children: [
                               InkWell(
                                onTap: () {
-                                    setState(() {
+                                    
                                       ref.read(holdItemProvider.notifier).addHoldList(cartModel);
                                      //  cartModel.clear();
-                                     //  ref.read(cartItemProvider.notifier).clearAllCartItems();
-                                      // final holdModel = ref.watch(holdItemProvider);
-                                      // debugPrint('hold list =====  ${holdModel.toString()}');
-                                   });
+                                      ref.read(cartItemProvider.notifier).clearAllCartItems();
+                                      final holdModel = ref.watch(holdItemProvider);
+                                      // Navigator.push(context, MaterialPageRoute(
+                                      //   builder: (context) => HoldList(),));
+                                      debugPrint('hold list =====  ${holdModel.toString()}');
+                                  
                                     ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Items added to hold list')),
                                   );
-                               //    setState(() {
-                               //   //    for (var item in cartModel) {
-                               //   //      ref.read(holdItemProvider.notifier).addHoldItem(
-                               //   //      PosCartModel(id: item.id, name: item.name, quantity: item.quantity),
-                               //   //    ); 
-                               //   //  }
-                               //    ref.read(holdItemProvider.notifier).addHoldList(cartModel);
-                               //    cartModel.clear();
-                               //     final holdModel = ref.watch(holdItemProvider);
-                               //     debugPrint('hold list =====  ${holdModel.toString()}');
-                               // });
                                },
                                 child: Container(
                                                             padding: const EdgeInsets.symmetric(
@@ -682,10 +664,10 @@ String get getToDay => _toDay!;
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
+                !isExpanded.value?  Container(
                     height: 6,
                     color: bagroundColor,
-                  ),
+                  ): const SizedBox(),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 5
@@ -695,7 +677,7 @@ String get getToDay => _toDay!;
                       horizontal: 8
                     ), 
                     width: MediaQuery.of(context).size.width,
-                    height: 28,
+                    // height: 28,
                     decoration: BoxDecoration(
                           color: white,
                           borderRadius: BorderRadius.circular(3)
@@ -861,7 +843,7 @@ String get getToDay => _toDay!;
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Padding(
-                padding: EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: 8),
                 child: Text('Barcode', style: TextStyle(fontFamily: 'poppins')),
               ),
               const SizedBox(width: 4),
@@ -942,7 +924,14 @@ String get getToDay => _toDay!;
                          
                             setState(() {
                                ref.read(cartItemProvider.notifier).addItem(
-                               PosCartModel(id: product.itemId.toString(), name: product.name!, quantity: 1, rate: rate!)
+                               PosCartModel(
+                                realPrice: rate!,
+                                code: product.productId.toString(),
+                                tax: product.tax!,
+                                id: product.itemId.toString(),
+                                 name: product.name!,
+                                  quantity: 1,
+                                   rate: rate!)
                               );
                             });
                         },
@@ -954,7 +943,7 @@ String get getToDay => _toDay!;
                           width: MediaQuery.of(context).size.width,
                           decoration: BoxDecoration(
                                           // boxShadow: [
-                                          //   BoxShadow(
+                                          //   BoxShadow( 
                                           //     color: Colors.grey.shade400,
                                           //     blurRadius: 5,
                                           //     spreadRadius: .8,
@@ -1506,7 +1495,15 @@ String get getToDay => _toDay!;
                                                                                 ),
                                                                               ),
                                                                               Text(
-                                                                                "\u{20B9} ${rate ?? 0}", // Assuming price is in the model
+                                                                                "Price \u{20B9} ${rate ?? 0}", 
+                                                                                maxLines: null,
+                                                                                style: const TextStyle(
+                                                                                  fontWeight: FontWeight.w400,
+                                                                                ),
+                                                                              ),
+                                                                              Text(
+                                                                                "Tax ${itemVariant.tax!.toStringAsFixed(0) ?? ''}%", 
+                                                                                maxLines: null,
                                                                                 style: const TextStyle(
                                                                                   fontWeight: FontWeight.w400,
                                                                                 ),
@@ -1515,7 +1512,14 @@ String get getToDay => _toDay!;
                                                                                 onTap: () {
                                                                                  setState(() {
                                                                                   ref.read(cartItemProvider.notifier).addItem(
-                                                                                    PosCartModel(id: item.id.toString(), name: item.name!, quantity: 1, rate: itemVariant.sellingPrice!)
+                                                                                    PosCartModel(
+                                                                                      realPrice: rate!,
+                                                                                       tax: itemVariant.tax?? 0,
+                                                                                       code: itemVariant.productId.toString(),
+                                                                                       id: item.id.toString(),
+                                                                                       name: item.name!,
+                                                                                       quantity: 1,
+                                                                                       rate: rate!)
                                                                                   );
                                                                                 });
                                                                                 },
@@ -1619,7 +1623,7 @@ String get getToDay => _toDay!;
                                  ),
                               ),
                               const Spacer(),
-                               Text(gstVat.toStringAsFixed(2),
+                               Text(totalTax.toStringAsFixed(2),
                                style: const TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w300,
@@ -1636,7 +1640,10 @@ String get getToDay => _toDay!;
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(
                                 builder: (context) => 
-                                const PaymentPage(),
+                                 PaymentPage(
+                                  cartItems: cartModel,
+                                  grandTotal: grandTotal ?? 0,
+                                ),
                                 ));
                             },
                             child: Container(

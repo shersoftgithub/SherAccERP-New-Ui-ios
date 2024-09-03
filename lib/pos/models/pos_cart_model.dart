@@ -9,8 +9,11 @@ class PosCartModel  with _$PosCartModel{
   factory PosCartModel({
     required String id,
     required String name,
+    required double realPrice,
     required double rate,
-    required int quantity
+    required int quantity,
+       String? code,
+    required double? tax,
   }) = _PosCartModel;
 
   factory PosCartModel.fromJson(Map<String, Object?> json) =>

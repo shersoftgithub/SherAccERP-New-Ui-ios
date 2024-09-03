@@ -72,7 +72,7 @@ class DrawerWidget extends StatelessWidget {
                      ),
              ),
       Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0), // 
         child: ListTile(
           shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)
@@ -92,7 +92,10 @@ class DrawerWidget extends StatelessWidget {
           leading: Image.asset('assets/icons/ic_hold.png',scale: 3.3,color: black,),
           title: const Text('Hold'),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => HoldList(),));
+             Navigator.push(
+                 context,
+                  MaterialPageRoute(builder: (context) => HoldList()),
+                );
           },
         ),
       ),

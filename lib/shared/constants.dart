@@ -224,7 +224,7 @@ class ComSettings {
           otherRegAreaList.sort((a, b) => a.name.compareTo(b.name));
           areaList.add(AppSettingsMap(key: json['auto'], value: json['Name']));
         }
-        if (map['salesMan'].length > 0) {
+        if (map['locationDataList'].length > 0) {
           if (map['salesMan'][0]['Auto'] == 1) {
             salesmanList.add(AppSettingsMap(key: 0, value: ''));
           } else {
