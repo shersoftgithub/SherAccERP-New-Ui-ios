@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    def buildConfig = rootProject.extensions.getByName("ext")
     namespace "com.shersoft.sheraccerp"
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion

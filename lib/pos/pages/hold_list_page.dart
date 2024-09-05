@@ -82,7 +82,7 @@ class HoldList extends ConsumerWidget {
                           ),
                           children: holdList.items.map((item) {
                             return ListTile(
-                              title: Text(item.name,
+                              title: Text(item.itemName!,
                               style: const TextStyle(
                                 fontFamily: 'poppins'
                               ),

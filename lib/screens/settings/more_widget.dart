@@ -6,6 +6,7 @@ import 'package:sheraccerp/screens/salesman_registration.dart';
 import 'package:sheraccerp/screens/settings/software_settings.dart';
 import 'package:sheraccerp/screens/tax_registration.dart';
 import 'package:sheraccerp/screens/ui/add_screen.dart';
+import 'package:sheraccerp/screens/ui/attendance_report/home_page.dart';
 import 'package:sheraccerp/screens/user_list.dart';
 import 'package:sheraccerp/screens/user_registration.dart';
 import 'package:sheraccerp/util/res_color.dart';
@@ -20,12 +21,14 @@ class MoreWidget extends StatelessWidget {
       Profile(),
       UserScreen(),
       SettingsMenu(),
+      AttendanceHomePage(),
       AboutSherSoft(),
     ];
     List settingsListTxt = [
       'Company Profile',
       'User List',
       'Software Settings',
+      'Attendance Report',
       'About Developer'
     ];
     return Scaffold(
@@ -73,7 +76,7 @@ class MoreWidget extends StatelessWidget {
                   height: 10,
                 );
               },
-              itemCount: 4)
+              itemCount: 5)
           //  ListView(
           //   shrinkWrap: true,
           //   children: [

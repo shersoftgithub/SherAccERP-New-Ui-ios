@@ -8,6 +8,7 @@ import 'package:sheraccerp/models/api_error.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/company_user.dart';
 import 'package:sheraccerp/models/form_model.dart';
+import 'package:sheraccerp/models/user_settings_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 
@@ -470,6 +471,103 @@ Future<bool> editCompanyUser(var body) async {
     final response = await dio.put(
         '${pref.getString('api')}$apiV/companyUser/editData',
         data: json.encode(body),
+        options: Options(headers: {'Content-Type': 'application/json'}));
+
+    if (response.statusCode == 200) {
+      ret = true;
+    } else {
+      ret = false;
+    }
+  } catch (ex) {
+    debugPrint(ex.toString());
+    ret = false;
+  }
+  return ret;
+}
+
+  
+
+Future<List<UserSettingsModel>> getUserSettings(String userId) async {
+  var dio = Dio(BaseOptions(maxRedirects: 5));
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  List<UserSettingsModel> list = [];
+
+  try {
+    final response = await dio.get(
+        '${pref.getString('api')}${apiV}companyUserSettingsList',
+        queryParameters: {'Id': userId});
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      if (data != null) {
+        for (var json in data) {
+          list.add(UserSettingsModel.fromMap(json));
+        }
+        return list;
+      }
+      return list;
+    } else {
+      return list;
+      // throw Exception('Failed to load internet');
+    }
+  } catch (ex) {
+    debugPrint(ex.toString());
+    return list;
+  }
+}
+
+Future<bool> addUserSettings(UserSettingsModel data) async {
+  bool ret = false;
+  var dio = Dio(BaseOptions(maxRedirects: 5));
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  try {
+    final response = await dio.put(
+        '${pref.getString('api')}$apiV/companyUserSettings/add',
+        data: json.encode([data.toMap()]),
+        options: Options(headers: {'Content-Type': 'application/json'}));
+
+    if (response.statusCode == 200) {
+      ret = true;
+    } else {
+      ret = false;
+    }
+  } catch (ex) {
+    debugPrint(ex.toString());
+    ret = false;
+  }
+  return ret;
+}
+
+Future<bool> editUserSettings(UserSettingsModel data) async {
+  bool ret = false;
+  var dio = Dio(BaseOptions(maxRedirects: 5));
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  try {
+    final response = await dio.put(
+        '${pref.getString('api')}$apiV/companyUserSettings/edit',
+        data: json.encode([data.toMap()]),
+        options: Options(headers: {'Content-Type': 'application/json'}));
+
+    if (response.statusCode == 200) {
+      ret = true;
+    } else {
+      ret = false;
+    }
+  } catch (ex) {
+    debugPrint(ex.toString());
+    ret = false;
+  }
+  return ret;
+}
+
+Future<bool> deleteUserSettings(String userId) async {
+  bool ret = false;
+  var dio = Dio(BaseOptions(maxRedirects: 5));
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  try {
+    final response = await dio.delete(
+        '${pref.getString('api')}$apiV/companyUserSettings/delete',
+        queryParameters: {'userId': userId},
         options: Options(headers: {'Content-Type': 'application/json'}));
 
     if (response.statusCode == 200) {

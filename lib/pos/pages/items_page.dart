@@ -261,8 +261,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                             .addItem(PosCartModel(
                                               realPrice: rate!,
                                               code: item.code,
-                                                id: item.id.toString(),
-                                                name: item.name!,
+                                                id: item.id,
+                                                itemName: item.name!,
                                                 tax: variant.tax!,
                                                 quantity: 1,
                                                 rate: rate ?? 0));

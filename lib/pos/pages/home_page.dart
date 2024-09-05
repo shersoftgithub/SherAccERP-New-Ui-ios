@@ -1,4 +1,3 @@
-import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,13 +12,13 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/controllers/hold_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
-import 'package:sheraccerp/pos/pages/hold_list_page.dart';
 import 'package:sheraccerp/pos/pages/payment_details_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/pos/pages/qr_view_page.dart';
 import 'package:sheraccerp/pos/widgets/drawer_widget.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
@@ -39,12 +38,61 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   String? formattedDate;
   DioService api = DioService();
   List<StockItem>? fetchStockProducts;
+   List<CartItem> cartItems = [];
   List<StockProduct>? fetchStockVariant;
+  List<PosCartModel> posModel = [];
+  StockProduct? productss;
   List<ProductPurchaseModel>? products;
    final TextEditingController _barcodeController = TextEditingController();
   Future<List<StockProduct>>? _productsFuture;
   List<StockProduct> _cart = [];
-  bool _isLoading = false;
+  bool _isLoading = false,
+  enableKeralaFloodCess = false,
+  cessOnNetAmount = false;
+   double taxP = 0,
+      tax = 0,
+      gross = 0,
+      subTotal = 0,
+      total = 0,
+      quantity = 0,
+      rate = 0,
+      saleRate = 0,
+      currentRate = 0,
+      discount = 0,
+      discountPercent = 0,
+      rDisc = 0,
+      rRate = 0,
+      rateOff = 0,
+      kfcP = 0,
+      kfc = 0,
+      unitValue = 1,
+      _conversion = 0,
+      freeQty = 0,
+      fUnitValue = 0,
+      cdPer = 0,
+      cDisc = 0,
+      cess = 0,
+      cessPer = 0,
+      adCessPer = 0,
+      profitPer = 0,
+      adCess = 0,
+      iGST = 0,
+      csGST = 0,
+      pRate = 0,
+      rPRate = 0;
+  //   double totalGrossValue = 0;
+  // double totalDiscount = 0;
+  // double totalNet = 0;
+  // double totalCess = 0;
+  // double totalIgST = 0;
+  // double totalCgST = 0;
+  // double totalSgST = 0;
+  // double totalFCess = 0;
+  // double totalAdCess = 0;
+  // double totalRDiscount = 0;
+  // double taxTotalCartValue = 0;
+  // double totalCartValue = 0;
+  // double totalProfit = 0;
 //   String _toDay ='';
 // String get getToDay => _toDay!;
 
@@ -78,11 +126,15 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
+    companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+    cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
+    enableKeralaFloodCess = false;
   }
     void _fetchProducts() {
     final barcode = _barcodeController.text;
     setState(() {
       _productsFuture = api.fetchStockProductByBarcode(barcode);
+      
     });
   }
     String _regId = "", firm = "", firmCode = "", fId = "";
@@ -111,7 +163,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   //     _isLoading = false;
   //   });
   // }
-
+  
   Future<void> _fetchStockProducts() async {
   setState(() {
     _isLoading = true;
@@ -122,8 +174,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   fetchStockVariant = [];
   for (var product in fetchStockProducts!) {
     var variant = await api.fetchStockVariant(product.id!);
+    
     if (variant != null) {
       fetchStockVariant!.addAll(variant);
+      _cart = fetchStockVariant!;
     }
   }
 
@@ -167,17 +221,89 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    List<StockItem> _itemList = fetchStockProducts ?? [];
-    List<StockProduct> _variantList = fetchStockVariant ?? [];
+    List<StockItem> itemList = fetchStockProducts ?? [];
+    List<StockProduct> variantList = fetchStockVariant ?? [];
     // final List<ProductPurchaseModel> _itemList = products ?? [];
     final cartModel = ref.watch(cartItemProvider);
     final selectedRateType = ref.watch(rateTypeProvider);
     final isTax = ref.watch(isTaxProvider);
-    
-  double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity);
+    //  taxP = isTax ? _variantList.tax! : 0;
+      // cess = isTax ? _variantList.cess! : 0;
+      // cessPer = isTax ? _variantList.cessPer! : 0;
+      // adCessPer = isTax ? _variantList.adCessPer! : 0;
+
+      
+      double totalGrossValue = 0;
+  double totalDiscount = 0;
+  double totalNet = 0;
+  double totalCess = 0;
+  double totalIgST = 0;
+  double totalCgST = 0;
+  double totalSgST = 0;
+  double totalFCess = 0;
+  double totalAdCess = 0;
+  double totalRDiscount = 0;
+  double taxTotalCartValue = 0;
+  double totalCartValue = 0;
+  double totalProfit = 0;
+  double csPer = 0;
+
+     for(var totals in posModel){
+      totalGrossValue += totals.gross!;
+      totalDiscount += totals.discount!;
+      totalRDiscount += totals.rDiscount!;
+      totalNet += totals.net!;
+      totalCess += totals.cess!;
+      totalIgST += totals.iGST!;
+      totalCgST += totals.cGST!;
+      totalSgST += totals.sGST!;
+      totalFCess += totals.fCess!;
+      totalAdCess += totals.adCess!;
+      taxTotalCartValue += totals.tax!;
+      totalCartValue += totals.total!;
+      totalProfit += totals.profitPer!;
+      //  totalIgST += totals.;
+      //  totalCess += totals.cess!;
+     }
+     csPer = taxP / 2;
+     debugPrint("cessPer == ${totalCess.toString()}");
+     debugPrint("cessPer == ${taxP.toString()}");
+    if (companyTaxMode == 'INDIA') {
+      kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+      double csPer = taxP / 2;
+      iGST = 0;
+      csGST = CommonService.getRound(4, ((subTotal * csPer) / 100));
+    } else if (companyTaxMode == 'GULF') {
+      iGST = CommonService.getRound(4, ((subTotal * taxP) / 100));
+      csGST = 0;
+      kfc = 0;
+    } else {
+      iGST = 0;
+      csGST = 0;
+      kfc = 0;
+      tax = 0;
+    }
+        if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((subTotal * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
+     debugPrint('cess = ${cess.toString()}'); 
+     debugPrint(iGST.toString()); 
+    total = CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+  double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity!);
+  // double totalCess = _variantList.fold(0.0, (sum, item) => sum + (item.cess ?? 0) * item.quantity!);
 
   double totalTax = isTax
-      ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity)
+      ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity!)
       : 0.0;
 
      double grandTotal = totalAmount + totalTax;
@@ -358,7 +484,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                             onTap: () {
                           showDialog(
                             context: context, builder: (context) {
-                                double quantity = cartModel[index].quantity.toDouble();
+                                double quantity = cartModel[index].quantity!.toDouble();
                                 double price = cartModel[index].rate.toDouble() * quantity;
                                 TextEditingController quantityController = TextEditingController(text: quantity.toString());
                                 TextEditingController priceController = TextEditingController(text: price.toStringAsFixed(2));
@@ -390,7 +516,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                   ),
                   width: MediaQuery.of(context).size.width,
                   child: Text(
-                    cartModel[index].name,
+                    cartModel[index].itemName!,
                     style: const TextStyle(fontFamily: 'poppins'),
                   ),
                 ),
@@ -488,7 +614,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
               onPressed: () {
                 ref.read(cartItemProvider.notifier).updateItem(
                   cartModel[index].copyWith(
-                    quantity: quantity.toInt(),
+                    quantity: quantity,
                   ),
                 );
                 Navigator.pop(context);
@@ -524,7 +650,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/4,
                                  child:  Center(
-                                   child: Text(cartModel[index].name ?? '',
+                                   child: Text(cartModel[index].itemName ?? '',
                                    // textScaler: TextScaler.linear(.9),
                                    maxLines: null,
                                    textAlign: TextAlign.justify,
@@ -928,8 +1054,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                 realPrice: rate!,
                                 code: product.productId.toString(),
                                 tax: product.tax!,
-                                id: product.itemId.toString(),
-                                 name: product.name!,
+                                id: product.itemId,
+                                 itemName: product.name!,
                                   quantity: 1,
                                    rate: rate!)
                               );
@@ -1461,10 +1587,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                       //   mainAxisExtent: 80,
                                       //   mainAxisSpacing: 8,
                                       // crossAxisCount: 3,crossAxisSpacing: 8),
-                                      itemCount: _itemList.length,
+                                      itemCount: itemList.length,
                                        itemBuilder: (context, index) {
-                                        final item = _itemList[index];
-                                        final itemVariant = _variantList[index];
+                                        final item = itemList[index];
+                                        final itemVariant = variantList[index];
                                         double? rate = selectedRateType == 'MRP' ? itemVariant.sellingPrice 
                                                      : selectedRateType == 'WHOLESALE' ? itemVariant.wholeSalePrice 
                                                        : selectedRateType == 'RETAIL' ? itemVariant.retailPrice 
@@ -1516,8 +1642,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                                                       realPrice: rate!,
                                                                                        tax: itemVariant.tax?? 0,
                                                                                        code: itemVariant.productId.toString(),
-                                                                                       id: item.id.toString(),
-                                                                                       name: item.name!,
+                                                                                       id: item.id,
+                                                                                       itemName: item.name!,
                                                                                        quantity: 1,
                                                                                        rate: rate!)
                                                                                   );
@@ -1638,9 +1764,11 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                           ),
                           InkWell(
                             onTap: () {
+                              debugPrint( ' cess === ${totalCess.toString()}');
                               Navigator.push(context, MaterialPageRoute(
                                 builder: (context) => 
                                  PaymentPage(
+                                  totalGrossValue: totalAmount,
                                   cartItems: cartModel,
                                   grandTotal: grandTotal ?? 0,
                                 ),
@@ -1701,4 +1829,59 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
     );
     
   }
+  //   double totalGrossValue = 0;
+  // double totalDiscount = 0;
+  // double totalNet = 0;
+  // double totalCess = 0;
+  // double totalIgST = 0;
+  // double totalCgST = 0;
+  // double totalSgST = 0;
+  // double totalFCess = 0;
+  // double totalAdCess = 0;
+  // double totalRDiscount = 0;
+  // double taxTotalCartValue = 0;
+  // double totalCartValue = 0;
+  // double totalProfit = 0;
+  // int get totalItem => cartItem.length;
+
+  //   void calculateTotal() {
+  //   totalGrossValue = 0;
+  //   totalDiscount = 0;
+  //   totalRDiscount = 0;
+  //   totalNet = 0;
+  //   totalCess = 0;
+  //   totalIgST = 0;
+  //   totalCgST = 0;
+  //   totalSgST = 0;
+  //   totalFCess = 0;
+  //   totalAdCess = 0;
+  //   taxTotalCartValue = 0;
+  //   totalCartValue = 0;
+  //   totalProfit = 0;
+  //   grandTotal = 0;
+
+  //   for (var f in cartItem) {
+  //     totalGrossValue += f.!;
+  //     totalDiscount += f.discount!;
+  //     totalRDiscount += f.rDiscount!;
+  //     totalNet += f.net!;
+  //     totalCess += f.cess!;
+  //     totalIgST += f.iGST!;
+  //     totalCgST += f.cGST!;
+  //     totalSgST += f.sGST!;
+  //     totalFCess += f.fCess!;
+  //     totalAdCess += f.adCess!;
+  //     taxTotalCartValue += f.tax!;
+  //     totalCartValue += f.total!;
+  //     totalProfit += f.profitPer!;
+  //   }
+  //   grandTotal = (totalCartValue - returnAmount) +
+  //       otherAmountList.fold(
+  //           0.0,
+  //           (t, e) =>
+  //               t +
+  //               double.parse(e['Symbol'] == '-'
+  //                   ? (e['Amount'] * -1).toString()
+  //                   : e['Amount'].toString()));
+  // }
 }

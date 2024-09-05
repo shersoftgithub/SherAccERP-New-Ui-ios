@@ -1477,6 +1477,63 @@ class DioService {
     }
   }
 
+  Future<List<dynamic>> getAttendanceReportMonthly(var fromDate , var toDate) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}essl/attendance_month/$dataBase',queryParameters: {
+            'fromDate': fromDate,
+            'toDate': toDate
+          });
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data;
+      } else {
+        debugPrint('Failed to load data');
+        return [];
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return [];
+    }
+  }
+  Future<List<dynamic>> getAttendanceReport(var fromDate , var toDate) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}essl/attendance_report/$dataBase',
+          queryParameters: {
+            'fromDate': fromDate,
+            'toDate': toDate
+          }
+          );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data;
+      } else {
+        debugPrint('Failed to load data');
+        return [];
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return [];
+    }
+  }
+
   Future<List<dynamic>> getStockReport(data) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';

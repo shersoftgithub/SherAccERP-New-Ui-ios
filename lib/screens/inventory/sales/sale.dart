@@ -847,7 +847,8 @@ class _SaleState extends ConsumerState<Sale> {
                             color: white,
                             padding: const EdgeInsets.all(8),
                             child: selectSalesType()),
-                      ));
+                      )
+                      );
   }
 
   final ScrollController _scrollController = ScrollController();
@@ -1100,12 +1101,12 @@ class _SaleState extends ConsumerState<Sale> {
               ),
               TextButton.icon(
                   style: ButtonStyle(
-                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5))),
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(kPrimaryColor),
+                        WidgetStatePropertyAll(kPrimaryColor),
                     foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.white),
+                        WidgetStatePropertyAll(Colors.white),
                   ),
                   onPressed: () {
                     setState(() {
@@ -1115,7 +1116,9 @@ class _SaleState extends ConsumerState<Sale> {
                   icon: const Icon(Icons.shopping_bag),
                   label: Text(
                     'Take New ${salesTypeData!.name}',
-                    style: const TextStyle(fontFamily: 'poppins'),
+                    style: const TextStyle(fontFamily: 'poppins',
+                    color: white
+                    ),
                   ))
             ],
           ));
@@ -1328,6 +1331,7 @@ class _SaleState extends ConsumerState<Sale> {
         'particular': items,
         'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
       };
+      debugPrint('body====${body.toString()}');
       if (saleAccountId != '0') {
         if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
           if (manualInvoiceNumberInSales) {
@@ -1374,6 +1378,7 @@ class _SaleState extends ConsumerState<Sale> {
 
   postSale(body, otherAmount, Order order, saleFormType, saleFormId) {
     api.addSale(body).then((result) {
+      debugPrint('body====${result.toString()}');
       if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
         final bodyJsonAmount = {
           'statement': 'SalesInsert',
@@ -1594,7 +1599,7 @@ class _SaleState extends ConsumerState<Sale> {
       var jsonItem = CartItem.encodeCartToJson(order.lineItems);
       var items = json.encode(jsonItem);
       var ledger = json.encode(jsonLedger);
-      var otherAmount = json.encode(order.otherAmountData);
+      var  otherAmount = json.encode(order.otherAmountData);
       var saleFormId = salesTypeData!.id;
       var saleFormType = salesTypeData!.type;
       var taxType = salesTypeData!.tax ? 'T' : 'NT';
@@ -1859,7 +1864,7 @@ class _SaleState extends ConsumerState<Sale> {
   }
 
   getEntryNo(saleFormId) {
-    api.getSalesInvoiceNo(saleFormId,'sentryno').then((value) {
+    api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
       setState(() {
         invoiceNo = (int.parse(value.toString()) + 1).toString();
         invoiceNoController.text = invoiceNo;
@@ -2159,7 +2164,7 @@ void _onTabTapped(int index) {
 
           ledgerModel!.name = filteredName.toString(); 
 
-          print(filteredName);
+          // print(filteredName);
         });
       });
     });

@@ -20,7 +20,7 @@ class CartItem extends _$CartItem{
 
     if (existingItemIndex != -1) {
       final updatedItem = state[existingItemIndex].copyWith(
-        quantity: state[existingItemIndex].quantity + 1,
+        quantity: state[existingItemIndex].quantity! + 1,
       );
 
       state = [
@@ -50,9 +50,9 @@ class CartItem extends _$CartItem{
 
     if (existingItemIndex != -1) {
       final currentItem = state[existingItemIndex];
-      if (currentItem.quantity > 1) {
+      if (currentItem.quantity! > 1) {
         final updatedItem = currentItem.copyWith(
-          quantity: currentItem.quantity - 1,
+          quantity: currentItem.quantity! - 1,
         );
 
         state = [
