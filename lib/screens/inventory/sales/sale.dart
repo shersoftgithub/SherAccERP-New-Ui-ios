@@ -3055,7 +3055,7 @@ void _onTabTapped(int index) {
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId??0)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
                                                     style: const TextStyle(
                                                       fontSize: 12,
                                                     ),

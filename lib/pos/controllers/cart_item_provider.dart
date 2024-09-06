@@ -15,34 +15,40 @@ class CartItem extends _$CartItem{
   // void addItem(PosCartModel cartModel){
   //   state = [...state,cartModel];
   // }
- void addItem(PosCartModel cartModel) {
-    final existingItemIndex = state.indexWhere((item) => item.id == cartModel.id);
+void addItem(PosCartModel cartModel) {
+  final existingItemIndex = state.indexWhere((item) => item.id == cartModel.id);
 
-    if (existingItemIndex != -1) {
-      final updatedItem = state[existingItemIndex].copyWith(
-        quantity: state[existingItemIndex].quantity! + 1,
-      );
+  final updatedCartModel = cartModel.copyWith(
+    unitValue: cartModel.unitValue ?? 1.0, 
+    unitId: cartModel.unitId ?? 0,         
+  );
 
-      state = [
-        ...state.sublist(0, existingItemIndex),
-        updatedItem,
-        ...state.sublist(existingItemIndex + 1),
-      ];
-    } else {
-      double taxPercentage = cartModel.tax ?? 0;
-      double priceBeforeTax = cartModel.rate / (1 + (taxPercentage / 100));
-      double taxValue = cartModel.rate - priceBeforeTax;
+  if (existingItemIndex != -1) {
+    final updatedItem = state[existingItemIndex].copyWith(
+      quantity: state[existingItemIndex].quantity! + 1,
+    );
 
-      state = [
-        ...state,
-        cartModel.copyWith(
-          realPrice: cartModel.rate,
-          rate: priceBeforeTax,
-          tax: taxValue,
-        ),
-      ];
-    }
+    state = [
+      ...state.sublist(0, existingItemIndex),
+      updatedItem,
+      ...state.sublist(existingItemIndex + 1),
+    ];
+  } else {
+    double taxPercentage = updatedCartModel.tax ?? 0;
+    double priceBeforeTax = updatedCartModel.rate / (1 + (taxPercentage / 100));
+    double taxValue = updatedCartModel.rate - priceBeforeTax;
+
+    state = [
+      updatedCartModel.copyWith(
+        realPrice: updatedCartModel.rate,
+        rate: priceBeforeTax,
+        tax: taxValue,
+      ),
+      ...state,
+    ];
   }
+}
+
 
 
    void removeItem(PosCartModel cartModel) {

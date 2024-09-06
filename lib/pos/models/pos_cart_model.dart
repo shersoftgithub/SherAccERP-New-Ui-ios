@@ -27,7 +27,7 @@ class PosCartModel  with _$PosCartModel{
     int? id,
     int? itemId,
     int? fUnitId,
-    int? unitId,
+  required  int? unitId,
     int? barcode,
     int? uniqueCode,
     String? code,

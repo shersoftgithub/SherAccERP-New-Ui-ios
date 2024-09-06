@@ -247,64 +247,50 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   double totalCartValue = 0;
   double totalProfit = 0;
   double csPer = 0;
-
-     for(var totals in posModel){
-      totalGrossValue += totals.gross!;
-      totalDiscount += totals.discount!;
-      totalRDiscount += totals.rDiscount!;
-      totalNet += totals.net!;
+    if(fetchStockVariant != null )
+     for(var totals in fetchStockVariant!){
+      // totalGrossValue += totals.gross!;
+      // totalDiscount += totals.discount!;
+      // totalRDiscount += totals.rDiscount!;
+      // totalNet += totals.net!;
+      cessPer = totals.cessPer!;
       totalCess += totals.cess!;
-      totalIgST += totals.iGST!;
-      totalCgST += totals.cGST!;
-      totalSgST += totals.sGST!;
-      totalFCess += totals.fCess!;
-      totalAdCess += totals.adCess!;
+      totalAdCess += totals.adCessPer!;
       taxTotalCartValue += totals.tax!;
-      totalCartValue += totals.total!;
-      totalProfit += totals.profitPer!;
       //  totalIgST += totals.;
       //  totalCess += totals.cess!;
      }
+     kfcP = isTax
+          ? enableKeralaFloodCess
+              ? kfcPer
+              : 0
+          : 0;
      csPer = taxP / 2;
      debugPrint("cessPer == ${totalCess.toString()}");
-     debugPrint("cessPer == ${taxP.toString()}");
-    if (companyTaxMode == 'INDIA') {
-      kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
-      double csPer = taxP / 2;
-      iGST = 0;
-      csGST = CommonService.getRound(4, ((subTotal * csPer) / 100));
-    } else if (companyTaxMode == 'GULF') {
-      iGST = CommonService.getRound(4, ((subTotal * taxP) / 100));
-      csGST = 0;
-      kfc = 0;
-    } else {
-      iGST = 0;
-      csGST = 0;
-      kfc = 0;
-      tax = 0;
-    }
-        if (cessOnNetAmount) {
-      if (cessPer > 0) {
-        cess = CommonService.getRound(4, ((subTotal * cessPer) / 100));
-        adCess = CommonService.getRound(4, (quantity * adCessPer));
-      } else {
-        cess = 0;
-        adCess = 0;
-      }
-    } else {
-      cess = 0;
-      adCess = 0;
-    }
+     debugPrint("tax == ${taxP.toString()}");
+   
      debugPrint('cess = ${cess.toString()}'); 
      debugPrint(iGST.toString()); 
-    total = CommonService.getRound(
-        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    // total = CommonService.getRound(
+    //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
   double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity!);
-  // double totalCess = _variantList.fold(0.0, (sum, item) => sum + (item.cess ?? 0) * item.quantity!);
 
   double totalTax = isTax
       ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity!)
       : 0.0;
+      if (companyTaxMode == 'INDIA') {
+        kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(2, (totalTax / 2));
+      }else if (companyTaxMode == 'GULF') {
+      iGST = CommonService.getRound(2, (totalTax / 2));
+      csGST = 0;
+      kfc = 0;
+    }
+      debugPrint('csGST${csGST.toString()}');
+      debugPrint('igst${iGST.toString()}');
+
 
      double grandTotal = totalAmount + totalTax;
     // debugPrint(cartItem.length.toString()); 
@@ -589,7 +575,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                 TextField(
                   controller: priceController,
                   // textAlign: TextAlign.center,
-                  readOnly: true, 
+                  // readOnly: true, 
                   style: const TextStyle(fontFamily: 'poppins'),
                   decoration: const InputDecoration(
                     constraints: BoxConstraints(maxHeight: 40),
@@ -599,6 +585,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                       horizontal: 5,
                     ),
                   ),
+                  onChanged: (value) {
+                   
+                  },
                 ),
               ],
             ),
@@ -981,7 +970,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                     suffixIcon: Padding(
                       padding: const EdgeInsets.only(right: 5),
                       child: InkWell(
-                        onTap: _fetchProducts,
+                        onTap: () {
+                          _fetchProducts();
+                        },
                         child: const Icon(Icons.search_off_outlined),
                       ),
                     ),
@@ -1045,6 +1036,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                        : selectedRateType == 'RETAIL' ? product.retailPrice 
                                                          : selectedRateType == 'SPRETAIL' ? product.spRetailPrice
                                                            : product.retailPrice ;
+                              //                         Future.delayed(Duration(),() {
+                              //                         },);
+                              
                       return InkWell(
                         onTap: () {
                          
@@ -1054,7 +1048,19 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                 realPrice: rate!,
                                 code: product.productId.toString(),
                                 tax: product.tax!,
+                                unitId: unitData.isNotEmpty
+                                                        ? unitData
+                                                            .firstWhere(
+                                                                (element) =>
+                                                                    element
+                                                                        .name ==
+                                                                    'NOS')
+                                                            .id
+                                                        : 0,
+                                unitValue: 1,
                                 id: product.itemId,
+                                cGST: csGST,
+                                sGST: csGST,
                                  itemName: product.name!,
                                   quantity: 1,
                                    rate: rate!)
@@ -1090,11 +1096,50 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                 fontFamily: 'poppins'
                               ),
                               ),
-                              Text('Price     : \u{20B9} ${rate.toString()}',
-                              style: const TextStyle(
-                                // fontFamily: 'poppins'
-                              ),
-                              ),
+                                Text('Price     : \u{20B9} ${rate.toString()}',
+                                    style: const TextStyle(
+                                      // fontFamily: 'poppins'
+                                    ),
+                                    ),
+                              // SizedBox(
+                              //   width: MediaQuery.of(context).size.width/1.5,
+                              //   child: Row(
+                              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              //     mainAxisSize: MainAxisSize.min,
+                              //     children: [
+                              //       Text('Price     : \u{20B9} ${rate.toString()}',
+                              //       style: const TextStyle(
+                              //         // fontFamily: 'poppins'
+                              //       ),
+                              //       ),
+                              //        Text('Quantity :  ${product.quantity.toString()}',
+                              // style: const TextStyle(
+                              //   // fontFamily: 'poppins'
+                              // ),
+                              // ),
+                              //     ],
+                              //   ),
+                              // ),
+                              // SizedBox(
+                              //   width: MediaQuery.of(context).size.width/1.5,
+                              //   child: Row(
+                              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              //     mainAxisSize: MainAxisSize.min,
+                              //     children: [
+                              //       Text('Prate     : \u{20B9} ${product.buyingPriceReal.toString()}',
+                              //       style: const TextStyle(
+                              //         // fontFamily: 'poppins'
+                              //       ),
+                              //       ),
+                              //        Text('Tax :  ${product.tax.toString()}%',
+                              // style: const TextStyle(
+                              //   // fontFamily: 'poppins'
+                              // ),
+                              // ),
+                              //     ],
+                              //   ),
+                              // ),
+                             
                             ],
                           ),
                         ),
@@ -1639,12 +1684,48 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                                                  setState(() {
                                                                                   ref.read(cartItemProvider.notifier).addItem(
                                                                                     PosCartModel(
+                                                                                      cess: cess,
+                                                                                      adCess: adCess,
+                                                                                      barcode: itemVariant.itemId,
+                                                                                      cDisc: cDisc,
+                                                                                      serialNo: itemVariant.serialNo,
+                                                                                      uniqueCode: itemVariant.productId,
+                                                                                      expDate: itemVariant.expDate,
+                                                                                      net: rate,
+                                                                                      fUnitId: 0,
+                                                                                      fUnitValue: 1,
+                                                                                      taxP: tax,
+                                                                                      sGST: csGST?? 0,
+                                                                                      unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
+                                                                                      unitValue: 1,
+                                                                                      cGST: csGST?? 0,
+                                                                                      cdPer: cdPer,
+                                                                                      discount: discount,
+                                                                                      discountPercent: discountPercent,
+                                                                                      gross: gross,
+                                                                                      iGST: iGST?? 0,
+                                                                                      itemId: itemVariant.itemId,
                                                                                       realPrice: rate!,
+                                                                                      free: 0,
+                                                                                      fCess: 0,
+                                                                                      pRate: itemVariant.buyingPrice,
+                                                                                      rPRate: itemVariant.buyingPriceReal,
+                                                                                      total: rate * quantity ,
+                                                                                      profitPer: 0,
+                                                                                      rDiscount: 0,
+                                                                                      rRate: taxMethod == 'MINUS'
+        ? cessOnNetAmount
+            ? CommonService.getRound(
+                4, (100 * rate) / (100 + tax + kfcP + cessPer))
+            : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
+        : rate,
                                                                                        tax: itemVariant.tax?? 0,
                                                                                        code: itemVariant.productId.toString(),
                                                                                        id: item.id,
                                                                                        itemName: item.name!,
+                                                                                       minimumRate: itemVariant.minimumRate,
                                                                                        quantity: 1,
+                                                                                       stock: 1,
                                                                                        rate: rate!)
                                                                                   );
                                                                                 });
@@ -1768,6 +1849,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                               Navigator.push(context, MaterialPageRoute(
                                 builder: (context) => 
                                  PaymentPage(
+                                  sGst: csGST,
+                                  cGst: csGST,
+                                  iGst: iGST,
                                   totalGrossValue: totalAmount,
                                   cartItems: cartModel,
                                   grandTotal: grandTotal ?? 0,

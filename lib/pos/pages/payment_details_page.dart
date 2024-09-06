@@ -13,6 +13,7 @@ import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
+import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -25,7 +26,16 @@ class PaymentPage extends ConsumerStatefulWidget {
   final List<PosCartModel> cartItems;
   final double? totalGrossValue;
   final double? grandTotal;
-  const PaymentPage({super.key, required this.grandTotal, required this.cartItems,required this.totalGrossValue});
+  final double? cGst;
+  final double? sGst;
+  final double? iGst;
+  const PaymentPage({super.key,
+   required this.grandTotal,
+  required this.cartItems,
+  required this.totalGrossValue,
+  this.cGst,
+  this.iGst,
+  this.sGst});
 
   @override
   ConsumerState<PaymentPage> createState() => _PaymentPageState();
@@ -191,9 +201,9 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             'cess': 0,
             'total': widget.grandTotal!.toStringAsFixed(decimal),
             'profit': 0,
-            'cGST': 0,
-            'sGST': 0,
-            'iGST': 0,
+            'cGST': widget.cGst.toString(),
+            'sGST': widget.sGst.toString(),
+            'iGST': widget.iGst.toString(),
             'addCess': 0,
             'fCess': 0,
             'otherDiscount': 0,
@@ -207,7 +217,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             'grandTotal':
                 ComSettings.appSettings('bool', 'key-round-off-amount', false)
                     ? widget.grandTotal!.toStringAsFixed(decimal)
-                    : widget.grandTotal!.roundToDouble().toString(),
+                    : widget.grandTotal!.roundToDouble().toStringAsFixed(decimal),
             'creditPeriod': 0,
             'takeUser': 0,
             'narration': '',
@@ -285,7 +295,11 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         };
         if (salesTypeData!.accounts) {
           api.addOtherAmount(bodyJsonAmount);
+          buttonEvent = false;
+         showMore(context, );
+          
         }
+         
         debugPrint('bodyjson====${bodyJsonAmount.toString()}');
                   }
                    else {
@@ -809,10 +823,19 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                         ),
                         InkWell(
                           onTap: () {
+                            setState(() {
+                             if (buttonEvent) {
+                                  return;
+                                } else{
+                           setState(() {
+                            buttonEvent = true;
+                           });
                             savesale();
+                                }
                             // debugPrint(widget.cartItems.toString());
                             // debugPrint(acId.toString());
                             // debugPrint(cashAc);
+                             });
                           },
                           child: Container(
                             width: MediaQuery.of(context).size.width,
@@ -842,6 +865,27 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         ),
       ),
     );
+  }
+    showMore(context,) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => PosHomePage(selectedItems: {}))
+              );
+        },
+        onPressedYes: () {
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage:
+            'Do you want to Print\nEntryNo : ',
+        title:  'SAVED',
+        context: context);
   }
     showErrorDialog(context, String msg) {
     debugPrint('error save sales :$msg');

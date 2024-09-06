@@ -222,9 +222,11 @@ class _AttendanceHomePageState extends State<AttendanceHomePage> {
                         try {
                           var data = await api.getAttendanceReportMonthly(formatYMD(fromDate), formatYMD(toDate));
                           List<Map<String, dynamic>> displayData=[];
+                          debugPrint(data.toString());
                           for(var item in data){
                             // if (isDateMatch(item["AttendanceDate"])) {
                               displayData.add(item);
+                          //     debugPrint(displayData.toString());
                           // } 
                           // else{
                           //   Map<String,dynamic> map={};
@@ -242,6 +244,7 @@ class _AttendanceHomePageState extends State<AttendanceHomePage> {
                         } catch (e) {
                           setState(() {
                             errorMessage = "Error: $e";
+                            
                           });
                         } finally {
                           setState(() {
