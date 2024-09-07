@@ -232,7 +232,6 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       // cessPer = isTax ? _variantList.cessPer! : 0;
       // adCessPer = isTax ? _variantList.adCessPer! : 0;
 
-      
       double totalGrossValue = 0;
   double totalDiscount = 0;
   double totalNet = 0;
@@ -274,7 +273,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
     // total = CommonService.getRound(
     //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
   double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity!);
-
+  
   double totalTax = isTax
       ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity!)
       : 0.0;
@@ -288,6 +287,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       csGST = 0;
       kfc = 0;
     }
+
       debugPrint('csGST${csGST.toString()}');
       debugPrint('igst${iGST.toString()}');
 
@@ -733,10 +733,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                       ref.read(holdItemProvider.notifier).addHoldList(cartModel);
                                      //  cartModel.clear();
                                       ref.read(cartItemProvider.notifier).clearAllCartItems();
-                                      final holdModel = ref.watch(holdItemProvider);
-                                      // Navigator.push(context, MaterialPageRoute(
-                                      //   builder: (context) => HoldList(),));
-                                      debugPrint('hold list =====  ${holdModel.toString()}');
+                                      // final holdModel = ref.watch(holdItemProvider);
+                                      // // Navigator.push(context, MaterialPageRoute(
+                                      // //   builder: (context) => HoldList(),));
+                                      // debugPrint('hold list =====  ${holdModel.toString()}');
                                   
                                     ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Items added to hold list')),
@@ -1585,7 +1585,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                         const SizedBox(
                                           height: 8,
                                         ),
-                                                                                             GestureDetector(
+                                                   GestureDetector(
                                                onTap: () {
                                                  
                                                },
@@ -1641,6 +1641,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                        : selectedRateType == 'RETAIL' ? itemVariant.retailPrice 
                                                          : selectedRateType == 'SPRETAIL' ? itemVariant.spRetailPrice
                                                            : itemVariant.retailPrice ;
+                                                           
                                           return  Container(
                                             constraints: const BoxConstraints(
                                               // maxHeight: 120
@@ -1653,7 +1654,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                             borderRadius: BorderRadius.circular(5),
                                             color: const Color(0xffeeeff3)
                                           ),
-                                          child: IntrinsicHeight(
+                                          child: IntrinsicHeight( 
                                             child: Column(
                                                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                             children: [
@@ -1682,6 +1683,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                                               InkWell(
                                                                                 onTap: () {
                                                                                  setState(() {
+                                                                                  
+                                                                                  // var currentItem = cartModel[index];
+                                                                                  // double price = cartModel[index].rate.toDouble() * quantity;
+                                                                                  // double? quantity = double.tryParse(cartModel[index].quantity.toString() );
                                                                                   ref.read(cartItemProvider.notifier).addItem(
                                                                                     PosCartModel(
                                                                                       cess: cess,
@@ -1691,26 +1696,26 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                                                                       serialNo: itemVariant.serialNo,
                                                                                       uniqueCode: itemVariant.productId,
                                                                                       expDate: itemVariant.expDate,
-                                                                                      net: rate,
+                                                                                      net: double.tryParse(rate!.toStringAsFixed(2))! * 1,
                                                                                       fUnitId: 0,
                                                                                       fUnitValue: 1,
-                                                                                      taxP: tax,
-                                                                                      sGST: csGST?? 0,
+                                                                                      taxP: itemVariant.tax?? 0,
+                                                                                      sGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
                                                                                       unitValue: 1,
-                                                                                      cGST: csGST?? 0,
+                                                                                      cGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       cdPer: cdPer,
                                                                                       discount: discount,
                                                                                       discountPercent: discountPercent,
-                                                                                      gross: gross,
-                                                                                      iGST: iGST?? 0,
+                                                                                      gross: double.tryParse(rate.toStringAsFixed(2))! * 1,
+                                                                                      iGST: itemVariant.tax! > 0 ? double.tryParse(iGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       itemId: itemVariant.itemId,
                                                                                       realPrice: rate!,
                                                                                       free: 0,
                                                                                       fCess: 0,
                                                                                       pRate: itemVariant.buyingPrice,
                                                                                       rPRate: itemVariant.buyingPriceReal,
-                                                                                      total: rate * quantity ,
+                                                                                      total: double.tryParse(rate.toStringAsFixed(2))! * 1,
                                                                                       profitPer: 0,
                                                                                       rDiscount: 0,
                                                                                       rRate: taxMethod == 'MINUS'
@@ -1719,14 +1724,14 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                 4, (100 * rate) / (100 + tax + kfcP + cessPer))
             : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
         : rate,
-                                                                                       tax: itemVariant.tax?? 0,
+                                                                                       tax: itemVariant.tax! > 0 ? double.tryParse(itemVariant.tax!.toStringAsFixed(3)) : 0 ,
                                                                                        code: itemVariant.productId.toString(),
                                                                                        id: item.id,
                                                                                        itemName: item.name!,
                                                                                        minimumRate: itemVariant.minimumRate,
                                                                                        quantity: 1,
                                                                                        stock: 1,
-                                                                                       rate: rate!)
+                                                                                       rate: double.tryParse(rate.toStringAsFixed(2))!)
                                                                                   );
                                                                                 });
                                                                                 },

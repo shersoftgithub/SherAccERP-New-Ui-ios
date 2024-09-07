@@ -37,7 +37,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   DioService api = DioService();
   String _selectedCategory = "All";
   // String _toDay = '';
-  // String get getToDay => _toDay!;
+  // String get getToDay => _toDay!; 
   DateTime now = DateTime.now();
   String? formattedDate;
   bool _isLoading = false,
@@ -60,7 +60,6 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
       kfcP = 0,
       kfc = 0,
       unitValue = 1,
-      _conversion = 0,
       freeQty = 0,
       fUnitValue = 0,
       cdPer = 0,

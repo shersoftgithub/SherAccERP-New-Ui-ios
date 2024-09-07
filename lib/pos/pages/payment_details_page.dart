@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/app_settings_page.dart';
@@ -12,6 +13,7 @@ import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
+import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
@@ -74,7 +76,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   final vehicleNameControl = TextEditingController();
   final invoiceNoController = TextEditingController(); 
 
-  // State variables for amounts and balances
   double cashReceived = 0.0;
   double cashBalance = 0.0;
 
@@ -115,13 +116,27 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
          mainAccount.firstWhere((element) => element['LedName'] == cashAc,
             orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
         ;    
-     var settingss  = ScopedModel.of<MainModel>(context).getSettings();
-         sType = ComSettings.getValue('TOOLBAR SALES', settingss)
+   
+    //     
+       for (var option in salesTypeList) {
+      if (option.type.toString() == 'SALES-POS') {
+        salesTypeData = option;
+        // status = true;
+        break;
+      } else {
+        // status = false;
+      }
+       }
+        if(salesTypeData == null) {
+            var settingss  = ScopedModel.of<MainModel>(context).getSettings();
+           sType = ComSettings.getValue('TOOLBAR SALES', settingss)
                     .toString()
                     .isNotEmpty
                 ? ComSettings.selectSalesType(
                     ComSettings.getValue('TOOLBAR SALES', settingss))
                 : false;
+      }
+   
 
    manualInvoiceNumberInSales =
         ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
@@ -271,7 +286,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   }
                 },);
               } else{
-                                showErrorDialog(context, 'Duplicate Invoice No');
+                  showErrorDialog(context, 'Duplicate Invoice No');
                 setState(() {
                   _isLoading = false;
                   buttonEvent = false;
@@ -294,13 +309,22 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           'fyId': currentFinancialYear!.id
         };
         if (salesTypeData!.accounts) {
+              dataDynamic = [
+                    {
+                      'RealEntryNo': int.tryParse(result.toString()),
+                      'EntryNo': int.tryParse(result.toString()),
+                      'InvoiceNo': int.tryParse(result.toString()),
+                      'Type': salesTypeData!.id
+                    }
+                  ];
           api.addOtherAmount(bodyJsonAmount);
           buttonEvent = false;
+          ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
          showMore(context, );
           
         }
          
-        debugPrint('bodyjson====${bodyJsonAmount.toString()}');
+        debugPrint('bodyjson ==== ${bodyJsonAmount.toString()}');
                   }
                    else {
                      showErrorDialog(context, result.toString());
@@ -430,6 +454,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -822,22 +847,30 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                           height: 8,
                         ),
                         InkWell(
-                          onTap: () {
-                            setState(() {
-                             if (buttonEvent) {
-                                  return;
-                                } else{
+                          onTap: widget.cartItems.isNotEmpty
+                          ?  () {
                            setState(() {
                             buttonEvent = true;
                            });
                             savesale();
-                                }
                             // debugPrint(widget.cartItems.toString());
                             // debugPrint(acId.toString());
                             // debugPrint(cashAc);
-                             });
+                          } : (){
+                            Fluttertoast.showToast(
+                              msg: 'No Item');
                           },
-                          child: Container(
+                          child:
+                           buttonEvent
+                            ? const Center(
+                              child: FittedBox(
+                                child: Center(child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation(bagroundColor),
+                                  backgroundColor: kPrimaryColor,
+                                )),
+                              ),
+                            )
+                            : Container(
                             width: MediaQuery.of(context).size.width,
                             height: 40,
                             decoration: BoxDecoration(
@@ -845,7 +878,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                               color: kPrimaryColor
                             ),
                             child: const Center(
-                              child: Text('Print',
+                              child: Text('Save & Print',
                                style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontFamily: 'poppins',
@@ -879,11 +912,15 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
               );
         },
         onPressedYes: () {
+             Navigator.of(context).pop();
+          Navigator.pushReplacementNamed(context, '/preview_show',
+              arguments: {'title': 'Sale'});
+        
         },
         buttonTextForNo: 'No',
         buttonTextForYes: 'YES',
         infoMessage:
-            'Do you want to Print\nEntryNo : ',
+            'Do you want to Preview\nEntryNo : ${dataDynamic[0]['EntryNo']}',
         title:  'SAVED',
         context: context);
   }
