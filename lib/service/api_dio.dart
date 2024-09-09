@@ -3207,6 +3207,7 @@ class DioService {
     }
     return _items;
   }
+  
   Stream<List<StockItem>> fetchStockProducts(String date) async* {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp', location = '0', id = '1';
@@ -3283,6 +3284,55 @@ class DioService {
             'location': location,
             'date': date,
             'like': like
+          });
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var product in jsonResponse) {
+          //.map((data) => new StockProduct.fromJson(data))
+          _items.add(StockItem.fromJson(product));
+        }
+      } else {
+        debugPrint('Unexpected error Occurred!');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;
+  }
+  Future<List<StockItem>> fetchStockProductLazyLoading(
+      String date, int limit, String lastDoc) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp', location = '0', id = '1';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    if (locationList.isNotEmpty) {
+      location = locationList
+          .where((element) => element.value == defaultLocation)
+          .map((e) => e.key)
+          .first
+          .toString();
+    }
+    int lId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-location-view', 0) -
+        1;
+    location = lId.toString().trim().isNotEmpty
+        ? lId < 1
+            ? location
+            : lId.toString().trim()
+        : location;
+    List<StockItem> _items = [];
+
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}stock/getStockSaleListLike/$dataBase',
+          queryParameters: {
+            'id': id,
+            'location': location,
+            'date': date,
+            'like': limit
           });
       if (response.statusCode == 200) {
         var jsonResponse = response.data;

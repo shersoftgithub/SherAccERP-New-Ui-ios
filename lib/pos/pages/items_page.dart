@@ -10,6 +10,7 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
 import 'package:sheraccerp/pos/models/pos_cart_model.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
+import 'package:sheraccerp/provider/product_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -37,7 +38,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   DioService api = DioService();
   String _selectedCategory = "All";
   // String _toDay = '';
-  // String get getToDay => _toDay!; 
+  // String get getToDay => _toDay!;  
   DateTime now = DateTime.now();
   String? formattedDate;
   bool _isLoading = false,
@@ -107,7 +108,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
     settings = ScopedModel.of<MainModel>(context).getSettings();
     companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
     cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
-    enableKeralaFloodCess = false;
+    enableKeralaFloodCess = false; // 
   }
   
       String _regId = "", firm = "", firmCode = "", fId = "";
@@ -161,12 +162,14 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // debugPrint(cartItem.length.toString());
+    // debugPrint(cartItem.length.toString()); 
     final isExpanded = useState<bool>(false);
     final cartModel = ref.watch(cartItemProvider);
+    final products = ref.watch(productsProvider);
     final selectedRateType = ref.watch(rateTypeProvider);
     final List<StockItem> itemList = filteredProducts ?? [];
     List<StockProduct> variantList = fetchStockVariant ?? [];
+  debugPrint('productsss   === ${products.toString()}');
     final isTax = ref.watch(isTaxProvider);
         double totalGrossValue = 0;
   double totalDiscount = 0;
@@ -183,11 +186,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   double totalProfit = 0;
   double csPer = 0;
     if(fetchStockVariant != null )
+     // ignore: curly_braces_in_flow_control_structures
      for(var totals in fetchStockVariant!){
-      // totalGrossValue += totals.gross!;
-      // totalDiscount += totals.discount!;
-      // totalRDiscount += totals.rDiscount!;
-      // totalNet += totals.net!;
       cessPer = totals.cessPer!;
       totalCess += totals.cess!;
       totalAdCess += totals.adCessPer!;
@@ -390,26 +390,26 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                                                                       serialNo: variant.serialNo,
                                                                                       uniqueCode: variant.productId,
                                                                                       expDate: variant.expDate,
-                                                                                      net: rate,
+                                                                                      net: double.tryParse(rate!.toStringAsFixed(2))! * 1,
                                                                                       fUnitId: 0,
                                                                                       fUnitValue: 1,
-                                                                                      taxP: tax,
-                                                                                      sGST: csGST?? 0,
+                                                                                      taxP: variant.tax?? 0,
+                                                                                      sGST: variant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
                                                                                       unitValue: 1,
-                                                                                      cGST: csGST?? 0,
+                                                                                      cGST: variant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       cdPer: cdPer,
                                                                                       discount: discount,
                                                                                       discountPercent: discountPercent,
-                                                                                      gross: gross,
-                                                                                      iGST: iGST?? 0,
+                                                                                      gross: double.tryParse(rate.toStringAsFixed(2))! * 1,
+                                                                                      iGST: variant.tax! > 0 ? double.tryParse(iGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       itemId: variant.itemId,
                                                                                       realPrice: rate!,
                                                                                       free: 0,
                                                                                       fCess: 0,
                                                                                       pRate: variant.buyingPrice,
                                                                                       rPRate: variant.buyingPriceReal,
-                                                                                      total: rate * quantity ,
+                                                                                      total: double.tryParse(rate.toStringAsFixed(2))! * 1,
                                                                                       profitPer: 0,
                                                                                       rDiscount: 0,
                                                                                       rRate: taxMethod == 'MINUS'
@@ -418,14 +418,14 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                 4, (100 * rate) / (100 + tax + kfcP + cessPer))
             : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
         : rate,
-                                                                                       tax: variant.tax?? 0,
+                                                                                       tax: variant.tax! > 0 ? double.tryParse(variant.tax!.toStringAsFixed(3))!  : 0 ,
                                                                                        code: variant.productId.toString(),
                                                                                        id: item.id,
                                                                                        itemName: item.name!,
                                                                                        minimumRate: variant.minimumRate,
                                                                                        quantity: 1,
-                                                                                       stock: 1,
-                                                                                       rate: rate!)
+                                                                                       stock: variant.quantity,
+                                                                                       rate: double.tryParse(rate.toStringAsFixed(2))!)
                                                 );
                                       });
                                       // Navigator.of(context)

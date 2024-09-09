@@ -942,8 +942,18 @@ class _SalesListState extends State<SalesList> {
 
     return Column(
       children: [
-        dataDisplay.isEmpty
-            ? const Loading()
+        isLoadingData?
+        const Loading()
+        : dataDisplay.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    SizedBox(height: 20),
+                    Text('No Data Found..')
+                  ],
+                ),
+              )
             : Container(
                 decoration: BoxDecoration(
                     color: blue[200],

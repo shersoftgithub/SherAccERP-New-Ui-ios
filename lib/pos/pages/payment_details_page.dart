@@ -117,7 +117,6 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
         ;    
    
-    //     
        for (var option in salesTypeList) {
       if (option.type.toString() == 'SALES-POS') {
         salesTypeData = option;
@@ -168,21 +167,21 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
 
        List<CustomerModel> ledger = [];
     ledger.add(CustomerModel(
-        address1: '',
-        address2: '',
+        address1: ledgerModel!.address1,
+        address2: ledgerModel!.address2,
         address3: '',
-        address4: '',
-        balance: '',
-        city: '',
-        email: '',
+        address4: ledgerModel!.address4 ?? '',
+        balance: ledgerModel!.balance,
+        city: ledgerModel!.city,
+        email: ledgerModel!.email,
         id: acId,
         name: cashAc,
-        phone: '',
-        remarks: '',
-        route: '',
+        phone: ledgerModel!.phone,
+        remarks: ledgerModel!.remarks,
+        route:ledgerModel!.route,
         state: ledgerModel!.state,
         stateCode: ledgerModel!.stateCode,
-        taxNumber: ''));
+        taxNumber: ledgerModel!.taxNumber));
          
          var jsonLedger = CustomerModel.encodeCustomerToJson(ledger);
          var customer = json.encode(jsonLedger);
@@ -321,6 +320,10 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
           buttonEvent = false;
           ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
          showMore(context, );
+         setState(() {
+           _isLoading = false;
+           buttonEvent = false;
+         });
           
         }
          

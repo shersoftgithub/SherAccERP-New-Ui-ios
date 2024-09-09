@@ -44,8 +44,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   StockProduct? productss;
   List<ProductPurchaseModel>? products;
    final TextEditingController _barcodeController = TextEditingController();
+   final invoiceNoController = TextEditingController(); 
   Future<List<StockProduct>>? _productsFuture;
   List<StockProduct> _cart = [];
+  String vehicleName = '', invoiceNo = '';
   bool _isLoading = false,
   enableKeralaFloodCess = false,
   cessOnNetAmount = false;
@@ -129,6 +131,15 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
     companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
     cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
     enableKeralaFloodCess = false;
+
+            getEntryNo(saleFormId) {
+    api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
+      setState(() {
+        invoiceNo = (int.parse(value.toString()) + 1).toString();
+        invoiceNoController.text = invoiceNo;
+      });
+    });
+  }
   }
     void _fetchProducts() {
     final barcode = _barcodeController.text;
@@ -136,6 +147,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       _productsFuture = api.fetchStockProductByBarcode(barcode);
       
     });
+    
   }
     String _regId = "", firm = "", firmCode = "", fId = "";
   load() async {
@@ -269,24 +281,47 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
      debugPrint("tax == ${taxP.toString()}");
    
      debugPrint('cess = ${cess.toString()}'); 
-     debugPrint(iGST.toString()); 
+    //  debugPrint(iGST.toString()); 
     // total = CommonService.getRound(
     //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
-  double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity!);
+  // double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.realPrice * item.quantity!);
   
-  double totalTax = isTax
-      ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity!)
-      : 0.0;
-      if (companyTaxMode == 'INDIA') {
-        kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
-        double csPer = taxP / 2;
-        iGST = 0;
-        csGST = CommonService.getRound(2, (totalTax / 2));
-      }else if (companyTaxMode == 'GULF') {
-      iGST = CommonService.getRound(2, (totalTax / 2));
-      csGST = 0;
-      kfc = 0;
-    }
+  // double totalTax = isTax
+  //     ? cartModel.fold(0.0, (sum, item) => sum + (item.tax ?? 0) * item.quantity!)
+  //     : 0.0;
+  //     if (companyTaxMode == 'INDIA') {
+  //       kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+  //       double csPer = taxP / 2;
+  //       iGST = 0;
+  //       csGST = CommonService.getRound(2, (totalTax / 2));
+  //     }else if (companyTaxMode == 'GULF') {
+  //     iGST = CommonService.getRound(2, (totalTax / 2));
+  //     csGST = 0;
+  //     kfc = 0;
+  //   }
+  double totalAmount = cartModel.fold(0.0, (sum, item) => sum + double.tryParse(item.realPrice.toStringAsFixed(4))! * item.quantity!);
+
+double totalTax = isTax
+    ? cartModel.fold(0.0, (sum, item) => sum + (double.tryParse(item.tax!.toStringAsFixed(4)) ?? 0) )
+    : 0.0;
+
+double kfc = 0;
+double csGST = 0;
+double iGST = 0;
+
+if (companyTaxMode == 'INDIA') {
+  kfc = isKFC ? CommonService.getRound(4, ((totalAmount * kfcP) / 100)) : 0;
+  
+  csGST = CommonService.getRound(2, (totalTax / 2)); // SGST + CGST
+  iGST = 0; 
+} else if (companyTaxMode == 'GULF') {
+  iGST = CommonService.getRound(2, totalTax);
+  
+  csGST = 0;
+  kfc = 0; 
+}
+
+
 
       debugPrint('csGST${csGST.toString()}');
       debugPrint('igst${iGST.toString()}');
@@ -328,6 +363,46 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                   scaffoldKey.currentState?.openDrawer();
                }, icon: Image.asset('assets/icons/ic_menu.png',scale: 2.6,)),
              ),
+             actions: [
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: (){
+                    
+                    }, icon: const Icon(Icons.arrow_back_ios)
+                    ),
+                    Text(invoiceNo ?? '0',
+                    style: TextStyle(
+                      color: white
+                    ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                    
+                    }, icon: const Icon(Icons.arrow_forward_ios)
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => 
+                                 PaymentPage(
+                                  sGst: csGST,
+                                  cGst: csGST,
+                                  iGst: iGST,
+                                  totalGrossValue: totalAmount,
+                                  cartItems: cartModel,
+                                  grandTotal: grandTotal ?? 0,
+                                ),
+                                ));
+                    }, icon: const Icon(Icons.save_rounded)
+                    ),
+                  ],
+                ),
+              )
+             ],
              backgroundColor: kPrimaryColor,
             ),
             body: Padding(
@@ -673,7 +748,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/7,
                                  child:  Center(
-                                   child: Text(cartModel[index].realPrice.toString() ,
+                                   child: Text(cartModel[index].rate.toString() ,
                                    // textScaler: TextScaler.linear(.9),
                                    overflow: TextOverflow.ellipsis,
                                                          style: const TextStyle(
@@ -688,7 +763,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/7,
                                  child:  Center(
-                                   child: Text(((quantity ?? 0) * (cartModel[index].realPrice ?? 0)).toString(),
+                                   child: Text(((quantity ?? 0) * (cartModel[index].rate ?? 0)).toString(),
                                    overflow: TextOverflow.ellipsis,
                                    // textScaler: TextScaler.linear(.9),
                                                          style: const TextStyle(
@@ -1039,110 +1114,153 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                               //                         Future.delayed(Duration(),() {
                               //                         },);
                               
-                      return InkWell(
-                        onTap: () {
-                         
-                            setState(() {
-                               ref.read(cartItemProvider.notifier).addItem(
-                               PosCartModel(
-                                realPrice: rate!,
-                                code: product.productId.toString(),
-                                tax: product.tax!,
-                                unitId: unitData.isNotEmpty
-                                                        ? unitData
-                                                            .firstWhere(
-                                                                (element) =>
-                                                                    element
-                                                                        .name ==
-                                                                    'NOS')
-                                                            .id
-                                                        : 0,
-                                unitValue: 1,
-                                id: product.itemId,
-                                cGST: csGST,
-                                sGST: csGST,
-                                 itemName: product.name!,
-                                  quantity: 1,
-                                   rate: rate!)
-                              );
-                            });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 3
-                          ),
-                          width: MediaQuery.of(context).size.width,
-                          decoration: BoxDecoration(
-                                          // boxShadow: [
-                                          //   BoxShadow( 
-                                          //     color: Colors.grey.shade400,
-                                          //     blurRadius: 5,
-                                          //     spreadRadius: .8,
-                                          //   )
-                                          // ],
-                                          border: Border.all(
-                                              color: grey, width: .5),
-                                          borderRadius:
-                                              BorderRadius.circular(3),
-                                          color:
-                                              Colors.grey.withOpacity(.1)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Name  : ${product.name!}',
-                              maxLines: null,
-                              style: const TextStyle(
-                                fontFamily: 'poppins'
+                      return ListView.builder(
+                        itemCount: 1,
+                        shrinkWrap: true,
+                        itemBuilder: (context , index) {
+                           final item = itemList[index];
+                                        final itemVariant = variantList[index];
+                                        // double? rate = selectedRateType == 'MRP' ? itemVariant.sellingPrice 
+                                        //              : selectedRateType == 'WHOLESALE' ? itemVariant.wholeSalePrice 
+                                        //                : selectedRateType == 'RETAIL' ? itemVariant.retailPrice 
+                                        //                  : selectedRateType == 'SPRETAIL' ? itemVariant.spRetailPrice
+                                        //                    : itemVariant.retailPrice ;
+                          return InkWell(
+                          onTap: () {
+  print('Item tapped: ${product.name}');
+  print('Rate: $rate');
+
+  setState(() {
+    ref.read(cartItemProvider.notifier).addItem(
+      PosCartModel(
+        cess: cess,
+        adCess: adCess,
+        barcode: product.itemId,
+        cDisc: cDisc,
+        serialNo: product.serialNo,
+        uniqueCode: product.productId,
+        expDate: product.expDate,
+        net: double.tryParse(rate!.toStringAsFixed(2))! * 1,
+        fUnitId: 0,
+        fUnitValue: 1,
+        taxP: product.tax ?? 0,
+        sGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
+        unitId: unitData.firstWhere((element) => element.name == 'NOS').id,
+        unitValue: 1,
+        cGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
+        cdPer: cdPer,
+        discount: discount,
+        discountPercent: discountPercent,
+        gross: double.tryParse(rate.toStringAsFixed(2))! * 1,
+        iGST: product.tax! > 0 ? double.tryParse(iGST.toStringAsFixed(2)) ?? 0 : 0,
+        itemId: product.itemId,
+        realPrice: rate,
+        free: 0,
+        fCess: 0,
+        pRate: product.buyingPrice,
+        rPRate: product.buyingPriceReal,
+        total: double.tryParse(rate.toStringAsFixed(2))! * 1,
+        profitPer: 0,
+        rDiscount: 0,
+        rRate: taxMethod == 'MINUS'
+            ? cessOnNetAmount
+                ? CommonService.getRound(
+                    4, (100 * rate) / (100 + tax + kfcP + cessPer))
+                : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
+            : rate,
+        tax: product.tax! > 0
+            ? double.tryParse(product.tax!.toStringAsFixed(3))!
+            : 0,
+        code: product.productId.toString(),
+        id: product.itemId!,
+        itemName: product.name!,
+        minimumRate: product.minimumRate,
+        quantity: 1,
+        stock: product.quantity,
+        rate: double.tryParse(rate.toStringAsFixed(2))!,
+      ),
+    );
+  });
+},
+
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 3
                               ),
+                              width: MediaQuery.of(context).size.width,
+                              decoration: BoxDecoration(
+                                              // boxShadow: [
+                                              //   BoxShadow( 
+                                              //     color: Colors.grey.shade400,
+                                              //     blurRadius: 5,
+                                              //     spreadRadius: .8,
+                                              //   )
+                                              // ],
+                                              border: Border.all(
+                                                  color: grey, width: .5),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                              color:
+                                                  Colors.grey.withOpacity(.1)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Name  : ${product.name!}',
+                                  maxLines: null,
+                                  style: const TextStyle(
+                                    fontFamily: 'poppins'
+                                  ),
+                                  ),
+                                    Text('Price     : \u{20B9} ${rate.toString()}',
+                                        style: const TextStyle(
+                                          // fontFamily: 'poppins'
+                                        ),
+                                        ),
+                                  // SizedBox(
+                                  //   width: MediaQuery.of(context).size.width/1.5,
+                                  //   child: Row(
+                                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //     mainAxisSize: MainAxisSize.min,
+                                  //     children: [
+                                  //       Text('Price     : \u{20B9} ${rate.toString()}',
+                                  //       style: const TextStyle(
+                                  //         // fontFamily: 'poppins'
+                                  //       ),
+                                  //       ),
+                                  //        Text('Quantity :  ${product.quantity.toString()}',
+                                  // style: const TextStyle(
+                                  //   // fontFamily: 'poppins'
+                                  // ),
+                                  // ),
+                                  //     ],
+                                  //   ),
+                                  // ),
+                                  // SizedBox(
+                                  //   width: MediaQuery.of(context).size.width/1.5,
+                                  //   child: Row(
+                                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //     mainAxisSize: MainAxisSize.min,
+                                  //     children: [
+                                  //       Text('Prate     : \u{20B9} ${product.buyingPriceReal.toString()}',
+                                  //       style: const TextStyle(
+                                  //         // fontFamily: 'poppins'
+                                  //       ),
+                                  //       ),
+                                  //        Text('Tax :  ${product.tax.toString()}%',
+                                  // style: const TextStyle(
+                                  //   // fontFamily: 'poppins'
+                                  // ),
+                                  // ),
+                                  //     ],
+                                  //   ),
+                                  // ),
+                                 
+                                ],
                               ),
-                                Text('Price     : \u{20B9} ${rate.toString()}',
-                                    style: const TextStyle(
-                                      // fontFamily: 'poppins'
-                                    ),
-                                    ),
-                              // SizedBox(
-                              //   width: MediaQuery.of(context).size.width/1.5,
-                              //   child: Row(
-                              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              //     mainAxisSize: MainAxisSize.min,
-                              //     children: [
-                              //       Text('Price     : \u{20B9} ${rate.toString()}',
-                              //       style: const TextStyle(
-                              //         // fontFamily: 'poppins'
-                              //       ),
-                              //       ),
-                              //        Text('Quantity :  ${product.quantity.toString()}',
-                              // style: const TextStyle(
-                              //   // fontFamily: 'poppins'
-                              // ),
-                              // ),
-                              //     ],
-                              //   ),
-                              // ),
-                              // SizedBox(
-                              //   width: MediaQuery.of(context).size.width/1.5,
-                              //   child: Row(
-                              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              //     mainAxisSize: MainAxisSize.min,
-                              //     children: [
-                              //       Text('Prate     : \u{20B9} ${product.buyingPriceReal.toString()}',
-                              //       style: const TextStyle(
-                              //         // fontFamily: 'poppins'
-                              //       ),
-                              //       ),
-                              //        Text('Tax :  ${product.tax.toString()}%',
-                              // style: const TextStyle(
-                              //   // fontFamily: 'poppins'
-                              // ),
-                              // ),
-                              //     ],
-                              //   ),
-                              // ),
-                             
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        }
                       );
                     }).toList(),
                   );
@@ -1724,13 +1842,13 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
                 4, (100 * rate) / (100 + tax + kfcP + cessPer))
             : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
         : rate,
-                                                                                       tax: itemVariant.tax! > 0 ? double.tryParse(itemVariant.tax!.toStringAsFixed(3)) : 0 ,
+                                                                                       tax: itemVariant.tax! > 0 ? double.tryParse(itemVariant.tax!.toStringAsFixed(3))!  : 0 ,
                                                                                        code: itemVariant.productId.toString(),
                                                                                        id: item.id,
                                                                                        itemName: item.name!,
                                                                                        minimumRate: itemVariant.minimumRate,
                                                                                        quantity: 1,
-                                                                                       stock: 1,
+                                                                                       stock: itemVariant.quantity,
                                                                                        rate: double.tryParse(rate.toStringAsFixed(2))!)
                                                                                   );
                                                                                 });
