@@ -96,6 +96,7 @@ List mfrList = [];
 List modelList = [];
 List subCategoryList = [];
 List<SalesType> salesTypeList = [];
+List<SalesType> salesReturnTypeList = [];
 List<VoucherType> voucherTypeList = [];
 List otherRegistrationList = [];
 List<OtherRegistrationModel> otherRegUnitList = [];
@@ -172,7 +173,12 @@ class ComSettings {
       salesTypeList.clear();
       salesTypeList.addAll(value);
     });
-
+    
+       api.getSalesReturnTypeList().then((value) {
+      salesReturnTypeList.clear();
+      salesReturnTypeList.addAll(value);
+    });
+    
     api.getVoucherTypeList().then((value) {
       voucherTypeList.clear();
       voucherTypeList.addAll(value);

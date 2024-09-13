@@ -30,6 +30,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/widget/simple_piediagram_pay_rec.dart';
 
 class DioService {
+  var a='';
   var dio = Dio();
   DioService();
 
@@ -822,6 +823,33 @@ class DioService {
     try {
       final response = await dio.post(
           '${pref.getString('api')}${apiV}sale/addOtherAmount/$dataBase',
+          data: json.encode(body),
+          options: Options(headers: {'Content-Type': 'application/json'}));
+
+      if (response.statusCode == 200) {
+        ret = response.data > 0 ? true : false;
+      } else {
+        ret = false;
+        debugPrint('Unexpected error occurred!');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return ret;
+  }
+
+   Future<bool> addOthersAmount(body) async {
+    bool ret = false;
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    try {
+      final response = await dio.post(
+          '${pref.getString('api' ?? '127.0.0.1:80/api/')}${apiV}sale/addOthersAmount/$dataBase',
           data: json.encode(body),
           options: Options(headers: {'Content-Type': 'application/json'}));
 
@@ -2418,6 +2446,33 @@ class DioService {
     return _items;
   }
 
+   Future<List<SalesType>> getSalesReturnTypeList() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    List<SalesType> _items = [];
+    try {
+      final response = await dio.get(
+          '${pref.getString('api' ?? '127.0.0.1:80/api/')}${apiV}sale/getSalesReturnTypeList/$dataBase');
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var ledger in jsonResponse) {
+          _items.add(SalesType.fromJson(ledger));
+        }
+      } else {
+        debugPrint('Failed to load data');
+      }
+    }  catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;
+  }
+
+
   Future<List<OptionRateType>> getRateTypeList() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';
@@ -3161,6 +3216,44 @@ class DioService {
       debugPrint(errorMessage.toString());
     }
     return _items;
+  }
+    Stream<List<StockProduct>> fetchStockVariantListStream(int id) async* {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp', location = '0';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    if (locationList.isNotEmpty) {
+      location = locationList
+          .where((element) => element.value == defaultLocation)
+          .map((e) => e.key)
+          .first
+          .toString();
+    }
+    int lId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-location-view', 2) -
+        1;
+    location =
+        lId.toString().trim().isNotEmpty ? lId.toString().trim() : location;
+    List<StockProduct> _items = [];
+    try {
+      final response = await dio.get(
+          '${pref.getString('api')}${apiV}stock/getStockVariantList/$dataBase',
+          queryParameters: {'Id': id, 'location': location});
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var product in jsonResponse) {
+          _items.add(StockProduct.fromJson(product));
+        }
+      } else {
+        debugPrint('Unexpected error occurred!');
+      }
+    } catch (e) {
+ final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    yield _items;
   }
 
 

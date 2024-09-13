@@ -7,6 +7,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
+import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/pos/controllers/cart_item_provider.dart';
@@ -47,10 +48,18 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
    final invoiceNoController = TextEditingController(); 
   Future<List<StockProduct>>? _productsFuture;
   List<StockProduct> _cart = [];
+  CompanyInformation? companySettings;
+  List<CompanySettings>? settings;
   String vehicleName = '', invoiceNo = '';
   bool _isLoading = false,
   enableKeralaFloodCess = false,
   cessOnNetAmount = false;
+  String cashAc = '';
+  int acId = 0,lId = 0;
+  int decimal = 2,saleAccount = 0;
+  var salesManId = 0;
+  bool manualInvoiceNumberInSales = false,
+         sType = false;
    double taxP = 0,
       tax = 0,
       gross = 0,
@@ -109,6 +118,8 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
 
       ComSettings().fetchOtherData();
       loadSettings();
+      // saleAccount = mainAccount.firstWhere(
+      //   (element) => element['LedName'] == 'GENERAL SALES A/C')['LedCode'];
       _fetchStockProducts();
       // _fetchStockVariant();
       
@@ -122,17 +133,56 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
     super.dispose();
    }
 
-  CompanyInformation companySettings = CompanyInformation.emptyData();
-  List<CompanySettings> settings = [];
+  // CompanyInformation companySettings = CompanyInformation.emptyData();
+  
 
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
+
     companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
     cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
     enableKeralaFloodCess = false;
 
-            getEntryNo(saleFormId) {
+        salesManId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-salesman-view', 1) -
+        1;
+        lId = ComSettings.appSettings(
+            'int', 'key-dropdown-default-location-view', 2) -
+        1;    
+        acId = 
+         mainAccount.firstWhere((element) => element['LedName'] == cashAc,
+            orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
+        ; 
+
+   
+
+      // for (var option in salesTypeList) {
+      // if (option.type.toString() == 'SALES-POS') {
+      //   salesTypeData = option;
+      //   // status = true;
+      //   break;
+      // } else {
+      //   // status = false;
+      // }
+      //  }
+      //   if(salesTypeData == null) {
+      //       var settingss  = ScopedModel.of<MainModel>(context).getSettings();
+      //      sType = ComSettings.getValue('TOOLBAR SALES', settingss)
+      //               .toString()
+      //               .isNotEmpty
+      //           ? ComSettings.selectSalesType(
+      //               ComSettings.getValue('TOOLBAR SALES', settingss))
+      //           : false;
+      // }
+
+        manualInvoiceNumberInSales =
+        ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
+   companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+
+  }
+
+      getEntryNo(saleFormId) {
     api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
       setState(() {
         invoiceNo = (int.parse(value.toString()) + 1).toString();
@@ -140,7 +190,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       });
     });
   }
-  }
+
     void _fetchProducts() {
     final barcode = _barcodeController.text;
     setState(() {
@@ -233,6 +283,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    getEntryNo(12);
     List<StockItem> itemList = fetchStockProducts ?? [];
     List<StockProduct> variantList = fetchStockVariant ?? [];
     // final List<ProductPurchaseModel> _itemList = products ?? [];
@@ -367,7 +418,8 @@ if (companyTaxMode == 'INDIA') {
               Align(
                 alignment: Alignment.bottomRight,
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  // crossAxisAlignment: CrossAxisAlignment.end,
+                  // mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       onPressed: (){

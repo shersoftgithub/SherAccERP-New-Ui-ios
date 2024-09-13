@@ -49,7 +49,6 @@ class HoldList extends ConsumerWidget {
                                                 color:
                                                     Colors.grey.withOpacity(.1)),
                         child: ExpansionTile(
-                          dense: true,
                           title: Text('Hold List ${index+ 1}',
                            style: const TextStyle(
                                 fontFamily: 'poppins'

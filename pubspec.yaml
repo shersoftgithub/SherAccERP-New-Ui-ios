@@ -23,7 +23,7 @@ dependencies:
   printing:
     git:
       url: https://github.com/saleelmhd/printing5.9.3.git
-  cloud_firestore:
+  cloud_firestore: 
   charts_flutter:
   charset_converter:
   contactus:
@@ -40,7 +40,6 @@ dependencies:
   firebase_messaging:
   flutter_bluetooth_basic: any
   firebase_in_app_messaging:
-  firebase_core: ^3.4.0
   firebase_crashlytics:
   firebase_core_platform_interface:
   flutter_speed_dial:
@@ -66,7 +65,7 @@ dependencies:
   # ping_discover_network:
   ping_discover_network_plus:
   pdf: 
-  pdf_viewer_plugin:
+  # pdf_viewer_plugin: 
   # printing:
   # printing:
   # printing: ^5.11.1
@@ -75,7 +74,7 @@ dependencies:
   permission_handler:
   local_auth:
   shared_preferences:
-  syncfusion_flutter_datagrid:
+  # syncfusion_flutter_datagrid: ^26.2.14
   scoped_model:
   share_plus:
   sqflite:
@@ -92,7 +91,7 @@ dependencies:
   easy_autocomplete: ^1.6.0
   flutter_riverpod: ^2.5.1
   build_runner: ^2.4.9
-  riverpod_generator: ^2.4.3
+  riverpod_generator: any
   riverpod_annotation: ^2.3.5
   flutter_async_autocomplete: ^0.1.1
   easy_pie_chart: ^1.0.0
@@ -102,9 +101,12 @@ dependencies:
   flutter_hooks: ^0.20.5
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
-  freezed: ^2.5.7
+  freezed: any
   json_serializable: ^6.8.0
   hooks_riverpod: ^2.5.2
+  firebase_analytics: ^10.2.1
+  firebase_core: ^2.9.0
+  easy_pdf_viewer: ^1.0.8
  
 
 dev_dependencies:

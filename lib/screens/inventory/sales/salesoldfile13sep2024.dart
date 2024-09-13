@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +29,8 @@ import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/provider/customer_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
+import 'package:sheraccerp/provider/stockvariant_provider.dart';
+import 'package:sheraccerp/scoped-models/cart_scope_model.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
@@ -1098,9 +1103,9 @@ class _SaleState extends ConsumerState<Sale> {
                   style: ButtonStyle(
                     shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5))),
-                    backgroundColor:const MaterialStatePropertyAll(kPrimaryColor),
+                    backgroundColor:MaterialStatePropertyAll(kPrimaryColor),
                     foregroundColor:
-                        const MaterialStatePropertyAll(Colors.white),
+                        MaterialStatePropertyAll(Colors.white),
                   ),
                   onPressed: () {
                     setState(() {
@@ -2423,9 +2428,9 @@ void _onTabTapped(int index) {
                                         // constraints: BoxConstraints(
                                         //   maxHeight: 20
                                         // ),
-                                          contentPadding: const EdgeInsets.symmetric(
+                                          contentPadding: EdgeInsets.symmetric(
                                               vertical: 5, horizontal: 5),
-                                          border: const OutlineInputBorder()),
+                                          border: OutlineInputBorder()),
                                     ),
                                   ),
                                   headTxt: 'Entry No')),
@@ -2885,7 +2890,7 @@ void _onTabTapped(int index) {
                                 separatorBuilder: (context, index) =>
                                     const SizedBox(height: 4),
                                 shrinkWrap: true,
-                                physics: const ClampingScrollPhysics() ,
+                                physics: ClampingScrollPhysics() ,
                                 itemCount: cartItem.length ,
                                 itemBuilder: (context, index) {
                                   return InkWell(
@@ -3793,7 +3798,7 @@ void _onTabTapped(int index) {
                                   child: 
                                    Text(
                                     oldBill? 'Delete': 'Save & New',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -4175,21 +4180,21 @@ void _onTabTapped(int index) {
                                                 vertical: 5, horizontal: 8),
                                             child: Column(
                                               children: [
-                                                const ContainerFieldWidget(widget: TextField(
+                                                ContainerFieldWidget(widget: TextField(
                                                   // controller: addressControl,
-                                                  decoration: InputDecoration(
+                                                  decoration: const InputDecoration(
                                                       border:
                                                           OutlineInputBorder()),
                                                 ), headTxt: 'Phone Number'),
                                                 const SizedBox(height: 8),
                                                 ContainerFieldWidget(widget: TextField(
                                                   controller: addressControl,
-                                                  decoration: const InputDecoration(
+                                                  decoration: InputDecoration(
                                                       border:
                                                           OutlineInputBorder()),
                                                 ), headTxt: 'Address'),
                                                 const SizedBox(height: 8),
-                                               const ContainerFieldWidget(widget:  TextField(
+                                               ContainerFieldWidget(widget:  TextField(
                                                   decoration: InputDecoration(
                                                       border:
                                                           OutlineInputBorder()),
@@ -4254,7 +4259,7 @@ void _onTabTapped(int index) {
                     const SizedBox(height: 10),
                     cartItem.isNotEmpty
                         ? Container(
-                             constraints: const BoxConstraints(maxHeight: 300),
+                             constraints: BoxConstraints(maxHeight: 300),
                           // height: 250,
                             width: MediaQuery.sizeOf(context).width,
                             color: white,
@@ -5071,7 +5076,7 @@ void _onTabTapped(int index) {
                                   height: 60,
                                   color: kPrimaryColor,
                                   child:  Center(
-                                    child: !buttonEvent? const Text(
+                                    child: !buttonEvent? Text(
                                       'Save',
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
@@ -5079,7 +5084,7 @@ void _onTabTapped(int index) {
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white,
                                       ),
-                                    ):const FittedBox(child: CircularProgressIndicator()),
+                                    ):FittedBox(child: CircularProgressIndicator()),
                                   ),
                                 ),
                               ),
@@ -5566,7 +5571,7 @@ void _onTabTapped(int index) {
                                               fontFamily: 'poppins', fontSize: 14),
                                           suggestionTextStyle:
                                               const TextStyle(fontFamily: 'poppins'),
-                                          decoration:  const InputDecoration(
+                                          decoration:  InputDecoration(
                                                                   //               suffixIcon:  Visibility(
                                                                   //   visible: enableBarcode,
                                                                   //   child: IconButton(
@@ -6263,7 +6268,7 @@ void _onTabTapped(int index) {
                                               width: 5,
                                             ),
                                             salesTypeData!.type == 'SALES-ES'
-                                            ?const SizedBox()
+                                            ?SizedBox()
                                            : Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
@@ -6564,7 +6569,7 @@ void _onTabTapped(int index) {
                                           height: 10,
                                         ),
                                         salesTypeData!.type == 'SALES-ES'
-                                        ?const SizedBox()
+                                        ?SizedBox()
                                        : SizedBox(
                                           width:
                                               MediaQuery.of(context).size.width,
@@ -7099,7 +7104,7 @@ void _onTabTapped(int index) {
                         child: Center(
                           child: Text(
                             editItem ? 'Delete' : 'Save & New',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -7760,7 +7765,7 @@ void _onTabTapped(int index) {
                         child:  Center(
                           child: Text(
                             editItem?'Edit': 'Save',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Poppins',
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -7873,6 +7878,711 @@ void _onTabTapped(int index) {
       ComSettings.appSettings('bool', 'key-customer-reusable-product', false)
           ? true
           : false;
+
+  // selectLedgerDetailWidgetStream() {
+  //   return StreamBuilder<CustomerModel>(
+  //     stream: customerReusableProduct
+  //         ? api.getCustomerDetailStockStream(ledgerDataModel!.id!)
+  //         : api.getCustomerDetailStream(ledgerDataModel!.id!),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.hasData) {
+  //         if (snapshot.data!.id != null || snapshot.data!.id! > 0) {
+  //           ledgerModel = snapshot.data;
+  //           return Padding(
+  //             padding: const EdgeInsets.all(35.0),
+  //             child: snapshot.data!.name == 'CASH'
+  //                 ? ListView(
+  //                     shrinkWrap: true,
+  //                     children: [
+  //                       cashCustomerWidget(),
+  //                       const SizedBox(height: 5),
+  //                       salesEntryCustomerOnly
+  //                           ? SimpleAutoCompleteTextField(
+  //                               key: keyCustomerName,
+  //                               controller: customerNameControl,
+  //                               clearOnSubmit: false,
+  //                               suggestions: unregisteredNameList,
+  //                               decoration: const InputDecoration(
+  //                                   border: OutlineInputBorder(),
+  //                                   hintText: 'Customer Name',
+  //                                   labelText: 'Customer Name'),
+  //                               textSubmitted: (data) {
+  //                                 var name = data;
+  //                                 if (name.isNotEmpty) {
+  //                                   api.getNonCustomerDetail(name).then(
+  //                                     (value) {
+  //                                       setState(() {
+  //                                         ledgerModel!.name = value.name;
+  //                                         if (value.id! > 0) {
+  //                                           ledgerModel!.address1 =
+  //                                               value.address1;
+  //                                           ledgerModel!.address2 =
+  //                                               value.address2;
+  //                                           ledgerModel!.address3 =
+  //                                               value.address3;
+  //                                         } else {
+  //                                           ledgerModel!.address1 =
+  //                                               value.address1! +
+  //                                                   " " +
+  //                                                   value.address2!;
+  //                                           ledgerModel!.address2 =
+  //                                               value.address3! +
+  //                                                   " " +
+  //                                                   value.address4!;
+  //                                           ledgerModel!.address3 =
+  //                                               ledgerModel!.taxNumber;
+  //                                         }
+  //                                       });
+  //                                     },
+  //                                   );
+  //                                 }
+  //                               },
+  //                             )
+  //                           : DropdownSearch<dynamic>(
+  //                               popupProps: const PopupPropsMultiSelection
+  //                                   .modalBottomSheet(
+  //                                 constraints: BoxConstraints(
+  //                                   maxHeight: 300,
+  //                                 ),
+  //                                 showSearchBox: true,
+  //                               ),
+  //                               asyncItems: (String filter) =>
+  //                                   api.getUnregisteredSalesLedgerDataListLike(
+  //                                       filter),
+  //                               dropdownDecoratorProps:
+  //                                   const DropDownDecoratorProps(
+  //                                       dropdownSearchDecoration:
+  //                                           InputDecoration(
+  //                                               border: OutlineInputBorder(),
+  //                                               hintText: 'Customer Name',
+  //                                               labelText: "Select Customer")),
+  //                               onChanged: (dynamic data) {
+  //                                 ledgerDataModel =
+  //                                     LedgerModel(id: data.id, name: data.name);
+  //                                 Map ledgerData = tempCustomerData
+  //                                     .where((element) =>
+  //                                         element['LedName']
+  //                                             .toString()
+  //                                             .toUpperCase() ==
+  //                                         data.name.toString().toUpperCase())
+  //                                     .toList()[0];
+  //                                 ledgerModel!.name = ledgerData['LedName'];
+  //                                 ledgerModel!.address1 = ledgerData['add1'];
+  //                                 ledgerModel!.address2 = ledgerData['add2'];
+  //                                 ledgerModel!.address3 = ledgerData['add3'];
+  //                                 ledgerModel!.address4 = ledgerData['add4'];
+  //                               },
+  //                             ),
+  //                       const SizedBox(height: 5),
+  //                       addressLineWidget(),
+  //                       const SizedBox(height: 5),
+  //                       siteLineWidget(),
+  //                       const SizedBox(height: 5),
+  //                       salesManVehicle(),
+  //                       const SizedBox(height: 5),
+  //                       rateTypeWidget(),
+  //                       const SizedBox(height: 5),
+  //                       addProductButtonWidget()
+  //                     ],
+  //                   )
+  //                 : ListView(
+  //                     shrinkWrap: true,
+  //                     children: [
+  //                       cashCustomerWidget(),
+  //                       const SizedBox(height: 5),
+  //                       Card(
+  //                         child: SizedBox(
+  //                           width: deviceSize!.width,
+  //                           child: Visibility(
+  //                               visible: customerReusableProduct,
+  //                               child:
+  //                                   Text('Stock IN :${ledgerModel!.remarks!}')),
+  //                         ),
+  //                       ),
+  //                       const SizedBox(height: 5),
+  //                       addressLineWidget(),
+  //                       const SizedBox(height: 5),
+  //                       siteLineWidget(),
+  //                       ledgerModel!.taxNumber!.isNotEmpty
+  //                           ? Card(
+  //                               child: Padding(
+  //                                 padding: const EdgeInsets.all(8.0),
+  //                                 child: SizedBox(
+  //                                   width: deviceSize!.width,
+  //                                   child: Row(
+  //                                     children: [
+  //                                       Text(
+  //                                         companyTaxMode == 'INDIA'
+  //                                             ? 'GST No  :'
+  //                                             : 'VAT No  :',
+  //                                         style: const TextStyle(
+  //                                             color: blue,
+  //                                             fontWeight: FontWeight.bold),
+  //                                       ),
+  //                                       Text(ledgerModel!.taxNumber!,
+  //                                           style:
+  //                                               const TextStyle(fontSize: 18)),
+  //                                       gstValidation
+  //                                           ? const Loading()
+  //                                           : OutlinedButton.icon(
+  //                                               onPressed: () {
+  //                                                 setState(() {
+  //                                                   gstValidation = true;
+  //                                                   gstVerified = true;
+  //                                                   //check
+  //                                                   gstValidation = false;
+  //                                                   gstVerified = true;
+  //                                                 });
+  //                                               },
+  //                                               label: const Text(
+  //                                                 'validate',
+  //                                                 style: TextStyle(
+  //                                                     color: Colors.grey,
+  //                                                     fontSize: 10),
+  //                                               ),
+  //                                               icon: Icon(
+  //                                                   Icons.verified_rounded,
+  //                                                   color: gstVerified
+  //                                                       ? Colors.green
+  //                                                       : Colors.red),
+  //                                             )
+  //                                     ],
+  //                                   ),
+  //                                 ),
+  //                               ),
+  //                             )
+  //                           : Card(
+  //                               child: Padding(
+  //                                 padding: const EdgeInsets.all(8.0),
+  //                                 child: Row(
+  //                                   children: [
+  //                                     const Text(
+  //                                       'Tax No : ',
+  //                                       style: TextStyle(
+  //                                           color: blue,
+  //                                           fontWeight: FontWeight.bold),
+  //                                     ),
+  //                                     Text(ledgerModel!.taxNumber!),
+  //                                   ],
+  //                                 ),
+  //                               ),
+  //                             ),
+  //                       const SizedBox(height: 5),
+  //                       Card(
+  //                         child: Padding(
+  //                           padding: const EdgeInsets.all(8.0),
+  //                           child: Row(
+  //                             children: [
+  //                               const Text(
+  //                                 'Phone   : ',
+  //                                 style: TextStyle(
+  //                                     color: blue, fontWeight: FontWeight.bold),
+  //                               ),
+  //                               InkWell(
+  //                                 child: Text(ledgerModel!.phone!,
+  //                                     style: const TextStyle(fontSize: 18)),
+  //                                 onDoubleTap: () =>
+  //                                     callNumber(ledgerModel!.phone),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       Card(
+  //                         child: Padding(
+  //                           padding: const EdgeInsets.all(8.0),
+  //                           child: Row(
+  //                             children: [
+  //                               const Text(
+  //                                 'Email     : ',
+  //                                 style: TextStyle(
+  //                                     color: blue, fontWeight: FontWeight.bold),
+  //                               ),
+  //                               Text(ledgerModel!.email!,
+  //                                   style: const TextStyle(fontSize: 18)),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       salesManVehicle(),
+  //                       const SizedBox(height: 5),
+  //                       rateTypeWidget(),
+  //                       Card(
+  //                         child: Padding(
+  //                           padding: const EdgeInsets.all(8.0),
+  //                           child: Row(
+  //                             children: [
+  //                               const Text(
+  //                                 'Balance : ',
+  //                                 style: TextStyle(
+  //                                     color: blue, fontWeight: FontWeight.bold),
+  //                               ),
+  //                               Text(ledgerModel!.balance!,
+  //                                   style: const TextStyle(
+  //                                       fontWeight: FontWeight.bold)),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       ),
+  //                       const SizedBox(height: 5),
+  //                       addProductButtonWidget(),
+  //                       ElevatedButton(
+  //                         onPressed: () {
+  //                           Navigator.push(
+  //                             context,
+  //                             MaterialPageRoute(
+  //                                 builder: (context) => PreviousBill(
+  //                                       ledger: ledgerModel!.id.toString(),
+  //                                     )),
+  //                           );
+  //                         },
+  //                         style: ElevatedButton.styleFrom(
+  //                             elevation: 0,
+  //                             backgroundColor: kPrimaryDarkColor,
+  //                             foregroundColor: white,
+  //                             disabledBackgroundColor: grey),
+  //                         child: const Center(
+  //                           child: Row(
+  //                             mainAxisAlignment: MainAxisAlignment.center,
+  //                             children: <Widget>[
+  //                               Icon(
+  //                                 Icons.view_list,
+  //                                 color: white,
+  //                               ),
+  //                               SizedBox(
+  //                                 width: 4.0,
+  //                               ),
+  //                               Text(
+  //                                 "Previous Bill",
+  //                                 style: TextStyle(color: white),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                         ),
+  //                       )
+  //                     ],
+  //                   ),
+  //           );
+  //         } else {
+  //           return const Center(
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: <Widget>[
+  //                 SizedBox(height: 20),
+  //                 Text('No Data Found..')
+  //               ],
+  //             ),
+  //           );
+  //         }
+  //       } else if (snapshot.hasError) {
+  //         return AlertDialog(
+  //           title: const Text(
+  //             'An Error Occurred!',
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(
+  //               color: Colors.redAccent,
+  //             ),
+  //           ),
+  //           content: Text(
+  //             "${snapshot.error}",
+  //             style: const TextStyle(
+  //               color: Colors.blueAccent,
+  //             ),
+  //           ),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: const Text(
+  //                 'Go Back',
+  //                 style: TextStyle(
+  //                   color: Colors.redAccent,
+  //                 ),
+  //               ),
+  //               onPressed: () {
+  //                 Navigator.of(context).pop();
+  //               },
+  //             )
+  //           ],
+  //         );
+  //       }
+  //       return const Center(
+  //         child: Column(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: <Widget>[
+  //             CircularProgressIndicator(),
+  //             SizedBox(height: 20),
+  //             Text('This may take some time..')
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  selectLedgerDetailWidget() {
+    return FutureBuilder<CustomerModel>(
+      future: customerReusableProduct
+          ? api.getCustomerDetailStock(ledgerDataModel!.id)
+          : api.getCustomerDetail(ledgerDataModel!.id),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data!.id != null || snapshot.data!.id! > 0) {
+            ledgerModel = snapshot.data;
+            return Padding(
+              padding: const EdgeInsets.all(35.0),
+              child: snapshot.data!.name == 'CASH'
+                  ? ListView(
+                      shrinkWrap: true,
+                      children: [
+                        
+                        cashCustomerWidget(),
+                        
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        salesEntryCustomerOnly
+                            ? SimpleAutoCompleteTextField(
+                                key: keyCustomerName,
+                                controller: customerNameControl,
+                                clearOnSubmit: false,
+                                suggestions: unregisteredNameList,
+                                decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    hintText: 'Customer Name',
+                                    labelText: 'Customer Name'),
+                                textSubmitted: (data) {
+                                  var name = data;
+                                  if (name.isNotEmpty) {
+                                    api.getNonCustomerDetail(name).then(
+                                      (value) {
+                                        setState(() {
+                                          ledgerModel!.name = value.name;
+                                          if (value.id! > 0) {
+                                            ledgerModel!.address1 =
+                                                value.address1;
+                                            ledgerModel!.address2 =
+                                                value.address2;
+                                            ledgerModel!.address3 =
+                                                value.address3;
+                                          } else {
+                                            ledgerModel!.address1 =
+                                                value.address1! +
+                                                    " " +
+                                                    value.address2!;
+                                            ledgerModel!.address2 =
+                                                value.address3! +
+                                                    " " +
+                                                    value.address4!;
+                                            ledgerModel!.address3 =
+                                                ledgerModel!.taxNumber;
+                                          }
+                                        });
+                                      },
+                                    );
+                                  }
+                                },
+                              )
+                            : DropdownSearch<dynamic>(
+                                popupProps: const PopupPropsMultiSelection
+                                    .modalBottomSheet(
+                                  constraints: BoxConstraints(
+                                    maxHeight: 300,
+                                  ),
+                                  showSearchBox: true,
+                                ),
+                                asyncItems: (String filter) =>
+                                    api.getUnregisteredSalesLedgerDataListLike(
+                                        filter),
+                                dropdownDecoratorProps:
+                                    const DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                hintText: 'Customer Name',
+                                                labelText: "Select Customer")),
+                                onChanged: (dynamic data) {
+                                  ledgerDataModel =
+                                      LedgerModel(id: data.id, name: data.name);
+                                  Map ledgerData = tempCustomerData
+                                      .where((element) =>
+                                          element['LedName']
+                                              .toString()
+                                              .toUpperCase() ==
+                                          data.name.toString().toUpperCase())
+                                      .toList()[0];
+                                  ledgerModel!.name = ledgerData['LedName'];
+                                  ledgerModel!.address1 = ledgerData['add1'];
+                                  ledgerModel!.address2 = ledgerData['add2'];
+                                  ledgerModel!.address3 = ledgerData['add3'];
+                                  ledgerModel!.address4 = ledgerData['add4'];
+                                },
+                              ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        addressLineWidget(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        siteLineWidget(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        salesManVehicle(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        rateTypeWidget(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        addProductButtonWidget()
+                      ],
+                    )
+                  : ListView(
+                      shrinkWrap: true,
+                      children: [
+                        cashCustomerWidget(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Card(
+                          // color: blue.shade100,
+                          child: SizedBox(
+                            width: deviceSize!.width,
+                            child: Visibility(
+                                visible: customerReusableProduct,
+                                child:
+                                    Text('Stock IN :${ledgerModel!.remarks!}')),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        addressLineWidget(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        siteLineWidget(),
+                        ledgerModel!.taxNumber!.isNotEmpty
+                            ? Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                    width: deviceSize!.width,
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          companyTaxMode == 'INDIA'
+                                              ? 'GST No  :'
+                                              : 'VAT No  :',
+                                          style: const TextStyle(
+                                              color: blue,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(ledgerModel!.taxNumber!,
+                                            style:
+                                                const TextStyle(fontSize: 18)),
+                                        gstValidation
+                                            ? const Loading()
+                                            : OutlinedButton.icon(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    gstValidation = true;
+                                                    gstVerified = true;
+                                                    //check
+                                                    gstValidation = false;
+                                                    gstVerified = true;
+                                                  });
+                                                },
+                                                label: const Text(
+                                                  'validate',
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 10),
+                                                ),
+                                                icon: Icon(
+                                                    Icons.verified_rounded,
+                                                    color: gstVerified
+                                                        ? Colors.green
+                                                        : Colors.red),
+                                              )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      const Text(
+                                        'Tax No : ',
+                                        style: TextStyle(
+                                            color: blue,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(ledgerModel!.taxNumber!),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Phone   : ',
+                                  style: TextStyle(
+                                      color: blue, fontWeight: FontWeight.bold),
+                                ),
+                                InkWell(
+                                  child: Text(ledgerModel!.phone!,
+                                      style: const TextStyle(fontSize: 18)),
+                                  onDoubleTap: () =>
+                                      callNumber(ledgerModel!.phone),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Email     : ',
+                                  style: TextStyle(
+                                      color: blue, fontWeight: FontWeight.bold),
+                                ),
+                                Text(ledgerModel!.email!,
+                                    style: const TextStyle(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        salesManVehicle(),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        rateTypeWidget(),
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Balance : ',
+                                  style: TextStyle(
+                                      color: blue, fontWeight: FontWeight.bold),
+                                ),
+                                Text(ledgerModel!.balance!,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        addProductButtonWidget(),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PreviousBill(
+                                        ledger: ledgerModel!.id.toString(),
+                                      )),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: kPrimaryDarkColor,
+                              foregroundColor: white,
+                              disabledBackgroundColor: grey),
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.view_list,
+                                  color: white,
+                                ),
+                                SizedBox(
+                                  width: 4.0,
+                                ),
+                                Text(
+                                  "Previous Bill",
+                                  style: TextStyle(color: white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+            );
+          } else {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(height: 20),
+                  Text('No Data Found..')
+                ],
+              ),
+            );
+          }
+        } else if (snapshot.hasError) {
+          return AlertDialog(
+            title: const Text(
+              'An Error Occurred!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
+            content: Text(
+              "${snapshot.error}",
+              style: const TextStyle(
+                color: Colors.blueAccent,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text(
+                  'Go Back',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        }
+        return const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text('This may take some time..')
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   callNumber(number) async {
     try {

@@ -20,8 +20,7 @@ class ReportPage extends StatelessWidget {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
-              headingRowColor:
-                            const WidgetStatePropertyAll(kPrimaryColor),
+              headingRowColor:MaterialStatePropertyAll(kPrimaryColor),
                         border: TableBorder.all(width: 1.0, color: grey),
                         columnSpacing: 12,
                         headingTextStyle: const TextStyle(

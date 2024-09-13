@@ -41,6 +41,7 @@ class OptionRadioPage extends State<OptionRadio> {
                   disabledColor: Colors.blue),
               child: Column(children: [
                 RadioListTile(
+                  
                   title: Text(
                     "${widget.text}",
                     style: const TextStyle(color: Colors.black, fontSize: 16),

@@ -10908,7 +10908,7 @@ Future<pw.Document> makePDF(
         double totalAmount = dataParticulars.fold(
             0, (total, particular) => total + particular['Total'].toDouble());
 
-        const int totalRowCount = 21; // Desired total row count
+        const int totalRowCount = 18; // Desired total row count
         final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed
@@ -15326,7 +15326,7 @@ Future<pw.Document> makePDF(
                       calculateEstTotalAmount(dataParticulars);
                   double totalEstQuantity =
                       calculateEstTotalQuantity(dataParticulars);
-                  final int totalRowCount = pdfLineSpace > 0 ? pdfLineSpace : 25;
+                  final int totalRowCount = pdfLineSpace > 0 ? pdfLineSpace : 12;
                   final int existingRowCount = dataParticulars.length;
 
 // Calculate the number of empty rows needed

@@ -1,7 +1,10 @@
 
+import 'dart:io';
+
+import 'package:easy_pdf_viewer/easy_pdf_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
+// import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 import 'package:share_plus/share_plus.dart';
 // import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -12,8 +15,12 @@ class PDFScreen extends StatelessWidget {
   PDFScreen({Key ?key, this.pathPDF, this.text, this.subject}) : super(key: key);
 
   final List<String> paths = [];
+  bool loading= false;
+
   @override
   Widget build(BuildContext context) {
+    File file  = File(pathPDF!);
+
     return Scaffold(
         appBar: AppBar(
           title: const Text("PDF Document"),
@@ -30,7 +37,19 @@ class PDFScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: PdfView(path: pathPDF!)
+        body:
+        FutureBuilder(future: PDFDocument.fromFile(file) , builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final data = snapshot.data;
+            return PDFViewer(document:data!);
+          }
+          else{
+          return  Center(child: const CircularProgressIndicator());
+          }
+          
+        },)
+        
+        // PdfView(path: pathPDF!)
         // body: SfPdfViewer.file(File(pathPDF)),
         // body: Container(),
         );

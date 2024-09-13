@@ -28,6 +28,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
+import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
@@ -49,6 +50,7 @@ class _SalesReturnState extends State<SalesReturn> {
   dynamic productModel;
   List<CartItem> cartItem = [];
   List<dynamic> otherAmountList = [];
+  List<SalesType> salesTypeDisplay = [];
   bool taxable = true;
   bool isTax = true,
       _isCashBill = false,
@@ -84,13 +86,15 @@ class _SalesReturnState extends State<SalesReturn> {
   int saleAccount = 0;
   int lId = 0, groupId = 0, acId = 0;
   var salesManId = 0;
-  int saleFormId = 1;
+  int saleReturnFormId = 1;
   int printerType = 0, printerDevice = 0, printModel = 2;
   String labelSerialNo = 'SerialNo';
   String labelSpRate = 'SpRetail';
+  String vehicleName = '', invoiceNo = '';
   CartItem? cartModel;
   Future<List<LedgerModel>>? _getCustomerNameList;
   Future<List<ProductPurchaseModel>>? _fetchAllProductPurchase;
+  final invoiceNoController = TextEditingController();
 
   @override
   void initState() {
@@ -197,6 +201,7 @@ class _SalesReturnState extends State<SalesReturn> {
         .toString())!;
     manualInvoiceNumberInSales =
         ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
+        salesTypeDisplay = salesReturnTypeList;
     loadAsset();
        userDateCheck(DateUtil.dateYMD(formattedDate!));
   }
@@ -222,10 +227,62 @@ class _SalesReturnState extends State<SalesReturn> {
   @override
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
-    return widgetID ? widgetPrefix() : widgetSuffix();
+      bool thisSale = true;
+    if (salesTypeDisplay.length > 1) {
+      thisSale = false;
+    } else {
+      previewData = true;
+    }
+    return WillPopScope(
+        onWillPop: _onWillPop,
+        child: widgetID ? widgetPrefix(thisSale) : widgetSuffix());
   }
 
-  widgetPrefix() {
+  Future<bool> _onWillPop() async {
+    if (nextWidget == 3) {
+      return (await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Back'),
+              content: const Text('Select Item Again?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      nextWidget = 2;
+                      clearValue();
+                    });
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text('Select'),
+                ),
+              ],
+            ),
+          )) ??
+          false;
+    } else {
+      return (await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Are you sure?'),
+              content: const Text('Do you want to exit Sale'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('No'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Yes'),
+                ),
+              ],
+            ),
+          )) ??
+          false;
+    }
+  }
+
+  widgetPrefix(thisSale) {
     return Scaffold(
       backgroundColor: bagroundColor,
         key: _scaffoldKey,
@@ -235,27 +292,33 @@ class _SalesReturnState extends State<SalesReturn> {
             fontFamily: 'poppins'
           ),
           actions: [
-            TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3)
+            Visibility(
+              visible: previewData,
+              child: TextButton(
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3)
+                    ),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue[700],
                   ),
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue[700],
-                ),
-                onPressed: () async {
-                  setState(() {
-                    widgetID = false;
-                  });
-                },
-                child: const Text(
-                  "New",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                )),
+                 onPressed: () async {
+                    setState(() {
+                      widgetID = false;
+                    });
+                  },
+                  onLongPress: () {
+                    // searchBill(context, 1);
+                  },
+                  child: const Text(
+                    "New",
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  )),
+            ),
           ],
         ),
-        body: Padding(
+        body:  thisSale? Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 8
@@ -263,7 +326,27 @@ class _SalesReturnState extends State<SalesReturn> {
           child: Container(
             child: previousBill(),
           ),
-        ));
+        )
+        : previewData
+        ? Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
+        )
+        : Container(
+                      padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
+                        child: Container(
+                            color: white,
+                            padding: const EdgeInsets.all(8),
+                            child: selectSalesType()),
+                      )
+        );
   }
 
   widgetSuffix() {
@@ -586,7 +669,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'SalesReturnList',
                 page,
                 lId.toString(),
-                '1',
+                saleReturnFormId.toString(),
                 DateUtil.dateYMD(formattedDate),
                 salesManId > 0 ? salesManId.toString() : '0')
             .then((value) {
@@ -693,7 +776,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'statement': 'SalesReturnInsert',
             'entryNo': 0,
             'invoiceNo': '0',
-            'saleFormId': saleFormId,
+            'saleFormId': saleReturnFormId,
             'saleFormType': '',
             'taxType': taxType,
             'date': order.dated,
@@ -761,7 +844,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'statement': 'SREntryNo',
                 'entryNo': 0,
                 'invoiceNo': 0,
-                'saleFormId': saleFormId,
+                'saleFormId': saleReturnFormId,
                 'billType': order.billType,
                 'returnNo': 0,
                 'returnAmount': 0,
@@ -790,7 +873,21 @@ class _SalesReturnState extends State<SalesReturn> {
                 'Type': 1
               }
             ];
-            clearCart();
+                if (salesTypeData!.accounts) {
+              final bodyJsonAmount = {
+                'statement': 'SalesReturnInsert',
+                'entryNo': int.tryParse(value1.toString()),
+                'data': otherAmount,
+                'date': order.dated.toString(),
+                'saleFormType': salesTypeData!.type,
+                'narration': order.narration,
+                'location': order.location.toString(),
+                'id': order.customerModel[0].id.toString(),
+                'fyId': currentFinancialYear!.id
+              };
+              dio.addOthersAmount(bodyJsonAmount);
+            }
+            // clearCart();
             showMore(context);
           });
         }
@@ -875,7 +972,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'statement': 'SalesReturnUpdate',
             'entryNo': dataDynamic[0]['EntryNo'],
             'invoiceNo': dataDynamic[0]['InvoiceNo'],
-            'saleFormId': saleFormId,
+            'saleFormId': saleReturnFormId,
             'saleFormType': '',
             'taxType': taxType,
             'date': order.dated,
@@ -942,7 +1039,21 @@ class _SalesReturnState extends State<SalesReturn> {
                     ? grandTotal
                     : grandTotal.roundToDouble();
           }
-          clearCart();
+                    if (salesTypeData!.accounts) {
+            final bodyJsonAmount = {
+              'statement': 'SalesReturnInsert',
+              'entryNo': int.tryParse(dataDynamic[0]['EntryNo'].toString()),
+              'data': otherAmount,
+              'date': order.dated.toString(),
+              'saleFormType': salesTypeData!.type,
+              'narration': order.narration,
+              'location': order.location.toString(),
+              'id': order.customerModel[0].id.toString(),
+              'fyId': currentFinancialYear!.id
+            };
+            dio.addOthersAmount(bodyJsonAmount);
+          }
+          // clearCart();
           showMore(context);
         }
       });
@@ -975,7 +1086,7 @@ class _SalesReturnState extends State<SalesReturn> {
           'statement': 'SalesReturnDelete',
           'entryNo': dataDynamic[0]['EntryNo'],
           'invoiceNo': dataDynamic[0]['InvoiceNo'],
-          'saleFormId': saleFormId,
+          'saleFormId': saleReturnFormId,
           'fyId': currentFinancialYear!.id
         })}]';
     final body = {
@@ -1125,134 +1236,171 @@ class _SalesReturnState extends State<SalesReturn> {
               ),
                child: Row(
                                     children: [
-                                      Expanded(
-                                          child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            ' Bill No',
-                                            style: TextStyle(
-                                                fontFamily: 'poppins',
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500),
-                                          ),
-                                          Container(
-  padding: const EdgeInsets.symmetric(horizontal: 5),
-  width: MediaQuery.of(context).size.width,
-  height: 35,
-  decoration: BoxDecoration(
-    border: Border.all(color: grey),
-    borderRadius: BorderRadius.circular(3),
-  ),
-  child: dataDynamic.isEmpty
-      ? const Align(
-          alignment: Alignment.centerRight,
-          child: Icon(
-            Icons.arrow_drop_down_rounded,
-            color: grey,
-          ))
-      : dataDynamic[0]['EntryNo'].toString().isEmpty
-          ? const Align(
-              alignment: Alignment.centerRight,
-              child: Icon(
-                Icons.arrow_drop_down_rounded,
-                color: grey,
-              ))
-          : Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                !oldBill
-                ? (int.parse(dataDynamic[0]['EntryNo'].toString()) + 1).toString()
-                : dataDynamic[0]['EntryNo'].toString(),
-                style: const TextStyle(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 13),
-              ),
-            ),
-)
+                                     Expanded(
+                              child: ContainerFieldWidget(
+                                  widget: 
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     // showModalBottomSheet(
+                                  //     //   context: context,
+                                  //     //   builder: (BuildContext context) =>
+                                  //     //       Padding(
+                                  //     //     padding: EdgeInsets.only(
+                                  //     //         bottom: MediaQuery.of(context).viewInsets.bottom),
+                                  //     //     child: Padding(
+                                  //     //       padding: const EdgeInsets.all(8.0),
+                                  //     //       child: Column(
+                                  //     //         children: [
+                                  //     //           const SizedBox(height: 16),
+                                  //     //           TextField(
+                                  //     //             decoration: const  InputDecoration(
+                                  //     //                     border: OutlineInputBorder(),
+                                  //     //                     // hintText:
+                                  //     //                     //     'Invoice No',
+                                  //     //                     labelText:'Enter invoice no'),
+                                  //     //             controller: invoiceNoController,
+                                  //     //             autofocus: true,
+                                  //     //           ),
+                                  //     //           const SizedBox(height: 10),
+                                  //     //           ElevatedButton(
+                                  //     //             style: ElevatedButton.styleFrom(
+                                  //     //                 backgroundColor: kPrimaryColor,
+                                  //     //                 shape: RoundedRectangleBorder(
+                                  //     //                 borderRadius:BorderRadius.circular(3))),
+                                  //     //             onPressed: () {
+                                  //     //               Navigator.of(context).pop();
+                                  //     //               setState(() {});
+                                  //     //             },
+                                  //     //             child: const Text("Done",
+                                  //     //                 style: TextStyle(
+                                  //     //                     fontFamily: 'poppins',
+                                  //     //                     color: white)),
+                                  //     //           ),
+                                  //     //         ],
+                                  //     //       ),
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // );
+                                  //   },
+                                  //   child: Container(
+                                  //     margin: const EdgeInsets.only(
+                                  //       bottom: 15,
+                                  //     ),
+                                  //     width: MediaQuery.of(context).size.width,
+                                  //     padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  //     height: 20,
+                                  //     decoration: BoxDecoration(
+                                  //         border: Border.all(color: grey),
+                                  //         borderRadius: BorderRadius.circular(3)),
+                                  //     child: Row(
+                                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //       children: [
+                                  //         Text(invoiceNoController.text,
+                                  //             style: const TextStyle(
+                                  //                 fontWeight: FontWeight.w500,
+                                  //                 fontSize: 16,
+                                  //                 fontFamily: 'poppins')),
+                                  //         // const Icon(
+                                  //         //     Icons.arrow_drop_down_sharp,
+                                  //         //     color: black)
+                                  //       ],
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 15,
+                                    ),
+                                    child: TextField(
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 14
+                                      ),
+                                      controller: invoiceNoController,
+                                      decoration:  InputDecoration(
+                                         prefixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                              //  var data = api.getSalesInvoiceNo(1, '');
+                                             debugPrint((int.parse(invoiceNo) - 1).toString());
 
-                                          // Container(
-                                          //   padding: const EdgeInsets.symmetric(
-                                          //       horizontal: 5),
-                                          //   width:
-                                          //       MediaQuery.of(context).size.width,
-                                          //   height: 35,
-                                          //   decoration: BoxDecoration(
-                                          //       border: Border.all(color: grey),
-                                          //       borderRadius:
-                                          //           BorderRadius.circular(3)),
-                                          //   child: dataDynamic[0]['EntryNo'].toString().isEmpty
-                                          //       ? const Align(
-                                          //           alignment:
-                                          //               Alignment.centerRight,
-                                          //           child: Icon(
-                                          //             Icons.arrow_drop_down_rounded,
-                                          //             color: grey,
-                                          //           ))
-                                          //       : Align(
-                                          //           alignment: Alignment.centerLeft,
-                                          //           child: Text(
-                                          //             dataDynamic[0]['EntryNo'].toString(),
-                                          //             style: const TextStyle(
-                                          //                 fontWeight:
-                                          //                     FontWeight.w400,
-                                          //                 fontSize: 13),
-                                          //           ),
-                                          //         ),
-                                          // )
-                                        ],
-                                      )),
+                                              },
+                                              child: const Icon(Icons.arrow_back_ios_rounded,
+                                              // size: 16,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            InkWell(
+                                              onTap: () {
+                                                
+                                              },
+                                              child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                            //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                          ],
+                                        ),
+                                        // constraints: BoxConstraints(
+                                        //   maxHeight: 20
+                                        // ),
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 5),
+                                          border: OutlineInputBorder()),
+                                    ),
+                                  ),
+                                  headTxt: 'Entry No')),
                                       const SizedBox(
                                         width: 4,
                                       ),
                                       Expanded(
-                                          child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.start,
+                              child: ContainerFieldWidget(
+                                  widget: InkWell(
+                                    onTap: () {
+                                      _selectDate();
+                                    },
+                                    child: Container(
+                                      height: 30,
+                                      margin: const EdgeInsets.only(
+                                        bottom: 15,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          border: Border.all(color: grey)),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text(
-                                            ' Bill Date',
-                                            style: TextStyle(
-                                                fontFamily: 'poppins',
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500),
+                                          Text(
+                                            formattedDate!,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16,
+                                                fontFamily: 'poppins'),
                                           ),
-                                          InkWell(
-                                            onTap: () => _selectDate(),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 5),
-                                              width:
-                                                  MediaQuery.of(context).size.width,
-                                              height: 35,
-                                              decoration: BoxDecoration(
-                                                  border: Border.all(color: grey),
-                                                  borderRadius:
-                                                      BorderRadius.circular(3)),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    formattedDate!,
-                                                    style: const TextStyle(
-                                                        fontWeight: FontWeight.w400,
-                                                        fontSize: 13),
-                                                  ),
-                                                  const Icon(
-                                                    Icons.calendar_month,
-                                                    size: 18,
-                                                    color: grey,
-                                                  )
-                                                ],
-                                              ),
-                                            ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          const Icon(
+                                            Icons.calendar_month_outlined,
+                                            color: grey,
+                                            size: 25,
                                           )
                                         ],
-                                      )),
+                                      ),
+                                    ),
+                                  ),
+                                  headTxt: 'Date')),
                                     ],
                                   ),
              ),
@@ -1872,7 +2020,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'statement': 'SalesReturnInsert',
             'entryNo': 0,
             'invoiceNo': '0',
-            'saleFormId': saleFormId,
+            'saleFormId': saleReturnFormId,
             'saleFormType': '',
             'taxType': taxType,
             'date': order.dated,
@@ -1940,7 +2088,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'statement': 'SREntryNo',
                 'entryNo': 0,
                 'invoiceNo': 0,
-                'saleFormId': saleFormId,
+                'saleFormId': saleReturnFormId,
                 'billType': order.billType,
                 'returnNo': 0,
                 'returnAmount': 0,
@@ -2724,7 +2872,36 @@ bool isPrateEdited = false;
                                       ),
                                     ],
                                   )
-                                  : Container();
+                                                                     : DropdownButton<String>(
+                                        hint: Text(_dropDownUnit > 0
+                                            ? UnitSettings.getUnitName(
+                                                _dropDownUnit)
+                                            : 'Unit'),
+                                        items: unitListSettings
+                                            .map<DropdownMenuItem<String>>(
+                                                (item) {
+                                          return DropdownMenuItem<String>(
+                                            value: item.key.toString(),
+                                            child: Text(item.value),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _dropDownUnit = int.tryParse(value!)!;
+                                            for (var i = 0;
+                                                i < unitList.length;
+                                                i++) {
+                                              UnitModel _unit = unitList[i];
+                                              if (_unit.unit ==
+                                                  int.tryParse(value)) {
+                                                _conversion = _unit.conversion!;
+                                                break;
+                                              }
+                                            }
+                                            // calculate();
+                                          });
+                                        },
+                                      );
                             },
                           ),
                         ),
@@ -5335,7 +5512,7 @@ bool isPrateEdited = false;
               json.encode({
                 'statement': 'SalesReturnFind',
                 'entryNo': dataDynamic[0]['EntryNo'].toString(),
-                'saleFormId': saleFormId,
+                'saleFormId': saleReturnFormId,
                 'fyId': currentFinancialYear!.id
               }) +
               ']';
@@ -5448,7 +5625,7 @@ bool isPrateEdited = false;
     double billTotal = 0;
     String narration = ' ';
 
-    dio.fetchSalesReturnInvoice(id.toString(), 1).then((value) {
+    dio.fetchSalesReturnInvoice(id.toString(), saleReturnFormId).then((value) {
       if (value != null) {
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -5464,7 +5641,7 @@ bool isPrateEdited = false;
             'RealEntryNo': information['RealEntryNo'],
             'EntryNo': information['EntryNo'],
             'InvoiceNo': information['InvoiceNo'],
-            'Type': saleFormId
+            'Type': saleReturnFormId
           }
         ];
         billTotal = double.tryParse(information['GrandTotal'].toString())!;
@@ -5716,6 +5893,55 @@ bool isPrateEdited = false;
     //     );
     //   },
     // );
+  }
+   selectSalesType() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: salesTypeDisplay.length,
+      itemBuilder: (context, index) {
+        return _listSalesTypItem(index);
+      },
+    );
+  }
+
+  _listSalesTypItem(index) {
+    return Column(
+      children: [
+        InkWell(
+          child: Container(
+            decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: grey)),
+            child: ListTile(title: Text(salesTypeDisplay[index].name)),
+          ),
+          onTap: () {
+            setState(() {
+              salesTypeData = salesTypeDisplay[index];
+              saleReturnFormId = salesTypeData!.id;
+              previewData = true;
+              taxable = (salesTypeData != null ? salesTypeData!.tax : taxable);
+              // rateTypeItem = rateTypeList.isEmpty
+              //     ? null
+              //     : rateTypeList.firstWhere((element) =>
+              //         element.name == salesTypeData.rateType.toUpperCase());
+              getEntryNo(salesTypeData!.id);
+            });
+          },
+        ),
+         const SizedBox(
+          height: 10,
+        )
+      ],
+    );
+  }
+
+  void getEntryNo(saleReturnFormId) {
+    dio.getSalesInvoiceNo(saleReturnFormId, 'SREntryNo').then((value) {
+      setState(() {
+        invoiceNo = (int.parse(value.toString()) + 1).toString();
+        invoiceNoController.text = invoiceNo;
+      });
+    });
   }
 }
 

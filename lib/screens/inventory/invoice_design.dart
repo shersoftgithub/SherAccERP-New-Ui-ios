@@ -78,10 +78,10 @@ class _InvoiceDesignState extends State<InvoiceDesign> {
   }
 
   static Future<String?> openFile(String url) async {
-    final OpenResult result = await OpenFile.open(url);
+    final result = await OpenFile.open(url);
     switch (result.type) {
-      case ResultType.error:
-        return result.message;
+      // case ResultType.error:
+      //   return result.message;
       default:
         return null;
     }

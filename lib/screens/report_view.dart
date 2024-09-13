@@ -18,8 +18,8 @@ import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pw;
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import 'package:syncfusion_flutter_core/theme.dart';
+// import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+// import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:zoom_widget/zoom_widget.dart';
 // ignore: avoid_web_libraries_in_flutter
 // import 'dart:html' as html;
@@ -434,370 +434,439 @@ class _ReportViewState extends State<ReportView> {
           'salesMan': 0,
           'fyId': currentFinancialYear!.id,
         })}]';
-
-    if (widget.statement.isEmpty) {
-      return FutureBuilder<List<dynamic>>(
-          future: api.fetchLedgerReport(dataJson),
-          builder: (ctx, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting){
-               return Center(child: CircularProgressIndicator());
+   return FutureBuilder<List<dynamic>>(
+      future: api.fetchLedgerReport(dataJson),
+      builder: (ctx, snapshot) {
+        debugPrint(snapshot.data.toString());
+        if (snapshot.hasData) {
+          if (snapshot.data!.isNotEmpty) {
+            var data = snapshot.data;
+            if (widget.statement == 'Ledger_Report_Qty') {
+              var filterItems = data;
+              for (ReportDesign design in reportDesignList!) {
+                if (!design.visibility) {
+                  for (var item in filterItems!) {
+                    item.remove(design.caption.trim());
+                  }
+                }
+              }
+              // Map<String, dynamic> singleItem = {"type": "P"};
+              // filterItems.removeWhere(
+              //     (element) => element.keys. =>  == singleItem.keys.first);
+              data = filterItems;
+            } else {
+              var filterItems = data;
+              for (ReportDesign design in reportDesign!) {
+                if (!design.visibility) {
+                  for (var item in filterItems!) {
+                    item.remove(design.caption.replaceAll(' ', '').trim());
+                  }
+                }
+              }
             }
-           else  if (snapshot.hasData) {
-              if (snapshot.data!.isNotEmpty) {
-                recdset = snapshot.data;
-
-                return
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
+            tableColumn = data![0].keys.toList();
+            if (widget.type == 'Invoice Wise Balance Customers' ||
+                widget.type == 'Invoice Wise Balance Suppliers' ||
+                widget.type == 'Payable' ||
+                widget.type == 'Receivable') {
+              Map<String, dynamic> totalData = {};
+              for (int i = 0; i < tableColumn.length; i++) {
+                var cell = '';
+                if (tableColumn[i].toLowerCase() == ('debit') ||
+                    tableColumn[i].toLowerCase() == ('opbalance') ||
+                    tableColumn[i].toLowerCase() == ('credit') ||
+                    tableColumn[i].toLowerCase() == ('balance') ||
+                    tableColumn[i].toLowerCase() == ('amount') ||
+                    tableColumn[i].toLowerCase() == ('total')) {
+                  cell = data!
+                      .fold(
+                          0.0,
+                          (a, b) =>
+                              a +
+                              (double.tryParse(b[tableColumn[i]].toString()) ??
+                                  0))
+                      .toStringAsFixed(2);
+                }
+                if (i == 0) {
+                  cell = 'Total';
+                }
+                totalData[tableColumn[i]] = cell;
+              }
+              if (totalData.isNotEmpty) {
+                data!.add(totalData);
+              }
+              _data = data;
+            } else {
+              _data = data;
+            }
+            return classic
+                ? Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      controller: controller,
                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const SizedBox(
-                                height: 30,
-                              ),
-                              const Text(
-                                "ACCOUNT ",
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Text(
-                                "${widget.name} ",
-                                style: TextStyle(
-                                    fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    "From  ${DateUtil.dateDMY(widget.sDate)}",
-                                    style: const TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold),
+                          Center(
+                              child: Text(widget.name +
+                                  ' Date : From ' +
+                                  DateUtil.dateDMY(widget.sDate) +
+                                  ' To ' +
+                                  DateUtil.dateDMY(widget.eDate))),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              headingRowColor: MaterialStateColor.resolveWith(
+                                  (states) => Colors.grey.shade200),
+                              border: TableBorder.all(
+                                  width: 1.0, color: Colors.black),
+                              columnSpacing: 12,
+                              dataRowHeight: 20,
+                              headingRowHeight: 30,
+                              columns: [
+                                for (int i = 0; i < tableColumn.length; i++)
+                                  DataColumn(
+                                    label: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        tableColumn[i],
+                                        style: const TextStyle(
+                                            // color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(
-                                    width: 15,
-                                  ),
-                                  Text(
-                                    "To  ${DateUtil.dateDMY(widget.eDate)}",
-                                    style: const TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                              rows: data!
+                                  .map(
+                                    (values) => DataRow(
+                                      cells: [
+                                        for (int i = 0; i < values.length; i++)
+                                          DataCell(
+                                            Align(
+                                              alignment: ComSettings.oKNumeric(
+                                                values[tableColumn[i]] != null
+                                                    ? values[tableColumn[i]]
+                                                        .toString()
+                                                    : '',
+                                              )
+                                                  ? Alignment.centerRight
+                                                  : Alignment.centerLeft,
+                                              child: Text(
+                                                values[tableColumn[i]] != null
+                                                    ? values[tableColumn[i]]
+                                                        .toString()
+                                                    : '',
+                                                softWrap: true,
+                                                overflow: TextOverflow.ellipsis,
+                                                //style: TextStyle(fontSize: 6),
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
                           ),
+                          // SizedBox(height: 500),
                         ],
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                       Expanded(
-                         child: Zoom(
-                          enableScroll: true,
-                          scrollWeight: 2,
-                          maxZoomWidth: MediaQuery.of(context).size.width,
-                          backgroundColor: white,
-                           child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height,
-                             child: SfDataGridTheme(
-                               data: SfDataGridThemeData(
-                                   headerColor: kPrimaryColor,
-                                   gridLineColor: grey,
-                                   filterIconColor: Colors.white),
-                               child: SfDataGrid(
-                                 headerRowHeight: 30,
-                                //  rowHeight: 20,
-                                 gridLinesVisibility: GridLinesVisibility.both,
-                                 headerGridLinesVisibility: GridLinesVisibility.both,
-                                 source: EmployeeDataSource(recdset),
-                                 // allowSorting: true,                  
-                                 allowFiltering: true,
-                                 columns: [
-                                   GridColumn(
-                                       width: size.width * 0.2,
-                                       columnName: 'Date',
-                                       label: const Text(
-                                         ' Date',
-                                         style: TextStyle(
-                                             fontSize: 6, color: Colors.white),
-                                       )),
-                                   GridColumn(
-                                       width: 100,
-                                       columnName: 'Description',
-                                       label: const Text(' Description',
-                                           style: TextStyle(
-                                               fontSize: 6, color: Colors.white))),
-                                   GridColumn(
-                                       filterIconPadding: const EdgeInsets.all(0),
-                                       width: 58,
-                                       columnName: 'Debit',
-                                       label: const Row(
-                                         mainAxisAlignment: MainAxisAlignment.end,
-                                         children: [
-                                           Text(
-                                             'Debit',
-                                             style: TextStyle(
-                                                 fontSize: 6, color: Colors.white),
-                                           ),
-                                         ],
-                                       )),
-                                   GridColumn(
-                                       filterIconPadding: const EdgeInsets.all(0),
-                                       width: 58,
-                                       columnName: 'Credit',
-                                       label: const Row(
-                                         mainAxisAlignment: MainAxisAlignment.end,
-                                         children: [
-                                           Text('Credit',
-                                               style: TextStyle(
-                                                   fontSize: 6,
-                                                   color: Colors.white)),
-                                         ],
-                                       )),
-                                   GridColumn(
-                                       filterIconPadding: const EdgeInsets.all(0),
-                                       width: 70,
-                                       columnName: 'Balance',
-                                       label: const Row(
-                                         mainAxisAlignment: MainAxisAlignment.end,
-                                         children: [
-                                           Text('Balance',
-                                               style: TextStyle(
-                                                   fontSize: 6,
-                                                   color: Colors.white)),
-                                         ],
-                                       )),
-                                 ],
-                               ),
-                             ),
-                           ),
-                         ),
-                       ),
-                                        ],
-                                      ),
-                    );
-              }
-            }
-            return Container();
-          });
-    } else {
-      return FutureBuilder<List<dynamic>>(
-        future: api.fetchLedgerReport(dataJson),
-        builder: (ctx, snapshot) {
-          if (snapshot.hasData) {
-            if (snapshot.data!.isNotEmpty) {
-              var data = snapshot.data;
-              if (widget.statement == 'Ledger_Report_Qty') {
-                var filterItems = data;
-                for (ReportDesign design in reportDesignList!) {
-                  if (!design.visibility) {
-                    for (var item in filterItems!) {
-                        item.remove(design.caption.replaceAll(' ', '').trim());
-                    }
-                  }
-                }
-                // Map<String, dynamic> singleItem = {"type": "P"};
-                // filterItems.removeWhere(
-                //     (element) => element.keys. =>  == singleItem.keys.first);
-                debugPrint(filterItems.toString());
-                data = filterItems;
-                   } else {
-                var filterItems = data;
-                for (ReportDesign design in reportDesign!) {
-                  if (!design.visibility) {
-                    for (var item in filterItems!) {
-                      item.remove(design.caption.replaceAll(' ', '').trim());
-                    }
-                  }
-                }
-              }
-              tableColumn = data![0].keys.toList();
-              if (widget.type == 'Invoice Wise Balance Customers' ||
-                  widget.type == 'Invoice Wise Balance Suppliers' ||
-                  widget.type == 'Payable' ||
-                  widget.type == 'Receivable') {
-                Map<String, dynamic> totalData = {};
-                for (int i = 0; i < tableColumn.length; i++) {
-                  var cell = '';
-                  if (tableColumn[i].toLowerCase() == ('debit') ||
-                      tableColumn[i].toLowerCase() == ('opbalance') ||
-                      tableColumn[i].toLowerCase() == ('credit') ||
-                      tableColumn[i].toLowerCase() == ('balance') ||
-                      tableColumn[i].toLowerCase() == ('amount') ||
-                      tableColumn[i].toLowerCase() == ('total')) {
-                    cell = data
-                        .fold(
-                            0.0,
-                            (a, b) =>
-                                a +
-                                double.tryParse(
-                                    b[tableColumn[i].toString()].toString())!)
-                        .toStringAsFixed(2);
-                  }
-                  if (i == 0) {
-                    cell = 'Total';
-                  }
-                  totalData[tableColumn[i]] = cell;
-                }
-                if (totalData.isNotEmpty) {
-                  data.add(totalData);
-                }
-                _data = data;
-              } else {
-                _data = data;
-              }
-              return Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  controller: controller,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                          child: Text(
-                        widget.name +
-                            ' Date : From ' +
-                            DateUtil.dateDMY(widget.sDate) +
-                            ' To ' +
-                            DateUtil.dateDMY(widget.eDate),
-                        // style: const TextStyle(fontFamily: 'poppins'),
-                      )),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowColor:
-                              const MaterialStatePropertyAll(kPrimaryColor),
-                          border: TableBorder.all(width: 1.0, color: grey),
-                          headingTextStyle: const TextStyle(
-                              fontFamily: 'poppins',
-                              fontWeight: FontWeight.w500,
-                              color: white),
-                          columnSpacing: 12,
-                          dataRowHeight: 20,
-                          headingRowHeight: 30,
-                          columns: [
-                            for (int i = 0; i < tableColumn.length; i++)
-                              DataColumn(
-                                label: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    tableColumn[i],
-                                    // style: const TextStyle(
-                                    //     // color: Colors.black,
-                                    //     fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: RepaintBoundary(
+                      key: _globalKey,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  "ACCOUNT SUMMERY",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                          ],
-                          rows: data
-                              .map(
-                                (values) => DataRow(
-                                  cells: [
-                                    for (int i = 0; i < values.length; i++)
-                                      DataCell(
-                                        Align(
-                                          alignment: ComSettings.oKNumeric(
-                                            values[tableColumn[i]] != null
-                                                ? values[tableColumn[i]]
-                                                    .toString()
-                                                : '',
-                                          )
-                                              ? Alignment.centerRight
-                                              : Alignment.centerLeft,
-                                          child: Text(
-                                            values[tableColumn[i]] != null
-                                                ? values[tableColumn[i]]
-                                                    .toString()
-                                                : '',
-                                            softWrap: true,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                fontFamily: 'poppins'),
-                                          ),
-                                        ),
-                                      ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  widget.name,
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "From  ${widget.sDate}",
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(
+                                      width: 15,
+                                    ),
+                                    Text(
+                                      "To  ${widget.eDate}",
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ],
                                 ),
-                              )
-                              .toList(),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 0,
+                            ),
+                            const Divider(
+                              color: Colors.blue,
+                            ),
+                            Container(
+                              height: 20,
+                              color: Colors.blue,
+                              child: Table(
+                                columnWidths: const {
+                                  0: FixedColumnWidth(45),
+                                  1: FlexColumnWidth(15),
+                                  2: FlexColumnWidth(8),
+                                  3: FlexColumnWidth(9),
+                                  4: FlexColumnWidth(8),
+                                },
+                                children: [
+                                  TableRow(children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: const [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          '  Date',
+                                          style: TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: const [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          '  Description',
+                                          style: TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: const [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          'Debit',
+                                          style: TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: const [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          'Credit',
+                                          style: TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: const [
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          "Balanace",
+                                          style: TextStyle(
+                                              fontSize: 7,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ]),
+                                ],
+                                border: TableBorder.all(
+                                    width: 1, color: Colors.blue),
+                              ),
+                            ),
+                            Table(
+                              columnWidths: const {
+                                0: FixedColumnWidth(45),
+                                1: FlexColumnWidth(15),
+                                2: FlexColumnWidth(8),
+                                3: FlexColumnWidth(9),
+                                4: FlexColumnWidth(8),
+                              },
+                              children: [
+                                for (var i = 0; i < data!.length; i++)
+                                  TableRow(children: [
+                                    Center(
+                                        child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(2.0),
+                                          child: Text(
+                                            // '10/20/2020',
+                                            '${data![i]['Date']}',
+
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        '${data![i]['Particulars']}',
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${data![i]['Debit']}',
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${data![i]['Credit']}',
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(2.0),
+                                          child: Text(
+                                            "${data![i]['Balance']}",
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ]),
+                              ],
+                              border:
+                                  TableBorder.all(width: 1, color: Colors.blue),
+                            ),
+                          ],
                         ),
                       ),
-                      // SizedBox(height: 500),
-                    ],
-                  ),
-                ),
-              );
-            } else {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                     children: [SizedBox(height: 20), Text('No Data Found..')],
-                ),
-              );
-            }
-          } else if (snapshot.hasError) {
-            return AlertDialog(
-              title: const Text(
-                'An Error Occurred!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.redAccent,
-                ),
-              ),
-              content: Text(
-                "${snapshot.error}",
-                style: const TextStyle(
-                  color: Colors.blueAccent,
-                ),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text(
-                    'Go Back',
-                    style: TextStyle(
-                      color: Colors.redAccent,
                     ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
+                  );
+          } else {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [SizedBox(height: 20), Text('No Data Found..')],
+              ),
             );
           }
-          // By default, show a loading spinner.
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const <Widget>[
-                CircularProgressIndicator(),
-                SizedBox(height: 20),
-                Text('This may take some time..')
-              ],
+        } else if (snapshot.hasError) {
+          return AlertDialog(
+            title: const Text(
+              'An Error Occurred!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
             ),
+            content: Text(
+              "${snapshot.error}",
+              style: const TextStyle(
+                color: Colors.blueAccent,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text(
+                  'Go Back',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
           );
-        },
-      );
-    }
+        }
+        // By default, show a loading spinner.
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text('This may take some time..')
+            ],
+          ),
+        );
+      },
+    );
     // FutureBuilder<List<dynamic>>(
     //   future: _data,
     //   builder: (ctx, snapshot) {
@@ -4663,57 +4732,57 @@ _buildHeader(sDate, eDate,name) {
   ]);
 }
 
-class EmployeeDataSource extends DataGridSource {
-  List<DataGridRow> dataGridRows = [];
-  List<dynamic>? _employees;
+// class EmployeeDataSource extends DataGridSource {
+//   List<DataGridRow> dataGridRows = [];
+//   List<dynamic>? _employees;
 
-  EmployeeDataSource(List<dynamic> employees) {
-    _employees = employees;
-    buildDataGridRows();
-  }
+//   EmployeeDataSource(List<dynamic> employees) {
+//     _employees = employees;
+//     buildDataGridRows();
+//   }
 
-  @override
-  List<DataGridRow> get rows => dataGridRows;
+//   @override
+//   List<DataGridRow> get rows => dataGridRows;
 
-  void buildDataGridRows() {
-    dataGridRows = _employees!.map<DataGridRow>((e) {
-      var showDetails = e['Particulars'] == 'Opening Balance' ||
-              e['Particulars'] == 'Closing Balance'
-          ? ' ${e['Particulars']}'
-          : e['Particulars'].isNotEmpty
-              ? ' Voucher:${e['Voucher']}\n No:${e['EntryNo']}\n ${e['Particulars']}'
-              : '';
+//   void buildDataGridRows() {
+//     dataGridRows = _employees!.map<DataGridRow>((e) {
+//       var showDetails = e['Particulars'] == 'Opening Balance' ||
+//               e['Particulars'] == 'Closing Balance'
+//           ? ' ${e['Particulars']}'
+//           : e['Particulars'].isNotEmpty
+//               ? ' Voucher:${e['Voucher']}\n No:${e['EntryNo']}\n ${e['Particulars']}'
+//               : '';
 
-      return DataGridRow(cells: [
-        DataGridCell<String>(
-          columnName: 'Date',
-          value: ' ${e['Date']}',
-        ),
-        DataGridCell<String>(columnName: 'Description', value: showDetails),
-         DataGridCell<String>(columnName: 'Debit', value: '${e['Debit']} '),
-        DataGridCell<String>(columnName: 'Credit', value: '${e['Credit']} '),
-        DataGridCell<String>(columnName: 'Balance', value: '${e['Balance']} '),
-      ]);
-    }).toList();
-  }
+//       return DataGridRow(cells: [
+//         DataGridCell<String>(
+//           columnName: 'Date',
+//           value: ' ${e['Date']}',
+//         ),
+//         DataGridCell<String>(columnName: 'Description', value: showDetails),
+//          DataGridCell<String>(columnName: 'Debit', value: '${e['Debit']} '),
+//         DataGridCell<String>(columnName: 'Credit', value: '${e['Credit']} '),
+//         DataGridCell<String>(columnName: 'Balance', value: '${e['Balance']} '),
+//       ]);
+//     }).toList();
+//   }
 
-  @override
-  DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(
-      cells: row.getCells().map<Widget>((cell) {
-        return Container(
-          // decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
-          alignment:
-              (cell.columnName == 'Date' || cell.columnName == 'Description')
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-          child: Text(
-            cell.value.toString(),
-            style: const TextStyle(fontSize: 8),
-            overflow: TextOverflow.clip,
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
+//   @override
+//   DataGridRowAdapter buildRow(DataGridRow row) {
+//     return DataGridRowAdapter(
+//       cells: row.getCells().map<Widget>((cell) {
+//         return Container(
+//           // decoration: BoxDecoration(border: Border.all(color: Colors.blue)),
+//           alignment:
+//               (cell.columnName == 'Date' || cell.columnName == 'Description')
+//                   ? Alignment.centerLeft
+//                   : Alignment.centerRight,
+//           child: Text(
+//             cell.value.toString(),
+//             style: const TextStyle(fontSize: 8),
+//             overflow: TextOverflow.clip,
+//           ),
+//         );
+//       }).toList(),
+//     );
+//   }
+// }
