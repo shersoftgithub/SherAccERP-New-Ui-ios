@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +27,11 @@ class ItemsPage extends StatefulHookConsumerWidget {
 }
 
 class _ItemsPageState extends ConsumerState<ItemsPage> {
+    static const _pageSize = 20;
+
+  final PagingController<int, StockItem> _pagingController =
+      PagingController(firstPageKey: 0);
+
   final TextEditingController searchController = TextEditingController();
   List<DataJson> categoryDataList = [];
   List<String> categoryList = [];
@@ -88,6 +94,10 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
     categoryDataList
         .addAll(DataJson.fromJsonListX(otherRegistrationList[0]['category']));
 
+    // _pagingController.addPageRequestListener((pageKey) {
+    //   _fetchProducts(pageKey);
+    //  });    
+
     categoryList.addAll(categoryDataList
         .map((item) => item.name)
         .where((name) => name != null)
@@ -136,6 +146,47 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
         fetchStockVariant!.addAll(variants);
       }
     }
+
+// Future<void> _fetchProducts(int pageKey) async {
+//   try {
+//     // Fetch paginated products from API
+//     List<StockItem>? newItems = await api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), pageKey, _pageSize);
+
+//     // Handle variants fetching for each product
+//     List<StockProduct> fetchedVariants = [];
+//     for (var product in newItems!) {
+//       var variants = await api.fetchStockVariant(product.id!);
+//       if (variants != null) {
+//         fetchedVariants.addAll(variants);
+//       }
+//     }
+
+//     // Check if it is the last page based on the number of items returned
+//     final isLastPage = newItems.length < _pageSize;
+//     if (isLastPage) {
+//       // Append the last page
+//       _pagingController.appendLastPage(newItems);
+//     } else {
+//       // Calculate the next page key
+//       final nextPageKey = pageKey + newItems.length;
+//       _pagingController.appendPage(newItems, nextPageKey);
+//     }
+
+//     // Update state for the product and variant lists
+//     setState(() {
+//       products = newItems;
+//       fetchStockVariant = fetchedVariants;
+//       filteredProducts = products;  // Update filtered products after fetching
+//       _isLoading = false; // Stop loading indicator
+//     });
+//   } catch (error) {
+//     _pagingController.error = error;
+//     setState(() {
+//       _isLoading = false; // Stop loading indicator on error
+//     });
+//   }
+// }
+
 
     _categorizeProducts();
     setState(() {

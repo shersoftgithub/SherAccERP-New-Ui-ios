@@ -1147,6 +1147,8 @@ class _PurchaseState extends State<Purchase> {
         });
       });
     }
+    else {
+    }
   }
 
   newPurchaseWidget(newPurchase) {
@@ -6325,69 +6327,8 @@ class _PurchaseState extends State<Purchase> {
                                             ? controllerFreeQuantity.text
                                             : '';
 
-                                    if (editItem) {
-                                      cartItem[position!].adCess = adCess;
-                                      cartItem[position!].barcode = barcode;
-                                      cartItem[position!].branch = branch;
-                                      cartItem[position!].branchPer =
-                                          branchPercentage;
-                                      cartItem[position!].cDisc = cDisc;
-                                      cartItem[position!].cGST = csGST;
-                                      cartItem[position!].cdPer = cdPer;
-                                      cartItem[position!].cess = cess;
-                                      cartItem[position!].discount = discount;
-                                      cartItem[position!].discountPercent =
-                                          discountPer;
-                                      // cartItem[position!].expDate = expDate;
-                                      // cartItem[position!].expense = expense;
-                                      cartItem[position!].fCess = fCess;
-                                      cartItem[position!].fUnitId = fUnitId;
-                                      cartItem[position!].fUnitValue =
-                                          fUnitValue;
-                                      cartItem[position!].free = freeQuantity;
-                                      cartItem[position!].gross = grossTotal;
-                                      cartItem[position!].iGST = iGST;
-                                      // cartItem[position!].id = cartItem.length + 1;
-                                      // cartItem[position!].itemId = productModel['slno'];
-                                      // cartItem[position!].itemName = productModel['itemname'];
-                                      // cartItem[position!].location = locationId;
-                                      cartItem[position!].mrp = mrp;
-                                      cartItem[position!].mrpPer =
-                                          mrpPercentage;
-                                      cartItem[position!].net = net;
-                                      cartItem[position!].profitPer =
-                                          mrpPercentage;
-                                      cartItem[position!].quantity = quantity;
-                                      cartItem[position!].rRate = rPRate;
-                                      cartItem[position!].rate = pRate;
-                                      cartItem[position!].retail = retail;
-                                      cartItem[position!].retailPer =
-                                          retailPercentage;
-                                      cartItem[position!].sGST = csGST;
-                                      cartItem[position!].serialNo = serialNo;
-                                      cartItem[position!].spRetail = spRetail;
-                                      cartItem[position!].spRetailPer =
-                                          spRetailPercentage;
-                                      cartItem[position!].tax = tax;
-                                      cartItem[position!].taxP = taxP;
-                                      cartItem[position!].total = total;
-                                      cartItem[position!].uniqueCode =
-                                          uniqueCode;
-                                      cartItem[position!].unitId = unit!.id!;
-                                      cartItem[position!].unitName =
-                                          unit!.name!;
-                                      cartItem[position!].unitValue = unitValue;
-                                      cartItem[position!].wholesale = wholeSale;
-                                      cartItem[position!].wholesalePer =
-                                          wholeSalePercentage;
-                                      cartItem[position!].brand = brandId;
-                                      cartItem[position!].color = colorId;
-                                      cartItem[position!].company = companyId;
-                                      cartItem[position!].estUniqueCode =
-                                          estUniqueCode;
-                                      cartItem[position!].expenseQty =
-                                          expenseQty;
-                                      cartItem[position!].size = sizeValue;
+                                    if (quantity<= 0) {
+                                     Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
                                     } else {
                                       cartItem.add(CartItemP(
                                           adCess: adCess,
@@ -6409,8 +6350,8 @@ class _PurchaseState extends State<Purchase> {
                                           gross: grossTotal,
                                           iGST: iGST,
                                           id: cartItem.length + 1,
-                                          itemId: productModel!.slNo,
-                                          itemName: productModel!.itemName,
+                                          itemId: selectedItem!.slNo,
+                                          itemName: selectedItem!.itemName,
                                           location: locationId,
                                           mrp: mrp,
                                           mrpPer: mrpPercentage,
@@ -6442,7 +6383,7 @@ class _PurchaseState extends State<Purchase> {
                                           size: sizeValue));
                                     }
 
-                                    if (cartItem.isNotEmpty) {
+                                    if (quantity>0) {
                                       editItem = false;
                                       // nextWidget = 5;
                                       clearValue();
@@ -6591,7 +6532,7 @@ class _PurchaseState extends State<Purchase> {
                                     }
                                     if (cartItem.isNotEmpty) {
                                       editItem = false;
-                                      // nextWidget = 0;
+                                      nextWidget = 0;
                                       _dropDownUnit = 0;
                                       clearValue();
                                       calculateTotal();
@@ -6732,6 +6673,10 @@ class _PurchaseState extends State<Purchase> {
                             cartItem[position!].expenseQty = expenseQty;
                             cartItem[position!].size = sizeValue;
                           } else {
+                            if (quantity <= 0) {
+                              Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
+                            }
+                            else{
                             cartItem.add(CartItemP(
                                 adCess: adCess,
                                 barcode: barcode,
@@ -6752,8 +6697,8 @@ class _PurchaseState extends State<Purchase> {
                                 gross: grossTotal,
                                 iGST: iGST,
                                 id: cartItem.length + 1,
-                                itemId: productModel!.slNo,
-                                itemName: productModel!.itemName,
+                                itemId: selectedItem!.slNo,
+                                itemName: selectedItem!.itemName,
                                 location: locationId,
                                 mrp: mrp,
                                 mrpPer: mrpPercentage,
@@ -6783,11 +6728,12 @@ class _PurchaseState extends State<Purchase> {
                                 estUniqueCode: estUniqueCode,
                                 expenseQty: expenseQty,
                                 size: sizeValue));
+                            }
                           }
 
-                          if (cartItem.isNotEmpty) {
+                          if (quantity>0) {
                             editItem = false;
-                            // nextWidget = 5;
+                            nextWidget = 0;
                             clearValue();
                             calculateTotal();
                           }

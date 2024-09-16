@@ -2903,6 +2903,7 @@ void _onTabTapped(int index) {
                                             cartModel!.itemName.toString();
                                         _rateController.text =
                                             cartModel!.rate!.toStringAsFixed(decimal);
+                                            rate = cartModel!.rate!;
                                         _quantityController.text =
                                             cartModel!.quantity!.toString();
                                         _freeQuantityController.text =
@@ -5873,8 +5874,8 @@ void _onTabTapped(int index) {
                                                                     : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
                                                                         ? isStockProductOnlyInSalesQO
                                                                             ? ((double.tryParse(value)! * unitValue) + freeQty) > 
-                                                                            //  (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                            selectedVariant.quantity!
+                                                                             (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
+                                                                            selectedVariant.quantity!)
                                                                                 ? true
                                                                                 : cartQ
                                                                                     ? true
@@ -6998,6 +6999,10 @@ void _onTabTapped(int index) {
                                           //   editItem = false;
                                           // }
                                           // if {
+                                          if(quantity <=0){
+                                            Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
+                                          }
+                                          else{
                                           addProduct(
                                               CartItem(
                                                   id: totalItem + 1,
@@ -7045,6 +7050,7 @@ void _onTabTapped(int index) {
                                                       selectedVariant
                                                           .minimumRate),
                                               -1);
+                                          }
                                           // }
                                         } else {
                                           ScaffoldMessenger.of(context)
@@ -7087,7 +7093,7 @@ void _onTabTapped(int index) {
                                     }
                                   }
                                 }
-                                if (totalItem > 0) {
+                                if (quantity > 0) {
                                   clearValue();
                                   // nextWidget = 0;
                                 }
@@ -7303,84 +7309,89 @@ void _onTabTapped(int index) {
                                       editItem = false;
                                       calculateTotal();
                                     }
-                                    //  else {
-                                    //   if (!keyItemsVariantStock &&
-                                    //           _autoVariantSelect) {
-                                    //         double qty = 0,
-                                    //             tQty = 0,
-                                    //             balanceQty = 0;
-                                    //         for (StockProduct variantProduct
-                                    //             in _autoStockVariant) {
-                                    //           qty = (variantProduct.quantity) >
-                                    //                   quantity
-                                    //               ? quantity
-                                    //               : variantProduct.quantity;
-                                    //           uniqueCode =
-                                    //               variantProduct.productId;
-                                    //           double addQuantity =
-                                    //               balanceQty > 0
-                                    //                   ? (balanceQty == qty
-                                    //                       ? qty
-                                    //                       : (balanceQty >= qty
-                                    //                           ? qty
-                                    //                           : balanceQty))
-                                    //                   : qty;
+                                     else {
+                                      if (!keyItemsVariantStock &&
+                                              _autoVariantSelect) {
+                                            double qty = 0,
+                                                tQty = 0,
+                                                balanceQty = 0;
+                                            for (StockProduct variantProduct
+                                                in stockVariantProductList) {
+                                              qty = ((variantProduct.quantity)! >
+                                                      quantity
+                                                  ? quantity
+                                                  : variantProduct.quantity)!;
+                                              uniqueCode =
+                                                  variantProduct.productId!;
+                                              double addQuantity =
+                                                  balanceQty > 0
+                                                      ? (balanceQty == qty
+                                                          ? qty
+                                                          : (balanceQty >= qty
+                                                              ? qty
+                                                              : balanceQty))
+                                                      : qty;
 
-                                    //           calculateTextBatch(
-                                    //               product, addQuantity);
-                                    //           cartItem.add(CartItem(
-                                    //               id: totalItem + 1,
-                                    //               itemId: product.itemId,
-                                    //               itemName: product.name,
-                                    //               quantity: addQuantity,
-                                    //               rate: rate,
-                                    //               rRate: rRate,
-                                    //               uniqueCode: uniqueCode,
-                                    //               gross: gross,
-                                    //               discount: discount,
-                                    //               discountPercent:
-                                    //                   discountPercent,
-                                    //               rDiscount: rDisc,
-                                    //               fCess: kfc,
-                                    //               serialNo:
-                                    //                   _serialNoController.text,
-                                    //               tax: tax,
-                                    //               taxP: taxP,
-                                    //               unitId: _dropDownUnit,
-                                    //               unitValue: unitValue ?? 1,
-                                    //               pRate: pRate,
-                                    //               rPRate: rPRate,
-                                    //               barcode: barcode,
-                                    //               expDate: expDate,
-                                    //               free: freeQty,
-                                    //               fUnitId: fUnitId,
-                                    //               cdPer: cdPer,
-                                    //               cDisc: cDisc,
-                                    //               net: subTotal,
-                                    //               cess: cess,
-                                    //               total: total,
-                                    //               profitPer: profitPer,
-                                    //               fUnitValue: fUnitValue,
-                                    //               adCess: adCess,
-                                    //               iGST: iGST,
-                                    //               cGST: csGST,
-                                    //               sGST: csGST,
-                                    //               stock: product.quantity,
-                                    //               minimumRate:
-                                    //                   product.minimumRate,
-                                    //               adCessPer: product.adCessPer,
-                                    //               cessPer: product.cessPer));
+                                              // calculateTextBatch(
+                                              //     selectedItem, addQuantity);
+                                              cartItem.add(CartItem(
+                                                  id: totalItem + 1,
+                                                  itemId: selectedItem.itemId,
+                                                  itemName: selectedItem.name,
+                                                  quantity: addQuantity,
+                                                  rate: rate,
+                                                  rRate: rRate,
+                                                  uniqueCode: uniqueCode,
+                                                  gross: gross,
+                                                  discount: discount,
+                                                  discountPercent:
+                                                      discountPercent,
+                                                  rDiscount: rDisc,
+                                                  fCess: kfc,
+                                                  serialNo:
+                                                      _serialNoController.text,
+                                                  tax: tax,
+                                                  taxP: taxP,
+                                                  unitId: _dropDownUnit,
+                                                  unitValue: unitValue ?? 1,
+                                                  pRate: pRate,
+                                                  rPRate: rPRate,
+                                                  barcode: barcode,
+                                                  expDate: expDate,
+                                                  free: freeQty,
+                                                  fUnitId: fUnitId,
+                                                  cdPer: cdPer,
+                                                  cDisc: cDisc,
+                                                  net: subTotal,
+                                                  cess: cess,
+                                                  total: total,
+                                                  profitPer: profitPer,
+                                                  fUnitValue: fUnitValue,
+                                                  adCess: adCess,
+                                                  iGST: iGST,
+                                                  cGST: csGST,
+                                                  sGST: csGST,
+                                                  stock: selectedItem.quantity,
+                                                  minimumRate:
+                                                      selectedItem.minimumRate,
+                                                  // adCessPer: selectedItem.adCessPer,
+                                                  // cessPer: selectedItem.cessPer
+                                                  ));
 
-                                    //           tQty += addQuantity;
-                                    //           balanceQty = quantity - tQty;
-                                    //           if (tQty >= quantity ||
-                                    //               balanceQty == 0) {
-                                    //             break;
-                                    //           } else {
-                                    //             //
-                                    //           }
-                                    //         }
-                                    //       } else {
+                                              tQty += addQuantity;
+                                              balanceQty = quantity - tQty;
+                                              if (tQty >= quantity ||
+                                                  balanceQty == 0) {
+                                                break;
+                                              } else {
+                                                //
+                                              }
+                                            }
+                                          } else {
+                                            if(quantity <=0){
+                                              Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
+                                            }
+                                            else{
                                       addProduct(
                                           CartItem(
                                               id: totalItem + 1,
@@ -7426,8 +7437,9 @@ void _onTabTapped(int index) {
                                               minimumRate: selectedVariant
                                                   .minimumRate),
                                           -1);
-                                          // }
-                                    // }
+                                            }
+                                          }
+                                    }
                                   } else {
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(
@@ -7466,7 +7478,7 @@ void _onTabTapped(int index) {
                               }
                             }
                           }
-                          if (totalItem > 0) {
+                          if (quantity > 0) {
                             
                             clearValue();
                             calculateTotal();
@@ -7662,6 +7674,10 @@ void _onTabTapped(int index) {
                                       editItem = false;
                                     } 
                                     else {
+                                      if (quantity <= 0) {
+                                        Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
+                                      }
+                                      else{
                                       addProduct(
                                           CartItem(
                                               id: totalItem + 1,
@@ -7707,6 +7723,7 @@ void _onTabTapped(int index) {
                                               minimumRate: selectedVariant
                                                   .minimumRate),
                                           -1);
+                                      }
                                     }
                                   } else {
                                     ScaffoldMessenger.of(context)
@@ -7746,7 +7763,7 @@ void _onTabTapped(int index) {
                               }
                             }
                           }
-                          if (totalItem > 0) {
+                          if (quantity > 0) {
                             debugPrint("unit ==== ${unitValue.toString()}");
                             clearValue();
                             nextWidget = 0;

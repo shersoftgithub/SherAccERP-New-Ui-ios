@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +29,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/widget/simple_piediagram_pay_rec.dart';
 
 class DioService {
-  var a='';
+  // var a='';
   var dio = Dio();
   DioService();
 
@@ -64,8 +63,7 @@ class DioService {
         return {};
       }
     } catch (e) {
-      final errorMessage =
-          DioExceptions.fromDioError('$e' as DioError).toString();
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
       debugPrint(errorMessage.toString());
       return {};
     }
