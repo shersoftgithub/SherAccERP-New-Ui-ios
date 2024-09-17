@@ -2128,7 +2128,7 @@ class _SaleState extends ConsumerState<Sale> {
   final animationDuration = const Duration(milliseconds: 400);
   bool isExpanded = false;
   final namesLike = 'a';
-  var selectedItem;
+  var selectedCustomer;
   int selectedTabIndex = 0;
   var filterCashAccount;
   var filteredName;
@@ -2163,9 +2163,11 @@ void _onTabTapped(int index) {
       });
     });
   }
-  // else{
-    
-  // }
+  else{
+    setState(() {
+      selectedCustomerId != acId;
+    });
+  }
 }
 
 
@@ -2556,15 +2558,15 @@ void _onTabTapped(int index) {
                                     },
                                     onSubmitted: (value) {
                                       setState(() {
-                                         selectedItem = data.firstWhere(
+                                         selectedCustomer = data.firstWhere(
                                           (element) => element.name == value,
                                         );
-                                        selectedCustomerId = selectedItem.id;
+                                        selectedCustomerId = selectedCustomer.id;
                                         final details = api.getCustomerDetail(selectedCustomerId!); 
                                         details.then((value) => ledgerModel = value);
                                         print('Customer id : $selectedCustomerId');
                                       });
-                                      ledgerDataModel= selectedItem;
+                                      ledgerDataModel= selectedCustomer;
                                  
                                       // final selectedCustomerId =
                                       //     nameToIdMap[value];
@@ -5107,6 +5109,7 @@ void _onTabTapped(int index) {
   late StockProduct selectedVariant;
   bool isVariantSelected = false;
   List<StockProduct> stockVariantProductList =[];
+  var selectedItem;
   var fetchedData;
   addItemWidget() {
     
@@ -5128,6 +5131,104 @@ void _onTabTapped(int index) {
                                             );
       calculateTotal();
     }
+    calculateTextBatch(StockProduct product, double qty) {
+    double discP = 0; //_discountPercentController.text.isNotEmpty
+    //? double.tryParse(_discountPercentController.text)
+    //: 0;
+    double disc = 0; //_discountController.text.isNotEmpty
+    // ? double.tryParse(_discountController.text)
+    // : 0;
+    double sRate = _rateController.text.isNotEmpty
+        ? double.tryParse(_rateController.text)!
+        : 0;
+
+    if (enableMULTIUNIT && rate > 0 && _conversion > 0) {
+      rate = rate; // * _conversion;
+      pRate = product.buyingPrice! * _conversion;
+      rPRate = product.buyingPriceReal! * _conversion;
+    } else {
+      pRate = product.buyingPrice!;
+      rPRate = product.buyingPriceReal!;
+    }
+    freeQty = _freeQuantityController.text.isNotEmpty
+        ? double.tryParse(_freeQuantityController.text)!
+        : 0;
+    rRate = taxMethod == 'MINUS'
+        ? cessOnNetAmount
+            ? CommonService.getRound(
+                4, (100 * rate) / (100 + taxP + kfcP + cessPer))
+            : CommonService.getRound(4, (100 * rate) / (100 + taxP + kfcP))
+        : rate;
+    discount = disc;
+    discountPercent = discP;
+    // if (discP > 0) {
+    //   discount =
+    //       double.parse((((qt * sRate) * discP) / 100).toStringAsFixed(2));
+    //   _discountController.text = discount.toStringAsFixed(2);
+    //   discountPercent = discP;
+    // } else if (disc > 0) {
+    //   discountPercent =
+    //       double.parse(((disc * 100) / (qt * sRate)).toStringAsFixed(2));
+    //   _discountPercentController.text = discountPercent.toStringAsFixed(2);
+    //   discount = disc;
+    // }
+
+    rDisc = taxMethod == 'MINUS'
+        ? CommonService.getRound(
+            4,
+            ((discount * 100) /
+                (cessOnNetAmount
+                    ? (taxP + 100 + cessPer + kfcP)
+                    : (taxP + 100 + kfcP))))
+        : discount;
+    gross = CommonService.getRound(decimal, ((rRate * qty)));
+    subTotal = CommonService.getRound(decimal, (gross - rDisc));
+    if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+    if (companyTaxMode == 'INDIA') {
+      kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
+      double csPer = taxP / 2;
+      iGST = 0;
+      csGST = CommonService.getRound(4, ((subTotal * csPer) / 100));
+    } else if (companyTaxMode == 'GULF') {
+      iGST = CommonService.getRound(4, ((subTotal * taxP) / 100));
+      csGST = 0;
+      kfc = 0;
+    } else {
+      iGST = 0;
+      csGST = 0;
+      kfc = 0;
+      tax = 0;
+    }
+    if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((subTotal * cessPer) / 100));
+        adCess = CommonService.getRound(4, (qty * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
+    total = CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    if (enableMULTIUNIT && _conversion > 0) {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(
+              2, (total - (product.buyingPrice! * _conversion * qty)))
+          : CommonService.getRound(
+              decimal, (total - (product.buyingPriceReal! * _conversion * qty)));
+    } else {
+      profitPer = pRateBasedProfitInSales
+          ? CommonService.getRound(2, (total - (product.buyingPrice! * qty)))
+          : CommonService.getRound(
+              2, (total - (product.buyingPriceReal! * qty)));
+    }
+    unitValue = _conversion > 0 ? _conversion : 1;
+  }
     calculate() {
       uniqueCode = selectedVariant.productId!;
     if (enableMULTIUNIT) {
@@ -5589,7 +5690,7 @@ void _onTabTapped(int index) {
                                             // itemNameControl.text = '';
                                             // setState(() {
                                             
-                                              final selectedItem = 
+                                               selectedItem = 
                                               itemCodeViseChek 
                                               ? snapshot.data!.firstWhere(
                                                 (element) => element.code == value)
@@ -5627,11 +5728,15 @@ void _onTabTapped(int index) {
                                                   ;
                                               if (fetchedData != null) {
                                                 fetchedData.listen((variants) {
-                                                  selectedVariant = variants.firstWhere(
+                                                 selectedVariant = variants.firstWhere(
                                                     (element) =>
                                                         element.itemId == selectedItemId,
                                                     orElse: () => StockProduct.empty(),
                                                   );
+                                                  if (_autoVariantSelect) {
+                                                  stockVariantProductList.clear();
+                                                   stockVariantProductList.addAll(variants) ;
+                                                }
                                                   Future<double?> rateFuture;
                                                   if (salesTypeData!.rateType == 'MRP') {
                                                     rateFuture = Future.value(
@@ -5863,8 +5968,8 @@ void _onTabTapped(int index) {
                                                             }
                                                             outOfStock = isLockQtyOnlyInSales
                                                                 ? (double.tryParse(value)!)  * unitValue + freeQty  > 
-                                                                //  (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) : 
-                                                                 selectedVariant.quantity! //)
+                                                                 (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) : 
+                                                                 selectedVariant.quantity! )
                                                                     ? true
                                                                     : cartQ
                                                                         ? true
@@ -5882,8 +5987,8 @@ void _onTabTapped(int index) {
                                                                                     : false
                                                                             : false
                                                                         : ((double.tryParse(value)! * unitValue) + freeQty) >
-                                                                         //  (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                         selectedVariant.quantity!
+                                                                          (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
+                                                                         selectedVariant.quantity!)
                                                                             ? true
                                                                             : cartQ
                                                                                 ? true
@@ -7122,7 +7227,7 @@ void _onTabTapped(int index) {
                     child: InkWell(
                       splashColor: Colors.white,
                       onTap: () {
-                        editItem ? setState(() {
+                        !editItem ? setState(() {
                         print(selectedVariant.name);
                         calculateText(selectedVariant);
                         setState(() {
@@ -7332,12 +7437,12 @@ void _onTabTapped(int index) {
                                                               : balanceQty))
                                                       : qty;
 
-                                              // calculateTextBatch(
-                                              //     selectedItem, addQuantity);
+                                              calculateTextBatch(
+                                                  selectedVariant, addQuantity);
                                               cartItem.add(CartItem(
                                                   id: totalItem + 1,
-                                                  itemId: selectedItem.itemId,
-                                                  itemName: selectedItem.name,
+                                                  itemId: selectedVariant.itemId,
+                                                  itemName: selectedVariant.name,
                                                   quantity: addQuantity,
                                                   rate: rate,
                                                   rRate: rRate,
@@ -7371,9 +7476,9 @@ void _onTabTapped(int index) {
                                                   iGST: iGST,
                                                   cGST: csGST,
                                                   sGST: csGST,
-                                                  stock: selectedItem.quantity,
+                                                  stock: variantProduct.quantity,
                                                   minimumRate:
-                                                      selectedItem.minimumRate,
+                                                      selectedVariant.minimumRate,
                                                   // adCessPer: selectedItem.adCessPer,
                                                   // cessPer: selectedItem.cessPer
                                                   ));

@@ -1147,8 +1147,11 @@ class _PurchaseState extends State<Purchase> {
         });
       });
     }
-    else {
-    }
+    else{
+    setState(() {
+      null;
+    });
+  }
   }
 
   newPurchaseWidget(newPurchase) {
