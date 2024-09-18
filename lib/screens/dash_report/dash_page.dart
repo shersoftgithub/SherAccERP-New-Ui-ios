@@ -124,7 +124,7 @@ class _DashPageState extends State<DashPage> {
 
   Future _fetchTotalData(var branch) async {
     dio.fetchDashTotalData(formattedDate, branch).then((responseBodyOfTotal) {
-      if (responseBodyOfTotal.isNotEmpty) {
+      if (responseBodyOfTotal != null && responseBodyOfTotal.isNotEmpty) {
         totalSales = responseBodyOfTotal['Total Sales'].toString();
         totalNoSales = responseBodyOfTotal['Total No Sales'].toString();
         totalCashSales = responseBodyOfTotal['Total Cash Sales'].toString();

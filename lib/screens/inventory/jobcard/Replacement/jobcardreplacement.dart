@@ -1394,12 +1394,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
                     onPressed: () {
                       Navigator.of(context).pop();
                       Navigator.pushReplacementNamed(
-                          context,
-                          ComSettings.appSettings(
-                                      'bool', 'key-simple-sales', false) ??
-                                  false
-                              ? '/SimpleSale'
-                              : '/sales',
+                          context,'/sales',
                           arguments: {'default': 'thisSale'});
                     },
                     child: const Text('CANCEL'),
@@ -3580,7 +3575,9 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
                                                 sGST: csGST,
                                                 stock: product.quantity!,
                                                 minimumRate:
-                                                    product.minimumRate!),
+                                                    product.minimumRate!,
+                                                    adCessPer: adCessPer,
+                                                    cessPer: cessPer),
                                             -1);
                                       } else {
                                         ScaffoldMessenger.of(context)
@@ -6053,10 +6050,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
         onPressedNo: () {
           Navigator.of(context).pop();
           Navigator.pushReplacementNamed(
-              context,
-              ComSettings.appSettings('bool', 'key-simple-sales', false)
-                  ? '/SimpleSale'
-                  : '/sales',
+              context, '/sales',
               arguments: {'default': 'thisSale'});
         },
         onPressedYes: () {
@@ -6257,7 +6251,11 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
                       double.tryParse(product['adcess'].toString())!, //adCess,
                   iGST: double.tryParse(product['IGST'].toString())!,
                   cGST: double.tryParse(product['CGST'].toString())!,
-                  sGST: double.tryParse(product['SGST'].toString())!),
+                  sGST: double.tryParse(product['SGST'].toString())!,
+                  cessPer: double.tryParse(product['cessper'].toString())!,
+                  adCessPer: double.tryParse(product['adcessper'].toString())!,
+                  ),
+                  
               -1);
         }
       }

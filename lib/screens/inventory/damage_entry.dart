@@ -1633,8 +1633,8 @@ class _DamageEntryState extends State<DamageEntry> {
                             setState(() {
                               addProduct(CartItem(
                                   id: totalItem + 1,
-                                  itemId: product.itemId,
-                                  itemName: product.name,
+                                  itemId: product.itemId!,
+                                  itemName: product.name!,
                                   quantity: quantity,
                                   rate: rate,
                                   rRate: rRate,
@@ -1665,7 +1665,12 @@ class _DamageEntryState extends State<DamageEntry> {
                                   adCess: 0,
                                   iGST: 0,
                                   cGST: 0,
-                                  sGST: 0));
+                                  sGST: 0,
+                                  adCessPer: 0,
+                                  cessPer: 0,
+                                  minimumRate: 0,
+                                  stock: 0
+                                  ));
                               if (totalItem > 0) {
                                 clearValue();
                                 nextWidget = 3;
@@ -1923,7 +1928,7 @@ class _DamageEntryState extends State<DamageEntry> {
   void editProduct(String title, String value, int id) {
     int index = cartItem.indexWhere((i) => i.id == id);
     if (title == 'Edit Rate') {
-      cartItem[index].rate = double.tryParse(value);
+      cartItem[index].rate = double.tryParse(value)!;
       // if (cart[index].rRate == 0) {
       //   cart[index].rRate = double.tryParse(value);
       //   isZeroRate = true;
@@ -1941,7 +1946,7 @@ class _DamageEntryState extends State<DamageEntry> {
           : cartItem[index].rate;
     } else if (title == 'Edit Quantity') {
       // int index = cart.indexWhere((i) => i.id == id);
-      cartItem[index].quantity = double.tryParse(value);
+      cartItem[index].quantity = double.tryParse(value)!;
     }
     cartItem[index].gross = CommonService.getRound(
         2, (cartItem[index].rRate! * cartItem[index].quantity!));

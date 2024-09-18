@@ -3224,8 +3224,8 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                     // } else {
                                     addProduct(CartItem(
                                         id: totalItem + 1,
-                                        itemId: product.itemId,
-                                        itemName: product.name,
+                                        itemId: product.itemId!,
+                                        itemName: product.name!,
                                         quantity: quantity,
                                         rate: rate,
                                         rRate: rRate,
@@ -3257,8 +3257,11 @@ class _DeliveryNoteState extends State<DeliveryNote> {
                                         iGST: iGST,
                                         cGST: csGST,
                                         sGST: csGST,
-                                        stock: product.quantity,
-                                        minimumRate: product.minimumRate));
+                                        stock: product.quantity!,
+                                        minimumRate: product.minimumRate!,
+                                        adCessPer: adCessPer,
+                                        cessPer: cessPer
+                                        ));
                                     // }
                                   }
                                 }
@@ -4632,7 +4635,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
           backgroundColor: Colors.red,
         ));
       } else {
-        cartItem[index].rate = double.tryParse(value);
+        cartItem[index].rate = double.tryParse(value)!;
         cartItem[index].rRate = taxMethod == 'MINUS'
             ? isKFC
                 ? CommonService.getRound(
@@ -4693,7 +4696,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
           backgroundColor: Colors.red,
         ));
       } else {
-        cartItem[index].quantity = double.tryParse(value);
+        cartItem[index].quantity = double.tryParse(value)!;
       }
     }
     cartItem[index].gross = CommonService.getRound(
@@ -5640,41 +5643,44 @@ class _DeliveryNoteState extends State<DeliveryNote> {
               id: totalItem + 1,
               itemId: product['itemId'],
               itemName: product['itemname'],
-              quantity: double.tryParse(product['Qty'].toString()),
-              rate: double.tryParse(product['Rate'].toString()),
-              rRate: double.tryParse(product['RealRate'].toString()),
+              quantity: double.tryParse(product['Qty'].toString())!,
+              rate: double.tryParse(product['Rate'].toString())!,
+              rRate: double.tryParse(product['RealRate'].toString())!,
               uniqueCode: product['UniqueCode'],
-              gross: double.tryParse(product['GrossValue'].toString()),
-              discount: double.tryParse(product['Disc'].toString()),
+              gross: double.tryParse(product['GrossValue'].toString())!,
+              discount: double.tryParse(product['Disc'].toString())!,
               discountPercent:
-                  double.tryParse(product['DiscPersent'].toString()),
-              rDiscount: double.tryParse(product['RDisc'].toString()),
-              fCess: double.tryParse(product['Fcess'].toString()),
+                  double.tryParse(product['DiscPersent'].toString())!,
+              rDiscount: double.tryParse(product['RDisc'].toString())!,
+              fCess: double.tryParse(product['Fcess'].toString())!,
               serialNo: product['serialno'].toString(),
               tax: double.tryParse(product['CGST'].toString())! +
                   double.tryParse(product['SGST'].toString())! +
                   double.tryParse(product['IGST'].toString())!,
-              taxP: double.tryParse(product['igst'].toString()),
+              taxP: double.tryParse(product['igst'].toString())!,
               unitId: product['Unit'],
-              unitValue: double.tryParse(product['UnitValue'].toString()),
-              pRate: double.tryParse(product['Prate'].toString()),
-              rPRate: double.tryParse(product['Rprate'].toString()),
+              unitValue: double.tryParse(product['UnitValue'].toString())!,
+              pRate: double.tryParse(product['Prate'].toString())!,
+              rPRate: double.tryParse(product['Rprate'].toString())!,
               barcode: product['UniqueCode'],
               expDate: '2020-01-01',
-              free: double.tryParse(product['freeQty'].toString()),
-              fUnitId: int.tryParse(product['Funit'].toString()),
+              free: double.tryParse(product['freeQty'].toString())!,
+              fUnitId: int.tryParse(product['Funit'].toString())!,
               cdPer: 0, //product['']cdPer,
               cDisc: 0, //product['']cDisc,
-              net: double.tryParse(product['Net'].toString()), //subTotal,
-              cess: double.tryParse(product['cess'].toString()), //cess,
-              total: double.tryParse(product['Total'].toString()), //total,
+              net: double.tryParse(product['Net'].toString())!, //subTotal,
+              cess: double.tryParse(product['cess'].toString())!, //cess,
+              total: double.tryParse(product['Total'].toString())!, //total,
               profitPer: 0, //product['']profitPer,
               fUnitValue:
-                  double.tryParse(product['FValue'].toString()), //fUnitValue,
-              adCess: double.tryParse(product['adcess'].toString()), //adCess,
-              iGST: double.tryParse(product['IGST'].toString()),
-              cGST: double.tryParse(product['CGST'].toString()),
-              sGST: double.tryParse(product['SGST'].toString())));
+                  double.tryParse(product['FValue'].toString())!, //fUnitValue,
+              adCess: double.tryParse(product['adcess'].toString())!, //adCess,
+              iGST: double.tryParse(product['IGST'].toString())!,
+              cGST: double.tryParse(product['CGST'].toString())!,
+              sGST: double.tryParse(product['SGST'].toString())!,
+              cessPer: double.tryParse(product['cessper'].toString())!,
+                  adCessPer: double.tryParse(product['adcessper'].toString())!,
+              ));
         }
       }
 

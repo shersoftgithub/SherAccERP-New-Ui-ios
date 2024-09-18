@@ -311,25 +311,15 @@ class _DeliveryHomeState extends State<DeliveryHome> {
                                   salesTypeData = salesTypeList.firstWhere(
                                       (element) =>
                                           element.name == 'Sales Order Entry');
-                                  bool isSimpleSales = ComSettings.appSettings(
-                                          'bool', 'key-simple-sales', false)
-                                      ? true
-                                      : false;
                                   args.active == "false"
                                       ? _commonService.getTrialPeriod(args.atDate)
-                                          ? isSimpleSales
-                                              ? Navigator.pushNamed(
-                                                  context, '/SimpleSale')
-                                              : Navigator.of(context)
+                                          ? Navigator.of(context)
                                                   .push(MaterialPageRoute(
                                                       builder: (context) => Sale(
                                                             oldSale: false,
                                                             thisSale: sType,
                                                           )))
                                           : _expire(args, context)
-                                      : isSimpleSales
-                                          ? Navigator.pushNamed(
-                                              context, '/SimpleSale')
                                           : Navigator.of(context)
                                               .push(MaterialPageRoute(
                                                   builder: (context) => Sale(
@@ -366,25 +356,15 @@ class _DeliveryHomeState extends State<DeliveryHome> {
                                               .name)
                                       : salesTypeList.firstWhere((element) =>
                                           element.name == 'Sales Estimate Entry');
-                                  bool isSimpleSales = ComSettings.appSettings(
-                                          'bool', 'key-simple-sales', false)
-                                      ? true
-                                      : false;
                                   args.active == "false"
                                       ? _commonService.getTrialPeriod(args.atDate)
-                                          ? isSimpleSales
-                                              ? Navigator.pushNamed(
-                                                  context, '/SimpleSale')
-                                              : Navigator.of(context)
+                                              ? Navigator.of(context)
                                                   .push(MaterialPageRoute(
                                                       builder: (context) => Sale(
                                                             oldSale: false,
                                                             thisSale: sType,
                                                           )))
                                           : _expire(args, context)
-                                      : isSimpleSales
-                                          ? Navigator.pushNamed(
-                                              context, '/SimpleSale')
                                           : Navigator.of(context)
                                               .push(MaterialPageRoute(
                                                   builder: (context) => Sale(

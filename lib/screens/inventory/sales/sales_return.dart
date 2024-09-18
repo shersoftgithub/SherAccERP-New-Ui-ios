@@ -3448,7 +3448,7 @@ bool isPrateEdited = false;
                                   CartItem(
                                       id: totalItem + 1,
                                       itemId: int.tryParse(
-                                          selectedItem.slNo.toString()),
+                                          selectedItem.slNo.toString())!,
                                       itemName:
                                           selectedItem.itemName.toString(),
                                       quantity: quantity,
@@ -3483,7 +3483,10 @@ bool isPrateEdited = false;
                                       cGST: csGST,
                                       sGST: csGST,
                                       minimumRate: 0,
-                                      stock: 0),
+                                      stock: 0,
+                                      adCessPer: adCessPer,
+                                      cessPer:cessPer  
+                                      ),
                                   -1);
                               if (totalItem > 0) {
                                 clearValue();
@@ -3533,7 +3536,7 @@ bool isPrateEdited = false;
                       cartItem[position!].adCess = adCess;
                                 cartItem[position!].quantity = quantity;
                                 cartItem[position!].rate = rate;
-                                cartItem[position!].rate = double.tryParse(_rateController.text);
+                                cartItem[position!].rate = double.tryParse(_rateController.text)!;
                                 cartItem[position!].rRate = rRate;
                                 cartItem[position!].uniqueCode = uniqueCode;
                                 cartItem[position!].gross = gross;
@@ -3576,7 +3579,7 @@ bool isPrateEdited = false;
                                   CartItem(
                                       id: totalItem + 1,
                                       itemId: int.tryParse(
-                                          selectedItem.slNo.toString()),
+                                          selectedItem.slNo.toString())!,
                                       itemName:
                                           selectedItem.itemName.toString(),
                                       quantity: quantity,
@@ -3611,7 +3614,9 @@ bool isPrateEdited = false;
                                       cGST: csGST,
                                       sGST: csGST,
                                       minimumRate: 0,
-                                      stock: 0),
+                                      stock: 0,
+                                      adCessPer: adCessPer,
+                                      cessPer: cessPer),
                                   -1);
                            }
                               if (totalItem > 0) {
@@ -3770,141 +3775,141 @@ bool isPrateEdited = false;
   }
 
   selectLedgerDetailWidget() {
-    return FutureBuilder<CustomerModel>(
-      future: dio.getCustomerDetail(ledgerModel.id),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data!.id != null || snapshot.data!.id! > 0) {
-            return Padding(
-              padding: const EdgeInsets.all(35.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    widgetRateType(),
-                    const SizedBox(
-                      width: 40,
-                    ),
-                    const Text('Taxable'),
-                    Checkbox(
-                      value: taxable,
-                      onChanged: (value) {
-                        setState(() {
-                          taxable = value!;
-                        });
-                      },
-                    ),
-                  ]),
-                  Text("Name : " + snapshot.data!.name!,
-                      style: const TextStyle(fontSize: 20)),
-                  Text(
-                      "Address : " +
-                          snapshot.data!.address1! +
-                          " ," +
-                          snapshot.data!.address2! +
-                          " ," +
-                          snapshot.data!.address3! +
-                          " ," +
-                          snapshot.data!.address4!,
-                      style: const TextStyle(fontSize: 18)),
-                  Text("Tax No : " + snapshot.data!.taxNumber!,
-                      style: const TextStyle(fontSize: 18)),
-                  Text("Phone : " + snapshot.data!.phone!,
-                      style: const TextStyle(fontSize: 18)),
-                  Text("Email : " + snapshot.data!.email!,
-                      style: const TextStyle(fontSize: 18)),
-                  Text("Balance : " + snapshot.data!.balance!,
-                      style: const TextStyle(fontSize: 18)),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        rateType.isEmpty ? '2' : rateType;
-                        ledgerModel = snapshot.data;
-                        nextWidget = 2;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        disabledForegroundColor: Colors.grey.withOpacity(0.38),
-                        disabledBackgroundColor: Colors.grey.withOpacity(0.12),
-                        backgroundColor: Colors.red),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const <Widget>[
-                          Icon(
-                            Icons.shopping_bag,
-                            color: Colors.white,
-                          ),
-                          SizedBox(
-                            width: 4.0,
-                          ),
-                          Text(
-                            "Add Product To Cart",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
-                  SizedBox(height: 20),
-                  Text('No Data Found..')
-                ],
-              ),
-            );
-          }
-        } else if (snapshot.hasError) {
-          return AlertDialog(
-            title: const Text(
-              'An Error Occurred!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.redAccent,
-              ),
-            ),
-            content: Text(
-              "${snapshot.error}",
-              style: const TextStyle(
-                color: Colors.blueAccent,
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text(
-                  'Go Back',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('This may take some time..')
-            ],
-          ),
-        );
-      },
-    );
+    // return FutureBuilder<CustomerModel>(
+    //   future: dio.getCustomerDetail(ledgerModel.id),
+    //   builder: (context, snapshot) {
+    //     if (snapshot.hasData) {
+    //       if (snapshot.data!.id != null || snapshot.data!.id! > 0) {
+    //         return Padding(
+    //           padding: const EdgeInsets.all(35.0),
+    //           child: Column(
+    //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //             crossAxisAlignment: CrossAxisAlignment.start,
+    //             children: [
+    //               Row(children: [
+    //                 widgetRateType(),
+    //                 const SizedBox(
+    //                   width: 40,
+    //                 ),
+    //                 const Text('Taxable'),
+    //                 Checkbox(
+    //                   value: taxable,
+    //                   onChanged: (value) {
+    //                     setState(() {
+    //                       taxable = value!;
+    //                     });
+    //                   },
+    //                 ),
+    //               ]),
+    //               Text("Name : " + snapshot.data!.name!,
+    //                   style: const TextStyle(fontSize: 20)),
+    //               Text(
+    //                   "Address : " +
+    //                       snapshot.data!.address1! +
+    //                       " ," +
+    //                       snapshot.data!.address2! +
+    //                       " ," +
+    //                       snapshot.data!.address3! +
+    //                       " ," +
+    //                       snapshot.data!.address4!,
+    //                   style: const TextStyle(fontSize: 18)),
+    //               Text("Tax No : " + snapshot.data!.taxNumber!,
+    //                   style: const TextStyle(fontSize: 18)),
+    //               Text("Phone : " + snapshot.data!.phone!,
+    //                   style: const TextStyle(fontSize: 18)),
+    //               Text("Email : " + snapshot.data!.email!,
+    //                   style: const TextStyle(fontSize: 18)),
+    //               Text("Balance : " + snapshot.data!.balance!,
+    //                   style: const TextStyle(fontSize: 18)),
+    //               ElevatedButton(
+    //                 onPressed: () {
+    //                   setState(() {
+    //                     rateType.isEmpty ? '2' : rateType;
+    //                     ledgerModel = snapshot.data;
+    //                     nextWidget = 2;
+    //                   });
+    //                 },
+    //                 style: ElevatedButton.styleFrom(
+    //                     foregroundColor: Colors.white,
+    //                     elevation: 0,
+    //                     disabledForegroundColor: Colors.grey.withOpacity(0.38),
+    //                     disabledBackgroundColor: Colors.grey.withOpacity(0.12),
+    //                     backgroundColor: Colors.red),
+    //                 child: Center(
+    //                   child: Row(
+    //                     mainAxisAlignment: MainAxisAlignment.center,
+    //                     children: const <Widget>[
+    //                       Icon(
+    //                         Icons.shopping_bag,
+    //                         color: Colors.white,
+    //                       ),
+    //                       SizedBox(
+    //                         width: 4.0,
+    //                       ),
+    //                       Text(
+    //                         "Add Product To Cart",
+    //                         style: TextStyle(color: Colors.white),
+    //                       ),
+    //                     ],
+    //                   ),
+    //                 ),
+    //               ),
+    //             ],
+    //           ),
+    //         );
+    //       } else {
+    //         return Center(
+    //           child: Column(
+    //             mainAxisAlignment: MainAxisAlignment.center,
+    //             children: const <Widget>[
+    //               SizedBox(height: 20),
+    //               Text('No Data Found..')
+    //             ],
+    //           ),
+    //         );
+    //       }
+    //     } else if (snapshot.hasError) {
+    //       return AlertDialog(
+    //         title: const Text(
+    //           'An Error Occurred!',
+    //           textAlign: TextAlign.center,
+    //           style: TextStyle(
+    //             color: Colors.redAccent,
+    //           ),
+    //         ),
+    //         content: Text(
+    //           "${snapshot.error}",
+    //           style: const TextStyle(
+    //             color: Colors.blueAccent,
+    //           ),
+    //         ),
+    //         actions: <Widget>[
+    //           TextButton(
+    //             child: const Text(
+    //               'Go Back',
+    //               style: TextStyle(
+    //                 color: Colors.redAccent,
+    //               ),
+    //             ),
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //           )
+    //         ],
+    //       );
+    //     }
+    //     return Center(
+    //       child: Column(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: const <Widget>[
+    //           CircularProgressIndicator(),
+    //           SizedBox(height: 20),
+    //           Text('This may take some time..')
+    //         ],
+    //       ),
+    //     );
+    //   },
+    // );
   }
 
   String _dropDownValue = '2-RETAIL';
@@ -4737,7 +4742,7 @@ bool isPrateEdited = false;
                                   CartItem(
                                       id: totalItem + 1,
                                       itemId: int.tryParse(
-                                          productModel.slNo.toString()),
+                                          productModel.slNo.toString())!,
                                       itemName:
                                           productModel.itemName.toString(),
                                       quantity: quantity,
@@ -4772,7 +4777,10 @@ bool isPrateEdited = false;
                                       cGST: csGST,
                                       sGST: csGST,
                                       minimumRate: 0,
-                                      stock: 0),
+                                      stock: 0,
+                                      adCessPer: adCessPer,
+                                      cessPer: cessPer
+                                      ),
                                   -1);
                               if (totalItem > 0) {
                                 clearValue();
@@ -4993,7 +5001,7 @@ bool isPrateEdited = false;
   void editProduct(String title, String value, int index) {
     // int index = cartItem.indexWhere((i) => i.id == id);
     if (title == 'Edit Rate') {
-      cartItem[index].rate = double.tryParse(value);
+      cartItem[index].rate = double.tryParse(value)!;
       // if (cart[index].rRate == 0) {
       //   cart[index].rRate = double.tryParse(value);
       //   isZeroRate = true;
@@ -5011,7 +5019,7 @@ bool isPrateEdited = false;
           : cartItem[index].rate;
     } else if (title == 'Edit Quantity') {
       // int index = cart.indexWhere((i) => i.id == id);
-      cartItem[index].quantity = double.tryParse(value);
+      cartItem[index].quantity = double.tryParse(value)!;
     }
     cartItem[index].gross = CommonService.getRound(
         2, (cartItem[index].rRate! * cartItem[index].quantity!));
@@ -5673,45 +5681,48 @@ bool isPrateEdited = false;
                   id: totalItem + 1,
                   itemId: product['itemId'],
                   itemName: product['itemname'],
-                  quantity: double.tryParse(product['Qty'].toString()),
-                  rate: double.tryParse(product['Rate'].toString()),
-                  rRate: double.tryParse(product['RealRate'].toString()),
+                  quantity: double.tryParse(product['Qty'].toString())!,
+                  rate: double.tryParse(product['Rate'].toString())!,
+                  rRate: double.tryParse(product['RealRate'].toString())!,
                   uniqueCode: product['UniqueCode'],
-                  gross: double.tryParse(product['GrossValue'].toString()),
-                  discount: double.tryParse(product['Disc'].toString()),
+                  gross: double.tryParse(product['GrossValue'].toString())!,
+                  discount: double.tryParse(product['Disc'].toString())!,
                   discountPercent:
-                      double.tryParse(product['DiscPersent'].toString()),
-                  rDiscount: double.tryParse(product['RDisc'].toString()),
-                  fCess: double.tryParse(product['Fcess'].toString()),
+                      double.tryParse(product['DiscPersent'].toString())!,
+                  rDiscount: double.tryParse(product['RDisc'].toString())!,
+                  fCess: double.tryParse(product['Fcess'].toString())!,
                   serialNo: product['serialno'].toString(),
                   tax: double.tryParse(product['CGST'].toString())! +
                       double.tryParse(product['SGST'].toString())! +
                       double.tryParse(product['IGST'].toString())!,
-                  taxP: double.tryParse(product['igst'].toString()),
+                  taxP: double.tryParse(product['igst'].toString())!,
                   unitId: product['Unit'],
-                  unitValue: double.tryParse(product['UnitValue'].toString()),
-                  pRate: double.tryParse(product['Prate'].toString()),
-                  rPRate: double.tryParse(product['Rprate'].toString()),
+                  unitValue: double.tryParse(product['UnitValue'].toString())!,
+                  pRate: double.tryParse(product['Prate'].toString())!,
+                  rPRate: double.tryParse(product['Rprate'].toString())!,
                   barcode: product['UniqueCode'],
                   expDate: '2020-01-01',
-                  free: double.tryParse(product['freeQty'].toString()),
-                  fUnitId: int.tryParse(product['Funit'].toString()),
+                  free: double.tryParse(product['freeQty'].toString())!,
+                  fUnitId: int.tryParse(product['Funit'].toString())!,
                   cdPer: 0, //product['']cdPer,
                   cDisc: 0, //product['']cDisc,
                   net: double.tryParse(
-                      product['GrossValue'].toString()), //subTotal,
-                  cess: double.tryParse(product['cess'].toString()), //cess,
-                  total: double.tryParse(product['Total'].toString()), //total,
+                      product['GrossValue'].toString())!, //subTotal,
+                  cess: double.tryParse(product['cess'].toString())!, //cess,
+                  total: double.tryParse(product['Total'].toString())!, //total,
                   profitPer: 0,
                   fUnitValue: double.tryParse(
-                      product['FValue'].toString()), //fUnitValue,
+                      product['FValue'].toString())!, //fUnitValue,
                   adCess:
-                      double.tryParse(product['adcess'].toString()), //adCess,
-                  iGST: double.tryParse(product['IGST'].toString()),
-                  cGST: double.tryParse(product['CGST'].toString()),
-                  sGST: double.tryParse(product['SGST'].toString()),
+                      double.tryParse(product['adcess'].toString())!, //adCess,
+                  iGST: double.tryParse(product['IGST'].toString())!,
+                  cGST: double.tryParse(product['CGST'].toString())!,
+                  sGST: double.tryParse(product['SGST'].toString())!,
                   minimumRate: 0,
-                  stock: 0),
+                  stock: 0,
+                  cessPer: double.tryParse(product['cessper'].toString())!,
+                  adCessPer: double.tryParse(product['adcessper'].toString())!,
+                  ),
               -1);
         }
       }

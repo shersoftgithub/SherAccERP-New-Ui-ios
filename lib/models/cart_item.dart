@@ -1,6 +1,6 @@
 class CartItem {
-  String? itemName, serialNo, expDate;
-  double? quantity,
+  String itemName, serialNo, expDate;
+  double quantity,
       stock,
       rate,
       rRate,
@@ -26,45 +26,49 @@ class CartItem {
       iGST,
       cGST,
       sGST,
-      minimumRate;
-  int? id, itemId, fUnitId, unitId, barcode, uniqueCode;
+      minimumRate,
+      cessPer,
+      adCessPer;
+  int id, itemId, fUnitId, unitId, barcode, uniqueCode;
   CartItem(
-      {this.id,
-      this.itemId,
-      this.itemName,
-      this.serialNo,
-      this.uniqueCode,
-      this.fCess,
-      this.unitId,
-      this.quantity,
-      this.rate,
-      this.rRate,
-      this.gross,
-      this.discount,
-      this.discountPercent,
-      this.rDiscount,
-      this.tax,
-      this.taxP,
-      this.unitValue,
-      this.pRate,
-      this.rPRate,
-      this.barcode,
-      this.expDate,
-      this.free,
-      this.fUnitId,
-      this.cdPer,
-      this.cDisc,
-      this.net,
-      this.cess,
-      this.total,
-      this.profitPer,
-      this.fUnitValue,
-      this.adCess,
-      this.iGST,
-      this.cGST,
-      this.sGST,
-      this.stock,
-      this.minimumRate});
+      {required this.id,
+      required this.itemId,
+      required this.itemName,
+      required this.serialNo,
+      required this.uniqueCode,
+      required this.fCess,
+      required this.unitId,
+      required this.quantity,
+      required this.rate,
+      required this.rRate,
+      required this.gross,
+      required this.discount,
+      required this.discountPercent,
+      required this.rDiscount,
+      required this.tax,
+      required this.taxP,
+      required this.unitValue,
+      required this.pRate,
+      required this.rPRate,
+      required this.barcode,
+      required this.expDate,
+      required this.free,
+      required this.fUnitId,
+      required this.cdPer,
+      required this.cDisc,
+      required this.net,
+      required this.cess,
+      required this.total,
+      required this.profitPer,
+      required this.fUnitValue,
+      required this.adCess,
+      required this.iGST,
+      required this.cGST,
+      required this.sGST,
+      required this.stock,
+      required this.minimumRate,
+      required this.cessPer,
+      required this.adCessPer});
 
   Map<String, dynamic> toCartJson() {
     return {
@@ -103,7 +107,9 @@ class CartItem {
       'cGST': cGST,
       'sGST': sGST,
       'stock': stock,
-      'minimumRate': minimumRate
+      'minimumRate': minimumRate,
+      'cessPer': cessPer,
+      'adCessPer': adCessPer
     };
   }
 
@@ -151,6 +157,8 @@ class CartItem {
     map['sGST'] = sGST;
     map['stock'] = stock;
     map['minimumRate'] = minimumRate;
+    map['cessPer'] = cessPer;
+    map['adCessPer'] = adCessPer;
     return map;
   }
 }
@@ -657,7 +665,6 @@ class CartItemST {
     return map;
   }
 }
-
 class CartJobCartItem {
   int id;
   int itemid;

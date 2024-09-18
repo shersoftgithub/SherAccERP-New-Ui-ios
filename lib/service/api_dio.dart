@@ -60,7 +60,18 @@ class DioService {
         return responseBodyOfTotal;
       } else {
         debugPrint('Failed to load internet');
-        return {};
+        return {
+"Total Sales" : 0,
+"Total No Sales" : 0,
+"Total Cash Sales" : 0,
+"Total No Cash Sales" :0,
+"Total Credit Sales" : 0,
+"Total No Credit Sales": 0,
+"No Customers" : 0,
+"No of Repeat Customers" : 0,
+"Total Expenses" : 0
+
+        };
       }
     } catch (e) {
       final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
@@ -3240,7 +3251,7 @@ class DioService {
           queryParameters: {'Id': id, 'location': location});
       if (response.statusCode == 200) {
         var jsonResponse = response.data;
-        for (var product in jsonResponse) {
+        for (var product in jsonResponse) { 
           _items.add(StockProduct.fromJson(product));
         }
       } else {

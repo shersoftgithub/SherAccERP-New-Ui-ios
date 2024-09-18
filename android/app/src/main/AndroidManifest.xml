@@ -1,12 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.shersoft.sheraccerp">
 
- <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.telephony"
-        android:required="false" />
-
+    
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -48,13 +43,22 @@
   </queries>
   <!--#enddocregion android-queries-->
   
-    <application
+
+   <application
         android:label="SherAcc ERP"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupOnly="false"
+        android:networkSecurityConfig="@xml/network_security_config" >
 
-
-
+        <!-- This is required -->
+       <service
+           android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+           android:stopWithTask="false"
+           android:foregroundServiceType="connectedDevice"
+           android:exported="false" />
+            
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -75,7 +75,6 @@ import 'package:sheraccerp/screens/inventory/sales/sales_list.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return_list.dart';
 import 'package:sheraccerp/screens/home/staff_home.dart';
-import 'package:sheraccerp/screens/inventory/sales/simple_sale.dart';
 import 'package:sheraccerp/screens/inventory/stock_report.dart';
 import 'package:sheraccerp/screens/inventory/products_list_page.dart';
 import 'package:sheraccerp/screens/inventory/stock_transfer.dart';
@@ -206,7 +205,6 @@ class MyApp extends StatelessWidget {
               '/ProductReport': (context) => const ProductReport(),
               '/owner_home': (context) => const OwnerHome(),
               '/passCode_Auth': (context) => const PassCodeAuth(),
-              '/SimpleSale': (context) => const SimpleSale(),
               '/OrderList': (context) => const OrderList(),
               '/OrderItemList': (context) => const OrderItemList(),
               '/BillList': (context) => const BillList(),

@@ -176,10 +176,7 @@ class InventoryMenu extends StatelessWidget {
                 ),
               ),
             ),
-            onTap: () {
-              ComSettings.appSettings('bool', 'key-simple-sales', false)
-                  ? Navigator.pushNamed(context, '/SimpleSale')
-                  : Navigator.of(context).push(MaterialPageRoute(
+            onTap: () { Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => Sale(
                             oldSale: false,
                             thisSale: false,

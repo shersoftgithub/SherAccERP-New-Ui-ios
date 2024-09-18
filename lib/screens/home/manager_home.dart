@@ -462,16 +462,12 @@ class _ManagerHomeState extends State<ManagerHome>
                 : false;
             args.active == "false"
                 ? _commonService.getTrialPeriod(args.atDate)
-                    ? ComSettings.appSettings('bool', 'key-simple-sales', false)
-                        ? Navigator.pushNamed(context, '/SimpleSale')
-                        : Navigator.of(context).push(MaterialPageRoute(
+                        ? Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => Sale(
                                   oldSale: false,
                                   thisSale: sType,
                                 )))
                     : _expire(args, context)
-                : ComSettings.appSettings('bool', 'key-simple-sales', false)
-                    ? Navigator.pushNamed(context, '/SimpleSale')
                     : Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => Sale(
                               oldSale: false,

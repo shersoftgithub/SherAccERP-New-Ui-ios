@@ -1030,8 +1030,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           ))
                         : model.addProduct(CartItem(
                             id: model.cart.length + 1,
-                            itemId: product.itemId,
-                            itemName: product.name,
+                            itemId: product.itemId!,
+                            itemName: product.name!,
                             quantity: quantity,
                             rate: rate,
                             rRate: rRate,
@@ -1062,7 +1062,12 @@ class _ProductsListPageState extends State<ProductsListPage> {
                             adCess: adCess,
                             iGST: iGST,
                             cGST: csGST,
-                            sGST: csGST));
+                            sGST: csGST,
+                            adCessPer: adCessPer,
+                            cessPer: cessPer,
+                            minimumRate: 0,
+                            stock: 0
+                            ));
                     Navigator.of(context).pop();
                     _loading = false;
                   },

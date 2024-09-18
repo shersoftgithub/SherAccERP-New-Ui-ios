@@ -5433,7 +5433,6 @@ showMore(context, purchaseState) {
       },
       onPressedYes: () {
         Navigator.of(context).pop();
-        rateType = '1';
         var data = '[${json.encode({
               'statement': 'PurchaseReturnFind',
               'entryNo': dataDynamic[0]['EntryNo'].toString(),
