@@ -2114,9 +2114,9 @@ class _SaleState extends ConsumerState<Sale> {
   //   }
   // }
 
-  final expandedHeight = 455.0;
-  final collapsedHeight =   220.0;
-  final collaps = 290.0;
+  final expandedHeight = 472.0;
+  final collapsedHeight =   230.0;
+  final collaps = 300.0;
   final animationDuration = const Duration(milliseconds: 400);
   bool isExpanded = false;
   final namesLike = 'a';
@@ -2391,16 +2391,35 @@ void _onTabTapped(int index) {
                                             const SizedBox(
                                               width: 4,
                                             ),
-                                            InkWell(
-                                              onTap: () {
-                                              //  var data = api.getSalesInvoiceNo(1, '');
-                                             debugPrint((int.parse(invoiceNo) - 1).toString());
+                                           InkWell(
+                                                onTap: () {
+                                                 var invoiceNum = invoiceNo;
 
-                                              },
-                                              child: const Icon(Icons.arrow_back_ios_rounded,
-                                              // size: 16,
-                                              ),
-                                            ),
+                                                setState(() {
+                                                 int invoiceNumber = int.parse(invoiceNum); 
+                                                 invoiceNumber--; 
+                                                 invoiceNum = invoiceNumber.toString(); 
+                                               });
+
+                                              debugPrint(invoiceNum.toString());
+
+                                          dataDynamic = [
+                                           {
+                                           'Type': salesTypeData!.type,
+                                           'InvoiceNo': invoiceNum,
+                                           'EntryNo': int.parse(invoiceNum) ?? 0,
+                                           'Id': int.parse(invoiceNum) ?? 0
+                                           }
+                                        ];
+                                        cartItem.clear();
+                                       fetchSale(context, dataDynamic[0]);
+                                      },
+                                       child: const Icon(
+                                         Icons.arrow_back_ios_rounded,
+                                         // size: 16, 
+                                     ),
+                                  ),
+
                                           ],
                                         ),
                                         suffixIcon: Row(
@@ -2408,7 +2427,50 @@ void _onTabTapped(int index) {
                                           children: [
                                             InkWell(
                                               onTap: () {
-                                                
+                                                   var invoiceNum = invoiceNo;
+
+                                                setState(() {
+                                                 int invoiceNumber = int.parse(invoiceNum); 
+                                                 invoiceNumber++; 
+                                                 invoiceNum = invoiceNumber.toString(); 
+                                               });
+
+                                              debugPrint(invoiceNum.toString());
+
+                                          dataDynamic = [
+                                           {
+                                           'Type': salesTypeData!.type,
+                                           'InvoiceNo': invoiceNum,
+                                           'EntryNo': int.parse(invoiceNum) ?? 0,
+                                           'Id': int.parse(invoiceNum) ?? 0
+                                           }
+                                        ];
+                                       cartItem.clear();
+                                       try {
+                                         fetchSale(context, dataDynamic[0]);
+                                       } catch (e) {
+                                         if (e is RangeError) {
+                                            showDialog(
+                                                 context: context,
+                                                 builder: (BuildContext context) {
+                                                  return AlertDialog(
+                                                         title: const Text("Error"),
+                                                         content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                                         actions: [
+                                                          TextButton(
+                                                           child: const Text("OK"),
+                                                           onPressed: () {
+                                                           Navigator.of(context).pop(); 
+                                                        },
+                                                      ),
+                                                    ],
+                                                 );
+                                               },
+                                            );
+                                         }else {
+                                            debugPrint("An unexpected error occurred: $e");
+                                         }
+                                       }
                                               },
                                               child: const Icon(Icons.arrow_forward_ios_rounded)),
                                             //  Icon(Icons.keyboard_double_arrow_right_rounded),
@@ -5124,15 +5186,15 @@ void _onTabTapped(int index) {
       calculateTotal();
     }
     calculateTextBatch(StockProduct product, double qty) {
-    double discP = 0; //_discountPercentController.text.isNotEmpty
-    //? double.tryParse(_discountPercentController.text)
-    //: 0;
-    double disc = 0; //_discountController.text.isNotEmpty
-    // ? double.tryParse(_discountController.text)
-    // : 0;
-    double sRate = _rateController.text.isNotEmpty
+      double sRate = _rateController.text.isNotEmpty
         ? double.tryParse(_rateController.text)!
         : 0;
+
+    double discP =  _discountPercentController.text.isNotEmpty
+    ? double.tryParse(_discountPercentController.text)!
+    : 0;
+    
+  double disc = double.parse((((qty * sRate)* discP)/100).toStringAsFixed(2));
 
     if (enableMULTIUNIT && rate > 0 && _conversion > 0) {
       rate = rate; // * _conversion;
@@ -5647,7 +5709,14 @@ void _onTabTapped(int index) {
                                 return const Text('No data found');
                               }
                    
-                final itemNameListDisplay = snapshot.data!
+                final itemNameListDisplay =
+                itemCodeViseChek
+                ? snapshot.data!
+                    .map((item) => item.code)
+                    .where((name) => name != null)
+                    .cast<String>()
+                    .toList()
+                : snapshot.data!
                     .map((item) => item.name)
                     .where((name) => name != null)
                     .cast<String>()
@@ -8445,8 +8514,8 @@ void _onTabTapped(int index) {
                                                   stock: variantProduct.quantity!,
                                                   minimumRate:
                                                       selectedVariant.minimumRate!,
-                                                  adCessPer: selectedItem.adCessPer,
-                                                  cessPer: selectedItem.cessPer
+                                                  adCessPer: adCessPer,
+                                                  cessPer: cessPer
                                                   ));
 
                                               tQty += addQuantity;

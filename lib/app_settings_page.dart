@@ -45,147 +45,151 @@ class AppSettings extends StatelessWidget {
                           children: [
                             Container(
                               width: MediaQuery.sizeOf(context).width,
-                              // height: MediaQuery.sizeOf(context).height,
+                              height: MediaQuery.sizeOf(context).height,
                               color: bagroundColor,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24, vertical: 10),
                                 child: Column(
                                   children: [
+                                    // DropDownSettingsTile<int>(
+                                    //   title: 'App Language',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   settingKey: 'key-dropdown-language-view',
+                                    //   values: const <int, String>{
+                                    //     2: 'English',
+                                    //     3: 'Arabic',
+                                    //     4: 'Chinese',
+                                    //     5: 'German',
+                                    //     6: 'Hindi',
+                                    //     7: 'Japanese',
+                                    //     8: 'Korean',
+                                    //     9: 'Malayalam',
+                                    //     10: 'Malay',
+                                    //     11: 'Russian',
+                                    //     12: 'Portuguese',
+                                    //     13: 'Spanish',
+                                    //     14: 'Thai',
+                                    //     15: 'Turkish',
+                                    //     16: 'Italian',
+                                    //     17: 'French',
+                                    //   },
+                                    //   selected: 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-language-view: $value');
+                                    //   },
+                                    // ),
+                                    // DropDownSettingsTile<int>(
+                                    //   title: 'Currency Symbol',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   settingKey:
+                                    //       'key-dropdown-currency-symbol-view',
+                                    //   values: const <int, String>{
+                                    //     2: "\$",
+                                    //     3: '€',
+                                    //     4: '¥',
+                                    //     5: '£',
+                                    //     6: '₽',
+                                    //     7: '৳',
+                                    //     8: '₹',
+                                    //     9: 'د.إ',
+                                    //     10: '₪',
+                                    //     11: '£',
+                                    //     12: '₩',
+                                    //     13: 'د.ك',
+                                    //     14: 'RM',
+                                    //     15: 'रू',
+                                    //     16: '₨',
+                                    //     17: 'ر.ق',
+                                    //     18: '฿',
+                                    //     19: '₺',
+                                    //     20: 'Rp',
+                                    //   },
+                                    //   selected: 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-currency-symbol-view: $value');
+                                    //   },
+                                    // ),
+                                    // DropDownSettingsTile<int>(
+                                    //   title: 'Decimal Places',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   settingKey:
+                                    //       'key-dropdown-decimal-place-view',
+                                    //   values: const <int, String>{
+                                    //     2: "1",
+                                    //     3: '2',
+                                    //     4: '3',
+                                    //     5: '4',
+                                    //   },
+                                    //   selected: 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-decimal-place-view: $value');
+                                    //   },
+                                    // ),
+                                    // DropDownSettingsTile<int>(
+                                    //   title: 'Date Format',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   settingKey:
+                                    //       'key-dropdown-date-format-view',
+                                    //   values: const <int, String>{
+                                    //     2: "dd-mm-yyyy",
+                                    //     3: 'dd/mm/yyyy',
+                                    //     4: 'dd/MM/yyy',
+                                    //     5: 'dd-MM-yyyy',
+                                    //     6: 'yyyy/MM/dd',
+                                    //     7: 'yyyy-MM-dd',
+                                    //     8: 'yyyy-mm-dd',
+                                    //     9: 'yyyy/mm/dd',
+                                    //     10: 'mm-dd-yyyy',
+                                    //     11: 'MM-dd-yyyy',
+                                    //     12: 'mm/dd/yyyy',
+                                    //     13: 'MM/dd/yyyy',
+                                    //   },
+                                    //   selected: 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-date-format-view: $value');
+                                    //   },
+                                    // ),
+                                    // DropDownSettingsTile<int>(
+                                    //   title: 'Theme',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   settingKey: 'key-dropdown-them-view',
+                                    //   values: const <int, String>{
+                                    //     2: "Light",
+                                    //     3: 'Dark',
+                                    //   },
+                                    //   selected: 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-them-view: $value');
+                                    //   },
+                                    // ),
                                     DropDownSettingsTile<int>(
-                                      title: 'App Language',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15),
-                                      settingKey: 'key-dropdown-language-view',
-                                      values: const <int, String>{
-                                        2: 'English',
-                                        3: 'Arabic',
-                                        4: 'Chinese',
-                                        5: 'German',
-                                        6: 'Hindi',
-                                        7: 'Japanese',
-                                        8: 'Korean',
-                                        9: 'Malayalam',
-                                        10: 'Malay',
-                                        11: 'Russian',
-                                        12: 'Portuguese',
-                                        13: 'Spanish',
-                                        14: 'Thai',
-                                        15: 'Turkish',
-                                        16: 'Italian',
-                                        17: 'French',
-                                      },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-language-view: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTile<int>(
-                                      title: 'Currency Symbol',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15),
-                                      settingKey:
-                                          'key-dropdown-currency-symbol-view',
-                                      values: const <int, String>{
-                                        2: "\$",
-                                        3: '€',
-                                        4: '¥',
-                                        5: '£',
-                                        6: '₽',
-                                        7: '৳',
-                                        8: '₹',
-                                        9: 'د.إ',
-                                        10: '₪',
-                                        11: '£',
-                                        12: '₩',
-                                        13: 'د.ك',
-                                        14: 'RM',
-                                        15: 'रू',
-                                        16: '₨',
-                                        17: 'ر.ق',
-                                        18: '฿',
-                                        19: '₺',
-                                        20: 'Rp',
-                                      },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-currency-symbol-view: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTile<int>(
-                                      title: 'Decimal Places',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15),
-                                      settingKey:
-                                          'key-dropdown-decimal-place-view',
-                                      values: const <int, String>{
-                                        2: "1",
-                                        3: '2',
-                                        4: '3',
-                                        5: '4',
-                                      },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-decimal-place-view: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTile<int>(
-                                      title: 'Date Format',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15),
-                                      settingKey:
-                                          'key-dropdown-date-format-view',
-                                      values: const <int, String>{
-                                        2: "dd-mm-yyyy",
-                                        3: 'dd/mm/yyyy',
-                                        4: 'dd/MM/yyy',
-                                        5: 'dd-MM-yyyy',
-                                        6: 'yyyy/MM/dd',
-                                        7: 'yyyy-MM-dd',
-                                        8: 'yyyy-mm-dd',
-                                        9: 'yyyy/mm/dd',
-                                        10: 'mm-dd-yyyy',
-                                        11: 'MM-dd-yyyy',
-                                        12: 'mm/dd/yyyy',
-                                        13: 'MM/dd/yyyy',
-                                      },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-date-format-view: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTile<int>(
-                                      title: 'Theme',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15),
-                                      settingKey: 'key-dropdown-them-view',
-                                      values: const <int, String>{
-                                        2: "Light",
-                                        3: 'Dark',
-                                      },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-them-view: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTileNew<int>(
                                       enabled: defaultSalesMan,
                                       title: 'Default SalesMan',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-salesman-view',
                                       values: salesmanList.isNotEmpty
@@ -204,9 +208,13 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-salesman-view: $value');
                                       },
                                     ),
-                                    DropDownSettingsTileNew<int>(
+                                    DropDownSettingsTile<int>(
                                       enabled: defaultBranch,
                                       title: 'Default Branch',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-location-view',
                                       values: locationList.isNotEmpty
@@ -225,9 +233,13 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-location-view: $value');
                                       },
                                     ),
-                                    DropDownSettingsTileNew<int>(
+                                    DropDownSettingsTile<int>(
                                       enabled: defaultCashAc,
                                       title: 'Default CASH AC',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-cash-ac',
                                       values: cashAccount.isNotEmpty
@@ -246,9 +258,13 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-cash-ac: $value');
                                       },
                                     ),
-                                    DropDownSettingsTileNew<int>(
+                                    DropDownSettingsTile<int>(
                                       enabled: defaultArea,
                                       title: 'Default Area',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-area-view',
                                       values: areaList.isNotEmpty
@@ -267,9 +283,13 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-area-view: $value');
                                       },
                                     ),
-                                    DropDownSettingsTileNew<int>(
+                                    DropDownSettingsTile<int>(
                                       enabled: defaultGroup,
                                       title: 'Default Group',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-group-view',
                                       values: groupList.isNotEmpty
@@ -288,9 +308,13 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-group-view: $value');
                                       },
                                     ),
-                                    DropDownSettingsTileNew<int>(
+                                    DropDownSettingsTile<int>(
                                       enabled: defaultRoute,
                                       title: 'Default Route',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
                                       settingKey:
                                           'key-dropdown-default-route-view',
                                       values: routeList.isNotEmpty
@@ -309,6 +333,9 @@ class AppSettings extends StatelessWidget {
                                             'key-dropdown-default-route-view: $value');
                                       },
                                     ),
+                                    // const SizedBox(
+                                    //   height: 100,
+                                    // )
                                   ],
                                 ),
                               ),
