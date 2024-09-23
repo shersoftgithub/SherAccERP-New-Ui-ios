@@ -610,6 +610,7 @@ class DioService {
     dataBase = isEstimateDataBase
         ? (pref.getString('DBName') ?? "cSharp")
         : (pref.getString('DBNameT') ?? "cSharp");
+        debugPrint(body.toString());
     try {
       final response = await dio.post(
           '${pref.getString('api')}${apiV}purchase/purchaseAdd/$dataBase',

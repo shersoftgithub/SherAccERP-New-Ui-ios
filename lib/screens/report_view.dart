@@ -364,55 +364,66 @@ class _ReportViewState extends State<ReportView> {
             style: const TextStyle(fontFamily: 'poppins'),
           ),
         ),
-        body: widget.type == 'ledger' ||
-                widget.type == 'Day Book' ||
-                widget.type == 'Trial Balance' ||
-                widget.type == 'Cash Flow' ||
-                widget.type == 'Invoice Wise Balance Customers' ||
-                widget.type == 'Invoice Wise Balance Suppliers'
-            ? reportView()
-            : widget.type == 'Fund Flow'
-                ? reportViewFundFlow()
-                : widget.type == 'Cheque'
-                    ? reportViewBankVouchers()
-                    : widget.type == 'User Activity'
-                        ? reportViewUserActivity()
-                        : widget.type == 'Monthly Sales'
-                            ? reportViewMonthlySalesReport(widget.branchId)
-                            : widget.type == 'Monthly Purchase'
-                                ? reportViewMonthlyPurchase(widget.branchId)
-                                : widget.type == 'Bill By Bill'
-                                    ? reportViewSalesBillByBill()
-                                    : widget.type == 'GroupList'
-                                        ? reportViewGroupList()
-                                        : widget.type == 'LedgerList'
-                                            ? reportViewLedgerList()
-                                            : widget.type == 'Closing Report'
-                                                ? reportViewClosingReport()
-                                                : widget.type == 'EmployeeList'
-                                                    ? reportViewEmployeeList()
-                                                    : widget.type ==
-                                                            'CustomerCardList'
-                                                        ? reportViewCustomerCardList()
-                                                        : widget.type ==
-                                                                'P&L Account'
-                                                            ? reportViewProfitAndLossAccount()
-                                                            : widget.type ==
-                                                                    'BalanceSheet'
-                                                                ? reportViewBalanceSheet()
-                                                                : widget.type ==
-                                                                            'Payable' ||
-                                                                        widget.type ==
-                                                                            'Receivable'
-                                                                    ? reportView()
-                                                                    : widget.type == 'PaymentList' ||
-                                                                            widget.type ==
-                                                                                'ReceiptList' ||
-                                                                            widget.type ==
-                                                                                'JournalList'
-                                                                        ? reportVoucherList()
-                                                                        : const Text(
-                                                                            'No Report'));
+        body:Align(
+          alignment: Alignment.topCenter,
+          child: Zoom(
+            backgroundColor: white,
+           centerOnScale: true,
+           opacityScrollBars: .1,
+           radiusScrollBars: .1,
+            initPosition:Offset.fromDirection(10),
+            maxZoomWidth: MediaQuery.of(context).size.width,
+              maxZoomHeight: MediaQuery.of(context).size.height,
+              // maxScale: 2.5,
+              child: (widget.type == 'ledger' ||
+                      widget.type == 'Day Book' ||
+                      widget.type == 'Trial Balance' ||
+                      widget.type == 'Cash Flow' ||
+                      widget.type == 'Invoice Wise Balance Customers' ||
+                      widget.type == 'Invoice Wise Balance Suppliers'
+                  ? reportView()
+                  : widget.type == 'Fund Flow'
+                      ? reportViewFundFlow()
+                      : widget.type == 'Cheque'
+                          ? reportViewBankVouchers()
+                          : widget.type == 'User Activity'
+                              ? reportViewUserActivity()
+                              : widget.type == 'Monthly Sales'
+                                  ? reportViewMonthlySalesReport(widget.branchId)
+                                  : widget.type == 'Monthly Purchase'
+                                      ? reportViewMonthlyPurchase(widget.branchId)
+                                      : widget.type == 'Bill By Bill'
+                                          ? reportViewSalesBillByBill()
+                                          : widget.type == 'GroupList'
+                                              ? reportViewGroupList()
+                                              : widget.type == 'LedgerList'
+                                                  ? reportViewLedgerList()
+                                                  : widget.type ==
+                                                          'Closing Report'
+                                                      ? reportViewClosingReport()
+                                                      : widget.type ==
+                                                              'EmployeeList'
+                                                          ? reportViewEmployeeList()
+                                                          : widget.type ==
+                                                                  'CustomerCardList'
+                                                              ? reportViewCustomerCardList()
+                                                              : widget.type ==
+                                                                      'P&L Account'
+                                                                  ? reportViewProfitAndLossAccount()
+                                                                  : widget.type ==
+                                                                          'BalanceSheet'
+                                                                      ? reportViewBalanceSheet()
+                                                                      : widget.type ==
+                                                                                  'Payable' ||
+                                                                              widget.type ==
+                                                                                  'Receivable'
+                                                                          ? reportView()
+                                                                          : widget.type == 'PaymentList' ||
+                                                                                  widget.type == 'ReceiptList' ||
+                                                                                  widget.type == 'JournalList'
+                                                                              ? reportVoucherList()
+                                                                              : const Text('No Report'))),
+        ));
   }
 
    bool classic = false;
@@ -630,11 +641,11 @@ class _ReportViewState extends State<ReportView> {
                               height: 0,
                             ),
                             const Divider(
-                              color: Colors.blue,
+                              color: kPrimaryColor,
                             ),
                             Container(
                               height: 20,
-                              color: Colors.blue,
+                              color: kPrimaryColor,
                               child: Table(
                                 columnWidths: const {
                                   0: FixedColumnWidth(45),
@@ -722,7 +733,7 @@ class _ReportViewState extends State<ReportView> {
                                   ]),
                                 ],
                                 border: TableBorder.all(
-                                    width: 1, color: Colors.blue),
+                                    width: 1, color: kPrimaryColor),
                               ),
                             ),
                             Table(
@@ -809,7 +820,7 @@ class _ReportViewState extends State<ReportView> {
                                   ]),
                               ],
                               border:
-                                  TableBorder.all(width: 1, color: Colors.blue),
+                                  TableBorder.all(width: .1, color: kPrimaryColor),
                             ),
                           ],
                         ),
@@ -3573,7 +3584,7 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  reportViewBalanceSheet() {
+   reportViewBalanceSheet() {
     var dataJson = '[' +
         json.encode({
           'statementType': widget.statement.isEmpty ? '' : widget.statement,
@@ -3608,14 +3619,11 @@ class _ReportViewState extends State<ReportView> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: DataTable(
-                        headingRowColor:
-                            const MaterialStatePropertyAll(kPrimaryColor),
-                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingRowColor: MaterialStateColor.resolveWith(
+                            (states) => Colors.grey.shade200),
+                        border:
+                            TableBorder.all(width: 1.0, color: Colors.black),
                         columnSpacing: 12,
-                        headingTextStyle: const TextStyle(
-                            fontFamily: 'poppins',
-                            color: white,
-                            fontWeight: FontWeight.w500),
                         dataRowHeight: 20,
                         headingRowHeight: 30,
                         columns: [
@@ -3625,12 +3633,15 @@ class _ReportViewState extends State<ReportView> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   tableColumn[i],
+                                  style: const TextStyle(
+                                      // color: Colors.black,
+                                      fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
                         ],
-                        rows: data
+                        rows: data!
                             .map(
                               (values) => DataRow(
                                 cells: [
@@ -3650,8 +3661,6 @@ class _ReportViewState extends State<ReportView> {
                                               ? values[tableColumn[i]]
                                                   .toString()
                                               : '',
-                                          style:
-                                              TextStyle(fontFamily: 'poppins'),
                                           softWrap: true,
                                           overflow: TextOverflow.ellipsis,
                                           //style: TextStyle(fontSize: 6),
@@ -3725,7 +3734,7 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  Future<String> _createPDF(String title) async {
+   Future<String> _createPDF(String title) async {
     return await makePDF(title).then((value) => savePreviewPDF(value, title));
   }
 
@@ -3744,376 +3753,248 @@ class _ReportViewState extends State<ReportView> {
 
     var data = _data;
     final pw.Document pdf = pw.Document();
-    //saleel
-    if (widget.statement.isEmpty) {
-      var dataJson = '[' +
-          json.encode({
-            'statementType':
-                widget.statement.isEmpty ? 'Ledger_Report' : widget.statement,
-            'sDate': widget.sDate.isEmpty ? '' : widget.sDate,
-            'eDate': widget.eDate.isEmpty ? '' : widget.eDate,
-            'id': widget.id ?? '',
-            'Check_openingbalance': widget.ob ?? 0,
-            'location': jsonEncode(location),
-            'project': jsonEncode(project),
-            'salesMan': 0,
-            'fyId': currentFinancialYear!.id,
-          }) +
-          ']';
-      final data = await api.fetchLedgerReport(dataJson);
-      pdf.addPage(pw.MultiPage(
-        maxPages: 50,
-        pageFormat: pw.PdfPageFormat.a4,
-        header: (pw.Context context) =>
-            _buildHeader(widget.sDate, widget.eDate,widget.name),
-        footer: (pw.Context context) => _buildFooter(context),
-        build: (pw.Context context) {
-          List<pw.Widget> widgets = [
-            pw.Table(
-              columnWidths: const {
-                0: pw.FixedColumnWidth(45),
-                1: pw.FlexColumnWidth(20),
-                2: pw.FlexColumnWidth(8),
-                3: pw.FlexColumnWidth(8),
-                4: pw.FlexColumnWidth(8),
-              },
-              children: [
-                for (var i = 0; i < data.length; i++)
+    pdf.addPage(pw.MultiPage(
+        // pageFormat: PdfPageFormat.a4,
+        maxPages: 100,
+        header: (context) => pw.Column(children: [
+              pw.Center(
+                  child: pw.Column(children: [
+                pw.Text(companySettings!.name),
+                pw.Text(companySettings!.add1!),
+                pw.Text(companySettings!.add2!),
+                pw.Text(companySettings!.add3!),
+                pw.Text(companySettings!.mobile!),
+                pw.Text(companyTaxNo.isNotEmpty
+                    ? (companyTaxMode == 'INDIA'
+                        ? 'GST NO : $companyTaxNo'
+                        : companyTaxMode == 'AFRICA'
+                            ? 'NUIT : $companyTaxNo'
+                            : companyTaxMode == 'GULF'
+                                ? 'TRN : $companyTaxNo'
+                                : '')
+                    : ''),
+              ])),
+              pw.Text(title,
+                  style: const pw.TextStyle(color: PdfColor.fromInt(0))),
+
+              tempLedgerData != null
+                  ? pw.Align(
+                      alignment: pw.Alignment.centerLeft,
+                      child: pw.RichText(
+                          textAlign: pw.TextAlign.left,
+                          text: pw.TextSpan(
+                              text: 'Ledger   : ${tempLedgerData!.name}\n',
+                              children: [
+                                pw.TextSpan(
+                                    text:
+                                        'Address : ${tempLedgerData!.address1}\n'),
+                                pw.TextSpan(
+                                    text:
+                                        '                ${tempLedgerData!.address2}\n'),
+                                pw.TextSpan(
+                                    text:
+                                        '                ${tempLedgerData!.address3}\n'),
+                                pw.TextSpan(
+                                    text:
+                                        'Mobile    : ${tempLedgerData!.phone}\n'),
+                              ])))
+                  : pw.Text(''),
+              // if (context.pageNumber > 1) pw.SizedBox(height: 20)
+            ]),
+        build: (context) => [
+              // pw.Container(
+              //     child: pw.Padding(
+              //         padding: const pw.EdgeInsets.all(1.0),
+              //         child: pw.Column(
+              //           children: [
+              // pw.Header(
+              //   text: title,
+              //   child: pw.Text('data'),
+              // ),
+              pw.Table(
+                border: pw.TableBorder.all(width: 0.2),
+                children: [
                   pw.TableRow(children: [
-                    pw.Center(
-                        child: pw.Column(
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(2.0),
-                          child: pw.Text(
-                            '${data[i]['Date']}',
-                            style: pw.TextStyle(
-                                fontSize: 7, fontWeight: pw.FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    )),
-                    // pw.Padding(
-                    //   padding: const pw.EdgeInsets.all(2.0),
-                    //   child: pw.Text(
-                    //     '${data[i]['Particulars']}',
-                    //     style: pw.TextStyle(
-                    //         fontSize: 8, fontWeight: pw.FontWeight.bold),
-                    //   ),
-                    // ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(2.0),
-                      child: data[i]['Particulars'] == 'Opening Balance' ||
-                              data[i]['Particulars'] == 'Closing Balance'
-                          ? pw.Text(
-                              '${data[i]['Particulars']}',
-                              style: pw.TextStyle(
-                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
-                            )
-                          : data[i]['Particulars'].isNotEmpty
-                              ? pw.Text(
-                                  'Voucher:${data[i]['Voucher']}\nNo:${data[i]['EntryNo']}\n${data[i]['Particulars']}',
-                                  style: pw.TextStyle(
-                                      fontSize: 6,
-                                      fontWeight: pw.FontWeight.bold),
-                                )
-                              : pw.Text(''),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(2.0),
-                      child: pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            '${data[i]['Debit']}',
-                            style: pw.TextStyle(
-                                fontSize: 8, fontWeight: pw.FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(2.0),
-                      child: pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            '${data[i]['Credit']}',
-                            style: pw.TextStyle(
-                                fontSize: 8, fontWeight: pw.FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(2.0),
-                      child: pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.end,
-                        children: [
-                          pw.Text(
-                            "${data[i]['Balance']}",
-                            style: pw.TextStyle(
-                                fontSize: 8,
-                                color: const pw.PdfColor.fromInt(0xFF000000),
-                                fontWeight: pw.FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    )
+                    for (int k = 0; k < tableColumn.length; k++)
+                      pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          mainAxisAlignment: pw.MainAxisAlignment.center,
+                          children: [
+                            pw.Text(tableColumn[k],
+                                style: const pw.TextStyle(fontSize: 6)),
+                            // pw.Divider(thickness: 1)
+                          ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[0],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[1],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[2],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[3],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[4],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[5],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[6],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
+                    // pw.Column(
+                    //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    //     mainAxisAlignment: pw.MainAxisAlignment.center,
+                    //     children: [
+                    //       pw.Text(tableHeaders[7],
+                    //           style: const pw.TextStyle(fontSize: 6)),
+                    //       // pw.Divider(thickness: 1)
+                    //     ]),
                   ]),
-              ],
-              border: pw.TableBorder.all(
-                  width: 1, color: const pw.PdfColor.fromInt(0xFF000000)),
-            ),
-          ];
-
-          return widgets;
-        },
-      ));
-    } else {
-      pdf.addPage(pw.MultiPage(
-          // pageFormat: PdfPageFormat.a4,
-          maxPages: 100,
-          header: (context) => pw.Column(children: [
-                pw.Center(
-                    child: pw.Column(children: [
-                  pw.Text(companySettings!.name!),
-                  pw.Text(companySettings!.add1!),
-                  pw.Text(companySettings!.add2!),
-                  pw.Text(companySettings!.add3!),
-                  pw.Text(companySettings!.mobile!),
-                  pw.Text(companyTaxNo.isNotEmpty
-                      ? (companyTaxMode == 'INDIA'
-                          ? 'GST NO : $companyTaxNo'
-                          : companyTaxMode == 'AFRICA'
-                              ? 'NUIT : $companyTaxNo'
-                              : companyTaxMode == 'GULF'
-                                  ? 'TRN : $companyTaxNo'
-                                  : '')
-                      : ''),
-                ])),
-                pw.Text(title,
-                    style: const pw.TextStyle(color: PdfColor.fromInt(0))),
-
-                tempLedgerData != null
-                    ? pw.Align(
-                        alignment: pw.Alignment.centerLeft,
-                        child: pw.RichText(
-                            textAlign: pw.TextAlign.left,
-                            text: pw.TextSpan(
-                                text: 'Ledger   : ${tempLedgerData!.name}\n',
-                                children: [
-                                  pw.TextSpan(
-                                      text:
-                                          'Address : ${tempLedgerData!.address1}\n'),
-                                  pw.TextSpan(
-                                      text:
-                                          '                ${tempLedgerData!.address2}\n'),
-                                  pw.TextSpan(
-                                      text:
-                                          '                ${tempLedgerData!.address3}\n'),
-                                  pw.TextSpan(
-                                      text:
-                                          'Mobile    : ${tempLedgerData!.phone}\n'),
-                                ])))
-                    : pw.Text(''),
-                // if (context.pageNumber > 1) pw.SizedBox(height: 20)
-              ]),
-          build: (context) => [
-                // pw.Container(
-                //     child: pw.Padding(
-                //         padding: const pw.EdgeInsets.all(1.0),
-                //         child: pw.Column(
-                //           children: [
-                // pw.Header(
-                //   text: title,
-                //   child: pw.Text('data'),
-                // ),
-                pw.Table(
-                  border: pw.TableBorder.all(width: 0.2),
-                  children: [
+                  for (var i = 0; i < data.length; i++)
                     pw.TableRow(children: [
-                      for (int k = 0; k < tableColumn.length; k++)
+                      for (int l = 0; l < tableColumn.length; l++)
                         pw.Column(
-                            crossAxisAlignment: pw.CrossAxisAlignment.center,
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
                             mainAxisAlignment: pw.MainAxisAlignment.center,
                             children: [
-                              pw.Text(tableColumn[k],
-                                  style: const pw.TextStyle(fontSize: 6)),
-                              // pw.Divider(thickness: 1)
+                              pw.Padding(
+                                padding: const pw.EdgeInsets.all(2.0),
+                                child: pw.Text(
+                                    data[i][tableColumn[l]].toString() ?? '',
+                                    style: const pw.TextStyle(fontSize: 6)),
+                                // pw.Divider(thickness: 1)
+                              ),
                             ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.start,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[0],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text(data[i]['Particulars'],
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       ),
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.start,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[1],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['Voucher']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.end,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[2],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['EntryNo']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.end,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[3],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['Debit']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.end,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[4],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['Credit']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.end,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[5],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['Balance']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
                       // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      //     crossAxisAlignment: pw.CrossAxisAlignment.start,
                       //     mainAxisAlignment: pw.MainAxisAlignment.center,
                       //     children: [
-                      //       pw.Text(tableHeaders[6],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
+                      //       pw.Padding(
+                      //         padding: const pw.EdgeInsets.all(2.0),
+                      //         child: pw.Text('${data[i]['Narration']}',
+                      //             style: const pw.TextStyle(fontSize: 6)),
+                      //         // pw.Divider(thickness: 1)
+                      //       )
                       //     ]),
-                      // pw.Column(
-                      //     crossAxisAlignment: pw.CrossAxisAlignment.center,
-                      //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                      //     children: [
-                      //       pw.Text(tableHeaders[7],
-                      //           style: const pw.TextStyle(fontSize: 6)),
-                      //       // pw.Divider(thickness: 1)
-                      //     ]),
-                    ]),
-                    for (var i = 0; i < data.length; i++)
-                      pw.TableRow(children: [
-                        for (int l = 0; l < tableColumn.length; l++)
-                          pw.Column(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              mainAxisAlignment: pw.MainAxisAlignment.center,
-                              children: [
-                                pw.Padding(
-                                  padding: const pw.EdgeInsets.all(2.0),
-                                  child: pw.Text(
-                                      data[i][tableColumn[l]].toString() ?? '',
-                                      style: const pw.TextStyle(fontSize: 6)),
-                                  // pw.Divider(thickness: 1)
-                                ),
-                              ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text(data[i]['Particulars'],
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       ),
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['Voucher']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['EntryNo']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['Debit']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['Credit']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.end,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['Balance']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                        // pw.Column(
-                        //     crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        //     mainAxisAlignment: pw.MainAxisAlignment.center,
-                        //     children: [
-                        //       pw.Padding(
-                        //         padding: const pw.EdgeInsets.all(2.0),
-                        //         child: pw.Text('${data[i]['Narration']}',
-                        //             style: const pw.TextStyle(fontSize: 6)),
-                        //         // pw.Divider(thickness: 1)
-                        //       )
-                        //     ]),
-                      ])
-                  ],
-                ),
-                // pw.Header(text: ''),
-                // pw.Footer(title: pw.Text('add footer message'))
-                //   ],
-                // )))
-              ],
-          footer: _buildFooter));
-    }
+                    ])
+                ],
+              ),
+              // pw.Header(text: ''),
+              // pw.Footer(title: pw.Text('add footer message'))
+              //   ],
+              // )))
+            ],
+        footer: _buildFooter));
+
     return pdf;
   }
 
   pw.Widget _buildFooter(pw.Context context) {
-    debugPrint('Page ${context.pageNumber}/${context.pagesCount}');
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       crossAxisAlignment: pw.CrossAxisAlignment.end,

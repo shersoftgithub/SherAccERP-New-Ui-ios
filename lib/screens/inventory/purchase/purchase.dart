@@ -179,7 +179,11 @@ class _PurchaseState extends State<Purchase> {
       fetchPurchase(context, dataDynamic[0]);
       _isLoading = false;
     }
-    voucherTypeData = voucherTypeList.firstWhere((element) => element.voucher.toLowerCase() == 'purchase');
+    voucherTypeData = voucherTypeList.firstWhere(
+  (element) => element.voucher.toLowerCase() == 'purchase',
+  orElse: () => VoucherType.emptyData(), // Provide a fallback if no element is found
+);
+
   }
 
   setCursorPosition() {

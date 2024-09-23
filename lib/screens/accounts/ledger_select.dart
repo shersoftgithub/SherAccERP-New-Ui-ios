@@ -1,6 +1,7 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
@@ -31,6 +32,7 @@ bool _loading = true,
       _ob = true,
       _gAll = true,
       isSalesManWiseLedger = false,
+      isAdminUser = false,
       _0b = false;
 var _ledger, _id, locationId, _dropDownBranchId;
   String? fromDate, toDate, sType = 'Summery', area = '0', route = '0';
@@ -40,10 +42,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
   var mode = '';
   DateTime now = DateTime.now();
   String radioButtonItem = 'All';
-  int rdId = 1, groupId = 0;
+  int rdId = 1, groupId = 0,areaId = 0, routeId = 0;
   String selectedGroupValues = '', selectedStockValue = '';
   dynamic selectedItem;
   List<CompanySettings> settings = [];
+  List<OtherRegistrationModel> otherRegAreaDataList = [];
+  List<OtherRegistrationModel> otherRegRouteDataList = [];
 
   @override
   void initState() {
@@ -61,17 +65,47 @@ var _ledger, _id, locationId, _dropDownBranchId;
    groupId =
         ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
             1;
+    areaId =
+        ComSettings.appSettings('int', 'key-dropdown-default-area-view', 0) - 1;
+    routeId =
+        ComSettings.appSettings('int', 'key-dropdown-default-route-view', 0) -
+            1;        
     isSalesManWiseLedger =
         ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings);
     int salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
         1;
-    if (arguments.isNotEmpty) {
+        isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
+    if (!isAdminUser) {
+      locationId = ComSettings.appSettings(
+              'int', 'key-dropdown-default-location-view', 2) -
+          1;
+      salesMan = (ComSettings.appSettings(
+                  'int', 'key-dropdown-default-salesman-view', 1) -
+              1)
+          .toString();
+      OtherRegistrationModel otherData = otherRegLocationList.firstWhere(
+          (element) => element.id == locationId,
+          orElse: () => OtherRegistrationModel(
+              add1: '',
+              add2: '',
+              add3: '',
+              description: '',
+              email: '',
+              id: locationId,
+              name: defaultLocation,
+              type: ''));
+      locationId = DataJson(id: otherData.id, name: otherData.name);
+    }    
+
+
+     if (arguments != null) {
       mode = arguments['mode'];
       if (mode == "ledger") {
         _loading = true;
         statement = 'Ledger_Report';
-         (isSalesManWiseLedger
+        (isSalesManWiseLedger
                 ? api.getLedgerBySalesMan(salesManId)
                 : (groupId > 1
                     ? api.getLedgerByGroup(groupId)
@@ -253,10 +287,27 @@ var _ledger, _id, locationId, _dropDownBranchId;
     }
 
     if (otherRegAreaList.isNotEmpty) {
-      areaModel = otherRegAreaList.first;
+      otherRegAreaDataList.addAll(otherRegAreaList);
+      if (areaId > 1) {
+        areaModel = otherRegAreaDataList.firstWhere(
+            (element) => element.id == areaId,
+            orElse: () => OtherRegistrationModel.emptyData());
+      } else {
+        otherRegAreaDataList.add(OtherRegistrationModel.emptyData());
+        areaModel = otherRegAreaDataList.last;
+      }
     }
+
     if (otherRegRouteList.isNotEmpty) {
-      routeModel = otherRegRouteList.first;
+      otherRegAreaDataList.addAll(otherRegRouteList);
+      if (routeId > 1) {
+        areaModel = otherRegRouteDataList.firstWhere(
+            (element) => element.id == routeId,
+            orElse: () => OtherRegistrationModel.emptyData());
+      } else {
+        otherRegRouteDataList.add(OtherRegistrationModel.emptyData());
+        routeModel = otherRegRouteDataList.last;
+      }
     }
   }
 
@@ -509,26 +560,29 @@ var _ledger, _id, locationId, _dropDownBranchId;
                 //     },
                 //   ),
                 // ),
-                ContainerFieldWidget(
-                    widget: DropdownSearch<dynamic>(
-                      popupProps:
-                          const PopupPropsMultiSelection.modalBottomSheet(
-                              showSearchBox: true,
-                              constraints: BoxConstraints(
-                                maxHeight: 300,
-                              )),
-                      asyncItems: (String filter) =>
-                          api.getSalesListData(filter, 'sales_list/location'),
-                      dropdownDecoratorProps: const DropDownDecoratorProps(
-                        dropdownSearchDecoration: InputDecoration(
-                          border: OutlineInputBorder(),
+                Visibility(
+                  visible: isAdminUser,
+                  child: ContainerFieldWidget(
+                      widget: DropdownSearch<dynamic>(
+                        popupProps:
+                            const PopupPropsMultiSelection.modalBottomSheet(
+                                showSearchBox: true,
+                                constraints: BoxConstraints(
+                                  maxHeight: 300,
+                                )),
+                        asyncItems: (String filter) =>
+                            api.getSalesListData(filter, 'sales_list/location'),
+                        dropdownDecoratorProps: const DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
                         ),
+                        onChanged: (dynamic data) {
+                          locationId = data;
+                        },
                       ),
-                      onChanged: (dynamic data) {
-                        locationId = data;
-                      },
-                    ),
-                    headTxt: 'Select Branch'),
+                      headTxt: 'Select Branch'),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -541,7 +595,6 @@ var _ledger, _id, locationId, _dropDownBranchId;
                         List<int> branches = locationId != null
                             ? [locationId.id]
                             : otherRegLocationList.map((e) => e.id).toList();
-                            statement = '';
                         Navigator.push(
                             context,
                             MaterialPageRoute(

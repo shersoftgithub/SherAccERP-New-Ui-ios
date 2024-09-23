@@ -573,6 +573,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                   key: keyHsn,
                                   suggestions: hsnList,
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                   textSubmitted: (data) {
@@ -591,6 +595,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           clearOnSubmit: false,
                           suggestions: itemCodeList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -645,7 +653,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       ],
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     ContainerFieldWidget(
                         widget: SimpleAutoCompleteTextField(
@@ -654,6 +662,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           clearOnSubmit: false,
                           suggestions: itemNameList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -671,68 +683,77 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                         headTxt: 'Item Name'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     ContainerFieldWidget(
                         widget: TextField(
                           controller: itemLocalNameController,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                         ),
                         headTxt: 'Item Local Name'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     ContainerFieldWidget(
-                        widget: DropdownSearch<dynamic>(
-                          popupProps:
-                              const PopupPropsMultiSelection.modalBottomSheet(
-                                  showSearchBox: true,
-                                  constraints: BoxConstraints(
-                                    maxHeight: 300,
-                                  )),
-                          asyncItems: (String filter) => api.getTaxGroupData(
-                              filter, 'sales_list/taxGroup'),
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                              border: OutlineInputBorder(),
+                        widget: SizedBox(
+                          height: 45,
+                          child: DropdownSearch<dynamic>(
+                            popupProps:
+                                const PopupPropsMultiSelection.dialog(
+                                    showSearchBox: true,
+                                    // constraints: BoxConstraints(
+                                    //   maxHeight: 300,
+                                    // )
+                                    ),
+                            asyncItems: (String filter) => api.getTaxGroupData(
+                                filter, 'sales_list/taxGroup'),
+                            dropdownDecoratorProps: const DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                              ),
                             ),
+                            onChanged: (dynamic data) {
+                              taxGroup = data;
+                            },
+                            selectedItem: taxGroup,
                           ),
-                          onChanged: (dynamic data) {
-                            taxGroup = data;
-                          },
-                          selectedItem: taxGroup,
                         ),
                         headTxt: 'Tax Group'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                       children: [
                         Expanded(
                             flex: 2,
                             child: ContainerFieldWidget(
-                                widget: DropdownSearch<dynamic>(
-                                  popupProps: const PopupPropsMultiSelection
-                                      .modalBottomSheet(
-                                      showSearchBox: true,
-                                      constraints: BoxConstraints(
-                                        maxHeight: 300,
-                                      )),
-                                  asyncItems: (String filter) =>
-                                      api.getSalesListData(
-                                          filter, 'sales_list/unit'),
-                                  dropdownDecoratorProps:
-                                      const DropDownDecoratorProps(
-                                    dropdownSearchDecoration: InputDecoration(
-                                      border: OutlineInputBorder(),
+                                widget: SizedBox(
+                                  height: 45,
+                                  child: DropdownSearch<dynamic>(
+                                    popupProps: const PopupPropsMultiSelection
+                                        .dialog(
+                                        showSearchBox: true,
+                                        ),
+                                    asyncItems: (String filter) =>
+                                        api.getSalesListData(
+                                            filter, 'sales_list/unit'),
+                                    dropdownDecoratorProps:
+                                        const DropDownDecoratorProps(
+                                      dropdownSearchDecoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                      ),
                                     ),
+                                    onChanged: (dynamic data) {
+                                      unit = data;
+                                    },
+                                    selectedItem: unit,
                                   ),
-                                  onChanged: (dynamic data) {
-                                    unit = data;
-                                  },
-                                  selectedItem: unit,
                                 ),
                                 headTxt: 'Select Unit')),
                         const SizedBox(
@@ -752,7 +773,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                               },
                               child: Container(
                                 width: 120,
-                                height: 50,
+                                height: 45,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
                                     color: kPrimaryColor),
@@ -784,7 +805,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                     //     title:
                     //     trailing: ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     // DropdownSearch<dynamic>(
                     //   constraints: BoxConstraints(maxHeight: 300),
@@ -805,6 +826,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           key: keyMFR,
                           suggestions: mfrList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -817,7 +842,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                         headTxt: 'Manufacture'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     // DropdownSearch<dynamic>(
                     //   constraints: BoxConstraints(maxHeight: 300),
@@ -838,6 +863,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           key: keyCategory,
                           suggestions: categoryList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -850,7 +879,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                         headTxt: 'Category'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     // DropdownSearch<dynamic>(
                     //   constraints: BoxConstraints(maxHeight: 300),
@@ -871,6 +900,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           key: keySubCategory,
                           suggestions: subCategoryList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -883,7 +916,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                         headTxt: 'SubCategory'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     ContainerFieldWidget(
                         widget: SimpleAutoCompleteTextField(
@@ -891,6 +924,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                           key: keyBrand,
                           suggestions: brandList,
                           decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                             border: OutlineInputBorder(),
                           ),
                           textSubmitted: (data) {
@@ -903,7 +940,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                         ),
                         headTxt: 'Brand'),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     const Align(
                         alignment: Alignment.centerLeft,
@@ -915,7 +952,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                               fontFamily: 'poppins',
                               fontWeight: FontWeight.w500),
                         )),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -934,12 +971,16 @@ class _ProductRegisterState extends State<ProductRegister> {
                                           replacementString: '.')
                                     ],
                                     decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
                                   headTxt: 'MRP')),
                           const SizedBox(
-                            width: 10,
+                            width: 8,
                           ),
                           Expanded(
                               child: Column(
@@ -948,8 +989,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                                 height: 20,
                               ),
                               Container(
+                                alignment: Alignment.center,
                                 width: 150,
-                                height: 55,
+                                // height: 45,
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
                                     color: kPrimaryColor),
@@ -974,7 +1016,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                           ))
                         ]),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -993,6 +1035,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                         replacementString: '.')
                                   ],
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
@@ -1014,6 +1060,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                         replacementString: '.')
                                   ],
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
@@ -1021,7 +1071,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       ],
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1040,6 +1090,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                           replacementString: '.')
                                     ],
                                     decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
@@ -1061,13 +1115,17 @@ class _ProductRegisterState extends State<ProductRegister> {
                                           replacementString: '.')
                                     ],
                                     decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
                                   headTxt: 'Branch'))
                         ]),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1141,7 +1199,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       ],
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Container(
                       width: 75,
@@ -1161,7 +1219,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       )),
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                       children: [
@@ -1179,6 +1237,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                         replacementString: '.')
                                   ],
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
@@ -1219,8 +1281,11 @@ class _ProductRegisterState extends State<ProductRegister> {
                                       key: keyRack,
                                       suggestions: rackList,
                                       decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                         border: OutlineInputBorder(),
-                                        hintText: 'Select Rack',
                                       ),
                                       textSubmitted: (data) {
                                         rack = rackDataList.firstWhere(
@@ -1235,7 +1300,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       ],
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 8,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1254,6 +1319,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                         replacementString: '.')
                                   ],
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
@@ -1275,13 +1344,17 @@ class _ProductRegisterState extends State<ProductRegister> {
                                         replacementString: '.')
                                   ],
                                   decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
                                 headTxt: 'Max Order Level')),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1299,6 +1372,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                           replacementString: '.')
                                     ],
                                     decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
@@ -1320,6 +1397,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                           replacementString: '.')
                                     ],
                                     decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                       border: OutlineInputBorder(),
                                     ),
                                   ),
@@ -1408,8 +1489,12 @@ class _ProductRegisterState extends State<ProductRegister> {
                 const SizedBox(
                   height: 10,
                 ),
-                Card(
-                  // elevation: 5,
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: white,
+                  ),
                   child: Column(
                     children: [
                       Row(
@@ -1418,7 +1503,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                             child: Container(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 10),
-                              height: 60,
+                              height: 45,
                               decoration: BoxDecoration(
                                   border: Border.all(color: grey),
                                   borderRadius: BorderRadius.circular(3)),
@@ -1447,34 +1532,35 @@ class _ProductRegisterState extends State<ProductRegister> {
                             width: 4,
                           ),
                           Expanded(
-                            child: SizedBox(
-                              height: 60,
-                              child: TextField(
-                                controller: conversionController,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                decoration: const InputDecoration(
-                                  labelText: 'Conversion',
-                                  border: OutlineInputBorder(),
-                                ),
+                            child: TextField(
+                              controller: conversionController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
+                              inputFormatters: [
+                                FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                    allow: true, replacementString: '.')
+                              ],
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                                            horizontal: 5,
+                                                            vertical: 7
+                                                          ),
+                                labelText: 'Conversion',
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 8,
                       ),
                       Row(children: [
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
-                            height: 60,
+                            height: 45,
                             decoration: BoxDecoration(
                                 border: Border.all(color: grey),
                                 borderRadius: BorderRadius.circular(3)),
@@ -1503,21 +1589,22 @@ class _ProductRegisterState extends State<ProductRegister> {
                           width: 4,
                         ),
                         Expanded(
-                          child: SizedBox(
-                            height: 60,
-                            child: TextField(
-                              controller: barcodeController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                      decimal: true),
-                              inputFormatters: [
-                                FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                    allow: true)
-                              ],
-                              decoration: const InputDecoration(
-                                labelText: 'Barcode',
-                                border: OutlineInputBorder(),
-                              ),
+                          child: TextField(
+                            controller: barcodeController,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                                    decimal: true),
+                            inputFormatters: [
+                              FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                  allow: true)
+                            ],
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                                            horizontal: 5,
+                                                            vertical: 7
+                                                          ),
+                              labelText: 'Barcode',
+                              border: OutlineInputBorder(),
                             ),
                           ),
                         ),
@@ -1577,7 +1664,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                       });
                     },
                     child: const Text(
-                      'OK',
+                      'Save',
                       style: TextStyle(fontFamily: 'poppins'),
                     )),
               ]),
@@ -1602,7 +1689,8 @@ class _ProductRegisterState extends State<ProductRegister> {
               children: [
                  Text(
                     '${unitDetail[index].id} , ${unitDetail[index].name} , ${unitDetail[index].conversion} , ${unitDetail[index].rateType} , Barcode:${unitDetail[index].barcode}'),
-                TextButton.icon(
+                    
+                IconButton(
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.all<Color>(kPrimaryColor),
@@ -1617,8 +1705,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                     icon: const Icon(
                       Icons.delete,
                       color: red,
-                    ),
-                    label: const Text(''))
+                    ),)
               ],
             ),
           ],

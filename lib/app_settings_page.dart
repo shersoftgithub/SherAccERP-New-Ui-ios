@@ -346,187 +346,187 @@ class AppSettings extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                //Company
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    width: MediaQuery.sizeOf(context).width,
-                    // height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: white,
-                    ),
-                    child: SimpleSettingsTile(
-                        title: 'Company Settings',
-                        titleTextStyle: const TextStyle(
-                            fontFamily: 'poppins',
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500),
-                        // subtitle: 'Company Settings',
-                        child: SettingsScreen(
-                          title: 'Company Settings',
-                          children: [
-                            Container(
-                              width: MediaQuery.sizeOf(context).width,
-                              height: MediaQuery.sizeOf(context).height,
-                              color: bagroundColor,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                child: Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Company(Firm) Name',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-name',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Address 1',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-address1',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Address 2',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-address2',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Tax Number',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-taxno',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Phone',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-phone',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: TextInputSettingsTile(
-                                        title: 'Mail ID',
-                                        titleTextStyle: const TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500),
-                                        settingKey: 'key-company-mail',
-                                        initialValue: 'unknown',
-                                        validator: (String? username) {
-                                          if (username != null &&
-                                              username.length > 3) {
-                                            return null;
-                                          }
-                                          return "can't be smaller than 4 letters";
-                                        },
-                                        borderColor: Colors.blueAccent,
-                                        errorColor: Colors.deepOrangeAccent,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        )),
-                  ),
-                ),
+                // const SizedBox(
+                //   height: 10,
+                // ),
+                // //Company
+                // ClipRRect(
+                //   borderRadius: BorderRadius.circular(10),
+                //   child: Container(
+                //     width: MediaQuery.sizeOf(context).width,
+                //     // height: 50,
+                //     decoration: BoxDecoration(
+                //       borderRadius: BorderRadius.circular(10),
+                //       color: white,
+                //     ),
+                //     child: SimpleSettingsTile(
+                //         title: 'Company Settings',
+                //         titleTextStyle: const TextStyle(
+                //             fontFamily: 'poppins',
+                //             fontSize: 15,
+                //             fontWeight: FontWeight.w500),
+                //         // subtitle: 'Company Settings',
+                //         child: SettingsScreen(
+                //           title: 'Company Settings',
+                //           children: [
+                //             Container(
+                //               width: MediaQuery.sizeOf(context).width,
+                //               height: MediaQuery.sizeOf(context).height,
+                //               color: bagroundColor,
+                //               child: Padding(
+                //                 padding: const EdgeInsets.symmetric(
+                //                     horizontal: 20, vertical: 10),
+                //                 child: Column(
+                //                   children: [
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Company(Firm) Name',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-name',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                     const SizedBox(
+                //                       height: 10,
+                //                     ),
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Address 1',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-address1',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                     const SizedBox(
+                //                       height: 10,
+                //                     ),
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Address 2',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-address2',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                     const SizedBox(
+                //                       height: 10,
+                //                     ),
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Tax Number',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-taxno',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                     const SizedBox(
+                //                       height: 10,
+                //                     ),
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Phone',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-phone',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                     const SizedBox(
+                //                       height: 10,
+                //                     ),
+                //                     ClipRRect(
+                //                       borderRadius: BorderRadius.circular(8),
+                //                       child: TextInputSettingsTile(
+                //                         title: 'Mail ID',
+                //                         titleTextStyle: const TextStyle(
+                //                             fontFamily: 'poppins',
+                //                             fontSize: 15,
+                //                             fontWeight: FontWeight.w500),
+                //                         settingKey: 'key-company-mail',
+                //                         initialValue: 'unknown',
+                //                         validator: (String? username) {
+                //                           if (username != null &&
+                //                               username.length > 3) {
+                //                             return null;
+                //                           }
+                //                           return "can't be smaller than 4 letters";
+                //                         },
+                //                         borderColor: Colors.blueAccent,
+                //                         errorColor: Colors.deepOrangeAccent,
+                //                       ),
+                //                     ),
+                //                   ],
+                //                 ),
+                //               ),
+                //             )
+                //           ],
+                //         )),
+                //   ),
+                // ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -998,30 +998,31 @@ class AppSettings extends StatelessWidget {
                             // ),
                             Container(
                               width: MediaQuery.sizeOf(context).width,
+                              height: MediaQuery.sizeOf(context).height,
                               color: bagroundColor,
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 20),
                                 child: Column(
                                   children: [
-                                    SwitchSettingsTile(
-                                      settingKey: 'key-print-item-regional',
-                                      title: 'Print Item In Regional',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      subtitleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins'),
-                                      subtitle: 'Print Item Name In Regional',
-                                      enabledLabel: 'Enabled',
-                                      disabledLabel: 'Disabled',
-                                      // leading: Icon(Icons.receipt_long),
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-print-item-regional: $value');
-                                      },
-                                    ),
+                                    // SwitchSettingsTile(
+                                    //   settingKey: 'key-print-item-regional',
+                                    //   title: 'Print Item In Regional',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontSize: 16,
+                                    //       fontWeight: FontWeight.w500),
+                                    //   subtitleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins'),
+                                    //   subtitle: 'Print Item Name In Regional',
+                                    //   enabledLabel: 'Enabled',
+                                    //   disabledLabel: 'Disabled',
+                                    //   // leading: Icon(Icons.receipt_long),
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-print-item-regional: $value');
+                                    //   },
+                                    // ),
                                     SwitchSettingsTile(
                                       settingKey: 'key-item-by-code',
                                       title: 'Enabled Item Code Vice',
@@ -1039,62 +1040,62 @@ class AppSettings extends StatelessWidget {
                                         debugPrint('key-item-by-code: $value');
                                       },
                                     ),
-                                    SwitchSettingsTile(
-                                      settingKey: 'key-item-serial-no',
-                                      title: 'Enabled Item Serial No',
-                                      subtitle: 'Add serial number to item',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      subtitleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins'),
-                                      enabledLabel: 'Enabled',
-                                      disabledLabel: 'Disabled',
-                                      // leading: Icon(Icons.receipt_long),
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-item-serial-no: $value');
-                                      },
-                                    ),
-                                    SwitchSettingsTile(
-                                      settingKey: 'key-item-stock-all',
-                                      title: 'Limited Item On Stock',
-                                      subtitle: 'Show Limited Stock Items',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      subtitleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins'),
-                                      enabledLabel: 'Enabled',
-                                      disabledLabel: 'Disabled',
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-item-stock-all: $value');
-                                      },
-                                    ),
-                                    DropDownSettingsTile<int>(
-                                      title: 'Item Default Unit',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      subtitleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins'),
-                                      settingKey:
-                                          'key-dropdown-item-default-sku-view',
-                                          values: unitListSettings.isNotEmpty
-                      ? {for (var e in unitListSettings) e.key + 1: e.value}
-                                          : {
-                                              2: '',
-                                            },
-                                      selected: 2,
-                                      onChange: (value) {
-                                        debugPrint(
-                                            'key-dropdown-item-default-sku-view: $value');
-                                      },
-                                    ),
+                                    // SwitchSettingsTile(
+                                    //   settingKey: 'key-item-serial-no',
+                                    //   title: 'Enabled Item Serial No',
+                                    //   subtitle: 'Add serial number to item',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontSize: 16,
+                                    //       fontWeight: FontWeight.w500),
+                                    //   subtitleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins'),
+                                    //   enabledLabel: 'Enabled',
+                                    //   disabledLabel: 'Disabled',
+                                    //   // leading: Icon(Icons.receipt_long),
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-item-serial-no: $value');
+                                    //   },
+                                    // ),
+                                    // SwitchSettingsTile(
+                                    //   settingKey: 'key-item-stock-all',
+                                    //   title: 'Limited Item On Stock',
+                                    //   subtitle: 'Show Limited Stock Items',
+                                    //   titleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontSize: 16,
+                                    //       fontWeight: FontWeight.w500),
+                                    //   subtitleTextStyle: const TextStyle(
+                                    //       fontFamily: 'poppins'),
+                                    //   enabledLabel: 'Enabled',
+                                    //   disabledLabel: 'Disabled',
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-item-stock-all: $value');
+                                    //   },
+                                    // ),
+                      //               DropDownSettingsTile<int>(
+                      //                 title: 'Item Default Unit',
+                      //                 titleTextStyle: const TextStyle(
+                      //                     fontFamily: 'poppins',
+                      //                     fontSize: 16,
+                      //                     fontWeight: FontWeight.w500),
+                      //                 subtitleTextStyle: const TextStyle(
+                      //                     fontFamily: 'poppins'),
+                      //                 settingKey:
+                      //                     'key-dropdown-item-default-sku-view',
+                      //                     values: unitListSettings.isNotEmpty
+                      // ? {for (var e in unitListSettings) e.key + 1: e.value}
+                      //                     : {
+                      //                         2: '',
+                      //                       },
+                      //                 selected: 2,
+                      //                 onChange: (value) {
+                      //                   debugPrint(
+                      //                       'key-dropdown-item-default-sku-view: $value');
+                      //                 },
+                      //               ),
                                     SwitchSettingsTile(
                                       settingKey: 'key-items-prate-sale',
                                       title: 'Show PRate On Sales',
@@ -1136,214 +1137,214 @@ class AppSettings extends StatelessWidget {
                                     const SizedBox(
                                       height: 10,
                                     ),
-                                     ExpandableSettingsTile(
-                    title: 'Item Rate Type',
-                    subtitle: 'show columns for rate slot of item',
-                    children: [
-                      SwitchSettingsTile(
-                        title: 'Select item rate type option',
-                        settingKey: 'key-switch-sales-rate-type-set',
-                        onChange: (value) {
-                          debugPrint('key-switch-sales-rate-type-set: $value');
-                        },
-                        childrenIfEnabled: [
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: optionRateTypeList.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: CheckboxSettingsTile(
-                                  settingKey:
-                                      'key-item-rate-type-control-${optionRateTypeList[index].id}',
-                                  title:
-                                      'Show ${optionRateTypeList[index].name}',
-                                  enabledLabel: 'Enabled',
-                                  disabledLabel: 'Disabled',
-                                  onChange: (value) {
-                                    debugPrint(
-                                        'key-item-rate-type-control-${optionRateTypeList[index].id}: $value');
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ]),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                                    ExpandableSettingsTile(
-                                      title: 'Item Batch Details',
-                                      subtitle:
-                                          'show columns for batch of item',
-                                      titleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      subtitleTextStyle: const TextStyle(
-                                          fontFamily: 'poppins'),
-                                      children: [
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-qty',
-                                          title: 'Show Qty',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          defaultValue: true,
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-qty: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-mrp',
-                                          title: 'Show MRP',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-mrp: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-retail',
-                                          title: 'Show Retail',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-retail: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-wholesale',
-                                          title: 'Show WholeSale',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-wholesale: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-rate',
-                                          title: 'Show S Rate',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-rate: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-spretail',
-                                          title: 'Show SP Retail',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-spretail: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-branch',
-                                          title: 'Show Branch',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-branch: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-prate',
-                                          title: 'Show P Rate',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-prate: $value');
-                                          },
-                                        ),
-                                        CheckboxSettingsTile(
-                                          settingKey: 'key-item-sale-supplier',
-                                          title: 'Show Supplier',
-                                          titleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins',
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                          subtitleTextStyle: const TextStyle(
-                                              fontFamily: 'poppins'),
-                                          enabledLabel: 'Enabled',
-                                          disabledLabel: 'Disabled',
-                                          // leading: Icon(Icons.timelapse),
-                                          onChange: (value) {
-                                            debugPrint(
-                                                'key-item-sale-supplier: $value');
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(
-                                      height: 150,
-                                    )
+                    //                  ExpandableSettingsTile(
+                    // title: 'Item Rate Type',
+                    // subtitle: 'show columns for rate slot of item',
+                    // children: [
+                    //   SwitchSettingsTile(
+                    //     title: 'Select item rate type option',
+                    //     settingKey: 'key-switch-sales-rate-type-set',
+                    //     onChange: (value) {
+                    //       debugPrint('key-switch-sales-rate-type-set: $value');
+                    //     },
+                    //     childrenIfEnabled: [
+                    //       ListView.builder(
+                    //         shrinkWrap: true,
+                    //         physics: const NeverScrollableScrollPhysics(),
+                    //         itemCount: optionRateTypeList.length,
+                    //         itemBuilder: (context, index) {
+                    //           return ListTile(
+                    //             title: CheckboxSettingsTile(
+                    //               settingKey:
+                    //                   'key-item-rate-type-control-${optionRateTypeList[index].id}',
+                    //               title:
+                    //                   'Show ${optionRateTypeList[index].name}',
+                    //               enabledLabel: 'Enabled',
+                    //               disabledLabel: 'Disabled',
+                    //               onChange: (value) {
+                    //                 debugPrint(
+                    //                     'key-item-rate-type-control-${optionRateTypeList[index].id}: $value');
+                    //               },
+                    //             ),
+                    //           );
+                    //         },
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ]),
+                    // const SizedBox(
+                    //   height: 10,
+                    // ),
+                    //                 ExpandableSettingsTile(
+                    //                   title: 'Item Batch Details',
+                    //                   subtitle:
+                    //                       'show columns for batch of item',
+                    //                   titleTextStyle: const TextStyle(
+                    //                       fontFamily: 'poppins',
+                    //                       fontSize: 16,
+                    //                       fontWeight: FontWeight.w500),
+                    //                   subtitleTextStyle: const TextStyle(
+                    //                       fontFamily: 'poppins'),
+                    //                   children: [
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-qty',
+                    //                       title: 'Show Qty',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       defaultValue: true,
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-qty: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-mrp',
+                    //                       title: 'Show MRP',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-mrp: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-retail',
+                    //                       title: 'Show Retail',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-retail: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-wholesale',
+                    //                       title: 'Show WholeSale',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-wholesale: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-rate',
+                    //                       title: 'Show S Rate',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-rate: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-spretail',
+                    //                       title: 'Show SP Retail',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-spretail: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-branch',
+                    //                       title: 'Show Branch',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-branch: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-prate',
+                    //                       title: 'Show P Rate',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-prate: $value');
+                    //                       },
+                    //                     ),
+                    //                     CheckboxSettingsTile(
+                    //                       settingKey: 'key-item-sale-supplier',
+                    //                       title: 'Show Supplier',
+                    //                       titleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins',
+                    //                           fontSize: 16,
+                    //                           fontWeight: FontWeight.w500),
+                    //                       subtitleTextStyle: const TextStyle(
+                    //                           fontFamily: 'poppins'),
+                    //                       enabledLabel: 'Enabled',
+                    //                       disabledLabel: 'Disabled',
+                    //                       // leading: Icon(Icons.timelapse),
+                    //                       onChange: (value) {
+                    //                         debugPrint(
+                    //                             'key-item-sale-supplier: $value');
+                    //                       },
+                    //                     ),
+                    //                   ],
+                    //                 ),
+                    //                 const SizedBox(
+                    //                   height: 150,
+                    //                 )
                                   ],
                                 ),
                               ),

@@ -30,7 +30,7 @@ class ContainerFieldWidget extends StatelessWidget {
         const SizedBox(
           height: 6,
         ),
-        SizedBox(height: 55, child: widget),
+        SizedBox( child: widget),
       ],
     );
   }

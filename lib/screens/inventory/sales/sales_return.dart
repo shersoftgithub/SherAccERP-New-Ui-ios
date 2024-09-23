@@ -1318,39 +1318,132 @@ class _SalesReturnState extends State<SalesReturn> {
                                       ),
                                       controller: invoiceNoController,
                                       decoration:  InputDecoration(
-                                         prefixIcon: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Icon(Icons.keyboard_double_arrow_left_rounded),
-                                            const SizedBox(
-                                              width: 4,
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                              //  var data = api.getSalesInvoiceNo(1, '');
-                                             debugPrint((int.parse(invoiceNo) - 1).toString());
-
-                                              },
-                                              child: const Icon(Icons.arrow_back_ios_rounded,
-                                              // size: 16,
-                                              ),
-                                            ),
-                                          ],
+                                        prefixIcon: Visibility(
+                                          visible: isAdminUser,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                     var invoiceNum = invoiceNo;
+                                                     
+                                          
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber++; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                          
+                                                debugPrint(invoiceNum.toString());
+                                          
+                                            dataDynamic = [
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                          ];
+                                                                                 cartItem.clear();
+                                                                                 try {
+                                           fetchSaleReturn(context, dataDynamic[0]);
+                                                                                 } catch (e) {
+                                           if (e is RangeError) {
+                                              showDialog(
+                                                   context: context,
+                                                   builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                           title: const Text("Error"),
+                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                                           actions: [
+                                                            TextButton(
+                                                             child: const Text("OK"),
+                                                             onPressed: () {
+                                                             Navigator.of(context).pop(); 
+                                                          },
+                                                        ),
+                                                      ],
+                                                   );
+                                                 },
+                                              );
+                                           }else {
+                                              debugPrint("An unexpected error occurred: $e");
+                                           }
+                                                                                 }
+                                                },
+                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                                const SizedBox(
+                                                  width: 4,
+                                                )
+                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                            ],
+                                          ),
                                         ),
-                                        suffixIcon: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
-                                                
-                                              },
-                                              child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                            //  Icon(Icons.keyboard_double_arrow_right_rounded),
-                                          ],
+                                        suffixIcon: Visibility(
+                                          visible: isAdminUser,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                     var invoiceNum = invoiceNo;
+                                          
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber++; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                          
+                                                debugPrint(invoiceNum.toString());
+                                          
+                                            dataDynamic = [
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                          ];
+                                                                                 cartItem.clear();
+                                                                                 try {
+                                           fetchSaleReturn(context, dataDynamic[0]);
+                                                                                 } catch (e) {
+                                           if (e is RangeError) {
+                                              showDialog(
+                                                   context: context,
+                                                   builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                           title: const Text("Error"),
+                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                                           actions: [
+                                                            TextButton(
+                                                             child: const Text("OK"),
+                                                             onPressed: () {
+                                                             Navigator.of(context).pop(); 
+                                                          },
+                                                        ),
+                                                      ],
+                                                   );
+                                                 },
+                                              );
+                                           }else {
+                                              debugPrint("An unexpected error occurred: $e");
+                                           }
+                                                                                 }
+                                                },
+                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                                const SizedBox(
+                                                  width: 4,
+                                                )
+                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                            ],
+                                          ),
                                         ),
-                                        // constraints: BoxConstraints(
-                                        //   maxHeight: 20
-                                        // ),
+                                        constraints: BoxConstraints(
+                                          maxHeight: 40
+                                        ),
                                           contentPadding: EdgeInsets.symmetric(
                                               vertical: 5, horizontal: 5),
                                           border: OutlineInputBorder()),
@@ -1367,7 +1460,7 @@ class _SalesReturnState extends State<SalesReturn> {
                                       _selectDate();
                                     },
                                     child: Container(
-                                      height: 30,
+                                      height: 40,
                                       margin: const EdgeInsets.only(
                                         bottom: 15,
                                       ),

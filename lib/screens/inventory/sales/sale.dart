@@ -3,9 +3,11 @@ import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,6 +116,7 @@ class _SaleState extends ConsumerState<Sale> {
       keySwitchSalesRateTypeSet = false,
       keyEditAndDeleteAdminOnlyDaysBefore = false,
       daysBefore = false,
+      isAdminUser = false,
       newSale = false,
       manualInvoiceNumberInSales = false;
   final List<TextEditingController> _controllers = [];
@@ -253,6 +256,8 @@ class _SaleState extends ConsumerState<Sale> {
     itemCodeVise = ComSettings.appSettings('bool', 'key-item-by-code', false);
     itemCodeViseChek = itemCodeVise;
     itemStockAll = ComSettings.appSettings('bool', 'key-item-stock-all', false);
+   isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
     keyItemsVariantStock =
         ComSettings.appSettings('bool', 'key-items-variant-stock', false);
 
@@ -2384,103 +2389,114 @@ void _onTabTapped(int index) {
                                       ),
                                       controller: invoiceNoController,
                                       decoration:  InputDecoration(
-                                         prefixIcon: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Icon(Icons.keyboard_double_arrow_left_rounded),
-                                            const SizedBox(
-                                              width: 4,
-                                            ),
-                                           InkWell(
-                                                onTap: () {
-                                                 var invoiceNum = invoiceNo;
-
-                                                setState(() {
-                                                 int invoiceNumber = int.parse(invoiceNum); 
-                                                 invoiceNumber--; 
-                                                 invoiceNum = invoiceNumber.toString(); 
-                                               });
-
-                                              debugPrint(invoiceNum.toString());
-
-                                          dataDynamic = [
-                                           {
-                                           'Type': salesTypeData!.type,
-                                           'InvoiceNo': invoiceNum,
-                                           'EntryNo': int.parse(invoiceNum) ?? 0,
-                                           'Id': int.parse(invoiceNum) ?? 0
-                                           }
-                                        ];
-                                        cartItem.clear();
-                                       fetchSale(context, dataDynamic[0]);
-                                      },
-                                       child: const Icon(
-                                         Icons.arrow_back_ios_rounded,
-                                         // size: 16, 
-                                     ),
-                                  ),
-
-                                          ],
-                                        ),
-                                        suffixIcon: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            InkWell(
-                                              onTap: () {
+                                      
+                                         prefixIcon: Visibility(
+                                          visible: isAdminUser,
+                                           child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                              const SizedBox(
+                                                width: 4,
+                                              ),
+                                             InkWell(
+                                                  onTap: () {
                                                    var invoiceNum = invoiceNo;
-
-                                                setState(() {
-                                                 int invoiceNumber = int.parse(invoiceNum); 
-                                                 invoiceNumber++; 
-                                                 invoiceNum = invoiceNumber.toString(); 
-                                               });
-
-                                              debugPrint(invoiceNum.toString());
-
-                                          dataDynamic = [
-                                           {
-                                           'Type': salesTypeData!.type,
-                                           'InvoiceNo': invoiceNum,
-                                           'EntryNo': int.parse(invoiceNum) ?? 0,
-                                           'Id': int.parse(invoiceNum) ?? 0
+                                           
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber--; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                           
+                                                debugPrint(invoiceNum.toString());
+                                           
+                                            dataDynamic = [
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                                                                   ];
+                                                                                   cartItem.clear();
+                                                                                  fetchSale(context, dataDynamic[0]);
+                                                                                 },
+                                                                                  child: const Icon(
+                                           Icons.arrow_back_ios_rounded,
+                                           // size: 16, 
+                                                                                ),
+                                                                             ),
+                                           
+                                            ],
+                                                                                   ),
+                                         ),
+                                        suffixIcon: Visibility(
+                                          visible: isAdminUser,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                     var invoiceNum = invoiceNo;
+                                          
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber++; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                          
+                                                debugPrint(invoiceNum.toString());
+                                          
+                                            dataDynamic = [
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                          ];
+                                                                                 cartItem.clear();
+                                                                                 try {
+                                           fetchSale(context, dataDynamic[0]);
+                                                                                 } catch (e) {
+                                           if (e is RangeError) {
+                                              showDialog(
+                                                   context: context,
+                                                   builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                           title: const Text("Error"),
+                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                                           actions: [
+                                                            TextButton(
+                                                             child: const Text("OK"),
+                                                             onPressed: () {
+                                                             Navigator.of(context).pop(); 
+                                                          },
+                                                        ),
+                                                      ],
+                                                   );
+                                                 },
+                                              );
+                                           }else {
+                                              debugPrint("An unexpected error occurred: $e");
                                            }
-                                        ];
-                                       cartItem.clear();
-                                       try {
-                                         fetchSale(context, dataDynamic[0]);
-                                       } catch (e) {
-                                         if (e is RangeError) {
-                                            showDialog(
-                                                 context: context,
-                                                 builder: (BuildContext context) {
-                                                  return AlertDialog(
-                                                         title: const Text("Error"),
-                                                         content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
-                                                         actions: [
-                                                          TextButton(
-                                                           child: const Text("OK"),
-                                                           onPressed: () {
-                                                           Navigator.of(context).pop(); 
-                                                        },
-                                                      ),
-                                                    ],
-                                                 );
-                                               },
-                                            );
-                                         }else {
-                                            debugPrint("An unexpected error occurred: $e");
-                                         }
-                                       }
-                                              },
-                                              child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                            //  Icon(Icons.keyboard_double_arrow_right_rounded),
-                                          ],
+                                                                                 }
+                                                },
+                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                                const SizedBox(
+                                                  width: 4,
+                                                )
+                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                            ],
+                                          ),
                                         ),
-                                        // constraints: BoxConstraints(
-                                        //   maxHeight: 20
-                                        // ),
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 40
+                                        ),
                                           contentPadding: const EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 5),
+                                              vertical: 5, horizontal: 8),
                                           border: const OutlineInputBorder()),
                                     ),
                                   ),
@@ -2495,7 +2511,7 @@ void _onTabTapped(int index) {
                                       _selectDate();
                                     },
                                     child: Container(
-                                      height: 30,
+                                      height: 40,
                                       margin: const EdgeInsets.only(
                                         bottom: 15,
                                       ),
@@ -2644,13 +2660,20 @@ void _onTabTapped(int index) {
                           const SizedBox(
                             height: 6,
                           ),
-                     oldBill ? selectedCustomerId == acId?  ContainerFieldWidget(widget: TextField(
+                     oldBill ? selectedCustomerId == acId?  Column(
+                      children: [
+                        ContainerFieldWidget(widget: TextField(
                       controller: TextEditingController(text: ledgerModel!.name),
                       decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
                         border: OutlineInputBorder()
                       ),
-                     ), headTxt: 'Billing Name'): const SizedBox() : const SizedBox(),
+                     ), headTxt: 'Billing Name'),
+                     const SizedBox(
+                      height: 4,
+                     )
+                      ],
+                     ): const SizedBox() : const SizedBox(),
                     //  const SizedBox(
                     //   height: 4,
                     //  ),
@@ -3685,6 +3708,375 @@ void _onTabTapped(int index) {
                          padding: const EdgeInsets.symmetric(horizontal: 20),
                          child: Column(
                            children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: grey
+                                ),
+                                borderRadius: BorderRadius.circular(3)
+                              ),
+                              child: ExpansionTile(
+                                initiallyExpanded: valueMore,
+                                onExpansionChanged: (expanded) {
+                                  setState(() {
+                                    valueMore = expanded;
+                                  });
+                                },
+                                title: const Text('Other Amounts',
+                                style: TextStyle(fontFamily: 'poppins'),),
+                                trailing: Icon(
+                                  valueMore
+                                      ? Icons.keyboard_double_arrow_down_outlined
+                                      : Icons.keyboard_double_arrow_up_outlined,
+                                ),
+                                children: [
+                                  Column(
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      TextField(
+                                        controller: controllerNarration,
+                                        decoration: const InputDecoration(
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 8
+                                          ),
+                                          border: OutlineInputBorder(),
+                                          labelText: 'Narration',
+                                        ),
+                                      ),
+                                      Visibility(
+                                        visible: _isReturnInSales,
+                                        child: const SizedBox(
+                                        height: 6,
+                                      )),
+                                      Visibility(
+                                        visible: _isReturnInSales,
+                                        child: SizedBox(
+                                          width: MediaQuery.of(context).size.width,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              // const SizedBox(height: 3),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: returnEntryNoController,
+                                                  decoration: const InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                    border: OutlineInputBorder(),
+                                                    labelText: 'Bill No :',
+                                                  ),
+                                                  keyboardType: const TextInputType.numberWithOptions(
+                                                    decimal: true,
+                                                  ),
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                  ],
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      returnBillId = int.tryParse(value)!;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      loadReturnForm = true;
+                                                    });
+                                                  },
+                                                  style: ButtonStyle(
+                                                    shape: MaterialStatePropertyAll(
+                                                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))
+                                                    ),
+                                                    foregroundColor: const MaterialStatePropertyAll(white),
+                                                    backgroundColor: MaterialStateProperty.all(kPrimaryColor),
+                                                  ),
+                                                  child: const Text('Return Bill'),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: returnAmountController,
+                                                  decoration: const InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                    border: OutlineInputBorder(),
+                                                    labelText: 'Amount',
+                                                  ),
+                                                  keyboardType: const TextInputType.numberWithOptions(
+                                                    decimal: true,
+                                                  ),
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                  ],
+                                                  onChanged: (value) {
+                                                    if (value.isNotEmpty) {
+                                                      setState(() {
+                                                        returnAmount = double.tryParse(value)!;
+                                                        grandTotal = grandTotal - returnAmount;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: SizedBox(
+                                                height: 45,
+                                                child: DropdownSearch<dynamic>(
+                                                  popupProps: const PopupPropsMultiSelection.dialog(
+                                                    showSearchBox: true,
+                                                  ),
+                                                  asyncItems: (String filter) =>
+                                                      api.getLedgerDataByParent(filter, 0, 0, 0, 0),
+                                                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                                                    dropdownSearchDecoration: InputDecoration(
+                                                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                      // labelStyle: TextStyle(
+                                                      //   color: black
+                                                      // ),
+                                                      border: OutlineInputBorder(),
+                                                      labelText: 'Select Unit',
+                                                    ),
+                                                  ),
+                                                  onChanged: (dynamic data) {
+                                                    setState(() {
+                                                      commissionLedgerData = data;
+                                                    commissionAccount = data.id;
+                                                    });
+                                                    debugPrint(data.toString());
+                                                  },
+                                                  selectedItem: commissionLedgerData,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: commissionAmountController,
+                                                decoration: const InputDecoration(
+                                                   contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Amount',
+                                                ),
+                                                keyboardType: const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: SizedBox(
+                                                height: 45,
+                                                child: DropdownSearch<dynamic>(
+                                                  popupProps: PopupPropsMultiSelection.dialog(
+                                                    showSearchBox: true,
+                                                  ),
+                                                  asyncItems: (String filter) => widgetBankAccount(filter),
+                                                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                                                    dropdownSearchDecoration: InputDecoration(
+                                                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                      border: OutlineInputBorder(),
+                                                      labelText: 'Card A/C',
+                                                    ),
+                                                  ),
+                                                  onChanged: (dynamic data) {
+                                                    bankLedgerData = data;
+                                                    bankLedgerName = data.name;
+                                                    bankAccount = data.id;
+                                                  },
+                                                  selectedItem: bankLedgerData,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: bankAmountController,
+                                                decoration: const InputDecoration(
+                                                   contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Amount',
+                                                ),
+                                                keyboardType: const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                ],
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    balanceCalculate();
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        // height: deviceSize!.height / 5,
+                                        child: Container(
+                                          child: ListView.separated(
+                                            separatorBuilder: (context, index) {
+                                              return SizedBox(
+                                                height: 6,
+                                              );
+                                            },
+                                            physics: const BouncingScrollPhysics(),
+                                            itemCount: otherAmountList.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              _controllers.add(TextEditingController());
+                                              _controllers[index].text =
+                                                  otherAmountList[index]['Amount'].toString();
+                              
+                                              return SizedBox(
+                                                width: MediaQuery.of(context).size.width,
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 2,
+                                                      child: Container(
+                                                        margin: const EdgeInsets.only(left: 2),
+                                                        child: Text(
+                                                                                '${otherAmountList[index]['LedName']} : ',
+                                                                                style: TextStyle(
+                                                                                  fontFamily: 'poppins'
+                                                                                ),
+                                                                                ),
+                                                      ),
+                                                    ),
+                                                  Expanded(
+                                                    child: TextField(
+                                                      decoration: const InputDecoration(
+                                                         contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                        border: OutlineInputBorder(),
+                                                      ),
+                                                      controller: TextEditingController.fromValue(
+                                                        TextEditingValue(
+                                                                              text: otherAmountList[index]['Amount'].toString(),
+                                                                              selection: TextSelection(
+                                                                                baseOffset: 0,
+                                                                                extentOffset: otherAmountList[index]['Amount']
+                                                                                    .toString()
+                                                                                    .length,
+                                                                              ),
+                                                        ),
+                                                      ),
+                                                      keyboardType: const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                                              RegExp(r'[0-9]'),
+                                                                              allow: true,
+                                                                              replacementString: '.',
+                                                        ),
+                                                      ],
+                                                      onSubmitted: (String str) {
+                                                        var cartTotal = totalCartValue;
+                                                        if (str.isNotEmpty) {
+                                                                              try {
+                                                                                otherAmountList[index]['Amount'] =
+                                                                                    double.tryParse(str);
+                                                                                otherAmountList[index]['Percentage'] =
+                                                                                    CommonService.getRound(
+                                                                                        decimal,
+                                                                                        ((double.tryParse(str)! * 100) /
+                                                                                            cartTotal));
+                                                                                var netTotal = (cartTotal - returnAmount) +
+                                                                                    otherAmountList.fold(
+                                                                                        0.0,
+                                                                                        (t, e) => t +
+                                                                                            double.parse(e['Symbol'] == '-'
+                                                                                                  ? (e['Amount'] * -1).toString()
+                                                                                                  : e['Amount'].toString()));
+                                                                                setState(() {
+                                                                                  grandTotal = netTotal;
+                                                                                });
+                                                                              } on FormatException {
+                                                                                debugPrint('ex');
+                                                                              }
+                                                        }
+                                                      },
+                                                    ),
+                                                  )
+                                                ]),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+
                              Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children:[
@@ -4002,97 +4394,281 @@ void _onTabTapped(int index) {
                       child: Row(
                         children: [
                           Expanded(
-                              child: ContainerFieldWidget(
-                                    widget: InkWell(
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) =>
-                                              Padding(
-                                            padding: EdgeInsets.only(
-                                                bottom: MediaQuery.of(context)
-                                                    .viewInsets
-                                                    .bottom),
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: [
-                                                  const SizedBox(height: 10),
-                                                  TextField(
-                                                    decoration:
-                                                        const InputDecoration(
-                                                            border:
-                                                                OutlineInputBorder(),
-                                                            // hintText:
-                                                            //     'Invoice No',
-                                                            labelText:
-                                                                'Enter invoice no'),
-                                                    controller:
-                                                        invoiceNoController,
-                                                    autofocus: true,
-                                                  ),
-                                                  const SizedBox(height: 16),
-                                                  ElevatedButton(
-                                                    style: ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            kPrimaryColor,
-                                                        shape:
-                                                            RoundedRectangleBorder(
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            3))),
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop();
-                                                      setState(() {});
-                                                    },
-                                                    child: const Text("Done",
-                                                        style: TextStyle(
-                                                            fontFamily: 'poppins',
-                                                            color: white)),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        margin: const EdgeInsets.only(
-                                          bottom: 15,
-                                        ),
-                                        width: MediaQuery.of(context).size.width,
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: grey),
-                                            borderRadius:
-                                                BorderRadius.circular(3)),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(invoiceNoController.text,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 16,
-                                                    fontFamily: 'poppins')),
-                                            const Icon(
-                                                Icons.arrow_drop_down_sharp,
-                                                color: black)
-                                          ],
-                                        ),
-                                      ),
+                              child: 
+                              // ContainerFieldWidget(
+                              //       widget: InkWell(
+                              //         onTap: () {
+                              //           showModalBottomSheet(
+                              //             context: context,
+                              //             builder: (BuildContext context) =>
+                              //                 Padding(
+                              //               padding: EdgeInsets.only(
+                              //                   bottom: MediaQuery.of(context)
+                              //                       .viewInsets
+                              //                       .bottom),
+                              //               child: Padding(
+                              //                 padding: const EdgeInsets.all(8.0),
+                              //                 child: Column(
+                              //                   children: [
+                              //                     const SizedBox(height: 10),
+                              //                     TextField(
+                              //                       decoration:
+                              //                           const InputDecoration(
+                              //                               border:
+                              //                                   OutlineInputBorder(),
+                              //                               // hintText:
+                              //                               //     'Invoice No',
+                              //                               labelText:
+                              //                                   'Enter invoice no'),
+                              //                       controller:
+                              //                           invoiceNoController,
+                              //                       autofocus: true,
+                              //                     ),
+                              //                     const SizedBox(height: 16),
+                              //                     ElevatedButton(
+                              //                       style: ElevatedButton.styleFrom(
+                              //                           backgroundColor:
+                              //                               kPrimaryColor,
+                              //                           shape:
+                              //                               RoundedRectangleBorder(
+                              //                                   borderRadius:
+                              //                                       BorderRadius
+                              //                                           .circular(
+                              //                                               3))),
+                              //                       onPressed: () {
+                              //                         Navigator.of(context).pop();
+                              //                         setState(() {});
+                              //                       },
+                              //                       child: const Text("Done",
+                              //                           style: TextStyle(
+                              //                               fontFamily: 'poppins',
+                              //                               color: white)),
+                              //                     ),
+                              //                   ],
+                              //                 ),
+                              //               ),
+                              //             ),
+                              //           );
+                              //         },
+                              //         child: Container(
+                              //           margin: const EdgeInsets.only(
+                              //             bottom: 15,
+                              //           ),
+                              //           width: MediaQuery.of(context).size.width,
+                              //           padding: const EdgeInsets.symmetric(
+                              //               horizontal: 5),
+                              //           height: 40,
+                              //           decoration: BoxDecoration(
+                              //               border: Border.all(color: grey),
+                              //               borderRadius:
+                              //                   BorderRadius.circular(3)),
+                              //           child: Row(
+                              //             mainAxisAlignment:
+                              //                 MainAxisAlignment.spaceBetween,
+                              //             children: [
+                              //               Text(invoiceNoController.text,
+                              //                   style: const TextStyle(
+                              //                       fontWeight: FontWeight.w500,
+                              //                       fontSize: 16,
+                              //                       fontFamily: 'poppins')),
+                              //               const Icon(
+                              //                   Icons.arrow_drop_down_sharp,
+                              //                   color: black)
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       ),
+                              //       // TextField(
+                              //       //   controller: invoiceNoController,
+                              //       //   decoration: const InputDecoration(
+                              //       //       contentPadding: EdgeInsets.symmetric(
+                              //       //           vertical: 5, horizontal: 5),
+                              //       //       border: OutlineInputBorder()),
+                              //       // ),
+                              //       headTxt: 'Invoice No')),
+                               ContainerFieldWidget(
+                                  widget: 
+                                  // InkWell(
+                                  //   onTap: () {
+                                  //     // showModalBottomSheet(
+                                  //     //   context: context,
+                                  //     //   builder: (BuildContext context) =>
+                                  //     //       Padding(
+                                  //     //     padding: EdgeInsets.only(
+                                  //     //         bottom: MediaQuery.of(context).viewInsets.bottom),
+                                  //     //     child: Padding(
+                                  //     //       padding: const EdgeInsets.all(8.0),
+                                  //     //       child: Column(
+                                  //     //         children: [
+                                  //     //           const SizedBox(height: 16),
+                                  //     //           TextField(
+                                  //     //             decoration: const  InputDecoration(
+                                  //     //                     border: OutlineInputBorder(),
+                                  //     //                     // hintText:
+                                  //     //                     //     'Invoice No',
+                                  //     //                     labelText:'Enter invoice no'),
+                                  //     //             controller: invoiceNoController,
+                                  //     //             autofocus: true,
+                                  //     //           ),
+                                  //     //           const SizedBox(height: 10),
+                                  //     //           ElevatedButton(
+                                  //     //             style: ElevatedButton.styleFrom(
+                                  //     //                 backgroundColor: kPrimaryColor,
+                                  //     //                 shape: RoundedRectangleBorder(
+                                  //     //                 borderRadius:BorderRadius.circular(3))),
+                                  //     //             onPressed: () {
+                                  //     //               Navigator.of(context).pop();
+                                  //     //               setState(() {});
+                                  //     //             },
+                                  //     //             child: const Text("Done",
+                                  //     //                 style: TextStyle(
+                                  //     //                     fontFamily: 'poppins',
+                                  //     //                     color: white)),
+                                  //     //           ),
+                                  //     //         ],
+                                  //     //       ),
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // );
+                                  //   },
+                                  //   child: Container(
+                                  //     margin: const EdgeInsets.only(
+                                  //       bottom: 15,
+                                  //     ),
+                                  //     width: MediaQuery.of(context).size.width,
+                                  //     padding: const EdgeInsets.symmetric(horizontal: 5),
+                                  //     height: 20,
+                                  //     decoration: BoxDecoration(
+                                  //         border: Border.all(color: grey),
+                                  //         borderRadius: BorderRadius.circular(3)),
+                                  //     child: Row(
+                                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  //       children: [
+                                  //         Text(invoiceNoController.text,
+                                  //             style: const TextStyle(
+                                  //                 fontWeight: FontWeight.w500,
+                                  //                 fontSize: 16,
+                                  //                 fontFamily: 'poppins')),
+                                  //         // const Icon(
+                                  //         //     Icons.arrow_drop_down_sharp,
+                                  //         //     color: black)
+                                  //       ],
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 15,
                                     ),
-                                    // TextField(
-                                    //   controller: invoiceNoController,
-                                    //   decoration: const InputDecoration(
-                                    //       contentPadding: EdgeInsets.symmetric(
-                                    //           vertical: 5, horizontal: 5),
-                                    //       border: OutlineInputBorder()),
-                                    // ),
-                                    headTxt: 'Invoice No')),
+                                    child: TextField(
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 14
+                                      ),
+                                      controller: invoiceNoController,
+                                      decoration:  InputDecoration(
+                                      
+                                  //        prefixIcon: Row(
+                                  //         mainAxisSize: MainAxisSize.min,
+                                  //         children: [
+                                  //           // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                  //           const SizedBox(
+                                  //             width: 4,
+                                  //           ),
+                                  //          InkWell(
+                                  //               onTap: () {
+                                  //                var invoiceNum = invoiceNo;
+
+                                  //               setState(() {
+                                  //                int invoiceNumber = int.parse(invoiceNum); 
+                                  //                invoiceNumber--; 
+                                  //                invoiceNum = invoiceNumber.toString(); 
+                                  //              });
+
+                                  //             debugPrint(invoiceNum.toString());
+
+                                  //         dataDynamic = [
+                                  //          {
+                                  //          'Type': salesTypeData!.type,
+                                  //          'InvoiceNo': invoiceNum,
+                                  //          'EntryNo': int.parse(invoiceNum) ?? 0,
+                                  //          'Id': int.parse(invoiceNum) ?? 0
+                                  //          }
+                                  //       ];
+                                  //       cartItem.clear();
+                                  //      fetchSale(context, dataDynamic[0]);
+                                  //     },
+                                  //      child: const Icon(
+                                  //        Icons.arrow_back_ios_rounded,
+                                  //        // size: 16, 
+                                  //    ),
+                                  // ),
+
+                                  //         ],
+                                  //       ),
+                                      //   suffixIcon: Row(
+                                      //     mainAxisSize: MainAxisSize.min,
+                                      //     children: [
+                                      //       InkWell(
+                                      //         onTap: () {
+                                      //              var invoiceNum = invoiceNo;
+
+                                      //           setState(() {
+                                      //            int invoiceNumber = int.parse(invoiceNum); 
+                                      //            invoiceNumber++; 
+                                      //            invoiceNum = invoiceNumber.toString(); 
+                                      //          });
+
+                                      //         debugPrint(invoiceNum.toString());
+
+                                      //     dataDynamic = [
+                                      //      {
+                                      //      'Type': salesTypeData!.type,
+                                      //      'InvoiceNo': invoiceNum,
+                                      //      'EntryNo': int.parse(invoiceNum) ?? 0,
+                                      //      'Id': int.parse(invoiceNum) ?? 0
+                                      //      }
+                                      //   ];
+                                      //  cartItem.clear();
+                                      //  try {
+                                      //    fetchSale(context, dataDynamic[0]);
+                                      //  } catch (e) {
+                                      //    if (e is RangeError) {
+                                      //       showDialog(
+                                      //            context: context,
+                                      //            builder: (BuildContext context) {
+                                      //             return AlertDialog(
+                                      //                    title: const Text("Error"),
+                                      //                    content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                      //                    actions: [
+                                      //                     TextButton(
+                                      //                      child: const Text("OK"),
+                                      //                      onPressed: () {
+                                      //                      Navigator.of(context).pop(); 
+                                      //                   },
+                                      //                 ),
+                                      //               ],
+                                      //            );
+                                      //          },
+                                      //       );
+                                      //    }else {
+                                      //       debugPrint("An unexpected error occurred: $e");
+                                      //    }
+                                      //  }
+                                      //         },
+                                      //         child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                      //       //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                      //     ],
+                                      //   ),
+                                        constraints: BoxConstraints(
+                                          maxHeight: 40
+                                        ),
+                                          contentPadding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 8),
+                                          border: const OutlineInputBorder()),
+                                    ),
+                                  ),
+                                  headTxt: 'Entry No')),
                           const SizedBox(
                             width: 8,
                           ),
@@ -4106,7 +4682,7 @@ void _onTabTapped(int index) {
                                         margin: const EdgeInsets.only(
                                           bottom: 15,
                                         ),
-                                      height: 20,
+                                      height: 40,
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8),
                                       decoration: BoxDecoration(
@@ -11541,6 +12117,9 @@ bool editItem = false;
   fetchSale(context, data) {
     
     // selectedItemId = cartModel!.id;
+     setState(() {
+      isLoading = true;
+    });
     double billTotal = 0, billCash = 0;
 
     api.fetchSalesInvoice(data['Id'], salesTypeData!.id).then((value) {
@@ -11711,6 +12290,7 @@ bool editItem = false;
           returnEntryNoController.text = returnBillId.toString();
         }
         // nextWidget = 4;
+        
         editItem = true;
         oldBill = true;
       });

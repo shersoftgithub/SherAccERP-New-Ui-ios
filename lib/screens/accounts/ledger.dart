@@ -87,14 +87,7 @@ class _LedgerState extends State<Ledger> {
     locationId = ComSettings.appSettings(
             'int', 'key-dropdown-default-location-view', 2) -
         1;
-    // var isIn = salesManList.isEmpty
-    //     ? null
-    //     : salesManList.firstWhere((element) => element['Auto'] == 0,
-    //         orElse: () => null);
-    // if (isIn == null) {
-    //   salesManList.add({'Auto': 0, 'Name': ''});
-    // }
-       var isIn = salesManList.isEmpty
+     var isIn = salesManList.isEmpty
         ? null
         : salesManList.firstWhere((element) => element['Auto'] == salesManId,
             orElse: () => null);
@@ -1107,7 +1100,7 @@ class _LedgerState extends State<Ledger> {
                           ),
                           // const Text('SalesMan'),
                           ContainerFieldWidget(
-                              widget: Container(
+                              widget: Container(  
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(3),
                                     border: Border.all(color: grey)),
