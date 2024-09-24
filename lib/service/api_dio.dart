@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sheraccerp/models/cash_customer_model.dart';
 import 'package:sheraccerp/models/company.dart';
 
 import 'package:sheraccerp/models/customer_model.dart';
@@ -2732,6 +2733,37 @@ class DioService {
           _item = CustomerModel.fromJson(_data[0]);
         } else {
           _item = CustomerModel.emptyData();
+          _item.id = id;
+          _item.name = '';
+        }
+      } else {
+        debugPrint('Failed to load data');
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _item;
+  }
+ Future<CashCustomerModel> getCashCustomerDetail(int id) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    CashCustomerModel _item = CashCustomerModel();
+    try {
+      final response = await dio
+          .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
+      if (response.statusCode == 200) {
+        List<dynamic> _data = response.data;
+
+        // _item = CustomerModel.fromJson(_data[0]);
+          if (_data.isNotEmpty) {
+          _item = CashCustomerModel.fromJson(_data[0]);
+        } else {
+          _item = CashCustomerModel.emptyData();
           _item.id = id;
           _item.name = '';
         }

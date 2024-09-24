@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/cart_item.dart';
+import 'package:sheraccerp/models/cash_customer_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
@@ -44,6 +45,7 @@ class _PurchaseState extends State<Purchase> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   DioService api = DioService();
   CustomerModel? ledgerModel, accountModel;
+  CashCustomerModel? cashLedgerModel;
   DataJson? ledgerDataModel, accountDataModel;
   CartItemP? cartModel;
   ProductPurchaseModel? productModel;
@@ -1117,7 +1119,9 @@ class _PurchaseState extends State<Purchase> {
   var query = 'a';
   var selectedSupplier;
   int? selectedSupplierId;
+  int? selectedCashSupplierId;
   int selectedTabIndex = 0;
+  bool cashCustomer = false;
   TabController? tabController;
   var filterCashAccount;
   var filteredName;
@@ -1128,23 +1132,24 @@ class _PurchaseState extends State<Purchase> {
 
     if (index == 1) {
       setState(() {
-        selectedSupplierId = acId;
+        cashCustomer = true;
+        selectedCashSupplierId = acId;
 
-        final csDetails = api.getCustomerDetail(acId);
+        final csDetails = api.getCashCustomerDetail(acId);
 
         csDetails.then((value) {
           setState(() {
-            ledgerModel = value;
+            cashLedgerModel = value;
 
             filterCashAccount = cashAccount.where((element) {
-              return element.key == selectedSupplierId;
+              return element.key == selectedCashSupplierId;
             }).toList();
 
             filteredName = filterCashAccount.map((element) {
               return element.value;
             }).join(', ');
 
-            ledgerModel!.name = filteredName.toString();
+            cashLedgerModel!.name = filteredName.toString();
 
             print(filteredName);
           });
@@ -1153,7 +1158,8 @@ class _PurchaseState extends State<Purchase> {
     }
     else{
     setState(() {
-      null;
+      cashCustomer = false;
+      selectedSupplierId = selectedSupplierId;
     });
   }
   }
@@ -3776,12 +3782,12 @@ class _PurchaseState extends State<Purchase> {
                                         billingNameController.text.isNotEmpty
                                             ? ledgerModel!.name =
                                                 billingNameController.text
-                                            : ledgerModel!.name;
+                                            : cashLedgerModel!.name;
                                       });
                                       var inf = '[' +
                                           json.encode({
-                                            'id': ledgerModel!.id,
-                                            'name': ledgerModel!.name,
+                                            'id': cashLedgerModel!.id,
+                                            'name': cashLedgerModel!.name,
                                             'invNo':
                                                 invNoController.text.isNotEmpty
                                                     ? invNoController.text

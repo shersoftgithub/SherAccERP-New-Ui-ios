@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/cart_item.dart';
+import 'package:sheraccerp/models/cash_customer_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
@@ -73,6 +74,7 @@ class _SaleState extends ConsumerState<Sale> {
   Size? deviceSize;
   var vehicleData;
   CustomerModel? ledgerModel;
+  CashCustomerModel? cashLedgerModel;
   LedgerModel? ledgerDataModel;
   CartItem? cartModel;
   String vehicleName = '', invoiceNo = '';
@@ -1137,11 +1139,30 @@ class _SaleState extends ConsumerState<Sale> {
   saveSale() async {
     
     List<CustomerModel> ledger = [];
-    ledger.add(CustomerModel(
+    ledger.add(
+      cashCustomer ?
+      CustomerModel(
         address1: addressControl.text,
         address2: siteNameControl.text,
         address3: '',
-        address4: ledgerModel!.address4 ?? '',
+        address4: cashLedgerModel!.address4 ?? '',
+        balance: cashLedgerModel!.balance,
+        city: cashLedgerModel!.city,
+        email: cashLedgerModel!.email,
+        id: cashLedgerModel!.id,
+        name: cashLedgerModel!.name,
+        phone: cashLedgerModel!.phone,
+        remarks: cashLedgerModel!.remarks,
+        route: cashLedgerModel!.route,
+        state: cashLedgerModel!.state,
+        stateCode: cashLedgerModel!.stateCode,
+        taxNumber: cashLedgerModel!.taxNumber
+      )
+      : CustomerModel(
+        address1: addressControl.text,
+        address2: siteNameControl.text,
+        address3: '',
+        address4:  ledgerModel!.address4 ?? '',
         balance: ledgerModel!.balance,
         city: ledgerModel!.city,
         email: ledgerModel!.email,
@@ -1152,7 +1173,8 @@ class _SaleState extends ConsumerState<Sale> {
         route: ledgerModel!.route,
         state: ledgerModel!.state,
         stateCode: ledgerModel!.stateCode,
-        taxNumber: ledgerModel!.taxNumber));
+        taxNumber: ledgerModel!.taxNumber)
+        );
 
     var locationId =
         lId.toString().trim().isNotEmpty ? lId : salesTypeData!.location;
@@ -2127,7 +2149,9 @@ class _SaleState extends ConsumerState<Sale> {
   final namesLike = 'a';
   var selectedCustomer;
   int selectedTabIndex = 0;
+  int? selectedCashCustomerId;
   var filterCashAccount;
+  bool cashCustomer = false;
   var filteredName;
   
 void _onTabTapped(int index) {
@@ -2137,23 +2161,25 @@ void _onTabTapped(int index) {
 
   if (index == 1) {
     setState(() {
-      selectedCustomerId = acId;
+      cashCustomer = true;
+      selectedCashCustomerId = acId;
+      debugPrint('Selected cash Account ${selectedCashCustomerId.toString()}');
       
-      final csDetails = api.getCustomerDetail(acId);
+      final csDetails = api.getCashCustomerDetail(acId);
       
       csDetails.then((value) { 
         setState(() {
-          ledgerModel = value;
+          cashLedgerModel = value;
 
           filterCashAccount = cashAccount.where((element) {
-            return element.key == selectedCustomerId;
+            return element.key == selectedCashCustomerId;
           }).toList();
 
           filteredName = filterCashAccount.map((element) {
             return element.value; 
           }).join(', ');
 
-          ledgerModel!.name = filteredName.toString(); 
+          cashLedgerModel!.name = filteredName.toString(); 
 
           // print(filteredName);
         });
@@ -2162,7 +2188,9 @@ void _onTabTapped(int index) {
   }
   else{
     setState(() {
-      selectedCustomerId != acId;
+      cashCustomer = false;
+      selectedCustomerId = selectedCustomerId;
+      debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
     });
   }
 }
@@ -2775,7 +2803,7 @@ void _onTabTapped(int index) {
                                                                 decoration: const InputDecoration(
                                                                     contentPadding: EdgeInsets.symmetric(
                                                                         vertical:
-                                                                            10,
+                                                                            8,
                                                                         horizontal:
                                                                             5),
                                                                     border:
@@ -2789,11 +2817,49 @@ void _onTabTapped(int index) {
                                                                 padding: const EdgeInsets.only(left: 5),
                                                                 alignment: Alignment.centerLeft,
                                                                 width: MediaQuery.of(context).size.width,
-                                                                height: 30,
+                                                                height: 48,
                                                                 decoration: BoxDecoration(border: Border.all(color: grey),borderRadius: BorderRadius.circular(3)),
                                                                 child: Text(ledgerModel!.taxNumber!),
                                                               ),
                                                               headTxt: 'Tax Number'),
+                                                             ledgerModel!.id != null ?  ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PreviousBill(
+                                        ledger: ledgerModel!.id.toString(),
+                                      )),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                             shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3)
+                            ),
+                              elevation: 0,
+                              backgroundColor: kPrimaryColor,
+                              foregroundColor: white,
+                              disabledBackgroundColor: grey),
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.view_list,
+                                  color: white,
+                                ),
+                                SizedBox(
+                                  width: 4.0,
+                                ),
+                                Text(
+                                  "Previous Bill",
+                                  style: TextStyle(color: white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        : SizedBox()
                                                         ],
                                                       );
                                                     }):Column(
@@ -4811,6 +4877,13 @@ void _onTabTapped(int index) {
                                                 const ContainerFieldWidget(widget: TextField(
                                                   // controller: addressControl,
                                                   decoration: InputDecoration(
+                                                    constraints: BoxConstraints(
+                                                      maxHeight: 45
+                                                    ),
+                                                    contentPadding: EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 8
+                                                    ),
                                                       border:
                                                           OutlineInputBorder()),
                                                 ), headTxt: 'Phone Number'),
@@ -4818,15 +4891,66 @@ void _onTabTapped(int index) {
                                                 ContainerFieldWidget(widget: TextField(
                                                   controller: addressControl,
                                                   decoration: const InputDecoration(
+                                                    constraints: BoxConstraints(
+                                                      maxHeight: 45
+                                                    ),
+                                                    contentPadding: EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 8
+                                                    ),
                                                       border:
                                                           OutlineInputBorder()),
                                                 ), headTxt: 'Address'),
                                                 const SizedBox(height: 8),
                                                const ContainerFieldWidget(widget:  TextField(
                                                   decoration: InputDecoration(
+                                                      constraints: BoxConstraints(
+                                                      maxHeight: 45
+                                                    ),
+                                                    contentPadding: EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 8
+                                                    ),
                                                       border:
                                                           OutlineInputBorder()),
-                                                ), headTxt: 'Email')
+                                                ), headTxt: 'Email'),
+                                                 ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PreviousBill(
+                                        ledger: acId.toString(),
+                                      )),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3)
+                            ),
+                              elevation: 0,
+                              backgroundColor: kPrimaryColor,
+                              foregroundColor: white,
+                              disabledBackgroundColor: grey),
+                          child: const Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.view_list,
+                                  color: white,
+                                ),
+                                SizedBox(
+                                  width: 4.0,
+                                ),
+                                Text(
+                                  "Previous Bill",
+                                  style: TextStyle(color: white),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                                               ],
                                             ),
                                           )
@@ -5665,15 +5789,15 @@ void _onTabTapped(int index) {
                                             billingNameController.text.isNotEmpty ? 
                                             ledgerModel!.name = billingNameController.text
                                             :
-                                            ledgerModel!.name; 
+                                            cashLedgerModel!.name; 
                                             
                                           });
                                           _insert(
-                                              'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
+                                              'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCashCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
                                               0);
                                           saveSale();
                                           
-                                          print('id ===== $selectedCustomerId');
+                                          print('id ===== $selectedCashCustomerId');
                                         } else {
                                           Fluttertoast.showToast(
                                               msg:
@@ -6560,11 +6684,14 @@ void _onTabTapped(int index) {
                                                                 '.')
                                                       ],
                                                       decoration: InputDecoration(
+                                                        constraints: BoxConstraints(
+                                                          maxHeight: 45
+                                                        ),
                                                           contentPadding:
                                                               const EdgeInsets
                                                                   .symmetric(
                                                                   horizontal: 4,
-                                                                  vertical: 10),
+                                                                  vertical: 8),
                                                           hintStyle:
                                                               const TextStyle(
                                                                   color: grey,
@@ -6651,11 +6778,14 @@ void _onTabTapped(int index) {
                                       allow: true, replacementString: '.')
                                                                   ],
                                                                   decoration: const InputDecoration(
+                                                                    constraints: BoxConstraints(
+                                                                      maxHeight: 45
+                                                                    ),
                                                                      contentPadding:
                                                                EdgeInsets
                                                                   .symmetric(
                                                                   horizontal: 4,
-                                                                  vertical: 10),
+                                                                  vertical: 8),
                                     border: OutlineInputBorder(
                                     
                                     ),
@@ -6728,9 +6858,10 @@ void _onTabTapped(int index) {
                                               child: Expanded(
                                                   child: ContainerFieldWidget(
                                                       widget: Container(
+                                                        height: 45,
                                                           margin:
                                                               const EdgeInsets.only(
-                                                                  bottom: 7),
+                                                                  bottom: 2),
                                                           padding:
                                                               const EdgeInsets.only(
                                                                   left: 5),
@@ -7169,11 +7300,14 @@ void _onTabTapped(int index) {
                                                                 '.')
                                                       ],
                                                       decoration: InputDecoration(
+                                                        constraints: const BoxConstraints(
+                                                          maxHeight: 45
+                                                        ),
                                                           contentPadding:
                                                               const EdgeInsets
                                                                   .symmetric(
                                                                   horizontal: 4,
-                                                                  vertical: 10),
+                                                                  vertical: 8),
                                                           hintStyle:
                                                               const TextStyle(
                                                                   color: grey,
@@ -7260,11 +7394,14 @@ void _onTabTapped(int index) {
                                       allow: true, replacementString: '.')
                                                                   ],
                                                                   decoration: const InputDecoration(
+                                                                     constraints: const BoxConstraints(
+                                                          maxHeight: 45
+                                                        ),
                                                                      contentPadding:
                                                                EdgeInsets
                                                                   .symmetric(
                                                                   horizontal: 4,
-                                                                  vertical: 10),
+                                                                  vertical: 8),
                                     border: OutlineInputBorder(
                                     
                                     ),
@@ -7337,9 +7474,10 @@ void _onTabTapped(int index) {
                                               child: Expanded(
                                                   child: ContainerFieldWidget(
                                                       widget: Container(
+                                                        height: 45,
                                                           margin:
                                                               const EdgeInsets.only(
-                                                                  bottom: 7),
+                                                                  bottom: 2),
                                                           padding:
                                                               const EdgeInsets.only(
                                                                   left: 5),
@@ -7545,7 +7683,7 @@ void _onTabTapped(int index) {
                                           ],
                                         ),
                                         const SizedBox(
-                                          height: 10,
+                                          height: 8,
                                         ),
                                         Row(
                                           children: [
@@ -7565,11 +7703,14 @@ void _onTabTapped(int index) {
                                                                 '.')
                                                       ],
                                                       decoration: const InputDecoration(
+                                                         constraints: BoxConstraints(
+                                                          maxHeight: 45
+                                                        ),
                                                           contentPadding:
                                                               EdgeInsets
                                                                   .symmetric(
                                                                       vertical:
-                                                                          10,
+                                                                          8,
                                                                       horizontal:
                                                                           5),
                                                           border:
@@ -7618,9 +7759,10 @@ void _onTabTapped(int index) {
                                            : Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
+                                                      height: 45,
                                                       margin:
                                                           const EdgeInsets.only(
-                                                              bottom: 7),
+                                                              bottom: 2),
                                                       padding:
                                                           const EdgeInsets.only(
                                                               left: 5),
@@ -8726,7 +8868,8 @@ void _onTabTapped(int index) {
                                                   quantity: quantity,
                                                   rate: rate,
                                                   rRate: rRate,
-                                                  uniqueCode: uniqueCode,
+                                                  uniqueCode: selectedVariant
+                                                      .productId!,
                                                   gross: gross,
                                                   discount: discount,
                                                   discountPercent:
@@ -9118,7 +9261,7 @@ void _onTabTapped(int index) {
                                               quantity: quantity,
                                               rate: rate,
                                               rRate: rRate,
-                                              uniqueCode: uniqueCode,
+                                              uniqueCode: selectedVariant.productId!,
                                               gross: gross,
                                               discount: discount,
                                               discountPercent:
