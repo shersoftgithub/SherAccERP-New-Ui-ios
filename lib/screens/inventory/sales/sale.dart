@@ -31,6 +31,7 @@ import 'package:sheraccerp/provider/customer_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
+import 'package:sheraccerp/screens/inventory/sales/sales_prrdiction_report_page.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -2930,6 +2931,7 @@ void _onTabTapped(int index) {
                               ),
                             ),
                           ),
+                         
                           ElevatedButton(
                             onPressed: () {
                               if (selectedCustomerId == null) {
@@ -3017,6 +3019,58 @@ void _onTabTapped(int index) {
                       ),
                     ),
                     const SizedBox(height: 10),
+                    selectedCustomerId != null
+  ? Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: ElevatedButton(
+      onPressed: () async {
+        setState(() {
+          isLoading = true;
+        });
+
+        try {
+          List<Map<String, dynamic>> data = await api.getPredictNextSalesOrder(selectedCustomerId!, lId);
+          
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SalesPredictionReport(data: data),
+            ),
+          );
+        } catch (e) {
+          setState(() {
+            isLoading = false;
+          });
+          debugPrint('Error fetching data: $e');
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(3),
+        ),
+        backgroundColor: const Color(0xff0008B3),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(width: 10),
+          Text(
+            'Sales Predictor',
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'poppins',
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    ),
+  )
+  : const SizedBox(),
+
                     cartItem.isNotEmpty
                         ? Container(
                              constraints: const BoxConstraints(maxHeight: 300),

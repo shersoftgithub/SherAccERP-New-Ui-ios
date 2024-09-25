@@ -79,6 +79,7 @@ class _PurchaseState extends State<Purchase> {
       isPrateEdited = false,
       itemCodeVise = false,
       itemCodeViseChek = false,
+      isAdminUser = false,
       isAccountLedger = false;
   List<CartItemP> cartItem = [];
   int page = 1,
@@ -106,6 +107,7 @@ class _PurchaseState extends State<Purchase> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   bool ledgerScanner = false, productScanner = false, serialNoScanner = false;
   TextEditingController supplierController = TextEditingController();
+  final invoiceNoController = TextEditingController();
   final productNameController = TextEditingController();
   final billingNameController = TextEditingController();
 
@@ -123,6 +125,8 @@ class _PurchaseState extends State<Purchase> {
         purchaseAccountList.addAll(value);
       });
     });
+       isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
     loadSettings();
      _getSupplierListData = 
     supplierOnly 
@@ -1269,35 +1273,123 @@ class _PurchaseState extends State<Purchase> {
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
                                       ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: grey),
-                                            borderRadius:
-                                                BorderRadius.circular(3)),
-                                        child: entryNo.isEmpty
-                                            ? const Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Icon(
-                                                  Icons.arrow_drop_down_rounded,
-                                                  color: grey,
-                                                ))
-                                            : Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  entryNo,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: 13),
-                                                ),
+                                     TextField(
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 14
+                                      ),
+                                      controller: invoiceNoController,
+                                      decoration:  InputDecoration(
+                                      
+                                         prefixIcon: Visibility(
+                                          visible: isAdminUser,
+                                           child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                              const SizedBox(
+                                                width: 4,
                                               ),
-                                      )
+                                             InkWell(
+                                                  onTap: () {
+                                                   var invoiceNum = 'invoiceNo';
+                                           
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber--; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                           
+                                                debugPrint(invoiceNum.toString());
+                                           
+                                            dataDynamic = [
+                                             {
+                                             'Type': 0,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                                                                   ];
+                                                                                   cartItem.clear();
+                                                                                  fetchPurchase(context, dataDynamic[0]);
+                                                                                 },
+                                                                                  child: const Icon(
+                                           Icons.arrow_back_ios_rounded,
+                                           // size: 16, 
+                                                                                ),
+                                                                             ),
+                                           
+                                            ],
+                                                                                   ),
+                                         ),
+                                        suffixIcon: Visibility(
+                                          visible: isAdminUser,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                     var invoiceNum = 'invoiceNo';
+                                          
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber++; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                          
+                                                debugPrint(invoiceNum.toString());
+                                          
+                                            dataDynamic = [
+                                             {
+                                             'Type': 0,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                          ];
+                                                                                 cartItem.clear();
+                                                                                 try {
+                                           fetchPurchase(context, dataDynamic[0]);
+                                                                                 } catch (e) {
+                                           if (e is RangeError) {
+                                              showDialog(
+                                                   context: context,
+                                                   builder: (BuildContext context) {
+                                                    return AlertDialog(
+                                                           title: const Text("Error"),
+                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                                           actions: [
+                                                            TextButton(
+                                                             child: const Text("OK"),
+                                                             onPressed: () {
+                                                             Navigator.of(context).pop(); 
+                                                          },
+                                                        ),
+                                                      ],
+                                                   );
+                                                 },
+                                              );
+                                           }else {
+                                              debugPrint("An unexpected error occurred: $e");
+                                           }
+                                                                                 }
+                                                },
+                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                                const SizedBox(
+                                                  width: 4,
+                                                )
+                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                            ],
+                                          ),
+                                        ),
+                                        constraints: const BoxConstraints(
+                                          maxHeight: 34
+                                        ),
+                                          contentPadding: const EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 8),
+                                          border: const OutlineInputBorder()),
+                                    ),
                                     ],
                                   )),
                                   const SizedBox(
@@ -4836,7 +4928,7 @@ class _PurchaseState extends State<Purchase> {
                                     if (state) {
                                       if (controllerQuantity.text.isNotEmpty) {
                                         setState(() {
-                                          // nextWidget = 10;
+                                          nextWidget = 10;
                                           calculate();
                                         });
                                       }
@@ -10444,14 +10536,24 @@ class _PurchaseState extends State<Purchase> {
     }
     return isSerialNoScanner
         ? scanSerialNumber(context)
-        : Container(
+        : Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            leading: IconButton(onPressed: (){
+              setState(() {
+                nextWidget = 1;
+              });
+            }, icon: Icon(Icons.arrow_back_rounded)),
+            title: Text('Add Serial Number'),
+          ),
+          body: Container(
             padding: const EdgeInsets.all(5.0),
             child: Column(children: [
               const Text(
                 'SerialNo List',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              Row(
+               Row(
                 children: [
                   Expanded(
                       child: MaterialButton(
@@ -10461,18 +10563,26 @@ class _PurchaseState extends State<Purchase> {
 
                       if (qtyTotal == serialNoData.length) {
                         setState(() {
-                          nextWidget = 4;
+                          nextWidget = 1;
                         });
                       } else {
                         showInSnackBar('Quantity not equal\nAdd more serialNo');
                       }
                     },
-                    color: blue[400],
-                    child: const Text("OK"),
+                    color: kPrimaryColor,
+                    child: const Text("Add",
+                    style: TextStyle(
+                      fontFamily: 'poppins',
+                      color: white
+                    ),
+                    ),
                   )),
                 ],
               ),
-              const Divider(),
+                            const Divider(),
+                const SizedBox(
+                  height: 8,
+                ),
               Row(
                 children: [
                   Expanded(
@@ -10523,7 +10633,7 @@ class _PurchaseState extends State<Purchase> {
                                     gId: gId,
                                     itemName: editItem
                                         ? cartItem[position!].itemId
-                                        : productModel!.slNo,
+                                        : selectedItem!.slNo,
                                     serialNo: newSerialNoController.text,
                                     slNo: serialNoData.length + 1,
                                     tType: 'P',
@@ -10540,6 +10650,7 @@ class _PurchaseState extends State<Purchase> {
                       icon: const Icon(Icons.add))
                 ],
               ),
+               
               const Divider(),
               Expanded(
                   child: ListView.builder(
@@ -10552,17 +10663,26 @@ class _PurchaseState extends State<Purchase> {
                             });
                           },
                           child: Card(
-                            elevation: 5,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3)
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: Center(
-                                  child: Text(serialNoData[index].serialNo!)),
+                                  child: Row(
+                                    children: [
+                                      Text('${index + 1} )   '),
+                                      Text(serialNoData[index].serialNo!),
+                                    ],
+                                  )),
                             ),
                           ),
                         );
                       }))
             ]),
-          );
+          ),
+        );
   }
 
   callNumber(number) async {

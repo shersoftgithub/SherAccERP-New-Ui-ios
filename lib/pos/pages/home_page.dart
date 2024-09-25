@@ -283,7 +283,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    getEntryNo(12);
+    // getEntryNo(12);
     List<StockItem> itemList = fetchStockProducts ?? [];
     List<StockProduct> variantList = fetchStockVariant ?? [];
     // final List<ProductPurchaseModel> _itemList = products ?? [];

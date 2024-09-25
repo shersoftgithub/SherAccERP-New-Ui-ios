@@ -117,7 +117,7 @@ class _SalesReturnState extends State<SalesReturn> {
     lId = ComSettings.appSettings(
             'int', 'key-dropdown-default-location-view', 2) -
         1;
-
+    
     printerType =
         ComSettings.appSettings('int', 'key-dropdown-printer-type-view', 0);
     printerDevice =
@@ -126,7 +126,8 @@ class _SalesReturnState extends State<SalesReturn> {
         ComSettings.appSettings('int', "key-dropdown-printer-model-view", 2);
     printLines = ComSettings.billLineValue(
         ComSettings.appSettings('int', "key-dropdown-print-line", 2));
-
+    isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
     groupId =
         ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
             1;
@@ -1321,9 +1322,11 @@ class _SalesReturnState extends State<SalesReturn> {
                                         prefixIcon: Visibility(
                                           visible: isAdminUser,
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
+                                              const SizedBox(
+                                                  width: 2,
+                                                ),
                                               InkWell(
                                                 onTap: () {
                                                      var invoiceNum = invoiceNo;
@@ -1331,7 +1334,7 @@ class _SalesReturnState extends State<SalesReturn> {
                                           
                                                   setState(() {
                                                    int invoiceNumber = int.parse(invoiceNum); 
-                                                   invoiceNumber++; 
+                                                   invoiceNumber--; 
                                                    invoiceNum = invoiceNumber.toString(); 
                                                  });
                                           
@@ -1339,15 +1342,15 @@ class _SalesReturnState extends State<SalesReturn> {
                                           
                                             dataDynamic = [
                                              {
-                                             'Type': salesTypeData!.type,
+                                             'Type': saleReturnFormId,
                                              'InvoiceNo': invoiceNum,
                                              'EntryNo': int.parse(invoiceNum) ?? 0,
-                                             'Id': int.parse(invoiceNum) ?? 0
+                                             'Id': invoiceNum
                                              }
                                           ];
                                                                                  cartItem.clear();
                                                                                  try {
-                                           fetchSaleReturn(context, dataDynamic[0]);
+                                           fetchSaleReturn(context, int.parse(dataDynamic[0]['Id']));
                                                                                  } catch (e) {
                                            if (e is RangeError) {
                                               showDialog(
@@ -1372,10 +1375,8 @@ class _SalesReturnState extends State<SalesReturn> {
                                            }
                                                                                  }
                                                 },
-                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                                const SizedBox(
-                                                  width: 4,
-                                                )
+                                                child: const Icon(Icons.arrow_back_ios_rounded)),
+                                               
                                               //  Icon(Icons.keyboard_double_arrow_right_rounded),
                                             ],
                                           ),
@@ -1408,7 +1409,7 @@ class _SalesReturnState extends State<SalesReturn> {
                                           ];
                                                                                  cartItem.clear();
                                                                                  try {
-                                           fetchSaleReturn(context, dataDynamic[0]);
+                                           fetchSaleReturn(context, dataDynamic[0]['Id']);
                                                                                  } catch (e) {
                                            if (e is RangeError) {
                                               showDialog(

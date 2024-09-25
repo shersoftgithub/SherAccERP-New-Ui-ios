@@ -35,6 +35,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   final TextEditingController searchController = TextEditingController();
   List<DataJson> categoryDataList = [];
   List<String> categoryList = [];
+  List<int> categoryId = [];
   List<PosCartModel> cartItem = [];
   bool _showCategoryList = false;
   Map<String, int> selectedItems = {};
@@ -43,6 +44,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   List<StockProduct>? fetchStockVariant;
   DioService api = DioService();
   String _selectedCategory = "All";
+  int _selectedCategoryId = 0;
   // String _toDay = '';
   // String get getToDay => _toDay!;  
   DateTime now = DateTime.now();
@@ -84,6 +86,9 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   final Map<String, List<StockItem>> _categoryItems = {
     "All": [],
   };
+  final Map<int, List<StockItem>> _categoryItemsId = {
+    0: [],
+  };
 
   @override
   void initState() {
@@ -103,10 +108,19 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
         .where((name) => name != null)
         .cast<String>()
         .toList());
+    categoryId.addAll(categoryDataList
+        .map((item) => item.id)
+        .where((name) => name != null)
+        .cast<int>()
+        .toList());
 
     for (String category in categoryList) {
       _categoryItems[category] = [];
     }
+    for (int categoryId in categoryId) {
+      _categoryItemsId[categoryId] = [];
+    }
+   
     loadSettings();
     load(); 
   }
@@ -196,6 +210,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
 
   void _categorizeProducts() {
     _categoryItems["All"] = products ?? [];
+
   }
 
   void filterProducts(String query) {
@@ -220,7 +235,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
     final selectedRateType = ref.watch(rateTypeProvider);
     final List<StockItem> itemList = filteredProducts ?? [];
     List<StockProduct> variantList = fetchStockVariant ?? [];
-  debugPrint('productsss   === ${products.toString()}');
+  // debugPrint('productsss   === ${products.toString()}');
     final isTax = ref.watch(isTaxProvider);
         double totalGrossValue = 0;
   double totalDiscount = 0;
@@ -252,11 +267,11 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
               : 0
           : 0;
      csPer = taxP / 2;
-     debugPrint("cessPer == ${totalCess.toString()}");
-     debugPrint("tax == ${taxP.toString()}");
+    //  debugPrint("cessPer == ${totalCess.toString()}");
+    //  debugPrint("tax == ${taxP.toString()}");
    
-     debugPrint('cess = ${cess.toString()}'); 
-     debugPrint(iGST.toString()); 
+    //  debugPrint('cess = ${cess.toString()}'); 
+    //  debugPrint(iGST.toString()); 
     // total = CommonService.getRound(
     //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
   double totalAmount = cartModel.fold(0.0, (sum, item) => sum + item.rate * item.quantity!);
@@ -274,8 +289,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
       csGST = 0;
       kfc = 0;
     }
-      debugPrint('csGST${csGST.toString()}');
-      debugPrint('igst${iGST.toString()}');
+      // debugPrint('csGST${csGST.toString()}');
+      // debugPrint('igst${iGST.toString()}');
 
 
      double grandTotal = totalAmount + totalTax;
@@ -345,6 +360,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                       itemCount: _categoryItems.keys.length,
                       itemBuilder: (context, index) {
                         String category = _categoryItems.keys.elementAt(index);
+                        int categorysId = _categoryItemsId.keys.elementAt(index);
                         return ListTile(
                           title: Text(category),
                           tileColor: _selectedCategory == category
@@ -366,6 +382,15 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                           onTap: () {
                             setState(() {
                               _selectedCategory = category;
+                              _selectedCategoryId = categorysId;
+                             if (category != 'All') {
+                               var selectedId = categoryId.firstWhere(
+                                (element) => element == _selectedCategoryId,
+                                    );
+                                    debugPrint('selected ==== ${selectedId}');
+                             }
+
+                             
                               filterProducts(searchController.text);
                             });
                           },
