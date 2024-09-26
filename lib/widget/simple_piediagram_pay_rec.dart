@@ -76,7 +76,7 @@ class ChartPayRec {
 
 final colorValues = [
   '0xff0008B3',
-  '0xff0008B3'
+  '0xff0047AB'
   // '0xff109618',
   // '0xffE33335',
   // '0xff990099',

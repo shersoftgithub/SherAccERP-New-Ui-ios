@@ -6483,18 +6483,18 @@ void _onTabTapped(int index) {
                                               fontFamily: 'poppins', fontSize: 14),
                                           suggestionTextStyle:
                                               const TextStyle(fontFamily: 'poppins'),
-                                          decoration:  const InputDecoration(
-                                                                  //               suffixIcon:  Visibility(
-                                                                  //   visible: enableBarcode,
-                                                                  //   child: IconButton(
-                                                                  //       onPressed: () {
-                                                                  //         searchProductBarcode();
-                                                                  //       },
-                                                                  //       icon: const Icon(Icons.document_scanner)),
-                                                                  // ),
-                                            contentPadding: EdgeInsets.symmetric(
+                                          decoration:   InputDecoration(
+                                                                                suffixIcon:  Visibility(
+                                                                    visible: enableBarcode,
+                                                                    child: IconButton(
+                                                                        onPressed: () {
+                                                                          searchProductBarcode();
+                                                                        },
+                                                                        icon: Image.asset('assets/icons/ic_barcode_scanner_new.png',scale: 2.6,)),
+                                                                  ),
+                                            contentPadding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 5),
-                                            border: OutlineInputBorder(),
+                                            border: const OutlineInputBorder(),
                                           ),
                                           suggestions: itemNameListDisplay,
                                           onChanged: (value) {
@@ -6527,77 +6527,78 @@ void _onTabTapped(int index) {
                                               subTotal = 0;
                                               total = 0;
                                               gross = 0;
-                                              _autoVariantSelect = selectedItem.hasVariant! ? true : false;
-                                              selectedQuantity =
-                                                  selectedItem.quantity.toString();
-                                              selectedItemId = selectedItem.id!;
-                                               fetchedData = selectedItemId != null
-                                                 ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
-                                                 ? isStockProductOnlyInSalesQO
-                                        ? await api.fetchNoStockVariants(selectedItemId.toString())
-                                        : await api.fetchStockVariants(selectedItemId!)
-                                        : _autoVariantSelect 
-                                        ? await api.fetchStockVariantListStream(selectedItemId!) 
-                                        :await api.fetchStockVariants(selectedItemId!)
-                                                  : null
-                                                  ;
-                                              if (fetchedData != null) {
-                                                fetchedData.listen((variants) {
-                                                 selectedVariant = variants.firstWhere(
-                                                    (element) =>
-                                                        element.itemId == selectedItemId,
-                                                    orElse: () => StockProduct.empty(),
-                                                  );
-                                                  if (_autoVariantSelect) {
-                                                  stockVariantProductList.clear();
-                                                   stockVariantProductList.addAll(variants) ;
-                                                }
-                                                  Future<double?> rateFuture;
-                                                  if (salesTypeData!.rateType == 'MRP') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
-                                                  } else if (salesTypeData!.rateType ==
-                                                      'WHOLESALE') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
-                                                  } else if (salesTypeData!.rateType ==
-                                                      'RETAIL') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
-                                                  } else if (salesTypeData!.rateType ==
-                                                      'SPRETAIL') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
-                                                  } else if (rateTypeItem!.name == 'MRP') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
-                                                  } else if (rateTypeItem!.name == 'RETAIL') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
-                                                  } else if (rateTypeItem!.name == 'SPRETAIL') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
-                                                  } else if (rateTypeItem!.name == 'BRANCH') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.branch);
-                                                  }else if (rateTypeItem!.name == 'WHOLESALE') {
-                                                    rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
-                                                  } else {
-                                                    rateFuture = Future.value(null);
-                                                  }
-                                                  rateFuture.then((rate) {
-                                                    if (rate != null) {
-                                                      _rateController.text =
-                                                          rate.toStringAsFixed(2);
+                                        //       _autoVariantSelect = selectedItem.hasVariant! ? true : false;
+                                        //       selectedQuantity =
+                                        //           selectedItem.quantity.toString();
+                                        //       selectedItemId = selectedItem.id!;
+                                        //        fetchedData = selectedItemId != null
+                                        //          ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                        //          ? isStockProductOnlyInSalesQO
+                                        // ? await api.fetchNoStockVariants(selectedItemId.toString())
+                                        // : await api.fetchStockVariants(selectedItemId!)
+                                        // : _autoVariantSelect 
+                                        // ? await api.fetchStockVariantListStream(selectedItemId!) 
+                                        // :await api.fetchStockVariants(selectedItemId!)
+                                        //           : null
+                                        //           ;
+                                        //       if (fetchedData != null) {
+                                        //         fetchedData.listen((variants) {
+                                        //          selectedVariant = variants.firstWhere(
+                                        //             (element) =>
+                                        //                 element.itemId == selectedItemId,
+                                        //             orElse: () => StockProduct.empty(),
+                                        //           );
+                                        //           if (_autoVariantSelect) {
+                                        //           stockVariantProductList.clear();
+                                        //            stockVariantProductList.addAll(variants) ;
+                                        //         }
+                                        //           Future<double?> rateFuture;
+                                        //           if (salesTypeData!.rateType == 'MRP') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.sellingPrice);
+                                        //           } else if (salesTypeData!.rateType ==
+                                        //               'WHOLESALE') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.wholeSalePrice);
+                                        //           } else if (salesTypeData!.rateType ==
+                                        //               'RETAIL') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.retailPrice);
+                                        //           } else if (salesTypeData!.rateType ==
+                                        //               'SPRETAIL') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.spRetailPrice);
+                                        //           } else if (rateTypeItem!.name == 'MRP') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.sellingPrice);
+                                        //           } else if (rateTypeItem!.name == 'RETAIL') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.retailPrice);
+                                        //           } else if (rateTypeItem!.name == 'SPRETAIL') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.spRetailPrice);
+                                        //           } else if (rateTypeItem!.name == 'BRANCH') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.branch);
+                                        //           }else if (rateTypeItem!.name == 'WHOLESALE') {
+                                        //             rateFuture = Future.value(
+                                        //                 selectedVariant.wholeSalePrice);
+                                        //           } else {
+                                        //             rateFuture = Future.value(null);
+                                        //           }
+                                        //           rateFuture.then((rate) {
+                                        //             if (rate != null) {
+                                        //               _rateController.text =
+                                        //                   rate.toStringAsFixed(2);
                                                        
-                                                    }
-                                                  });
-                                                   salesTypeData!.type != 'SALES-ES' 
-                                                   ?taxP = selectedVariant.tax! ?? 0
-                                                   :taxP = 0;
-                                                });
-                                              }
+                                        //             }
+                                        //           });
+                                        //            salesTypeData!.type != 'SALES-ES' 
+                                        //            ?taxP = selectedVariant.tax! ?? 0
+                                        //            :taxP = 0;
+                                        //         });
+                                        //       }
+                                        itemVarianDetails(selectedItem);
                                             // });
                                             // print('onSubmitted value: $selectedItemId');
                                           },
@@ -6812,6 +6813,12 @@ void _onTabTapped(int index) {
                                                       },
                                                     ),
                                                     headTxt: 'Quantity')),
+                                                    Visibility(
+                                                            visible: isFreeQty,
+                                                            child: const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            ),
                                                      Visibility(
                                                             visible: isFreeQty,
                                                             child: Expanded(
@@ -6842,9 +6849,7 @@ void _onTabTapped(int index) {
                                                                   vertical: 8),
                                     border: OutlineInputBorder(
                                     
-                                    ),
-                                    labelText: 'Free',
-                                    hintText: '0.0'),
+                                    ),),
                                        onChanged: (value) {
                                         if (value.isNotEmpty) {
                                     bool cartQ = false;
@@ -6902,10 +6907,10 @@ void _onTabTapped(int index) {
                                     });
                                     }
                                     },
-                                  ), headTxt: 'Quantity')),
+                                  ), headTxt: 'Free Qty')),
                                     ),
                                             const SizedBox(
-                                              width: 5,
+                                              width: 4,
                                             ),
                                             Visibility(
                                               visible: enableMULTIUNIT,
@@ -7428,6 +7433,12 @@ void _onTabTapped(int index) {
                                                       },
                                                     ),
                                                     headTxt: 'Quantity')),
+                                                    Visibility(
+                                                            visible: isFreeQty,
+                                                            child: const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            ),
                                                      Visibility(
                                                             visible: isFreeQty,
                                                             child: Expanded(
@@ -7458,9 +7469,7 @@ void _onTabTapped(int index) {
                                                                   vertical: 8),
                                     border: OutlineInputBorder(
                                     
-                                    ),
-                                    labelText: 'Free',
-                                    hintText: '0.0'),
+                                    ),),
                                        onChanged: (value) {
                                         if (value.isNotEmpty) {
                                     bool cartQ = false;
@@ -7518,10 +7527,10 @@ void _onTabTapped(int index) {
                                     });
                                     }
                                     },
-                                  ), headTxt: 'Quantity')),
+                                  ), headTxt: 'Free Qty')),
                                     ),
                                             const SizedBox(
-                                              width: 5,
+                                              width: 4,
                                             ),
                                             Visibility(
                                               visible: enableMULTIUNIT,
@@ -12165,66 +12174,241 @@ bool editItem = false;
   }
 
   String barcodeValueText = '0';
+  String errorMessage = "";
 
-  searchProductBarcode() {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return (StatefulBuilder(builder: (context, setState) {
+ searchProductBarcode() {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Type Barcode'),
-            content: TextField(
-              onChanged: (value) {
-                setState(() {
-                  barcodeValueText = value;
-                });
-              },
-              decoration: InputDecoration(
-                  suffixIcon: IconButton(
+            title: const Text('Type Barcode',
+            style: TextStyle(
+              fontFamily: 'poppins'
+            ),),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      barcodeValueText = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
                       onPressed: () {
                         scannerProductWidget();
                       },
-                      icon: const Icon(Icons.document_scanner)),
-                  border: const OutlineInputBorder(),
-                  labelText: "barcode"),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                    allow: true, replacementString: '.')
+                      icon: Image.asset('assets/icons/ic_barcode_scanner_new.png',scale: 2.6,),
+                    ),
+                    border: const OutlineInputBorder(),
+                    labelText: "barcode..",
+                    labelStyle:  TextStyle(
+              fontFamily: 'poppins'
+            ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (errorMessage.isNotEmpty)
+                  Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
               ],
             ),
             actions: <Widget>[
               TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red,
+                  // foregroundColor: redAccent,
+                  // backgroundColor: Colors.red,
                 ),
-                child: const Text('CANCEL'),
+                child: const Text('CANCEL',
+                style: TextStyle(
+              fontFamily: 'poppins'
+            ),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                 },
               ),
               TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.green,
+                  foregroundColor: kPrimaryColor,
+                  // backgroundColor: Colors.green,
                 ),
-                child: const Text('OK'),
+                child: const Text('OK',
+                style: TextStyle(
+              fontFamily: 'poppins'
+            ),
+                ),
                 onPressed: () {
-                  setState(() {
-                    isBarcodePicker = true;
-                    nextWidget = 3;
-                    Navigator.pop(context);
+                  api.fetchStockProductByBarcode(barcodeValueText).then((value) {
+                    debugPrint('API Response: $value');
+
+                    if (value.isNotEmpty) {
+                      if (context.mounted) {
+                        setState(() {
+                          selectedItem = value.first;
+                          debugPrint(selectedItem.toString());
+                           Future<double?> rateFuture;
+                                                  if (salesTypeData!.rateType == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.sellingPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.wholeSalePrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.retailPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.sellingPrice);
+                                                  } else if (rateTypeItem!.name == 'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.retailPrice);
+                                                  } else if (rateTypeItem!.name == 'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'BRANCH') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.branch);
+                                                  }else if (rateTypeItem!.name == 'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedItem.wholeSalePrice);
+                                                  } else {
+                                                    rateFuture = Future.value(null);
+                                                  }
+                                                  rateFuture.then((rate) {
+                                                    if (rate != null) {
+                                                      _rateController.text =
+                                                          rate.toStringAsFixed(2);
+                                                       
+                                                    }
+                                                  });
+                                                   salesTypeData!.type != 'SALES-ES' 
+                                                   ?taxP = selectedItem.tax! ?? 0
+                                                   :taxP = 0;
+                          
+                          // itemVarianDetails(value.first);
+                          selectedItemId = selectedItem.itemId;
+                          itemNameControl.text = selectedItem.name;
+                          
+                          errorMessage = ""; 
+                        });
+                        Navigator.pop(context); 
+                      }
+                    } else {
+                      if (context.mounted) {
+                        setState(() {
+                          errorMessage = "No product found with this barcode.";
+                        });
+                      }
+                    }
+                  }).catchError((error) {
+                    debugPrint('Error: $error');
+
+                    if (context.mounted) {
+                      setState(() {
+                        errorMessage = "Error fetching data.";
+                      });
+                    }
                   });
                 },
               ),
             ],
           );
-        }));
-      },
-    );
-  }
+        },
+      );
+    },
+  );
+}
+
+itemVarianDetails(selectedItem)async{
+   _autoVariantSelect = selectedItem.hasVariant! ? true : false;
+                                              selectedQuantity =
+                                                  selectedItem.quantity.toString();
+                                              selectedItemId = selectedItem.id!;
+                                               fetchedData = selectedItemId != null
+                                                 ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                                 ? isStockProductOnlyInSalesQO
+                                        ? await api.fetchNoStockVariants(selectedItemId.toString())
+                                        : await api.fetchStockVariants(selectedItemId!)
+                                        : _autoVariantSelect 
+                                        ? await api.fetchStockVariantListStream(selectedItemId!) 
+                                        :await api.fetchStockVariants(selectedItemId!)
+                                                  : null
+                                                  ;
+                                              if (fetchedData != null) {
+                                                fetchedData.listen((variants) {
+                                                 selectedVariant = variants.firstWhere(
+                                                    (element) =>
+                                                        element.itemId == selectedItemId,
+                                                    orElse: () => StockProduct.empty(),
+                                                  );
+                                                  if (_autoVariantSelect) {
+                                                  stockVariantProductList.clear();
+                                                   stockVariantProductList.addAll(variants) ;
+                                                }
+                                                  Future<double?> rateFuture;
+                                                  if (salesTypeData!.rateType == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (rateTypeItem!.name == 'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (rateTypeItem!.name == 'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'BRANCH') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.branch);
+                                                  }else if (rateTypeItem!.name == 'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else {
+                                                    rateFuture = Future.value(null);
+                                                  }
+                                                  rateFuture.then((rate) {
+                                                    if (rate != null) {
+                                                      _rateController.text =
+                                                          rate.toStringAsFixed(2);
+                                                       
+                                                    }
+                                                  });
+                                                   salesTypeData!.type != 'SALES-ES' 
+                                                   ?taxP = selectedVariant.tax! ?? 0
+                                                   :taxP = 0;
+                                                });
+                                              }
+}
+
 
   showMore(context, bool newBill) {
     ConfirmAlertBox(

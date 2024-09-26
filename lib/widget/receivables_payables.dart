@@ -59,7 +59,7 @@ class ReceivablesAndPayables extends StatelessWidget {
               Center(
                 child: EasyPieChart(
                   key: const Key('pie 1'),
-                  children: pies,
+                  children: pieData,
                   borderEdge: StrokeCap.butt,
                   pieType: PieType.crust,
                   // showValue: false,

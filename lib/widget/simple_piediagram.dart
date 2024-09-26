@@ -150,7 +150,7 @@ class SimplePieDiagram extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<PieData> pies = data.map((expense) => PieData(
       value: double.parse(expense.amount!),
-      color: Color(int.parse(expense.colorVal!)),
+      color: expense.colorVal!,
     )).toList();
 
     return EasyPieChart(
@@ -214,7 +214,7 @@ class ChartPurchase {
 class ChartExpense {
   final String? amount;
   final int? id;
-  final String? colorVal;
+  final Color? colorVal;
   final String? name;
 
   ChartExpense({this.amount, this.id, this.colorVal, this.name});
@@ -223,12 +223,25 @@ class ChartExpense {
     return ChartExpense(
         amount: json['amount'].toString(),
         id: json['id'],
-        colorVal: json['color'],
+        colorVal: _getColorFromHex(json['color']),
         name: json['name']);
   }
 
   @override
   String toString() => "Record<$id:$amount>";
+    static Color? _getColorFromHex(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) {
+      return null; 
+    }
+    
+    hexColor = hexColor.replaceAll('#', '');
+
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor';
+    }
+
+    return Color(int.parse('0x$hexColor'));
+  }
 }
 
 
