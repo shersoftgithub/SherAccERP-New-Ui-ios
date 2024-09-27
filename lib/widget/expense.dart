@@ -197,13 +197,13 @@ class _ExpenseState extends State<Expense> {
                   height: 40.0,
                 ),
                 GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 4,
                     mainAxisExtent: 20
                     ),
                     shrinkWrap: true,
-                    itemCount: 6,
+                    itemCount: lItems.length > 5 ? 5 : lItems.length,
                     itemBuilder: (context, index) {
                  return SizedBox(
                   child: Row(
@@ -212,7 +212,7 @@ class _ExpenseState extends State<Expense> {
                                radius: 10,
                                backgroundColor: txtColors[index],
                              ),
-                             SizedBox(
+                             const SizedBox(
                               width: 4,
                              ),
                              SizedBox(

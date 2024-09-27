@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
 class SalesPredictionReport extends StatelessWidget {
@@ -39,9 +40,9 @@ class SalesPredictionReport extends StatelessWidget {
                 return DataRow(
                   cells: [
                     DataCell(Text(item['ItemName'].toString())),
-                    DataCell(Text(item['LastSoldDate'].toString())),
+                    DataCell(Text(formatYMD(item['LastSoldDate'].toString()))),
                     DataCell(Text(item['LastSoldQty'].toString())),
-                    DataCell(Text(item['PredictedNextSaleDate'].toString())),
+                    DataCell(Text(formatYMD(item['PredictedNextSaleDate'].toString()))),
                     DataCell(Text(item['PredictedNextQty'].toString())),
                   ],
                 );
@@ -51,5 +52,9 @@ class SalesPredictionReport extends StatelessWidget {
         ),
       ),
     );
+  }
+    String formatYMD(value) {
+     var dateTime = DateFormat("yyyy-MM-dd").parse(value.toString());
+    return DateFormat("dd-MM-yyyy").format(dateTime);
   }
 }

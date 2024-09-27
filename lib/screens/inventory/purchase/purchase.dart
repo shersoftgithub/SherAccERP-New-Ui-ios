@@ -1280,7 +1280,6 @@ class _PurchaseState extends State<Purchase> {
                                       ),
                                       controller: invoiceNoController,
                                       decoration:  InputDecoration(
-                                      
                                          prefixIcon: Visibility(
                                           visible: isAdminUser,
                                            child: Row(
@@ -1293,15 +1292,12 @@ class _PurchaseState extends State<Purchase> {
                                              InkWell(
                                                   onTap: () {
                                                    var invoiceNum = 'invoiceNo';
-                                           
                                                   setState(() {
                                                    int invoiceNumber = int.parse(invoiceNum); 
                                                    invoiceNumber--; 
                                                    invoiceNum = invoiceNumber.toString(); 
                                                  });
-                                           
                                                 debugPrint(invoiceNum.toString());
-                                           
                                             dataDynamic = [
                                              {
                                              'Type': 0,
@@ -1318,7 +1314,6 @@ class _PurchaseState extends State<Purchase> {
                                            // size: 16, 
                                                                                 ),
                                                                              ),
-                                           
                                             ],
                                                                                    ),
                                          ),
@@ -1331,7 +1326,6 @@ class _PurchaseState extends State<Purchase> {
                                               InkWell(
                                                 onTap: () {
                                                      var invoiceNum = 'invoiceNo';
-                                          
                                                   setState(() {
                                                    int invoiceNumber = int.parse(invoiceNum); 
                                                    invoiceNumber++; 

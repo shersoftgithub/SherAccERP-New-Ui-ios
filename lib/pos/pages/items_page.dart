@@ -50,6 +50,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
   DateTime now = DateTime.now();
   String? formattedDate;
   bool _isLoading = false,
+  isLoading = false,
   enableKeralaFloodCess = false,
   cessOnNetAmount = false;
    double taxP = 0,
@@ -102,6 +103,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
     // _pagingController.addPageRequestListener((pageKey) {
     //   _fetchProducts(pageKey);
     //  });    
+    // api.fetchStockProductByCategory(DateUtil.dateDMY2YMD(formattedDate), '8');
 
     categoryList.addAll(categoryDataList
         .map((item) => item.name)
@@ -387,6 +389,13 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                var selectedId = categoryId.firstWhere(
                                 (element) => element == _selectedCategoryId,
                                     );
+                                    fetchProductByCategoryId(DateUtil.dateDMY2YMD(formattedDate), selectedId.toString());
+                                    // var data =  api.fetchStockProductByCategory(
+                                    //   DateUtil.dateDMY2YMD(formattedDate),selectedId.toString())
+                                    // .then((value) {
+                                    //   filteredProducts!.clear();
+                                    //   filteredProducts!.addAll(value);
+                                    // });
                                     debugPrint('selected ==== ${selectedId}');
                              }
 
@@ -401,9 +410,11 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                 Expanded(
                   child: SingleChildScrollView(
                     child: Align(
-                      alignment: Alignment.center,
+                      alignment: Alignment.topCenter,
                       child: Wrap(
-                        children: itemList.map((item) {
+                        children: isLoading
+                        ? const [Center(child: CircularProgressIndicator())]
+                        : itemList.map((item) {
                           // Find the variant for the current item
                           StockProduct? variant = variantList.firstWhere(
                               (variant) => variant.itemId == item.id,
@@ -415,7 +426,8 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                                          : selectedRateType == 'SPRETAIL' ? variant.spRetailPrice
                                                            : variant.retailPrice ;
 
-                          return Container(
+                          return 
+                          Container(
                             padding: const EdgeInsets.all(4),
                             margin: const EdgeInsets.symmetric(
                                 horizontal: 4, vertical: 4),
@@ -533,6 +545,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                               ),
                             ),
                           );
+                        
                         }).toList(),
                       ),
                     ),
@@ -541,5 +554,17 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
               ],
             ),
     );
+  }
+  fetchProductByCategoryId(String date, String id)async{
+    setState(() {
+      isLoading = true;
+    });
+  await api.fetchStockProductByCategory(date, id).then((value) {
+    filteredProducts!.clear();
+    filteredProducts!.addAll(value);
+    setState(() {
+      isLoading = false;
+    });
+  });
   }
 }

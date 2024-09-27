@@ -179,6 +179,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
         manualInvoiceNumberInSales =
         ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
    companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+   getEntryNo(12);
 
   }
 
@@ -426,11 +427,28 @@ if (companyTaxMode == 'INDIA') {
                     
                     }, icon: const Icon(Icons.arrow_back_ios)
                     ),
-                    Text(invoiceNo ?? '0',
-                    style: TextStyle(
-                      color: white
+                    TextField(
+                      readOnly: true,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: white,
+                      ),
+                      controller: invoiceNoController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: 20,
+                          maxWidth: 50
+                        )
+                      ),
                     ),
-                    ),
+                    // Text(invoiceNo ?? '0',
+                    // style: TextStyle(
+                    //   color: white
+                    // ),
+                    // ),
                     IconButton(
                       onPressed: (){
                     
@@ -2088,6 +2106,191 @@ if (companyTaxMode == 'INDIA') {
     );
     
   }
+  //  fetchSale(context, data) {
+    
+  //   // selectedItemId = cartModel!.id;
+  //    setState(() {
+  //     isLoading = true;
+  //   });
+  //   double billTotal = 0, billCash = 0;
+
+  //   api.fetchSalesInvoice(data['Id'], salesTypeData!.id).then((value) {
+  //     if (value != null) {
+  //       salesData = value;
+  //       var information = value['Information'][0];
+  //       var particulars = value['Particulars'];
+  //       // var serialNO = value['SerialNO'];
+  //       // var deliveryNoteDetails = value['DeliveryNote'];
+  //       otherAmountList = value['otherAmount'];
+  //       formattedDate = DateUtil.dateDMY(information['DDate']);
+  //       rateTypeItem = rateTypeList.firstWhere((element) => 
+  //       element.id.toString() ==
+  //        information['Stype'].toString());
+  //       dataDynamic = [
+  //         {
+  //           'RealEntryNo': information['RealEntryNo'],
+  //           'EntryNo': information['EntryNo'],
+  //           'InvoiceNo': information['InvoiceNo'],
+  //           'Type': salesTypeData!.id
+  //         }
+  //       ];
+        
+  //       invoiceNo = information['InvoiceNo'];
+  //       invoiceNoController.text = invoiceNo;
+  //       billCash = double.tryParse(information['CashReceived'].toString())!;
+  //       billTotal = double.tryParse(information['GrandTotal'].toString())!;
+  //       returnAmount = double.tryParse(information['ReturnAmount'].toString())!;
+  //       selectedItemId = information['itemId'];
+  //       returnBillId = information['ReturnNo'];
+  //       controllerNarration.text = information['Narration'];
+     
+       
+  //       if (apiV != 'v19/') {
+  //         Object _bankLedgerName = information['BankName'] != null
+  //             ? information['BankName'].toString()
+  //             : 0;
+  //         double? _bankLedgerAmount = information['bankamount'] != null
+  //             ? double.tryParse(information['bankamount'].toString())
+  //             : 0;
+  //         if (_bankLedgerAmount! > 0) {
+  //           bankAmountController.text = _bankLedgerAmount.toString();
+  //           bankLedgerData = cashBankACList.firstWhere((element) =>
+  //               element.name.toLowerCase() ==
+  //               _bankLedgerName.toString().toLowerCase());
+  //           bankLedgerName = bankLedgerData.name;
+
+  //         } else {
+  //           bankAmountController.text = '';
+  //           bankLedgerData = null;
+  //           bankLedgerName = '';
+  //         }
+  //         int? _commissionLedgerAc = information['CareOff'] != null
+  //             ? int.tryParse(information['CareOff'].toString())
+  //             : 0;
+  //         double? _commissionLedgerAmount = information['CareOffAmount'] != null
+  //             ? double.tryParse(information['CareOffAmount'].toString())
+  //             : 0;
+  //         if (_commissionLedgerAmount! > 0) {
+  //           commissionAmountController.text =
+  //               _commissionLedgerAmount.toString();
+  //           commissionAccount = _commissionLedgerAc!;
+  //           api.getCustomerDetail(_commissionLedgerAc).then((ledgerData) =>
+  //               commissionLedgerData = LedgerModel(
+  //                   id: _commissionLedgerAc, name: ledgerData.name!));
+  //         } else {
+  //           commissionAmountController.text = '';
+  //           commissionLedgerData = null;
+  //           commissionAccount = 0;
+  //         }
+  //       }
+  //       CustomerModel cModel = CustomerModel(
+  //           id: information['Customer'],
+  //           name: information['ToName'],
+  //           address1: information['Add1'],
+  //           address2: information['Add2'],
+  //           address3: information['Add3'],
+  //           address4: information['Add4'],
+  //           balance: information['Balance'].toString(),
+  //           city: '',
+  //           email: '',
+  //           phone: '',
+  //           route: '',
+  //           state: '',
+  //           stateCode: '',
+  //           taxNumber: information['gstno']);
+  //       ledgerModel =  cModel;
+  //       nameControl.text = cModel.id == acId ?  cashAc :cModel.name!;
+  //       selectedCustomerId =  cModel.id;
+  //       addressControl.text = cModel.address1!;
+  //       siteNameControl.text = cModel.address2!;
+        
+  //       // api
+  //       //     .getCustomerDetail(ledgerModel.id)
+  //       //     .then((ledgerData) => accountModel = ledgerData);
+  //       ScopedModel.of<MainModel>(context).addCustomer(cModel);
+  // //       cartModel =
+  // // cartItem.elementAt(position!);
+  //       for (var product in particulars) {
+  //         addProduct(  
+  //             CartItem(
+  //                 stock: 0,
+  //                 minimumRate: 0,
+  //                 id: totalItem + 1,
+  //                 itemId: product['itemId'],
+  //                 itemName: product['itemname'],
+  //                 quantity: double.tryParse(product['Qty'].toString())!,
+  //                 rate: double.tryParse(product['Rate'].toString())!,
+  //                 rRate: double.tryParse(product['RealRate'].toString())!,
+  //                 uniqueCode: product['UniqueCode'],
+  //                 gross: double.tryParse(product['GrossValue'].toString())!,
+  //                 discount: double.tryParse(product['Disc'].toString())!,
+  //                 discountPercent:
+  //                     double.tryParse(product['DiscPersent'].toString())!,
+  //                 rDiscount: double.tryParse(product['RDisc'].toString())!,
+  //                 fCess: double.tryParse(product['Fcess'].toString())!,
+  //                 serialNo: product['serialno'].toString(),
+  //                 tax: double.tryParse(product['CGST'].toString())! +
+  //                     double.tryParse(product['SGST'].toString())! +
+  //                     double.tryParse(product['IGST'].toString())!,
+  //                 taxP: double.tryParse(product['igst'].toString())!,
+  //                 unitId: product['Unit'],
+  //                 unitValue: double.tryParse(product['UnitValue'].toString())!,
+  //                 pRate: double.tryParse(product['Prate'].toString())!,
+  //                 rPRate: double.tryParse(product['Rprate'].toString())!,
+  //                 barcode: product['UniqueCode'],
+  //                 expDate: '2020-01-01',
+  //                 free: double.tryParse(product['freeQty'].toString())!,
+  //                 fUnitId: int.tryParse(product['Funit'].toString())!,
+  //                 cdPer: 0, //product['']cdPer,
+  //                 cDisc: 0, //product['']cDisc,
+  //                 net: double.tryParse(product['Net'].toString())!, //subTotal,
+  //                 cess: double.tryParse(product['cess'].toString())!, //cess,
+  //                 total: double.tryParse(product['Total'].toString())!, //total,
+  //                 profitPer: 0, //product['']profitPer,
+  //                 fUnitValue: double.tryParse(
+  //                     product['FValue'].toString())!, //fUnitValue,
+  //                 adCess:
+  //                     double.tryParse(product['adcess'].toString())!, //adCess,
+  //                 iGST: double.tryParse(product['IGST'].toString())!,
+  //                 cGST: double.tryParse(product['CGST'].toString())!,
+  //                 sGST: double.tryParse(product['SGST'].toString())!,
+  //                 cessPer: double.tryParse(product['cessper'].toString())!,
+  //                 adCessPer: double.tryParse(product['adcessper'].toString())!,
+  //                 ),
+                  
+  //             -1);
+  //       } 
+  //       userDateCheck(information['DDate'].toString());
+  //     }
+
+  //     setState(() {
+  //       widgetID = false;
+  //       grandTotal = billTotal - returnAmount;
+  //       if (billCash > 0) {
+  //         controllerCashReceived.text = billCash.toString();
+  //         _balance = controllerCashReceived.text.isNotEmpty
+  //             ? grandTotal > 0
+  //                 ? grandTotal - double.tryParse(controllerCashReceived.text)!
+  //                 : ((totalCartValue) -
+  //                     double.tryParse(controllerCashReceived.text)!)
+  //             : grandTotal > 0
+  //                 ? grandTotal
+  //                 : totalCartValue;
+  //       }
+  //       if (returnAmount > 0) {
+  //         returnAmountController.text = returnAmount.toString();
+  //         returnEntryNoController.text = returnBillId.toString();
+  //       }
+  //       // nextWidget = 4;
+        
+  //       editItem = true;
+  //       oldBill = true;
+  //     });
+  //     // Navigator.pushReplacementNamed(context, '/preview_show',
+  //     // arguments: {'title': 'Sale'});
+  //   });
+  // }
+
   //   double totalGrossValue = 0;
   // double totalDiscount = 0;
   // double totalNet = 0;

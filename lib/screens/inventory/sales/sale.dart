@@ -2306,12 +2306,115 @@ void _onTabTapped(int index) {
             const SizedBox(
               width: 10,
             ),
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.settings,
-                  color: white,
-                )),
+             PopupMenuButton<String>(
+              icon: const Icon(Icons.settings, color: white),
+              onSelected: (value) async{
+             if (value == 'Show Previous Bill') {
+                  if (selectedCashCustomerId != null || selectedCustomerId != null) {
+                   Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PreviousBill(
+                                        ledger: selectedTabIndex == 0 ? selectedCustomerId!.toString() : selectedCashCustomerId!.toString(),
+                                      )),
+                            );
+                }else{
+                  Fluttertoast.showToast(msg: 'Please Select Customer');
+                }
+             }
+                if (value == 'Show Prediction List') {
+                  if (selectedCashCustomerId != null || selectedCustomerId != null) {
+                   setState(() {
+          isLoading = true;
+        });
+
+        try {
+          List<Map<String, dynamic>> data = await api.getPredictNextSalesOrder(selectedTabIndex == 0 ? selectedCustomerId! : selectedCashCustomerId!, lId);
+          
+          setState(() {
+            isLoading = false;
+          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SalesPredictionReport(data: data),
+            ),
+          );
+        } catch (e) {
+          setState(() {
+            isLoading = false;
+          });
+          debugPrint('Error fetching data: $e');
+        }
+                }else{
+                  Fluttertoast.showToast(msg: 'Please Select Customer');
+                }
+                }
+                if (companyTaxMode == 'INDIA') {
+                  setState(() {
+                    if (salesData != null) {
+                      if (value == 'Generate E-Way Bill') {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => GenerateEWaybill(
+                                      data: salesData,
+                                      type: 'SALES',
+                                    )));
+                      } else if (value == 'Generate e-Invoice') {
+                        if (salesTypeData!.eInvoice) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => GenerateE_Invoice(
+                                        data: salesData,
+                                        type: 'SALES',
+                                      )));
+                        }
+                      } else if (value == 'Edit  e-Invoice') {
+                        if (salesTypeData!.eInvoice) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => GenerateE_Invoice(
+                                        data: salesData,
+                                        type: 'SALES',
+                                      )));
+                        }
+                      }
+                    }
+                  });
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'Generate E-Way Bill',
+                  child: Text('Generate E-Way Bill'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Generate e-Invoice',
+                  child: Text('Generate e-Invoice'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Edit  e-Invoice',
+                  child: Text('Edit  e-Invoice Details'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Show Prediction List',
+                  child: Text('Show Prediction List'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Show Previous Bill',
+                  child: Text('Show Previous Bill'),
+                ),
+              ],
+            ),
+            // IconButton(
+            //     onPressed: () {},
+            //     icon: const Icon(
+            //       Icons.settings,
+            //       color: white,
+            //     )),
             const SizedBox(
               width: 10,
             )
@@ -2339,74 +2442,6 @@ void _onTabTapped(int index) {
                           Expanded(
                               child: ContainerFieldWidget(
                                   widget: 
-                                  // InkWell(
-                                  //   onTap: () {
-                                  //     // showModalBottomSheet(
-                                  //     //   context: context,
-                                  //     //   builder: (BuildContext context) =>
-                                  //     //       Padding(
-                                  //     //     padding: EdgeInsets.only(
-                                  //     //         bottom: MediaQuery.of(context).viewInsets.bottom),
-                                  //     //     child: Padding(
-                                  //     //       padding: const EdgeInsets.all(8.0),
-                                  //     //       child: Column(
-                                  //     //         children: [
-                                  //     //           const SizedBox(height: 16),
-                                  //     //           TextField(
-                                  //     //             decoration: const  InputDecoration(
-                                  //     //                     border: OutlineInputBorder(),
-                                  //     //                     // hintText:
-                                  //     //                     //     'Invoice No',
-                                  //     //                     labelText:'Enter invoice no'),
-                                  //     //             controller: invoiceNoController,
-                                  //     //             autofocus: true,
-                                  //     //           ),
-                                  //     //           const SizedBox(height: 10),
-                                  //     //           ElevatedButton(
-                                  //     //             style: ElevatedButton.styleFrom(
-                                  //     //                 backgroundColor: kPrimaryColor,
-                                  //     //                 shape: RoundedRectangleBorder(
-                                  //     //                 borderRadius:BorderRadius.circular(3))),
-                                  //     //             onPressed: () {
-                                  //     //               Navigator.of(context).pop();
-                                  //     //               setState(() {});
-                                  //     //             },
-                                  //     //             child: const Text("Done",
-                                  //     //                 style: TextStyle(
-                                  //     //                     fontFamily: 'poppins',
-                                  //     //                     color: white)),
-                                  //     //           ),
-                                  //     //         ],
-                                  //     //       ),
-                                  //     //     ),
-                                  //     //   ),
-                                  //     // );
-                                  //   },
-                                  //   child: Container(
-                                  //     margin: const EdgeInsets.only(
-                                  //       bottom: 15,
-                                  //     ),
-                                  //     width: MediaQuery.of(context).size.width,
-                                  //     padding: const EdgeInsets.symmetric(horizontal: 5),
-                                  //     height: 20,
-                                  //     decoration: BoxDecoration(
-                                  //         border: Border.all(color: grey),
-                                  //         borderRadius: BorderRadius.circular(3)),
-                                  //     child: Row(
-                                  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  //       children: [
-                                  //         Text(invoiceNoController.text,
-                                  //             style: const TextStyle(
-                                  //                 fontWeight: FontWeight.w500,
-                                  //                 fontSize: 16,
-                                  //                 fontFamily: 'poppins')),
-                                  //         // const Icon(
-                                  //         //     Icons.arrow_drop_down_sharp,
-                                  //         //     color: black)
-                                  //       ],
-                                  //     ),
-                                  //   ),
-                                  // ),
                                   Padding(
                                     padding: const EdgeInsets.only(
                                       bottom: 15,
@@ -2490,7 +2525,7 @@ void _onTabTapped(int index) {
                                                                                  try {
                                            fetchSale(context, dataDynamic[0]);
                                                                                  } catch (e) {
-                                           if (e is RangeError) {
+                                          //  if (e is RangeError) {
                                               showDialog(
                                                    context: context,
                                                    builder: (BuildContext context) {
@@ -2508,9 +2543,9 @@ void _onTabTapped(int index) {
                                                    );
                                                  },
                                               );
-                                           }else {
-                                              debugPrint("An unexpected error occurred: $e");
-                                           }
+                                          //  }else {
+                                          //     debugPrint("An unexpected error occurred: $e");
+                                          //  }
                                                                                  }
                                                 },
                                                 child: const Icon(Icons.arrow_forward_ios_rounded)),
@@ -2823,45 +2858,7 @@ void _onTabTapped(int index) {
                                                                 child: Text(ledgerModel!.taxNumber!),
                                                               ),
                                                               headTxt: 'Tax Number'),
-                                                             ledgerModel!.id != null ?  ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PreviousBill(
-                                        ledger: ledgerModel!.id.toString(),
-                                      )),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3)
-                            ),
-                              elevation: 0,
-                              backgroundColor: kPrimaryColor,
-                              foregroundColor: white,
-                              disabledBackgroundColor: grey),
-                          child: const Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  Icons.view_list,
-                                  color: white,
-                                ),
-                                SizedBox(
-                                  width: 4.0,
-                                ),
-                                Text(
-                                  "Previous Bill",
-                                  style: TextStyle(color: white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        : SizedBox()
-                                                        ],
+                                                           ],
                                                       );
                                                     }):Column(
                                                         children: [
@@ -3019,57 +3016,57 @@ void _onTabTapped(int index) {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    selectedCustomerId != null
-  ? Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: ElevatedButton(
-      onPressed: () async {
-        setState(() {
-          isLoading = true;
-        });
+  //                   selectedCustomerId != null
+  // ? Padding(
+  //   padding: const EdgeInsets.symmetric(horizontal: 20),
+  //   child: ElevatedButton(
+  //     onPressed: () async {
+  //       setState(() {
+  //         isLoading = true;
+  //       });
 
-        try {
-          List<Map<String, dynamic>> data = await api.getPredictNextSalesOrder(selectedCustomerId!, lId);
+  //       try {
+  //         List<Map<String, dynamic>> data = await api.getPredictNextSalesOrder(selectedCustomerId!, lId);
           
-          setState(() {
-            isLoading = false;
-          });
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SalesPredictionReport(data: data),
-            ),
-          );
-        } catch (e) {
-          setState(() {
-            isLoading = false;
-          });
-          debugPrint('Error fetching data: $e');
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(3),
-        ),
-        backgroundColor: const Color(0xff0008B3),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 10),
-          Text(
-            'Sales Predictor',
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'poppins',
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    ),
-  )
-  : const SizedBox(),
+  //         setState(() {
+  //           isLoading = false;
+  //         });
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => SalesPredictionReport(data: data),
+  //           ),
+  //         );
+  //       } catch (e) {
+  //         setState(() {
+  //           isLoading = false;
+  //         });
+  //         debugPrint('Error fetching data: $e');
+  //       }
+  //     },
+  //     style: ElevatedButton.styleFrom(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(3),
+  //       ),
+  //       backgroundColor: const Color(0xff0008B3),
+  //     ),
+  //     child: const Row(
+  //       mainAxisAlignment: MainAxisAlignment.center,
+  //       children: [
+  //         SizedBox(width: 10),
+  //         Text(
+  //           'Sales Predictor',
+  //           style: TextStyle(
+  //             color: Colors.white,
+  //             fontFamily: 'poppins',
+  //             fontSize: 13,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   ),
+  // )
+  // : const SizedBox(),
 
                     cartItem.isNotEmpty
                         ? Container(
@@ -4968,43 +4965,6 @@ void _onTabTapped(int index) {
                                                       border:
                                                           OutlineInputBorder()),
                                                 ), headTxt: 'Email'),
-                                                 ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PreviousBill(
-                                        ledger: acId.toString(),
-                                      )),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3)
-                            ),
-                              elevation: 0,
-                              backgroundColor: kPrimaryColor,
-                              foregroundColor: white,
-                              disabledBackgroundColor: grey),
-                          child: const Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(
-                                  Icons.view_list,
-                                  color: white,
-                                ),
-                                SizedBox(
-                                  width: 4.0,
-                                ),
-                                Text(
-                                  "Previous Bill",
-                                  style: TextStyle(color: white),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
                                               ],
                                             ),
                                           )
@@ -5916,6 +5876,7 @@ void _onTabTapped(int index) {
   String? selectedTaxOption = 'With Tax';
   late StockProduct selectedVariant;
   bool isVariantSelected = false;
+  bool cantEdit = false;
   List<StockProduct> stockVariantProductList =[];
   var selectedItem;
   var fetchedData;
@@ -6476,6 +6437,7 @@ void _onTabTapped(int index) {
                     .cast<String>()
                     .toList();
                                         return EasyAutocomplete(
+                                          
                                           // progressIndicatorBuilder:
                                           //     const CircularProgressIndicator(),
                                           controller: itemNameControl,
@@ -6484,18 +6446,19 @@ void _onTabTapped(int index) {
                                           suggestionTextStyle:
                                               const TextStyle(fontFamily: 'poppins'),
                                           decoration:   InputDecoration(
-                                                                                suffixIcon:  Visibility(
+                                            suffixIcon: !editItem ? Visibility(
                                                                     visible: enableBarcode,
                                                                     child: IconButton(
                                                                         onPressed: () {
                                                                           searchProductBarcode();
                                                                         },
                                                                         icon: Image.asset('assets/icons/ic_barcode_scanner_new.png',scale: 2.6,)),
-                                                                  ),
+                                                                  ) : SizedBox(),
                                             contentPadding: const EdgeInsets.symmetric(
                                                 vertical: 10, horizontal: 5),
                                             border: const OutlineInputBorder(),
                                           ),
+
                                           suggestions: itemNameListDisplay,
                                           onChanged: (value) {
                                             // print('onChanged value: $value');
@@ -12504,7 +12467,7 @@ itemVarianDetails(selectedItem)async{
     double billTotal = 0, billCash = 0;
 
     api.fetchSalesInvoice(data['Id'], salesTypeData!.id).then((value) {
-      if (value != null) {
+      if (value != null && value['Information'].isNotEmpty) {
         salesData = value;
         var information = value['Information'][0];
         var particulars = value['Particulars'];
@@ -12651,6 +12614,13 @@ itemVarianDetails(selectedItem)async{
         } 
         userDateCheck(information['DDate'].toString());
       }
+      else{
+        setState(() {
+          // widgetID = false;
+          editItem = false;
+          // newSale = true;
+        });
+      }
 
       setState(() {
         widgetID = false;
@@ -12678,6 +12648,7 @@ itemVarianDetails(selectedItem)async{
       // Navigator.pushReplacementNamed(context, '/preview_show',
       // arguments: {'title': 'Sale'});
     });
+ 
   }
 
   Widget _buildQrViewLedger(BuildContext context) {
