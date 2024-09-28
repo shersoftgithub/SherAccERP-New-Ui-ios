@@ -142,7 +142,7 @@ class _SalesReturnState extends State<SalesReturn> {
         if (refId > 0) {
           fetchSaleReturn(context, refId);
         } else {
-          nextWidget = 2;
+          nextWidget = 0;
           widgetID = false;
         }
       });
@@ -707,6 +707,7 @@ class _SalesReturnState extends State<SalesReturn> {
     var locationId = lId.toString().trim().isNotEmpty ? lId : 1;
 
     Order order = Order(
+      
         customerModel: ledger,
         lineItems: cartItem,
         grossValue: totalGrossValue.toString(),
@@ -825,7 +826,7 @@ class _SalesReturnState extends State<SalesReturn> {
             'commissionAccount': 0,
             'commissionAmount': 0,
             'bankName': '',
-            'bankAmount': 0
+            'bankAmount': 0,
           })}]';
 
       final body = {
@@ -1016,7 +1017,9 @@ class _SalesReturnState extends State<SalesReturn> {
             'billType': order.billType,
             'returnNo': 0,
             'returnAmount': 0,
-            'fyId': currentFinancialYear!.id
+            'fyId': currentFinancialYear!.id,
+            'adcessper':0,
+            'cessper':0
           }) +
           ']';
 
@@ -1187,7 +1190,7 @@ class _SalesReturnState extends State<SalesReturn> {
 
   int nextWidget = 0;
   selectWidget() {
-    return nextWidget == 0
+    return nextWidget == 0 
         ? newSalesReturnWidget(newSalesReturn)
         // selectLedgerWidget()
         : nextWidget == 1
@@ -5603,6 +5606,9 @@ bool isPrateEdited = false;
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
+           widget.fromSale == true
+          ? Navigator.of(context).pop()
+          :
           Navigator.of(context).pushReplacementNamed('/salesReturn');
           // Navigator.pushNamed(context, '/salesReturn');
         },

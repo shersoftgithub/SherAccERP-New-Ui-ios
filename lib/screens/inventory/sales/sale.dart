@@ -1858,6 +1858,8 @@ class _SaleState extends ConsumerState<Sale> {
     return nextWidget == 0
         ? loadScanner
             ? scannerWidget()
+            // : loadReturnForm
+            // ? salesReturnForm()
             : newSaleWidget(newSale)
         // selectLedgerWidget()
         : nextWidget == 1
@@ -2407,6 +2409,14 @@ void _onTabTapped(int index) {
                   value: 'Show Previous Bill',
                   child: Text('Show Previous Bill'),
                 ),
+                const PopupMenuItem<String>(
+                  value: 'Import From Sales Order',
+                  child: Text('Import From Sales Order'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Import From Sales Quatation',
+                  child: Text('Import From Sales Quatation'),
+                ),
               ],
             ),
             // IconButton(
@@ -2522,10 +2532,11 @@ void _onTabTapped(int index) {
                                              }
                                           ];
                                                                                  cartItem.clear();
+
                                                                                  try {
                                            fetchSale(context, dataDynamic[0]);
                                                                                  } catch (e) {
-                                          //  if (e is RangeError) {
+                                           if (e is RangeError) {
                                               showDialog(
                                                    context: context,
                                                    builder: (BuildContext context) {
@@ -2543,10 +2554,10 @@ void _onTabTapped(int index) {
                                                    );
                                                  },
                                               );
-                                          //  }else {
-                                          //     debugPrint("An unexpected error occurred: $e");
-                                          //  }
-                                                                                 }
+                                           }else {
+                                              debugPrint("An unexpected error occurred: $e");
+                                           }
+                                             }
                                                 },
                                                 child: const Icon(Icons.arrow_forward_ios_rounded)),
                                                 const SizedBox(
@@ -3907,6 +3918,19 @@ void _onTabTapped(int index) {
                                                   onPressed: () {
                                                     setState(() {
                                                       loadReturnForm = true;
+                                                        int _id = oldBill
+        ? returnBillId > 0
+            ? returnBillId
+            : 0
+        : 0;
+    var data = [
+      {'ledger': ledgerModel, 'id': _id}
+    ];
+                                                      
+             Navigator.push(context, MaterialPageRoute(builder: (context) =>                                          SalesReturn(
+      fromSale: true,
+      data: data,
+    ),));
                                                     });
                                                   },
                                                   style: ButtonStyle(
@@ -12618,6 +12642,8 @@ itemVarianDetails(selectedItem)async{
         setState(() {
           // widgetID = false;
           editItem = false;
+          oldBill = false;
+          
           // newSale = true;
         });
       }
