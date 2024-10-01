@@ -1231,6 +1231,7 @@ class _OpeningStockState extends State<OpeningStock> {
 
    int? selectedProducteId;
   var selectedItem;
+  bool isPrateEdited = false;
   var unit;
    addItemWidget(){
     List<UnitModel> unitList = [];
@@ -1333,6 +1334,135 @@ class _OpeningStockState extends State<OpeningStock> {
        if (enableMULTIUNIT) {
         if (currentRate > 0) {
           if (conversion > 0 ) {
+            if (focusNodeRate.hasFocus ) {
+              rate = double.tryParse(controllerRate.text)?? 0;
+              // rate = double.tryParse(_rateController.text) * _conversion;
+              // lastRateStatus = false;
+            } else {
+              rate =  (currentRate * conversion);
+              // rate = saleRate; // * _conversion;
+              controllerRate.text = rate.toStringAsFixed(decimal);
+            }
+            
+          } else {
+            rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+          }
+        }
+       else {
+        rate = (controllerRate.text.isNotEmpty
+            ? double.tryParse(controllerRate.text)
+            : 0) ?? 0;
+      }
+      }
+      else{
+        if (focusNodeRate.hasFocus) {
+         rate =  double.tryParse(controllerRate.text) ?? 0 ; 
+        } else if (currentRate > 0){
+          controllerRate.text = currentRate.toStringAsFixed(decimal);
+          rate = currentRate;
+        } else{
+           rate = (controllerRate.text.isNotEmpty
+                ? double.tryParse(controllerRate.text)
+                : 0)?? 0;
+        }
+      }
+      if (focusNodeDiscountPer.hasFocus) {
+        controllerDiscount.text = controllerDiscountPer.text.isNotEmpty
+            ? (((quantity * rate) * discountPer) / 100).toStringAsFixed(2)
+            : '';
+        discount = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        discountPer = (double.tryParse(controllerDiscountPer.text))?? 0;
+      }
+
+      if (focusNodeDiscount.hasFocus) {
+        controllerDiscountPer.text = controllerDiscount.text.isNotEmpty
+            ? ((discount * 100) / (quantity * rate)).toStringAsFixed(2)
+            : '';
+        discountPer = (controllerDiscount.text.isNotEmpty
+            ? double.tryParse(controllerDiscount.text)
+            : 0)!;
+        double.tryParse(controllerDiscount.text);
+      }    
+      // discount = (controllerDiscount.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscount.text)
+      //     : 0)!;
+      // discountPer = (controllerDiscountPer.text.isNotEmpty
+      //     ? double.tryParse(controllerDiscountPer.text)
+      //     : 0)!;
+      rRate = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
+          : rate;
+      rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(decimal, ((discount * 100) / (taxP + 100)))
+          : discount;
+      subTotal = CommonService.getRound(decimal, (rate * quantity));
+      net = CommonService.getRound(decimal, (subTotal - discount));
+      if (taxP > 0) {
+        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      }
+      if (companyTaxMode == 'INDIA') {
+        double csPer = taxP / 2;
+        iGST = 0;
+        csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      } else if (companyTaxMode == 'GULF') {
+        iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+        csGST = 0;
+      } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+      total = CommonService.getRound(
+          decimal, (net + csGST + csGST + iGST + cess + adCess));
+      // total = net + tax;
+      if (mrp > 0) {
+        profitPer = realPRateBasedProfitPercentage
+            ? CommonService.getRound(decimal, (((mrp - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((mrp - rate) * 100) / rate));
+      }
+      if (retail > 0) {
+        retailPer = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((retail - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((retail - rate) * 100) / rate));
+      }
+      if (wholeSale > 0) {
+        wholesalePer = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((wholeSale - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((wholeSale - rate) * 100) / rate));
+      }
+      if (spRetail > 0) {
+        spRetailPer = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((spRetail - rRate) * 100) / rRate))
+            : CommonService.getRound(
+                decimal, (((spRetail - rate) * 100) / rate));
+      }
+      if (branch > 0) {
+        branchPer = realPRateBasedProfitPercentage
+            ? CommonService.getRound(
+                decimal, (((branch - rRate) * 100) / rRate))
+            : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
+      }
+
+      // unitValue = _conversion > 0 ? _conversion : 1;
+    }
+ calculateConversion() {
+      quantity = (controllerQuantity.text.isNotEmpty
+          ? double.tryParse(controllerQuantity.text)
+          : 0)!;
+      rate = (controllerRate.text.isNotEmpty
+          ? double.tryParse(controllerRate.text)
+          : 0)!;
+       if (enableMULTIUNIT) {
+        if (currentRate > 0) {
+          if (conversion > 0 && !isPrateEdited) {
             if (focusNodeRate.hasFocus ) {
               rate = double.tryParse(controllerRate.text)?? 0;
               // rate = double.tryParse(_rateController.text) * _conversion;
@@ -1635,6 +1765,7 @@ class _OpeningStockState extends State<OpeningStock> {
                                   controllerQuantity.text = '';
                                   controllerDiscountPer.text = '';
                                   controllerDiscount.text = '';
+                                  controllerRate.text = '';
                                   unitValue = 1;
                                   _dropDownUnit = 0;
                                   rate = 0;
@@ -1652,12 +1783,13 @@ class _OpeningStockState extends State<OpeningStock> {
                                   discountPer = 0;
                                   discount = 0;
                                   conversion = 0;
-                                 
+                                
+                                   
                                   selectedProducteId = selectedItem.slNo;
                                   print(selectedProducteId);
                                   final fetchedPrice = await dio
                                       .fetchProductPrize(selectedProducteId!);
-                                 
+                                  setState(() {
                                   productModelPrize = fetchedPrice.toList();
                                   adCessPer = selectedItem!.adCessPer;
       cessPer = selectedItem!.cessPer;
@@ -1688,6 +1820,7 @@ class _OpeningStockState extends State<OpeningStock> {
       if (branch > 0 && !_focusNodeBranch.hasFocus) {
         controllerBranch.text = branch.toString();
       }
+                                 });
        
                               
                                 },
@@ -1733,7 +1866,7 @@ class _OpeningStockState extends State<OpeningStock> {
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
                                     setState(() {
-                                      calculate();
+                                      calculateConversion();
                                     });
                                   },
                                 ),
@@ -1888,8 +2021,11 @@ class _OpeningStockState extends State<OpeningStock> {
                                     ),
                                       border: OutlineInputBorder(),),
                                   onChanged: (value) {
+                                       if (value.isNotEmpty) {
+                                        isPrateEdited = true;
+                                      }
                                     setState(() {
-                                      calculate();
+                                      calculateConversion();
                                     });
                                   },
                                 ),
@@ -2127,7 +2263,7 @@ class _OpeningStockState extends State<OpeningStock> {
                                 onChanged: (value) {
                                   setState(() {
                                     discountPer = double.tryParse(value) ?? 0;
-                                    calculate();
+                                    calculateConversion();
                                   });
                                 },
                                 decoration: InputDecoration(
@@ -2201,7 +2337,7 @@ class _OpeningStockState extends State<OpeningStock> {
                                 onChanged: (value) {
                                   setState(() {
                                     discount = double.tryParse(value) ?? 0;
-                                    calculate();
+                                    calculateConversion();
                                   });
                                 },
                               ),

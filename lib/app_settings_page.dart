@@ -2012,6 +2012,7 @@ class AppSettings extends StatelessWidget {
                               9: 'A4Half',
                               10: 'VatA4Half',
                               11: 'GstA4Half',
+                              12: 'NewModel1',
                             },
                             selected: 2,
                             onChange: (value) {
