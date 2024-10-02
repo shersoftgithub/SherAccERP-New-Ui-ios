@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:sheraccerp/util/res_color.dart';
 
 class SalesPredictionReport extends StatelessWidget {
@@ -12,6 +19,15 @@ class SalesPredictionReport extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prediction Report'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () async {
+              // Generate and share the PDF report
+              await shareReportAsPdf();
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -53,8 +69,51 @@ class SalesPredictionReport extends StatelessWidget {
       ),
     );
   }
-    String formatYMD(value) {
-     var dateTime = DateFormat("yyyy-MM-dd").parse(value.toString());
+
+  String formatYMD(value) {
+    var dateTime = DateFormat("yyyy-MM-dd").parse(value.toString());
     return DateFormat("dd-MM-yyyy").format(dateTime);
+  }
+
+  Future<void> shareReportAsPdf() async {
+    final pdf = pw.Document();
+
+    // Create the PDF content
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Table.fromTextArray(
+            headers: [
+              'Item Name',
+              'Last Sold Date',
+              'Last Sold Qty',
+              'Predicted Next Sale Date',
+              'Predicted Next Qty',
+            ],
+            data: data.map((item) {
+              return [
+                item['ItemName'].toString(),
+                formatYMD(item['LastSoldDate'].toString()),
+                item['LastSoldQty'].toString(),
+                formatYMD(item['PredictedNextSaleDate'].toString()),
+                item['PredictedNextQty'].toString(),
+              ];
+            }).toList(),
+          );
+        },
+      ),
+    );
+
+    // Save the PDF document to a file
+    final Uint8List pdfBytes = await pdf.save();
+
+    // Save the file temporarily and share it
+    final directory = await Directory.systemTemp.createTemp();
+    final pdfFile = File('${directory.path}/sales_prediction_report.pdf');
+    await pdfFile.writeAsBytes(pdfBytes);
+
+    // Share the PDF file using share_plus
+    final XFile xFile = XFile(pdfFile.path);
+    await Share.shareXFiles([xFile], text: 'Sales Prediction Report');
   }
 }

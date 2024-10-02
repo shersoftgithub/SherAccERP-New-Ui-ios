@@ -76,7 +76,7 @@ dependencies:
   shared_preferences:
   # syncfusion_flutter_datagrid: ^26.2.14
   scoped_model:
-  share_plus:
+  share_plus: ^10.0.0
   sqflite:
   # sunmi_printer_service:
   # sunmi_print_ticket:

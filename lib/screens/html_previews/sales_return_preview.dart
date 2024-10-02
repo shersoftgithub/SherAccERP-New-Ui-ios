@@ -353,14 +353,14 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
     title = route['title']!;
     return Scaffold(
         appBar: AppBar(
-           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            iconSize: 20.0,
-            onPressed: () {
-              // Navigator.pushNamed(context, '/salesReturn');
-              Navigator.pushReplacementNamed(context, '/salesReturn');
-            },
-          ),
+          //  leading: IconButton(
+          //   icon: const Icon(Icons.arrow_back),
+          //   iconSize: 20.0,
+          //   onPressed: () {
+          //     // Navigator.pushNamed(context, '/salesReturn');
+          //     // Navigator.pushReplacementNamed(context, '/salesReturn');
+          //   },
+          // ),
           // leading: IconButton(onPressed: (){
           //   Navigator.of(context).pop();
           // }, icon: Icon(Icons.arrow_back)),
@@ -3018,9 +3018,10 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
                                                             FontWeight.w900),
                                                   ),
                                                 ),
-                                                const SizedBox(
-                                                  height: 10,
-                                                ),
+                                                Spacer(),
+                                                // const SizedBox(
+                                                //   height: 10,
+                                                // ),
                                                 const Center(
                                                   child: Text(
                                                     "Authorised Signatuory",

@@ -909,12 +909,14 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
+          ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => PosHomePage(selectedItems: {}))
               );
         },
         onPressedYes: () {
+          ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
              Navigator.of(context).pop();
           Navigator.pushReplacementNamed(context, '/preview_show',
               arguments: {'title': 'Sale'});

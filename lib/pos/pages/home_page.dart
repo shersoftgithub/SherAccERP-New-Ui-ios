@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
+import 'package:sheraccerp/models/customer_model.dart';
+import 'package:sheraccerp/models/option_rate_type.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
@@ -35,11 +38,13 @@ class PosHomePage extends StatefulHookConsumerWidget {
 class _PosHomePageState extends ConsumerState<PosHomePage> {
   final TextEditingController quantityController = TextEditingController();
   List<PosCartModel> cartItem = [];
+  dynamic salesData;
    DateTime now = DateTime.now();
   String? formattedDate;
   DioService api = DioService();
   List<StockItem>? fetchStockProducts;
    List<CartItem> cartItems = [];
+   OptionRateType? rateTypeItem;
   List<StockProduct>? fetchStockVariant;
   List<PosCartModel> posModel = [];
   StockProduct? productss;
@@ -48,6 +53,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
    final invoiceNoController = TextEditingController(); 
   Future<List<StockProduct>>? _productsFuture;
   List<StockProduct> _cart = [];
+   List<dynamic> otherAmountList = [];
   CompanyInformation? companySettings;
   List<CompanySettings>? settings;
   String vehicleName = '', invoiceNo = '';
@@ -423,9 +429,28 @@ if (companyTaxMode == 'INDIA') {
                   // mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: (){
-                    
-                    }, icon: const Icon(Icons.arrow_back_ios)
+                     onPressed: () {
+                                                   var invoiceNum = invoiceNo;
+                                           
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber--; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                           
+                                                debugPrint(invoiceNum.toString());
+                                           
+                                            dataDynamic = [
+                                             {
+                                             'Type': 12,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                                                                   ];
+                                                                                   ref.read(cartItemProvider.notifier).clearAllCartItems();
+                                                                                  fetchSale(context, dataDynamic[0]);
+                                                                                 }, icon: const Icon(Icons.arrow_back_ios)
                     ),
                     TextField(
                       readOnly: true,
@@ -451,7 +476,26 @@ if (companyTaxMode == 'INDIA') {
                     // ),
                     IconButton(
                       onPressed: (){
-                    
+                        var invoiceNum = invoiceNo;
+                                           
+                                                  setState(() {
+                                                   int invoiceNumber = int.parse(invoiceNum); 
+                                                   invoiceNumber++; 
+                                                   invoiceNum = invoiceNumber.toString(); 
+                                                 });
+                                           
+                                                debugPrint(invoiceNum.toString());
+                                           
+                                            dataDynamic = [
+                                             {
+                                             'Type': 12,
+                                             'InvoiceNo': invoiceNum,
+                                             'EntryNo': int.parse(invoiceNum) ?? 0,
+                                             'Id': int.parse(invoiceNum) ?? 0
+                                             }
+                                                                                   ];
+                                                                                   ref.read(cartItemProvider.notifier).clearAllCartItems();
+                                                                                  fetchSale(context, dataDynamic[0]);
                     }, icon: const Icon(Icons.arrow_forward_ios)
                     ),
                     IconButton(
@@ -1055,7 +1099,7 @@ if (companyTaxMode == 'INDIA') {
                       horizontal: 8
                     ), 
                       height: isExpanded.value
-                        ? MediaQuery.of(context).size.height / 2
+                        ? MediaQuery.of(context).size.height / 2.3
                         : 0,
                         decoration: BoxDecoration(
                           color: white,
@@ -2106,190 +2150,239 @@ if (companyTaxMode == 'INDIA') {
     );
     
   }
-  //  fetchSale(context, data) {
+   fetchSale(context, data) {
     
-  //   // selectedItemId = cartModel!.id;
-  //    setState(() {
-  //     isLoading = true;
-  //   });
-  //   double billTotal = 0, billCash = 0;
+    // selectedItemId = cartModel!.id;
+     setState(() {
+      // _isLoading = true;
+    });
+    double billTotal = 0, billCash = 0;
 
-  //   api.fetchSalesInvoice(data['Id'], salesTypeData!.id).then((value) {
-  //     if (value != null) {
-  //       salesData = value;
-  //       var information = value['Information'][0];
-  //       var particulars = value['Particulars'];
-  //       // var serialNO = value['SerialNO'];
-  //       // var deliveryNoteDetails = value['DeliveryNote'];
-  //       otherAmountList = value['otherAmount'];
-  //       formattedDate = DateUtil.dateDMY(information['DDate']);
-  //       rateTypeItem = rateTypeList.firstWhere((element) => 
-  //       element.id.toString() ==
-  //        information['Stype'].toString());
-  //       dataDynamic = [
-  //         {
-  //           'RealEntryNo': information['RealEntryNo'],
-  //           'EntryNo': information['EntryNo'],
-  //           'InvoiceNo': information['InvoiceNo'],
-  //           'Type': salesTypeData!.id
-  //         }
-  //       ];
+   try {
+      api.fetchSalesInvoice(data['Id'], 12).then((value) {
+      if (value != null && value['Information'].isNotEmpty) {
+        salesData = value;
+        var information = value['Information'][0];
+        var particulars = value['Particulars'];
+        // var serialNO = value['SerialNO'];
+        // var deliveryNoteDetails = value['DeliveryNote'];
+        otherAmountList = value['otherAmount'];
+        formattedDate = DateUtil.dateDMY(information['DDate']);
+        // rateTypeItem = (ref.watch(rateTypeProvider) ==
+        //  information['Stype'].toString()) as OptionRateType?;
+        dataDynamic = [
+          {
+            'RealEntryNo': information['RealEntryNo'],
+            'EntryNo': information['EntryNo'],
+            'InvoiceNo': information['InvoiceNo'],
+            'Type': 12
+          }
+        ];
         
-  //       invoiceNo = information['InvoiceNo'];
-  //       invoiceNoController.text = invoiceNo;
-  //       billCash = double.tryParse(information['CashReceived'].toString())!;
-  //       billTotal = double.tryParse(information['GrandTotal'].toString())!;
-  //       returnAmount = double.tryParse(information['ReturnAmount'].toString())!;
-  //       selectedItemId = information['itemId'];
-  //       returnBillId = information['ReturnNo'];
-  //       controllerNarration.text = information['Narration'];
+        invoiceNo = information['InvoiceNo'];
+        invoiceNoController.text = invoiceNo;
+        billCash = double.tryParse(information['CashReceived'].toString())!;
+        billTotal = double.tryParse(information['GrandTotal'].toString())!;
+        // returnAmount = double.tryParse(information['ReturnAmount'].toString())!;
+        // selectedItemId = information['itemId'];
+        // returnBillId = information['ReturnNo'];
+        // controllerNarration.text = information['Narration'];
      
        
-  //       if (apiV != 'v19/') {
-  //         Object _bankLedgerName = information['BankName'] != null
-  //             ? information['BankName'].toString()
-  //             : 0;
-  //         double? _bankLedgerAmount = information['bankamount'] != null
-  //             ? double.tryParse(information['bankamount'].toString())
-  //             : 0;
-  //         if (_bankLedgerAmount! > 0) {
-  //           bankAmountController.text = _bankLedgerAmount.toString();
-  //           bankLedgerData = cashBankACList.firstWhere((element) =>
-  //               element.name.toLowerCase() ==
-  //               _bankLedgerName.toString().toLowerCase());
-  //           bankLedgerName = bankLedgerData.name;
+        if (apiV != 'v19/') {
+          Object _bankLedgerName = information['BankName'] != null
+              ? information['BankName'].toString()
+              : 0;
+          double? _bankLedgerAmount = information['bankamount'] != null
+              ? double.tryParse(information['bankamount'].toString())
+              : 0;
+          if (_bankLedgerAmount! > 0) {
+            // bankAmountController.text = _bankLedgerAmount.toString();
+            // bankLedgerData = cashBankACList.firstWhere((element) =>
+            //     element.name.toLowerCase() ==
+            //     _bankLedgerName.toString().toLowerCase());
+            // bankLedgerName = bankLedgerData.name;
 
-  //         } else {
-  //           bankAmountController.text = '';
-  //           bankLedgerData = null;
-  //           bankLedgerName = '';
-  //         }
-  //         int? _commissionLedgerAc = information['CareOff'] != null
-  //             ? int.tryParse(information['CareOff'].toString())
-  //             : 0;
-  //         double? _commissionLedgerAmount = information['CareOffAmount'] != null
-  //             ? double.tryParse(information['CareOffAmount'].toString())
-  //             : 0;
-  //         if (_commissionLedgerAmount! > 0) {
-  //           commissionAmountController.text =
-  //               _commissionLedgerAmount.toString();
-  //           commissionAccount = _commissionLedgerAc!;
-  //           api.getCustomerDetail(_commissionLedgerAc).then((ledgerData) =>
-  //               commissionLedgerData = LedgerModel(
-  //                   id: _commissionLedgerAc, name: ledgerData.name!));
-  //         } else {
-  //           commissionAmountController.text = '';
-  //           commissionLedgerData = null;
-  //           commissionAccount = 0;
-  //         }
-  //       }
-  //       CustomerModel cModel = CustomerModel(
-  //           id: information['Customer'],
-  //           name: information['ToName'],
-  //           address1: information['Add1'],
-  //           address2: information['Add2'],
-  //           address3: information['Add3'],
-  //           address4: information['Add4'],
-  //           balance: information['Balance'].toString(),
-  //           city: '',
-  //           email: '',
-  //           phone: '',
-  //           route: '',
-  //           state: '',
-  //           stateCode: '',
-  //           taxNumber: information['gstno']);
-  //       ledgerModel =  cModel;
-  //       nameControl.text = cModel.id == acId ?  cashAc :cModel.name!;
-  //       selectedCustomerId =  cModel.id;
-  //       addressControl.text = cModel.address1!;
-  //       siteNameControl.text = cModel.address2!;
+          } else {
+            // bankAmountController.text = '';
+            // bankLedgerData = null;
+            // bankLedgerName = '';
+          }
+          int? _commissionLedgerAc = information['CareOff'] != null
+              ? int.tryParse(information['CareOff'].toString())
+              : 0;
+          double? _commissionLedgerAmount = information['CareOffAmount'] != null
+              ? double.tryParse(information['CareOffAmount'].toString())
+              : 0;
+          if (_commissionLedgerAmount! > 0) {
+            // commissionAmountController.text =
+            //     _commissionLedgerAmount.toString();
+            // commissionAccount = _commissionLedgerAc!;
+            // api.getCustomerDetail(_commissionLedgerAc).then((ledgerData) =>
+            //     commissionLedgerData = LedgerModel(
+            //         id: _commissionLedgerAc, name: ledgerData.name!));
+          } else {
+            // commissionAmountController.text = '';
+            // commissionLedgerData = null;
+            // commissionAccount = 0;
+          }
+        }
+        CustomerModel cModel = CustomerModel(
+            id: information['Customer'],
+            name: information['ToName'],
+            address1: information['Add1'],
+            address2: information['Add2'],
+            address3: information['Add3'],
+            address4: information['Add4'],
+            balance: information['Balance'].toString(),
+            city: '',
+            email: '',
+            phone: '',
+            route: '',
+            state: '',
+            stateCode: '',
+            taxNumber: information['gstno']);
+        // ledgerModel =  cModel;
         
-  //       // api
-  //       //     .getCustomerDetail(ledgerModel.id)
-  //       //     .then((ledgerData) => accountModel = ledgerData);
-  //       ScopedModel.of<MainModel>(context).addCustomer(cModel);
-  // //       cartModel =
-  // // cartItem.elementAt(position!);
-  //       for (var product in particulars) {
-  //         addProduct(  
-  //             CartItem(
-  //                 stock: 0,
-  //                 minimumRate: 0,
-  //                 id: totalItem + 1,
-  //                 itemId: product['itemId'],
-  //                 itemName: product['itemname'],
-  //                 quantity: double.tryParse(product['Qty'].toString())!,
-  //                 rate: double.tryParse(product['Rate'].toString())!,
-  //                 rRate: double.tryParse(product['RealRate'].toString())!,
-  //                 uniqueCode: product['UniqueCode'],
-  //                 gross: double.tryParse(product['GrossValue'].toString())!,
-  //                 discount: double.tryParse(product['Disc'].toString())!,
-  //                 discountPercent:
-  //                     double.tryParse(product['DiscPersent'].toString())!,
-  //                 rDiscount: double.tryParse(product['RDisc'].toString())!,
-  //                 fCess: double.tryParse(product['Fcess'].toString())!,
-  //                 serialNo: product['serialno'].toString(),
-  //                 tax: double.tryParse(product['CGST'].toString())! +
-  //                     double.tryParse(product['SGST'].toString())! +
-  //                     double.tryParse(product['IGST'].toString())!,
-  //                 taxP: double.tryParse(product['igst'].toString())!,
-  //                 unitId: product['Unit'],
-  //                 unitValue: double.tryParse(product['UnitValue'].toString())!,
-  //                 pRate: double.tryParse(product['Prate'].toString())!,
-  //                 rPRate: double.tryParse(product['Rprate'].toString())!,
-  //                 barcode: product['UniqueCode'],
-  //                 expDate: '2020-01-01',
-  //                 free: double.tryParse(product['freeQty'].toString())!,
-  //                 fUnitId: int.tryParse(product['Funit'].toString())!,
-  //                 cdPer: 0, //product['']cdPer,
-  //                 cDisc: 0, //product['']cDisc,
-  //                 net: double.tryParse(product['Net'].toString())!, //subTotal,
-  //                 cess: double.tryParse(product['cess'].toString())!, //cess,
-  //                 total: double.tryParse(product['Total'].toString())!, //total,
-  //                 profitPer: 0, //product['']profitPer,
-  //                 fUnitValue: double.tryParse(
-  //                     product['FValue'].toString())!, //fUnitValue,
-  //                 adCess:
-  //                     double.tryParse(product['adcess'].toString())!, //adCess,
-  //                 iGST: double.tryParse(product['IGST'].toString())!,
-  //                 cGST: double.tryParse(product['CGST'].toString())!,
-  //                 sGST: double.tryParse(product['SGST'].toString())!,
-  //                 cessPer: double.tryParse(product['cessper'].toString())!,
-  //                 adCessPer: double.tryParse(product['adcessper'].toString())!,
-  //                 ),
+        // api
+        //     .getCustomerDetail(ledgerModel.id)
+        //     .then((ledgerData) => accountModel = ledgerData);
+        // ScopedModel.of<MainModel>(context).addCustomer(cModel);
+        for (var product in particulars) {
+          ref.read(cartItemProvider.notifier).addItem(
+                                                                                    PosCartModel(
+                                                                                      cess: cess,
+                                                                                      adCess: adCess,
+                                                                                      barcode: product['UniqueCode'],
+                                                                                      cDisc: 0,
+                                                                                      serialNo: product['serialno'].toString(),
+                                                                                      uniqueCode: product['UniqueCode'],
+                                                                                      expDate: '2020-01-01',
+                                                                                      net: double.tryParse(product['Net'].toString())!,
+                                                                                      fUnitId: int.tryParse(product['Funit'].toString())!,
+                                                                                      fUnitValue: double.tryParse(
+                                                                                                  product['FValue'].toString())!, //fUnitValue,
+                                                                                      taxP: double.tryParse(product['igst'].toString())!,
+                                                                                      sGST: double.tryParse(product['SGST'].toString())!,
+                                                                                      unitId: product['Unit'],
+                                                                                      unitValue: double.tryParse(product['UnitValue'].toString())!,
+                                                                                      cGST: double.tryParse(product['CGST'].toString())!,
+                                                                                      cdPer: 0,
+                                                                                      discount: 0,
+                                                                                      discountPercent: 0,
+                                                                                      gross: double.tryParse(product['GrossValue'].toString())!,
+                                                                                      iGST: double.tryParse(product['IGST'].toString())!,
+                                                                                      itemId:  product['itemId'],
+                                                                                      realPrice:  double.tryParse(product['RealRate'].toString())!,
+                                                                                      free: 0,
+                                                                                      fCess: 0,
+                                                                                      pRate: double.tryParse(product['Prate'].toString())!,
+                                                                                      rPRate: double.tryParse(product['Rprate'].toString())!,
+                                                                                      total: double.tryParse(product['Total'].toString())!,
+                                                                                      profitPer: 0,
+                                                                                      rDiscount: 0,
+                                                                                      rRate:double.tryParse(product['RealRate'].toString())!,
+                                                                                       tax: double.tryParse(product['CGST'].toString())! +
+                                                                                         double.tryParse(product['SGST'].toString())! +
+                                                                                         double.tryParse(product['IGST'].toString())!,
+                                                                                       code: product['itemId'].toString(),
+                                                                                       id: product['itemId'],
+                                                                                       itemName: product['itemname'],
+                                                                                       minimumRate: 0,
+                                                                                       quantity: double.tryParse(product['Qty'].toString())!,
+                                                                                       stock: 0,
+                                                                                       rate: double.tryParse(product['Rate'].toString())!)
+                                                                                  ); -1;
+          // addProduct(  
+          //     CartItem(
+          //         stock: 0,
+          //         minimumRate: 0,
+          //         id: totalItem + 1,
+          //         itemId: product['itemId'],
+          //         itemName: product['itemname'],
+          //         quantity: double.tryParse(product['Qty'].toString())!,
+          //         rate: double.tryParse(product['Rate'].toString())!,
+          //         rRate: double.tryParse(product['RealRate'].toString())!,
+          //         uniqueCode: product['UniqueCode'],
+          //         gross: double.tryParse(product['GrossValue'].toString())!,
+          //         discount: double.tryParse(product['Disc'].toString())!,
+          //         discountPercent:
+          //             double.tryParse(product['DiscPersent'].toString())!,
+          //         rDiscount: double.tryParse(product['RDisc'].toString())!,
+          //         fCess: double.tryParse(product['Fcess'].toString())!,
+          //         serialNo: product['serialno'].toString(),
+          //         tax: double.tryParse(product['CGST'].toString())! +
+          //             double.tryParse(product['SGST'].toString())! +
+          //             double.tryParse(product['IGST'].toString())!,
+          //         taxP: double.tryParse(product['igst'].toString())!,
+          //         unitId: product['Unit'],
+          //         unitValue: double.tryParse(product['UnitValue'].toString())!,
+          //         pRate: double.tryParse(product['Prate'].toString())!,
+          //         rPRate: double.tryParse(product['Rprate'].toString())!,
+          //         barcode: product['UniqueCode'],
+          //         expDate: '2020-01-01',
+          //         free: double.tryParse(product['freeQty'].toString())!,
+          //         fUnitId: int.tryParse(product['Funit'].toString())!,
+          //         cdPer: 0, //product['']cdPer,
+          //         cDisc: 0, //product['']cDisc,
+          //         net: double.tryParse(product['Net'].toString())!, //subTotal,
+          //         cess: double.tryParse(product['cess'].toString())!, //cess,
+          //         total: double.tryParse(product['Total'].toString())!, //total,
+          //         profitPer: 0, //product['']profitPer,
+          //         fUnitValue: double.tryParse(
+          //             product['FValue'].toString())!, //fUnitValue,
+          //         adCess:
+          //             double.tryParse(product['adcess'].toString())!, //adCess,
+          //         iGST: double.tryParse(product['IGST'].toString())!,
+          //         cGST: double.tryParse(product['CGST'].toString())!,
+          //         sGST: double.tryParse(product['SGST'].toString())!,
+          //         cessPer: double.tryParse(product['cessper'].toString())!,
+          //         adCessPer: double.tryParse(product['adcessper'].toString())!,
+          //         ),
                   
-  //             -1);
-  //       } 
-  //       userDateCheck(information['DDate'].toString());
-  //     }
+          //     -1);
+        } 
+        // userDateCheck(information['DDate'].toString());
+      }
+      else{
+      
+        Fluttertoast.showToast(
+          msg: 'Entry NO not Exist',
+        backgroundColor: red
+        );
+      }
 
-  //     setState(() {
-  //       widgetID = false;
-  //       grandTotal = billTotal - returnAmount;
-  //       if (billCash > 0) {
-  //         controllerCashReceived.text = billCash.toString();
-  //         _balance = controllerCashReceived.text.isNotEmpty
-  //             ? grandTotal > 0
-  //                 ? grandTotal - double.tryParse(controllerCashReceived.text)!
-  //                 : ((totalCartValue) -
-  //                     double.tryParse(controllerCashReceived.text)!)
-  //             : grandTotal > 0
-  //                 ? grandTotal
-  //                 : totalCartValue;
-  //       }
-  //       if (returnAmount > 0) {
-  //         returnAmountController.text = returnAmount.toString();
-  //         returnEntryNoController.text = returnBillId.toString();
-  //       }
-  //       // nextWidget = 4;
+      setState(() {
+        // widgetID = false;
+        // grandTotal = billTotal - returnAmount;
+        // if (billCash > 0) {
+        //   controllerCashReceived.text = billCash.toString();
+        //   _balance = controllerCashReceived.text.isNotEmpty
+        //       ? grandTotal > 0
+        //           ? grandTotal - double.tryParse(controllerCashReceived.text)!
+        //           : ((totalCartValue) -
+        //               double.tryParse(controllerCashReceived.text)!)
+        //       : grandTotal > 0
+        //           ? grandTotal
+        //           : totalCartValue;
+        // }
+        // if (returnAmount > 0) {
+        //   returnAmountController.text = returnAmount.toString();
+        //   returnEntryNoController.text = returnBillId.toString();
+        // }
+        // // nextWidget = 4;
         
-  //       editItem = true;
-  //       oldBill = true;
-  //     });
-  //     // Navigator.pushReplacementNamed(context, '/preview_show',
-  //     // arguments: {'title': 'Sale'});
-  //   });
-  // }
+        // editItem = true;
+        // oldBill = true;
+      });
+      // Navigator.pushReplacementNamed(context, '/preview_show',
+      // arguments: {'title': 'Sale'});
+    });
+  
+   } catch (e) {
+     debugPrint(e.toString());
+   }
+  }
 
   //   double totalGrossValue = 0;
   // double totalDiscount = 0;

@@ -672,7 +672,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 lId.toString(),
                 saleReturnFormId.toString(),
                 DateUtil.dateYMD(formattedDate),
-                salesManId > 0 ? salesManId.toString() : '0')
+                salesManId > 0 ? salesManId.toString() : '')
             .then((value) {
           if (value.isEmpty) {
             return;
@@ -834,8 +834,9 @@ class _SalesReturnState extends State<SalesReturn> {
         'data': data,
         'particular': items,
         'otherAmount': otherAmount,
-        'fyId': currentFinancialYear!.id
       };
+      debugPrint(body.toString());
+      debugPrint(items.toString());
 
       dio.spSale(body).then((value0) {
         setState(() {
@@ -872,7 +873,7 @@ class _SalesReturnState extends State<SalesReturn> {
                 'RealEntryNo': value1,
                 'EntryNo': value1,
                 'InvoiceNo': value1.toString(),
-                'Type': 1
+                'Type': saleReturnFormId
               }
             ];
                 if (salesTypeData!.accounts) {
@@ -5721,7 +5722,7 @@ bool isPrateEdited = false;
         'RealEntryNo': data['Id'],
         'EntryNo': data['Id'],
         'InvoiceNo': data['Id'],
-        'Type': 0
+        'Type': saleReturnFormId
       }
     ];
     Navigator.pushReplacementNamed(context, '/return_preview_show',
@@ -5820,8 +5821,8 @@ bool isPrateEdited = false;
                   sGST: double.tryParse(product['SGST'].toString())!,
                   minimumRate: 0,
                   stock: 0,
-                  cessPer: double.tryParse(product['cessper'].toString())!,
-                  adCessPer: double.tryParse(product['adcessper'].toString())!,
+                  cessPer: 0 ,// double.tryParse(product['cessper'].toString())!,
+                  adCessPer: 0,//double.tryParse(product['adcessper'].toString())!,
                   ),
               -1);
         }
