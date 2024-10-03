@@ -891,7 +891,12 @@ class _SalesReturnState extends State<SalesReturn> {
               dio.addOthersAmount(bodyJsonAmount);
             }
             // clearCart();
-            showMore(context);
+            widget.fromSale == true ? 
+            // setState(() {
+              Navigator.of(context).pop()
+            //   widget.fromSale == false;
+            // })
+             :showMore(context);
           });
         }
       });
@@ -5607,9 +5612,9 @@ bool isPrateEdited = false;
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-           widget.fromSale == true
-          ? Navigator.of(context).pop()
-          :
+          //  widget.fromSale == true
+          // ? Navigator.of(context).pop()
+          // :
           Navigator.of(context).pushReplacementNamed('/salesReturn');
           // Navigator.pushNamed(context, '/salesReturn');
         },

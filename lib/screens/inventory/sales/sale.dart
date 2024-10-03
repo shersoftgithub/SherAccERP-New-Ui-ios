@@ -3927,10 +3927,10 @@ void _onTabTapped(int index) {
       {'ledger': ledgerModel, 'id': _id}
     ];
                                                       
-             Navigator.push(context, MaterialPageRoute(builder: (context) =>                                          SalesReturn(
-      fromSale: true,
-      data: data,
-    ),));
+             Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReturn(
+                                                                                  fromSale: true,
+                                                                                  data: data,
+                                                                          ),));
                                                     });
                                                   },
                                                   style: ButtonStyle(
@@ -6357,9 +6357,138 @@ void _onTabTapped(int index) {
                 },
                 icon: const Icon(Icons.arrow_back)),
             actions: [
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.settings, color: white))
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.settings, color: white),
+                 onSelected: (value) async{
+             if (value == 'Rate Type') {
+                if (selectedItemId != null) {
+                    List<ProductRating> rateData =
+                                  keySwitchSalesRateTypeSet
+                                      ? selectedRateTypeData(
+                                          rateTypeList, selectedVariant)
+                                      : [
+                                          ProductRating(
+                                              id: 0,
+                                              name: 'MRP',
+                                              rate: selectedVariant.sellingPrice),
+                                          ProductRating(
+                                              id: 1,
+                                              name: 'Retail',
+                                              rate: selectedVariant.retailPrice),
+                                          ProductRating(
+                                              id: 2,
+                                              name: 'WsRate',
+                                              rate: selectedVariant.wholeSalePrice),
+                                          ProductRating(
+                                              id: 2,
+                                              name: labelSpRate,
+                                              rate: selectedVariant.spRetailPrice),
+                                          ProductRating(
+                                              id: 3,
+                                              name: 'Branch',
+                                              rate: selectedVariant.branch)
+                                        ];
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      scrollable: true,
+                                      title: ComSettings.appSettings('bool',
+                                              'key-items-prate-sale', false)
+                                          ? Column(
+                                              children: [
+                                                const Text('Select Rate'),
+                                                Text(
+                                                  'PRate : ${selectedVariant.buyingPrice} / RPRate : ${selectedVariant.buyingPriceReal}',
+                                                  style: const TextStyle(
+                                                      fontSize: 10),
+                                                ),
+                                              ],
+                                            )
+                                          : const Text('Select Rate'),
+                                      content: SizedBox(
+                                        height: 250.0,
+                                        width: 400.0,
+                                        child: ListView.builder(
+                                          shrinkWrap: true,
+                                          itemCount: rateData.length,
+                                          itemBuilder: (BuildContext context,
+                                              int index) {
+                                            return Card(
+                                              elevation: 5,
+                                              child: ListTile(
+                                                  title: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Text(rateData[index]
+                                                          .name!),
+                                                      Text(
+                                                          ' : ${rateData[index].rate}'),
+                                                    ],
+                                                  ),
+                                                  // subtitle: Text(
+                                                  //     'Quantity : ${rateData[index].quantity} Rate ${rateData[index].sellingPrice}'),
+                                                  onTap: () {
+                                                    Navigator.of(context).pop();
+                                                    setState(() {
+                                                      var rated = _conversion !=
+                                                              null
+                                                          ? _conversion > 0
+                                                              ? (rateData[index]
+                                                                      .rate! /
+                                                                  _conversion)
+                                                              : rateData[index]
+                                                                  .rate
+                                                          : rateData[index]
+                                                              .rate;
+                                                      rate = rated!;
+                                                      saleRate = rated;
+                                                      _rateController.text =
+                                                          saleRate
+                                                              .toStringAsFixed(
+                                                                  2);
+                                                      calculate();
+                                                    });
+                                                  }),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  });
+                }
+                else{
+                  Fluttertoast.showToast(msg: 'Please Select Item');
+                }
+             }
+             if (value == 'Sold') {
+             if (selectedItemId != null) {
+                 if(productTracking){
+                productTrackingList(selectedVariant);
+               }
+               else{
+                Fluttertoast.showToast(msg: 'ENABLE PRODUCT TRACKING IN SALES');
+               }
+             } else{
+                  Fluttertoast.showToast(msg: 'Please Select Item');
+                }
+             }
+               
+               
+              },
+                itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'Rate Type',
+                  child: Text('Rate Type'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Sold',
+                  child: Text('Sold'),
+                ),
+                
+              ],)
             ],
           ),
           body: 

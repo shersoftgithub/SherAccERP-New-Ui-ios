@@ -17900,7 +17900,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                         ),
                                                 ]
                                               )),
-                      pw.SizedBox(
+                      pw.SizedBox( 
                         width: 4
                       ),
                       pw.Flexible(

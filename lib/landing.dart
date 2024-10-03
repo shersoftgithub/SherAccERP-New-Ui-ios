@@ -463,6 +463,15 @@ class _LandingState extends State<Landing> {
             }
           }
         });
+      }else{
+        if(secureAuth) {
+              setState(() {
+                nextWidget = true;
+              });
+            } else {
+              _loadingCompanyInfo();
+              _loadUserInfo();
+            }
       }
     } else {
       Future.delayed(const Duration(milliseconds: 3000), () {
