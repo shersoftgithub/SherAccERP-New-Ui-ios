@@ -1068,7 +1068,8 @@ class _SalesListState extends State<SalesList> {
                                     Color(0xff73A1F9)
                                   ],
                                   begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight),
+                                  end: Alignment.bottomRight,
+                                  ),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0xff73A1F9),
@@ -1093,113 +1094,9 @@ class _SalesListState extends State<SalesList> {
                           Positioned.fill(
                             child: Row(
                               children: <Widget>[
-                                Expanded(
-                                  flex: 5,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          dataDisplay[index]['ToName']
-                                              .toString(),
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w700),
-                                        ),
-                                        Text(
-                                          'Invoice : ' +
-                                              dataDisplay[index]['Invoice']
-                                                  .toString(),
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Date     : ' +
-                                              dataDisplay[index]['Date']
-                                                  .toString(),
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
-                                    Text(
-                                      'Bill          : ',
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    Text(
-                                      'Cash     : ',
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    Text(
-                                      'Balance : ',
-                                      style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                  ],
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: <Widget>[
-                                      Text(
-                                        dataDisplay[index]['Total']
-                                            .toStringAsFixed(2),
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      Text(
-                                        dataDisplay[index]['Cash']
-                                            .toStringAsFixed(2),
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      Text(
-                                        dataDisplay[index]['Balance']
-                                            .toStringAsFixed(2),
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-               onTap: () {
-                                                int _id = int.tryParse(
+                                InkWell(
+                                  onTap: () {
+                                      int _id = int.tryParse(
                                                     dataDisplay[index]['Type']
                                                         .toString())!;
                                                 SalesType sData =
@@ -1247,6 +1144,136 @@ class _SalesListState extends State<SalesList> {
                                                     int.tryParse(
                                                         dataDisplay[index]['Id']
                                                             .toString())!);
+                                  },
+                                  child: Expanded(
+                                    flex: 5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            dataDisplay[index]['ToName']
+                                                .toString(),
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                          Text(
+                                            'Invoice : ' +
+                                                dataDisplay[index]['Invoice']
+                                                    .toString(),
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Date     : ' +
+                                                dataDisplay[index]['Date']
+                                                    .toString(),
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Spacer(),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: const [
+                                      Text(
+                                        'Bill          : ',
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Text(
+                                        'Cash     : ',
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Text(
+                                        'Balance : ',
+                                        style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: <Widget>[
+                                    Text(
+                                      dataDisplay[index]['Total']
+                                          .toStringAsFixed(2),
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                    Text(
+                                      dataDisplay[index]['Cash']
+                                          .toStringAsFixed(2),
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                    Text(
+                                      dataDisplay[index]['Balance']
+                                          .toStringAsFixed(2),
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+               onTap: () {
+                          int _id = int.tryParse(
+                                                dataDisplay[index]['Type']
+                                                    .toString())!;
+                                            SalesType sData = salesTypeDataList
+                                                .where((element) =>
+                                                    element.id == _id)
+                                                .first;
+                                            salesTypeData = SalesType(
+                                                id: sData.id,
+                                                accounts: sData.accounts,
+                                                location: locationId != null
+                                                    ? locationId
+                                                    : sData.location,
+                                                name: sData.name,
+                                                rateType: sData.rateType,
+                                                stock: sData.stock,
+                                                type: sData.type,
+                                                eInvoice: sData.eInvoice,
+                                                sColor: sData.sColor,
+                                                tax: sData.tax);
+                                            showDetails(context,
+                                                dataDisplay[index], _id);                    
                                               },
                 );
               }

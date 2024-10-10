@@ -1484,6 +1484,7 @@ class AppSettings extends StatelessWidget {
                                       5: 'VAT1',
                                       6: 'Other',
                                       7: 'VAT2',
+                                      8: 'New Model 1',
                                     },
                                     selected: 2,
                                     onChange: (value) {

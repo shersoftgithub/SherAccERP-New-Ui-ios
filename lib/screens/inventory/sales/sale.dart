@@ -78,7 +78,7 @@ class _SaleState extends ConsumerState<Sale> {
   CashCustomerModel? cashLedgerModel;
   LedgerModel? ledgerDataModel;
   CartItem? cartModel;
-  String vehicleName = '', invoiceNo = '';
+  String vehicleName = '', invoiceNo = '',entryNo = '';
   
   StockItem? productModel;
   List<CartItem> cartItem = [];
@@ -121,7 +121,8 @@ class _SaleState extends ConsumerState<Sale> {
       daysBefore = false,
       isAdminUser = false,
       newSale = false,
-      manualInvoiceNumberInSales = false;
+      manualInvoiceNumberInSales = false,
+      isCreditLimitedLedger = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
   String? formattedDate;
@@ -1174,7 +1175,10 @@ class _SaleState extends ConsumerState<Sale> {
         route: ledgerModel!.route,
         state: ledgerModel!.state,
         stateCode: ledgerModel!.stateCode,
-        taxNumber: ledgerModel!.taxNumber)
+        taxNumber: ledgerModel!.taxNumber,
+        cAmount: ledgerModel!.cAmount,
+        cDays: ledgerModel!.cDays
+        )
         );
 
     var locationId =
@@ -1353,27 +1357,59 @@ class _SaleState extends ConsumerState<Sale> {
         'particular': items,
         'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
       };
-      debugPrint('body====${body.toString()}');
+      // debugPrint('body====${body.toString()}');
       if (saleAccountId != '0') {
-        if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
-          if (manualInvoiceNumberInSales) {
-            api.checkManualInvoiceNoStatus(invoiceNo).then((value) {
-              if (!value) {
-                postSale(body, otherAmount, order, saleFormType, saleFormId);
-              } else {
-                showErrorDialog(context, 'Duplicate Invoice No');
-                setState(() {
-                  _isLoading = false;
-                  buttonEvent = false;
+        if (order.cashAC != '0') {
+          if (!(salesTypeData!.type == 'SALES-O' ||
+              salesTypeData!.type == 'SALES-Q')) {
+            if (ledgerModel!.cAmount! > 0) {
+              var bal0 = ledgerModel!.balance.toString().split(' ');
+              String bal = bal0[1] == 'Dr' ? bal0[0] : '0';
+              isCreditLimitedLedger = (double.tryParse(bal)! +
+                      double.tryParse(order.grandTotal)! -
+                      double.tryParse(order.cashReceived)!) >
+                  ledgerModel!.cAmount!;
+            }
+          }
+          if (!isCreditLimitedLedger) {
+            if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
+              if (manualInvoiceNumberInSales) {
+                api.checkManualInvoiceNoStatus(invoiceNo).then((value) {
+                  if (!value) {
+                    postSale(
+                        body, otherAmount, order, saleFormType, saleFormId);
+                  } else {
+                    showErrorDialog(context, 'Duplicate Invoice No');
+
+                    setState(() {
+                      _isLoading = false;
+                      buttonEvent = false;
+                    });
+                  }
                 });
+              } else {
+                postSale(body, otherAmount, order, saleFormType, saleFormId);
               }
-            });
+            } else {
+              showErrorDialog(
+                  context, "Date Is Incompatible With This Financial Year");
+
+              setState(() {
+                _isLoading = false;
+                buttonEvent = false;
+              });
+            }
           } else {
-            postSale(body, otherAmount, order, saleFormType, saleFormId);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text(
+                    'Balance Exceeds Credit Limit, Cannot Bill To This Customer')));
+            setState(() {
+              _isLoading = false;
+              buttonEvent = false;
+            });
           }
         } else {
-          showErrorDialog(
-              context, "Date Is Incompatible With This Financial Year");
+          Fluttertoast.showToast(msg: "set CashAccount");
 
           setState(() {
             _isLoading = false;
@@ -1542,7 +1578,10 @@ class _SaleState extends ConsumerState<Sale> {
         route: ledgerModel!.route,
         state: ledgerModel!.state,
         stateCode: ledgerModel!.stateCode,
-        taxNumber: ledgerModel!.taxNumber));
+        taxNumber: ledgerModel!.taxNumber,
+        cAmount: ledgerModel!.cAmount,
+        cDays: ledgerModel!.cDays
+        ));
     var locationId =
         lId.toString().trim().isNotEmpty ? lId : salesTypeData!.location;
     invoiceNo =
@@ -1723,6 +1762,19 @@ class _SaleState extends ConsumerState<Sale> {
         'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
       };
       if (saleAccountId != '0' && order.cashAC != '0') {
+           if (!(salesTypeData!.type == 'SALES-O' ||
+            salesTypeData!.type == 'SALES-Q')) {
+          if (ledgerModel!.cAmount! > 0) {
+            var bal = ledgerModel!.balance.toString();
+            // var bal0 = ledgerModel!.balance.toString().split(' ');
+            // String bal = bal0[1] == 'Dr' ? bal0[0] : '0';
+            isCreditLimitedLedger = (double.tryParse(oldBalance)! +
+                    double.tryParse(order.grandTotal)! -
+                    double.tryParse(order.cashReceived)!) >
+                ledgerModel!.cAmount!;
+          }
+        }
+        if (!isCreditLimitedLedger) {
         api.editSale(body).then((result) {
           if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
             final bodyJsonAmount = {
@@ -1780,7 +1832,18 @@ class _SaleState extends ConsumerState<Sale> {
            }).catchError((e) {
           showErrorDialog(context, e.toString());
         });
-      } else {
+      }else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                  'Balance Exceeds Credit Limit, Cannot Bill To This Customer')));
+
+          setState(() {
+            _isLoading = false;
+            buttonEvent = false;
+          });
+        }
+      }
+       else {
         Fluttertoast.showToast(msg: "select SalesAccount or CashAccount");
       }
     }
@@ -1878,12 +1941,13 @@ class _SaleState extends ConsumerState<Sale> {
                                 ? const Text('No Data 6')
                                 : const Text('No Widget');
   }
+  final entryNoController = TextEditingController();
 
   getEntryNo(saleFormId) {
     api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
       setState(() {
-        invoiceNo = (int.parse(value.toString()) + 1).toString();
-        invoiceNoController.text = invoiceNo;
+        entryNo = (int.parse(value.toString()) + 1).toString();
+        entryNoController.text = entryNo;
       });
     });
   }
@@ -2457,124 +2521,119 @@ void _onTabTapped(int index) {
                                       bottom: 15,
                                     ),
                                     child: TextField(
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 14
-                                      ),
-                                      controller: invoiceNoController,
-                                      decoration:  InputDecoration(
-                                      
-                                         prefixIcon: Visibility(
-                                          visible: isAdminUser,
-                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              // Icon(Icons.keyboard_double_arrow_left_rounded),
-                                              const SizedBox(
-                                                width: 4,
-                                              ),
-                                             InkWell(
-                                                  onTap: () {
-                                                   var invoiceNum = invoiceNo;
-                                           
-                                                  setState(() {
-                                                   int invoiceNumber = int.parse(invoiceNum); 
-                                                   invoiceNumber--; 
-                                                   invoiceNum = invoiceNumber.toString(); 
-                                                 });
-                                           
-                                                debugPrint(invoiceNum.toString());
-                                           
-                                            dataDynamic = [
-                                             {
-                                             'Type': salesTypeData!.type,
-                                             'InvoiceNo': invoiceNum,
-                                             'EntryNo': int.parse(invoiceNum) ?? 0,
-                                             'Id': int.parse(invoiceNum) ?? 0
-                                             }
-                                                                                   ];
-                                                                                   cartItem.clear();
-                                                                                  fetchSale(context, dataDynamic[0]);
-                                                                                 },
-                                                                                  child: const Icon(
-                                           Icons.arrow_back_ios_rounded,
-                                           // size: 16, 
-                                                                                ),
-                                                                             ),
-                                           
-                                            ],
-                                                                                   ),
-                                         ),
-                                        suffixIcon: Visibility(
-                                          visible: isAdminUser,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              InkWell(
-                                                onTap: () {
-                                                     var invoiceNum = invoiceNo;
-                                          
-                                                  setState(() {
-                                                   int invoiceNumber = int.parse(invoiceNum); 
-                                                   invoiceNumber++; 
-                                                   invoiceNum = invoiceNumber.toString(); 
-                                                 });
-                                          
-                                                debugPrint(invoiceNum.toString());
-                                          
-                                            dataDynamic = [
-                                             {
-                                             'Type': salesTypeData!.type,
-                                             'InvoiceNo': invoiceNum,
-                                             'EntryNo': int.parse(invoiceNum) ?? 0,
-                                             'Id': int.parse(invoiceNum) ?? 0
-                                             }
-                                          ];
-                                                                                 cartItem.clear();
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    fontSize: 14,
+  ),
+  controller: entryNoController,
+  decoration: InputDecoration(
+    prefixIcon: Visibility(
+      visible: isAdminUser,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 4,
+          ),
+          InkWell(
+            onTap: () {
+              setState(() {
+                try {
+                  int entryNumber = int.parse(entryNoController.text); 
+                  entryNumber--;
+                  entryNoController.text = entryNumber.toString(); 
+                } catch (e) {
+                  debugPrint("Error parsing entry number: $e");
+                }
+              });
 
-                                                                                 try {
-                                           fetchSale(context, dataDynamic[0]);
-                                                                                 } catch (e) {
-                                           if (e is RangeError) {
-                                              showDialog(
-                                                   context: context,
-                                                   builder: (BuildContext context) {
-                                                    return AlertDialog(
-                                                           title: const Text("Error"),
-                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
-                                                           actions: [
-                                                            TextButton(
-                                                             child: const Text("OK"),
-                                                             onPressed: () {
-                                                             Navigator.of(context).pop(); 
-                                                          },
-                                                        ),
-                                                      ],
-                                                   );
-                                                 },
-                                              );
-                                           }else {
-                                              debugPrint("An unexpected error occurred: $e");
-                                           }
-                                             }
-                                                },
-                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                                const SizedBox(
-                                                  width: 4,
-                                                )
-                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
-                                            ],
-                                          ),
-                                        ),
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 40
-                                        ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 8),
-                                          border: const OutlineInputBorder()),
-                                    ),
-                                  ),
+              dataDynamic = [
+                {
+                  'Type': salesTypeData!.type,
+                  'InvoiceNo': entryNoController.text,
+                  'EntryNo': int.parse(entryNoController.text),
+                  'Id': int.parse(entryNoController.text)
+                }
+              ];
+              cartItem.clear();
+              fetchSale(context, dataDynamic[0]);
+            },
+            child: const Icon(
+              Icons.arrow_back_ios_rounded,
+            ),
+          ),
+        ],
+      ),
+    ),
+    suffixIcon: Visibility(
+      visible: isAdminUser,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                try {
+                  int invoiceNumber = int.parse(entryNoController.text);
+                  invoiceNumber++;
+                  entryNoController.text = invoiceNumber.toString();
+                } catch (e) {
+                  debugPrint("Error parsing invoice number: $e");
+                }
+              });
+
+              dataDynamic = [
+                {
+                  'Type': salesTypeData!.type,
+                  'InvoiceNo': entryNoController.text,
+                  'EntryNo': int.parse(entryNoController.text),
+                  'Id': int.parse(entryNoController.text)
+                }
+              ];
+              cartItem.clear();
+
+              try {
+                fetchSale(context, dataDynamic[0]);
+              } catch (e) {
+                if (e is RangeError) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Error"),
+                        content: const Text(
+                            "An error occurred while fetching the Sale Bill Invalid value."),
+                        actions: [
+                          TextButton(
+                            child: const Text("OK"),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  debugPrint("An unexpected error occurred: $e");
+                }
+              }
+            },
+            child: const Icon(Icons.arrow_forward_ios_rounded),
+          ),
+          const SizedBox(
+            width: 4,
+          )
+        ],
+      ),
+    ),
+    constraints: const BoxConstraints(maxHeight: 40),
+    contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+    border: const OutlineInputBorder(),
+  ),
+)
+),
                                   headTxt: 'Entry No')),
                           const SizedBox(
                             width: 8,
@@ -2953,18 +3012,39 @@ void _onTabTapped(int index) {
                   // if (salesTypeData!.rateType.isNotEmpty) {
                   //   rateType = salesTypeData!.id.toString();
                   // }
+                  editItem = false;
                   nextWidget = 2;
                 } else {
+                if (!(salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q')) {
+                   if (oldBill) {
+                    getOldBalance(salesTypeData!.id, salesTypeData!.type, entryNo);
+                    isCreditLimitedLedger = double.tryParse(oldBalance)! > ledgerModel!.cAmount!;
+              } else {
+                    if (ledgerModel!.cAmount! > 0) {
+                    var bal0 = ledgerModel!.balance.toString().split(' ');
+                    String bal = bal0[1] == 'Dr' ? bal0[0] : '0';
+                    isCreditLimitedLedger = double.tryParse(bal)! > ledgerModel!.cAmount!;
+                  }
+                 }
+                }
+
+            if (isCreditLimitedLedger) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text(
+                      'Balance Exceeds Credit Limit, Cannot Bill To This Customer')));
+            }
                   if (salesTypeData!.type == 'SALES-BB') {
                     if (ledgerModel!.taxNumber!.isNotEmpty) {
                       // if (salesTypeData!.rateType.isNotEmpty) {
                       //   rateType = salesTypeData!.id.toString();
                       // }
+                      editItem =false;
                       nextWidget = 2;
                     } else if (!blockTaxLedgerOnB2CorBOS) {
                       // if (salesTypeData!.rateType.isNotEmpty) {
                       //   rateType = salesTypeData!.id.toString();
                       // }
+                      editItem = false;
                       nextWidget = 2;
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -3176,7 +3256,9 @@ void _onTabTapped(int index) {
                                           children: [
                                             SizedBox(
                                               width: MediaQuery.of(context).size.width,
-                                              child: Row(children: [
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
                                                 Container(
                                                     padding:const EdgeInsets.symmetric(horizontal: 5),
                                                     decoration:BoxDecoration(
@@ -3189,12 +3271,19 @@ void _onTabTapped(int index) {
                                                     child: Text('# ${index + 1}',
                                                       style: const TextStyle( fontSize: 12),
                                                     )),
-                                                Text(' ${cartItem[index].itemName}',
-                                                    style: const TextStyle(
-                                                        color: black,
-                                                        fontWeight:FontWeight.w500,
-                                                        fontFamily:'poppins')),
-                                                const Spacer(),
+                                                SizedBox(
+                                                  width: MediaQuery.of(context).size.width/1.25,
+                                                  child: Align(
+                                                    alignment: Alignment.centerLeft,
+                                                    child: Text(' ${cartItem[index].itemName}',
+                                                    textAlign: TextAlign.left,
+                                                        style: const TextStyle(
+                                                            color: black,
+                                                            fontWeight:FontWeight.w500,
+                                                            fontFamily:'poppins')),
+                                                  ),
+                                                ),
+                                                // const Spacer(),
                                                 // PopUpMenuAction(
                                                 //   onDelete: () {
                                                 //     setState(() {
@@ -5904,6 +5993,7 @@ void _onTabTapped(int index) {
   List<StockProduct> stockVariantProductList =[];
   var selectedItem;
   var fetchedData;
+  bool defaultUnitItem = false;
   addItemWidget() {
     
      List<UnitModel> unitListData = [];
@@ -6336,7 +6426,19 @@ void _onTabTapped(int index) {
               2, (total - (selectedVariant.buyingPriceReal! * quantity)));
     }
     unitValue = _conversion > 0 ? _conversion : 1;
+        List<UnitModel> unitListData = [];
+    // if (!enableMULTIUNIT) {
+    //   if (selectedVariant.unitId! > 0) {
+    //     defaultUnitItem = true;
+    //     _dropDownUnit = selectedVariant.unitId!;
+    //   } else {
+    //     defaultUnitItem = false;
+    //     _dropDownUnit = 0;
+    //   }
+    // }
   }
+  
+   
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -6766,7 +6868,9 @@ void _onTabTapped(int index) {
     //   error: (err, stack) => Text('Error: $err'),
     // );
     //                           },),
-                              StreamBuilder(
+                             selectedItemId == null 
+                             ? SizedBox()
+                              : StreamBuilder(
                                 stream: selectedItemId != null
                                    ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
                                    ? isStockProductOnlyInSalesQO
@@ -7060,8 +7164,7 @@ void _onTabTapped(int index) {
                                                               List<UnitModel>
                                                                   unitListData = [];
                                                               if (snapshot.hasData) {
-                                                                // unitListData
-                                                                //     .clear();
+                                                               unitListData.clear();
                                                                 for (var i = 0;
                                                                     i <snapshot.data.length;i++) {
                                                                   if (defaultUnitID.toString().isNotEmpty) {
@@ -7069,6 +7172,13 @@ void _onTabTapped(int index) {
                                                                       _dropDownUnit =snapshot.data[i].id;
                                                                       _conversion =snapshot.data[i].conversion;
                                                                     }
+                                                                  } else {
+                                      if (snapshot.data[i].id ==
+                                          _dropDownUnit) {
+                                        // _dropDownUnit = snapshot.data[i].id;
+                                        _conversion =
+                                            snapshot.data[i].conversion;
+                                      }
                                                                   }
                                                                   unitListData.add(UnitModel(
                                                                       id: snapshot.data[i].id,
@@ -7187,6 +7297,7 @@ void _onTabTapped(int index) {
                                                                             }
                                                                             calculate();
                                                                           });
+                                                                        
                                                                         },
                                                                       ),
                                                                     )
@@ -7673,23 +7784,28 @@ void _onTabTapped(int index) {
                                                           child: FutureBuilder(
                                                             future: api.fetchUnitOf(
                                                                 selectedItemId!),
-                                                            builder: (BuildContext
-                                                                    context,
-                                                                AsyncSnapshot
-                                                                    snapshot) {
-                                                              List<UnitModel>
-                                                                  unitListData = [];
+                                                            builder: (BuildContext context, AsyncSnapshot snapshot) {
                                                               if (snapshot.hasData) {
-                                                                // unitListData
-                                                                //     .clear();
-                                                                for (var i = 0;
-                                                                    i <snapshot.data.length;i++) {
-                                                                  if (defaultUnitID.toString().isNotEmpty) {
-                                                                    if (snapshot.data[i].id == defaultUnitID! -1) {
-                                                                      _dropDownUnit =snapshot.data[i].id;
-                                                                      _conversion =snapshot.data[i].conversion;
-                                                                    }
-                                                                  }
+                                                                unitListData
+                                                                    .clear();
+                                                                 for (var i = 0;
+                                      i < snapshot.data.length;
+                                      i++) {
+                                    if (defaultUnitID! > 0) {
+                                      if (snapshot.data[i].id ==
+                                          defaultUnitID!- 1) {
+                                        _dropDownUnit = snapshot.data[i].id;
+                                        _conversion =
+                                            snapshot.data[i].conversion;
+                                      }
+                                    } else {
+                                      if (snapshot.data[i].id ==
+                                          _dropDownUnit) {
+                                        // _dropDownUnit = snapshot.data[i].id;
+                                        _conversion =
+                                            snapshot.data[i].conversion;
+                                      }
+                                    }
                                                                   unitListData.add(UnitModel(
                                                                       id: snapshot.data[i].id,
                                                                       itemId: snapshot.data[i].itemId,
@@ -7761,7 +7877,7 @@ void _onTabTapped(int index) {
                                                                                 saleRate = _rate;
                                                                                 _rateController.text = saleRate > 0
                                                                                     ? saleRate.toStringAsFixed(2)
-                                                                                    : '';
+                                                                                    : ''; 
                                                                                 _conversion = _unit.conversion!;
                                                                                 if (quantity > 0 || freeQty > 0) {
                                                                                   if (totalItem > 0) {
@@ -9256,48 +9372,49 @@ void _onTabTapped(int index) {
                                 }
                                 if (profitable) {
                                   bool isUnit = true;
-                                  if (enableMULTIUNIT) {
-                                    if (_dropDownUnit <= 0) {
-                                      int? united = unitListData != null
-                                          ? unitListData.isNotEmpty
-                                              ? unitListData[0].sUnit
-                                              : unitData.isNotEmpty
-                                                  ? unitData
-                                                      .firstWhere(
-                                                          (element) =>
-                                                              element
-                                                                  .name ==
-                                                              'NOS')
-                                                      .id
-                                                  : 0
-                                          : 0;
-                                      _dropDownUnit = united!;
-                                      double? unitedValue = unitListData !=
-                                              null
-                                          ? unitListData.isNotEmpty
-                                              ? unitListData[0].conversion
-                                              : unitData.isNotEmpty
-                                                  ? unitData
-                                                      .firstWhere(
-                                                          (element) =>
-                                                              element
-                                                                  .name ==
-                                                              'NOS')
-                                                      .conversion
-                                                  : 1
-                                          : 0;
-                                      _conversion = unitedValue!;
-                                    }
-                                    isUnit =_dropDownUnit > 0 ? true : false;
-                                    if (unitData.isEmpty && !isUnit) {
-                                      unitValue = 1;
-                                      _conversion = 0;
-                                      isUnit = true;
-                                    }
-                                  } else {
-                                    _conversion = 0;
-                                    unitValue = 1;
-                                  }
+                                      if (enableMULTIUNIT) {
+                                        if (_dropDownUnit <= 0) {
+                                          int? united = unitListData != null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].sUnit
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .id
+                                                      : 0
+                                              : 0;
+                                          _dropDownUnit = united!;
+                                          double? unitedValue = unitListData !=
+                                                  null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].conversion
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .conversion
+                                                      : 1
+                                              : 0;
+                                          _conversion = unitedValue!;
+                                        }
+                                        isUnit =
+                                            _dropDownUnit > 0 ? true : false;
+                                        if (unitData.isEmpty && !isUnit) {
+                                          unitValue = 1;
+                                          _conversion = 0;
+                                          isUnit = true;
+                                        }
+                                      } else {
+                                        _conversion = 0;
+                                        unitValue = 1;
+                                      }
                                   if (isUnit) {
                                     if (editItem) {
                                       // unitValue = cartModel!.unitValue!;
@@ -9528,7 +9645,7 @@ void _onTabTapped(int index) {
                         });
                         },):
                        setState(() {
-                          List<UnitModel> unitListData = [];
+                          // List<UnitModel> unitListData = [];
                         print(selectedVariant.name);
                         calculateText(selectedVariant);
                         setState(() {
@@ -9624,50 +9741,51 @@ void _onTabTapped(int index) {
                                   }
                                 }
                                 if (profitable) {
-                                  bool isUnit = true;
-                                  if (enableMULTIUNIT) {
-                                    if (_dropDownUnit <= 0) {
-                                      int? united = unitListData != null
-                                          ? unitListData.isNotEmpty
-                                              ? unitListData[0].sUnit
-                                              : unitData.isNotEmpty
-                                                  ? unitData
-                                                      .firstWhere(
-                                                          (element) =>
-                                                              element
-                                                                  .name ==
-                                                              'NOS')
-                                                      .id
-                                                  : 0
-                                          : 0;
-                                      _dropDownUnit = united!;
-                                      double? unitedValue = unitListData !=
-                                              null
-                                          ? unitListData.isNotEmpty
-                                              ? unitListData[0].conversion
-                                              : unitData.isNotEmpty
-                                                  ? unitData
-                                                      .firstWhere(
-                                                          (element) =>
-                                                              element
-                                                                  .name ==
-                                                              'NOS')
-                                                      .conversion
-                                                  : 1
-                                          : 0;
-                                      _conversion = unitedValue!;
-                                    }
-                                    isUnit =
-                                        _dropDownUnit > 0 ? true : false;
-                                    if (unitData.isEmpty && !isUnit) {
-                                      unitValue = 1;
-                                      _conversion = 0;
-                                      isUnit = true;
-                                    }
-                                  } else {
-                                    _conversion = 0;
-                                    unitValue = 1;
-                                  }
+                                 bool isUnit = true;
+                                      if (enableMULTIUNIT) {
+                                        if (_dropDownUnit <= 0) {
+                                          int? united = unitListData != null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].sUnit
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .id
+                                                      : 0
+                                              : 0;
+                                          _dropDownUnit = united!;
+                                          double? unitedValue = unitListData !=
+                                                  null
+                                              ? unitListData.isNotEmpty
+                                                  ? unitListData[0].conversion
+                                                  : unitData.isNotEmpty
+                                                      ? unitData
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .name ==
+                                                                  'NOS')
+                                                          .conversion
+                                                      : 1
+                                              : 0;
+                                          _conversion = unitedValue!
+                                          ;
+                                        }
+                                        isUnit =
+                                            _dropDownUnit > 0 ? true : false;
+                                        if (unitData.isEmpty && !isUnit) {
+                                          unitValue = 1;
+                                          _conversion = 0;
+                                          isUnit = true;
+                                        }
+                                      } else {
+                                        _conversion = 0;
+                                        unitValue = 1;
+                                      }
                                   if (isUnit) {
                                     if (editItem) {
                                       cartItem[position!].adCess = adCess;
@@ -12688,6 +12806,7 @@ itemVarianDetails(selectedItem)async{
             commissionAccount = 0;
           }
         }
+        var ledData = salesData['ledger'][0] != null ? salesData['ledger'][0] : null;
         CustomerModel cModel = CustomerModel(
             id: information['Customer'],
             name: information['ToName'],
@@ -12696,13 +12815,22 @@ itemVarianDetails(selectedItem)async{
             address3: information['Add3'],
             address4: information['Add4'],
             balance: information['Balance'].toString(),
-            city: '',
-            email: '',
-            phone: '',
-            route: '',
-            state: '',
-            stateCode: '',
-            taxNumber: information['gstno']);
+            city: ledData != null ? ledData['city'].toString() :'',
+            email: ledData != null ? ledData['Email'].toString() : '',
+            phone: ledData != null ? ledData['Mobile'].toString() : '',
+            route: ledData != null ? ledData['route'].toString() : '',
+            state: ledData != null ? ledData['state'].toString() : '',
+            stateCode: ledData != null ? ledData['stateCode'].toString() : '',
+            taxNumber: information['gstno'],
+            cAmount: ledData != null 
+                     ? double.parse(ledData['CAmount'].toString())
+                     : 0.0,
+            cDays:ledData != null 
+                     ? double.parse(ledData['CDays'].toString())
+                     : 0.0,    
+            orderDate: ledData != null ? ledData['OrderDate'] : 0,  
+            deliveryDate: ledData != null ? ledData['DeliveryDate'] : 0            
+            );
         ledgerModel =  cModel;
         nameControl.text = cModel.id == acId ?  cashAc :cModel.name!;
         selectedCustomerId =  cModel.id;

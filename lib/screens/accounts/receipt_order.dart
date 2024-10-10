@@ -1762,7 +1762,7 @@ String cashAc = '';
                   });
                 },
               ),
-              headTxt: 'Ammount'),
+              headTxt: 'Amount'),
           const SizedBox(
             height: 4,
           ),

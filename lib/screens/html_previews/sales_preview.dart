@@ -32,6 +32,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/invoice.dart';
 import 'package:sheraccerp/util/number_to_word.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:image/image.dart' as img;
@@ -128,6 +129,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       isQuantityBasedSerialNo = false,
       isPrintSerialNoLineByLine = false,
       isCashAc = false,
+      isImage = false,
       cessOnNetAmount = false,
       enableMULTIUNIT = false,
       pRateBasedProfitInSales = false,
@@ -219,6 +221,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     eNo = dataDynamic[0]['EntryNo'];
     type = dataDynamic[0]['Type'];
     bool isLogo = ComSettings.appSettings('bool', 'key-pdf-logo', false);
+    bool isImage = ComSettings.appSettings('bool', 'key-print-logo', false);
 
     if (printSettingsList != null) {
       if (printSettingsList.isNotEmpty) {
@@ -1314,8 +1317,10 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     }
   }
 
-  previewWidget() {
+  previewWidget(){
     var taxSale = salesTypeData!.tax;
+        bool isImage = ComSettings.appSettings('bool', 'key-print-logo', false);
+
     var invoiceHead = salesTypeData!.type == 'SALES-ES'
         ? Settings.getValue<String>('key-sales-estimate-head',
             defaultValue: 'ESTIMATE')
@@ -1341,9 +1346,4276 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         : double.tryParse(dataInformation['LedgerBalance'].toString())!
             .toDouble();
     double balance = double.tryParse(customerBalance)!.toDouble() ?? 0.00;
+    File? file;
+    Future<Uint8List?> getImageBytes(bool isLogo) async {
+  if (isLogo) {
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    file = File('$dir/logo.png');
+    if (await file!.exists()) {
+      return await file!.readAsBytes();
+    }
+  }
+  return null; 
+}
+ var imageItem =  getImageBytes(isImage!).then((value) => byteImage = value);
 
-   
-    return taxSale
+ if (printModel == 8){
+  return  taxSale
+        ? SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: _isLoading
+                  ? const Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 5,
+                            color: Colors.grey,
+                            backgroundColor: Colors.red,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Loading",
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          )
+                        ],
+                      ),
+                    )
+                  : companyTaxMode == 'INDIA'
+                      ? Center(
+                        child: SizedBox(
+                            height: MediaQuery.of(context).size.height,
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  RepaintBoundary(
+                                    key: _globalKey,
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(
+                                            height:8,
+                                          ),
+                                          // Container(
+                                          //   padding: const EdgeInsets.all(8),
+                                          //   height: 115,
+                                          //   width:
+                                          //       MediaQuery.of(context).size.width,
+                                          //   decoration: BoxDecoration(
+                                          //     border: Border.all(
+                                          //         color: Colors.black, width: 2),
+                                          //   ),
+                                          //   child: Row(
+                                          //     mainAxisAlignment:
+                                          //         MainAxisAlignment.center,
+                                          //     crossAxisAlignment:
+                                          //         CrossAxisAlignment.center,
+                                          //     children: [
+                                          //       Column(
+                                          //         crossAxisAlignment:
+                                          //             CrossAxisAlignment.start,
+                                          //         children: [
+                                          //           Text(
+                                          //             companySettings!.name,
+                                          //             textAlign: TextAlign.center,
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 13,
+                                          //                 fontWeight:
+                                          //                     FontWeight.bold),
+                                          //           ),
+                                          //           Text(
+                                          //             companySettings!.add1!,
+                                          //             textAlign: TextAlign.center,
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 8),
+                                          //           ),
+                                          //           Text(
+                                          //             companySettings!.add2!,
+                                          //             textAlign: TextAlign.center,
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 8),
+                                          //           ),
+                                          //             Visibility(
+                                          //             visible: companySettings!
+                                          //                 .add3!.isNotEmpty,
+                                          //             child: Text(
+                                          //               companySettings!.add3!,
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 8),
+                                          //             ),
+                                          //           ),
+                                          //           Visibility(
+                                          //               visible:
+                                          //                   companySettings!
+                                          //                       .add4!
+                                          //                       .isNotEmpty,
+                                          //               child: Text(
+                                          //                 companySettings!
+                                          //                     .add4!,
+                                          //                 style:
+                                          //                     const TextStyle(
+                                          //                         fontSize: 8),
+                                          //               )),
+                                          //           Visibility(
+                                          //             visible: companySettings!
+                                          //                 .email!.isNotEmpty,
+                                          //             child: Text(
+                                          //               companySettings!.email!,
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 8),
+                                          //             ),
+                                          //           ),
+                                          //           Visibility(
+                                          //             visible: companySettings!
+                                          //                 .mobile!.isNotEmpty,
+                                          //             child: Text(
+                                          //               companySettings!
+                                          //                   .mobile!,
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 8),
+                                          //             ),
+                                          //           ),
+                                          //           Text(
+                                          //             "GST No : $companyTaxNo",
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 7),
+                                          //           ),
+                                          //           Text(
+                                          //             "State      : $companyState       $companyStateCode",
+                                          //             style: const TextStyle(
+                                          //                 fontSize: 8),
+                                          //           ),
+                                          //         ],
+                                          //       ),
+                                              
+                                          //     ],
+                                          //   ),
+                                          // ),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                               Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    if(isImage!)
+                  //  byteImageQr != null
+                  //     ? pw.Image(imageQr!,
+                  //         height: 100,
+                  //         width:
+                  //             100): pw.Header(text: ''),
+                  Container(
+                    height: 80,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      image: imageItem != null 
+        ? DecorationImage(
+            image: MemoryImage(byteImage!), 
+            fit: BoxFit.cover
+          )
+        : null
+                    )
+                  )
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                                  mainAxisAlignment: MainAxisAlignment.end,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(companySettings!.name,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.bold
+                                                    ),
+                                                    ),
+                                                    Text('Phone No : ${companySettings!.mobile}')
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const Divider(
+                                            thickness: 2.5,
+                                            color: purple1,
+                                          ),
+                                          Center(
+                                              child: Text(
+                                                invoiceHead!,
+                                                style: const TextStyle(
+                                                  color:purple1,
+                                                    fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                           const Divider(
+                                            thickness: 2.5,
+                                            color: purple1,
+                                          ),
+                                          // Container(
+                                          //   height: 20,
+                                          //   width:
+                                          //       MediaQuery.of(context).size.width,
+                                          //   decoration: const BoxDecoration(
+                                          //     border: Border(
+                                          //       // top: BorderSide(color: Colors.black, width: 2),
+                                          //       right: BorderSide(
+                                          //       color: Colors.black,
+                                          //           width: 2),
+                            
+                                          //       left: BorderSide(
+                                          //           color: Colors.black,
+                                          //           width: 2),
+                                          //     ),
+                                          //   ),
+                                          //   child: Center(
+                                          //     child: Text(
+                                          //       invoiceHead!,
+                                          //       style: const TextStyle(
+                                          //           fontWeight: FontWeight.bold),
+                                          //     ),
+                                          //   ),
+                                          // ),
+                                        
+                                          // Row(
+                                          //   children: [
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         height: 70,
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         decoration: BoxDecoration(
+                                          //           border: Border.all(
+                                          //               color: Colors.black,
+                                          //               width: 2),
+                                          //         ),
+                                          //         child: Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment.start,
+                                          //           children: [
+                                          //             const SizedBox(
+                                          //               height: 10,
+                                          //             ),
+                                          //             Text(
+                                          //               " Invoice No        ${dataInformation['InvoiceNo']}",
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Text(
+                                          //               " Invoice Date     ${DateUtil.dateDMY(dataInformation['DDate'])} ",
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         height: 70,
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         decoration: const BoxDecoration(
+                                          //           border: Border(
+                                          //             top: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //             right: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //             bottom: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //           ),
+                                          //         ),
+                                          //         child: const Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment.start,
+                                          //           children: [
+                                          //             Center(
+                                          //               child: Text(
+                                          //                 "Transportation Mode",
+                                          //                 style: TextStyle(
+                                          //                     fontSize: 8,
+                                          //                     fontWeight:
+                                          //                         FontWeight
+                                          //                             .bold),
+                                          //               ),
+                                          //             ),
+                                          //             SizedBox(
+                                          //               height: 2,
+                                          //             ),
+                                          //             Text(
+                                          //               " Vehicle No",
+                                          //               style: TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Text(
+                                          //               " Date & Time of Supply",
+                                          //               style: TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Text(
+                                          //               " Place of Supply",
+                                          //               style: TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
+                                          // Row(
+                                          //   children: [
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         height: 110,
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         decoration: const BoxDecoration(
+                                          //           border: Border(
+                                          //             // top: BorderSide(color: Colors.black, width: 2),
+                                          //             right: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //             bottom: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //             left: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //           ),
+                                          //         ),
+                                          //         child: Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment.start,
+                                          //           children: [
+                                          //             const Center(
+                                          //               child: Text(
+                                          //                 "Details of Receiver (Billed To)",
+                                          //                 style: TextStyle(
+                                          //                     fontSize: 8,
+                                          //                     fontWeight:
+                                          //                         FontWeight.bold,
+                                          //                     decoration:
+                                          //                         TextDecoration
+                                          //                             .underline),
+                                          //               ),
+                                          //             ),
+                                          //             const SizedBox(
+                                          //               height: 2,
+                                          //             ),
+                                          //             Row(
+                                          //               mainAxisAlignment:
+                                          //                   MainAxisAlignment
+                                          //                       .start,
+                                          //               children: [
+                                          //                 const Text(
+                                          //                   " Name",
+                                          //                   style: TextStyle(
+                                          //                       fontSize: 6),
+                                          //                 ),
+                                          //                 const SizedBox(
+                                          //                   width: 20,
+                                          //                 ),
+                                          //                 Expanded(
+                                          //                   child: Text(
+                                          //                     "    ${dataInformation['ToName']}",
+                                          //                     style:
+                                          //                         const TextStyle(
+                                          //                             fontSize:
+                                          //                                 6),
+                                          //                   ),
+                                          //                 )
+                                          //               ],
+                                          //             ),
+                                          //             Row(
+                                          //               mainAxisAlignment:
+                                          //                   MainAxisAlignment
+                                          //                       .start,
+                                          //               crossAxisAlignment:
+                                          //                   CrossAxisAlignment
+                                          //                       .start,
+                                          //               children: [
+                                          //                 const Text(
+                                          //                   " Address",
+                                          //                   style: TextStyle(
+                                          //                       fontSize: 6),
+                                          //                 ),
+                                          //                 const SizedBox(
+                                          //                   width: 20,
+                                          //                 ),
+                                          //                 Column(
+                                          //                   crossAxisAlignment:
+                                          //                       CrossAxisAlignment
+                                          //                           .start,
+                                          //                   children: [
+                                          //                     Text(
+                                          //                       "${dataLedger[0]['add1']}",
+                                          //                       style:
+                                          //                           const TextStyle(
+                                          //                               fontSize:
+                                          //                                   6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "${dataLedger[0]['add2']}",
+                                          //                       style:
+                                          //                           const TextStyle(
+                                          //                               fontSize:
+                                          //                                   6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "${dataLedger[0]['add3']}",
+                                          //                       style:
+                                          //                           const TextStyle(
+                                          //                               fontSize:
+                                          //                                   6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "${dataLedger[0]['add4']}",
+                                          //                       style:
+                                          //                           const TextStyle(
+                                          //                               fontSize:
+                                          //                                   6),
+                                          //                     ),
+                                          //                   ],
+                                          //                 ),
+                                          //               ],
+                                          //             ),
+                                          //             const SizedBox(
+                                          //               height: 1,
+                                          //             ),
+                                          //             Text(
+                                          //               " Mobile                ${dataLedger[0]['Mobile']}",
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Text(
+                                          //               " Sate/Code         ${dataLedger[0]['state']}        ${dataLedger[0]['stateCode']}",
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Text(
+                                          //               " GST No              ${dataLedger[0]['gstno']}",
+                                          //               style: const TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         height: 110,
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         decoration: const BoxDecoration(
+                                          //           border: Border(
+                                          //             // top: BorderSide(color: Colors.black, width: 2),
+                                          //             right: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //             bottom: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 2),
+                                          //           ),
+                                          //         ),
+                                          //         child: const Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment.start,
+                                          //           children: [
+                                          //             Center(
+                                          //               child: Text(
+                                          //                 "Details of Consignee (Shipped To)",
+                                          //                 style: TextStyle(
+                                          //                     fontSize: 8,
+                                          //                     fontWeight:
+                                          //                         FontWeight.bold,
+                                          //                     decoration:
+                                          //                         TextDecoration
+                                          //                             .underline),
+                                          //               ),
+                                          //             ),
+                                          //             SizedBox(
+                                          //               height: 5,
+                                          //             ),
+                                          //             Text(
+                                          //               " Name                        ",
+                                          //               style: TextStyle(
+                                          //                   fontSize: 6),
+                                          //             ),
+                                          //             Row(
+                                          //               crossAxisAlignment:
+                                          //                   CrossAxisAlignment
+                                          //                       .start,
+                                          //               children: [
+                                          //                 Text(
+                                          //                   " Address",
+                                          //                   style: TextStyle(
+                                          //                       fontSize: 6),
+                                          //                 ),
+                                          //                 SizedBox(
+                                          //                   width: 35,
+                                          //                 ),
+                                          //                 Column(
+                                          //                   crossAxisAlignment:
+                                          //                       CrossAxisAlignment
+                                          //                           .start,
+                                          //                   children: [
+                                          //                     Text(
+                                          //                       "                        ",
+                                          //                       style: TextStyle(
+                                          //                           fontSize: 6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "                        ",
+                                          //                       style: TextStyle(
+                                          //                           fontSize: 6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "                        ",
+                                          //                       style: TextStyle(
+                                          //                           fontSize: 6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       "                        ",
+                                          //                       style: TextStyle(
+                                          //                           fontSize: 6),
+                                          //                     ),
+                                          //                     Text(
+                                          //                       " ",
+                                          //                       style: TextStyle(
+                                          //                           fontSize: 6),
+                                          //                     ),
+                                          //                   ],
+                                          //                 ),
+                                          //               ],
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
+                                         Row(
+                                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children:[
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment :MainAxisAlignment.spaceBetween,
+                                                children:[
+                                                  const Text('Bill To',
+                                                   style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold
+                                                    ),),
+                                                    const SizedBox(
+                                                      height:3
+                                                    ),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text('${dataInformation['ToName']}',
+                                                          style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.bold
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Text('Contact No : ${dataLedger[0]['Mobile']}'),
+                                                ]
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                 mainAxisAlignment :MainAxisAlignment.spaceBetween,
+                                                children:[
+                                                   const Text('Invoice Details',
+                                                   style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold
+                                                    ),),
+                                                    const SizedBox(
+                                                      height:3
+                                                    ),
+                                                     Text('Invoice No : ${dataInformation['InvoiceNo']}',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      // fontWeight: FontWeight.bold
+                                                    ),
+                                                  ),
+                                                     Text('Date : ${DateUtil.dateDMY(dataInformation['DDate'])}',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      // fontWeight: FontWeight.bold
+                                                    ),
+                                                  ),
+                                                ]
+                                              ),
+                                            )
+                                          ]
+                                         ),
+                                         const SizedBox(
+                                          height: 8,
+                                         ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                                // border: Border.all(),
+                                                color: purple1),
+                                            child: Table(
+                                              border: const TableBorder(
+                                                horizontalInside: BorderSide()
+                                                    , // Remove horizontal borders inside the table
+                        
+                                                // verticalInside:
+                                                //     BorderSide(), // Keep vertical borders
+                                              ),
+                                              columnWidths: const {
+                                                0: FixedColumnWidth(10),
+                                                1: FlexColumnWidth(22),
+                                                2: FlexColumnWidth(7),
+                                                3: FlexColumnWidth(7),
+                                                4: FlexColumnWidth(7),
+                                                // 5: FlexColumnWidth(10),
+                                                // 6: FlexColumnWidth(10),
+                                                // 7: FlexColumnWidth(15),
+                                                // 8: FlexColumnWidth(15),
+                                                // 9: FlexColumnWidth(15),
+                                                // 10: FlexColumnWidth(15),
+                                              },
+                                              children: const [
+                                                TableRow(children: [
+                                                  Center(
+                                                      child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          "#",
+                                                          style: TextStyle(
+                                                              // fontSize: 4,
+                                                              color: white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+                                                  Padding(
+                                                    padding: EdgeInsets.symmetric(
+                                                      vertical: 2,
+                                                      horizontal: 6
+                                                    ),
+                                                    child: Text(
+                                                      "Item Name",
+                                                      style: TextStyle(
+                                                        color: white,
+                                                          // fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.all(2.0),
+                                                    child: Center(
+                                                      child: Text(
+                                                        "Qty",
+                                                        
+                                                        style: TextStyle(
+                                                          color: white,
+                                                            // fontSize: 4,
+                                                            fontWeight:
+                                                                FontWeight.bold),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Price',
+                                                       textAlign: TextAlign.right,
+                                                      style: TextStyle(
+                                                        color: white,
+                                                          // fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight
+                                                                  .bold),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding: EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Total',
+                                                      textAlign: TextAlign.right,
+                                                      style: TextStyle(
+                                                        color: white,
+                                                          // fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Text(
+                                                  //         '  Unit\n Price',
+                                                  //         style: TextStyle(
+                                                  //             fontSize: 4,
+                                                  //             fontWeight:
+                                                  //                 FontWeight
+                                                  //                     .bold),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Text(
+                                                  //         'Taxable\n Value',
+                                                  //         style: TextStyle(
+                                                  //             fontSize: 4,
+                                                  //             fontWeight:
+                                                  //                 FontWeight
+                                                  //                     .bold),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           'CGST',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           'SGST',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           'IGST',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.center,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(2.0),
+                                                  //       child: Text(
+                                                  //         '   Total\nAmount',
+                                                  //         style: TextStyle(
+                                                  //             fontSize: 5,
+                                                  //             color: Colors.black,
+                                                  //             fontWeight:
+                                                  //                 FontWeight
+                                                  //                     .bold),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                               
+                                                ]),
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                                // border: Border.all()
+                                                ),
+                                            child: Table(
+                                              border:  TableBorder(
+                                                horizontalInside: BorderSide(
+                                                  width: .5,
+                                                  color: Colors.black.withOpacity(.5)
+                                                )
+                                                    , // Remove horizontal borders inside the table
+                        
+                                                // verticalInside:
+                                                //     BorderSide(), // Keep vertical borders
+                                              ),
+                                              columnWidths: const {
+                                                0: FixedColumnWidth(10),
+                                                1: FlexColumnWidth(22),
+                                                2: FlexColumnWidth(7),
+                                                3: FlexColumnWidth(7),
+                                                4: FlexColumnWidth(7),
+                                                // 5: FlexColumnWidth(10),
+                                                // 6: FlexColumnWidth(10),
+                                                // 7: FlexColumnWidth(6),
+                                                // 8: FlexColumnWidth(9),
+                                                // 9: FlexColumnWidth(6),
+                                                // 10: FlexColumnWidth(9),
+                                                // 11: FlexColumnWidth(6),
+                                                // 12: FlexColumnWidth(9),
+                                                // 13: FlexColumnWidth(15),
+                                              },
+                                              children: [
+                                                for (var i = 0;
+                                                    i < dataParticulars.length;
+                                                    i++)
+                                                  TableRow(children: [
+                                                    Center(
+                                                        child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(2.0),
+                                                          child: Text(
+                                                            dataParticulars[i]
+                                                                ['slno'],
+                                                            style: const TextStyle(
+                                                                fontSize: 13,
+                                                             ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )),
+                                                    Padding(
+                                                       padding: const EdgeInsets.symmetric(
+                                                      vertical: 2,
+                                                      horizontal: 6
+                                                    ),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                            ['itemname'],
+                                                        style: const TextStyle(
+                                                            // fontSize: 4,
+                                                            fontSize: 13,
+                                                            fontWeight:
+                                                                FontWeight.bold),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        textAlign: TextAlign.center,
+                                                        dataParticulars[i]
+                                                            ['Qty'].toString(),
+                                                        style: const TextStyle(
+                                                            fontSize: 13,
+                                                            // fontWeight:
+                                                            //     FontWeight.bold
+                                                                ),
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(2.0),
+                                                          child: Text(
+                                                            dataParticulars[i]['Rate'].toString(),
+                                                            textAlign: TextAlign.right,
+                                                            style: const TextStyle(
+                                                                fontSize: 13,
+                                                                // fontWeight:
+                                                                //     FontWeight
+                                                                //         .bold
+                                                                        ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                            ['Total'].toString() ?? '',
+                                                            textAlign: TextAlign.right,
+                                                        style: const TextStyle(
+                                                            fontSize: 13,
+                                                            // fontWeight:
+                                                            //     FontWeight.bold
+                                                                ),
+                                                      ),
+                                                    ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Text(
+                                                    //         dataParticulars[i]
+                                                    //                 ['RealRate']
+                                                    //             .toStringAsFixed(
+                                                    //                 2),
+                                                    //         style: const TextStyle(
+                                                    //             fontSize: 4,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Text(
+                                                    //         '${dataParticulars[i]['Net'].toStringAsFixed(2)}',
+                                                    //         style: const TextStyle(
+                                                    //             fontSize: 4,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment
+                                                    //           .center,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Center(
+                                                    //         child: Text(
+                                                    //           '${dataParticulars[i]['igst'] / 2}%',
+                                                    //           style: const TextStyle(
+                                                    //               fontSize: 4,
+                                                    //               fontWeight:
+                                                    //                   FontWeight
+                                                    //                       .bold),
+                                                    //         ),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Text(
+                                                    //         dataParticulars[i]
+                                                    //                 ['CGST']
+                                                    //             .toStringAsFixed(
+                                                    //                 2),
+                                                    //         style: const TextStyle(
+                                                    //             fontSize: 4,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment
+                                                    //           .center,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Center(
+                                                    //         child: Text(
+                                                    //           '${dataParticulars[i]['igst'] / 2}%',
+                                                    //           style: const TextStyle(
+                                                    //               fontSize: 4,
+                                                    //               fontWeight:
+                                                    //                   FontWeight
+                                                    //                       .bold),
+                                                    //         ),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Text(
+                                                    //         dataParticulars[i]
+                                                    //                 ['SGST']
+                                                    //             .toStringAsFixed(
+                                                    //                 2),
+                                                    //         style: const TextStyle(
+                                                    //             fontSize: 4,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // const Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment
+                                                    //           .center,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           EdgeInsets.all(2.0),
+                                                    //       child: Center(
+                                                    //         child: Text(
+                                                    //           '0%',
+                                                    //           style: TextStyle(
+                                                    //               fontSize: 4,
+                                                    //               fontWeight:
+                                                    //                   FontWeight
+                                                    //                       .bold),
+                                                    //         ),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // const Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           EdgeInsets.all(2.0),
+                                                    //       child: Text(
+                                                    //         '0.00',
+                                                    //         style: TextStyle(
+                                                    //             fontSize: 4,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                    // Row(
+                                                    //   mainAxisAlignment:
+                                                    //       MainAxisAlignment.end,
+                                                    //   children: [
+                                                    //     Padding(
+                                                    //       padding:
+                                                    //           const EdgeInsets
+                                                    //               .all(2.0),
+                                                    //       child: Text(
+                                                    //         dataParticulars[i]
+                                                    //                 ['Total']
+                                                    //             .toStringAsFixed(
+                                                    //                 2),
+                                                    //         style: const TextStyle(
+                                                    //             fontSize: 5,
+                                                    //             color:
+                                                    //                 Colors.black,
+                                                    //             fontWeight:
+                                                    //                 FontWeight
+                                                    //                     .bold),
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                  
+                                                  ]),
+                                                // if (dataParticulars.length < 10)
+                                                //   for (var k = 0; k < 4; k++)
+                                                //     const TableRow(children: [
+                                                //       Center(
+                                                //           child: Column(
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               '\n',
+                                                //               style: TextStyle(
+                                                //                   fontSize: 11,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       )),
+                                                //       Padding(
+                                                //         padding:
+                                                //             EdgeInsets.all(2.0),
+                                                //         child: Text(
+                                                //           "",
+                                                //           style: TextStyle(
+                                                //               fontSize: 5,
+                                                //               fontWeight:
+                                                //                   FontWeight
+                                                //                       .bold),
+                                                //         ),
+                                                //       ),
+                                                //       Padding(
+                                                //         padding:
+                                                //             EdgeInsets.all(2.0),
+                                                //         child: Text(
+                                                //           "",
+                                                //           style: TextStyle(
+                                                //               fontSize: 5,
+                                                //               fontWeight:
+                                                //                   FontWeight
+                                                //                       .bold),
+                                                //         ),
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               "",
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Padding(
+                                                //         padding:
+                                                //             EdgeInsets.all(2.0),
+                                                //         child: Text(
+                                                //           "",
+                                                //           style: TextStyle(
+                                                //               fontSize: 5,
+                                                //               fontWeight:
+                                                //                   FontWeight
+                                                //                       .bold),
+                                                //         ),
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               "",
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               '',
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment
+                                                //                 .center,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Center(
+                                                //               child: Text(
+                                                //                 '',
+                                                //                 style: TextStyle(
+                                                //                     fontSize: 5,
+                                                //                     fontWeight:
+                                                //                         FontWeight
+                                                //                             .bold),
+                                                //               ),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               "",
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment
+                                                //                 .center,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Center(
+                                                //               child: Text(
+                                                //                 '',
+                                                //                 style: TextStyle(
+                                                //                     fontSize: 5,
+                                                //                     fontWeight:
+                                                //                         FontWeight
+                                                //                             .bold),
+                                                //               ),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               "",
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment
+                                                //                 .center,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Center(
+                                                //               child: Text(
+                                                //                 '',
+                                                //                 style: TextStyle(
+                                                //                     fontSize: 5,
+                                                //                     fontWeight:
+                                                //                         FontWeight
+                                                //                             .bold),
+                                                //               ),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               '',
+                                                //               style: TextStyle(
+                                                //                   fontSize: 5,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //       Row(
+                                                //         mainAxisAlignment:
+                                                //             MainAxisAlignment.end,
+                                                //         children: [
+                                                //           Padding(
+                                                //             padding:
+                                                //                 EdgeInsets.all(
+                                                //                     2.0),
+                                                //             child: Text(
+                                                //               "",
+                                                //               style: TextStyle(
+                                                //                   fontSize: 6,
+                                                //                   fontWeight:
+                                                //                       FontWeight
+                                                //                           .bold),
+                                                //             ),
+                                                //           ),
+                                                //         ],
+                                                //       ),
+                                                //     ]),
+                                             
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                                // border: Border.all(),
+                                                ),
+                                            child: Table(
+                                              border: const TableBorder(
+                                                horizontalInside: BorderSide
+                                                    .none, // Remove horizontal borders inside the table
+                        
+                                               // Keep vertical borders
+                                              ),
+                                              columnWidths: const {
+                                                0: FlexColumnWidth(1),
+                                                // 1: FlexColumnWidth(14),
+                                                // 2: FlexColumnWidth(14),
+                                                // 3: FlexColumnWidth(14),
+                                                // 4: FlexColumnWidth(14),
+                                                // 5: FlexColumnWidth(14),
+                                                // 6: FlexColumnWidth(14),
+                                                7: FlexColumnWidth(30),
+                                              },
+                                              children: [
+                                                TableRow(
+                                                  children: [
+                                                  const Center(
+                                                      child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.center,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          "Total",
+                                                          style: TextStyle(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+
+                                                  // const Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.end,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(
+                                                  //               2.0),
+                                                  //       child: Text('',
+                                                  //         style: TextStyle(
+                                                  //             fontSize: 3,
+                                                  //             fontWeight:
+                                                  //                 FontWeight
+                                                  //                     .w900),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // const Padding(
+                                                  //   padding: EdgeInsets.all(2.0),
+                                                  //   child: Center(
+                                                  //     child: Text(
+                                                  //       '',
+                                                  //       style: TextStyle(
+                                                  //           fontSize: 4,
+                                                  //           fontWeight:
+                                                  //               FontWeight.bold),
+                                                  //     ),
+                                                  //   ),
+                                                  // ),
+                                                  // const Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.end,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(
+                                                  //               2.0),
+                                                  //       child: Text('',
+                                                  //         style: TextStyle(
+                                                  //             fontSize: 4,
+                                                  //             fontWeight:
+                                                  //                 FontWeight
+                                                  //                     .bold),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // const Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.end,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(
+                                                  //               2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           '',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // const Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.end,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(
+                                                  //               2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           '',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  // const Row(
+                                                  //   mainAxisAlignment:
+                                                  //       MainAxisAlignment.end,
+                                                  //   children: [
+                                                  //     Padding(
+                                                  //       padding:
+                                                  //           EdgeInsets.all(
+                                                  //               2.0),
+                                                  //       child: Center(
+                                                  //         child: Text(
+                                                  //           '',
+                                                  //           style: TextStyle(
+                                                  //               fontSize: 4,
+                                                  //               fontWeight:
+                                                  //                   FontWeight
+                                                  //                       .bold),
+                                                  //         ),
+                                                  //       ),
+                                                  //     ),
+                                                  //   ],
+                                                  // ),
+                                                  
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                                2.0),
+                                                        child: Text(
+                                                          '${dataInformation['Total'].toStringAsFixed(2)}',
+                                                          style: const TextStyle(
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w900),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ]),
+                                              ],
+                                            ),
+                                          ),
+                                          // Row(
+                                          //   children: [
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         height: 102,
+                                          //         decoration: const BoxDecoration(
+                                          //           border: Border(
+                                          //             // top: BorderSide(color: Colors.black, width: 2),
+                                          //             right: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 1),
+                                          //             bottom: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 1),
+                                          //             left: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 1),
+                                          //           ),
+                                          //         ),
+                                          //         child: Padding(
+                                          //           padding:
+                                          //               const EdgeInsets.only(
+                                          //                   left: 5.0, top: 5),
+                                          //           child: Row(
+                                          //             children: [
+                                          //               Column(
+                                          //                 crossAxisAlignment:
+                                          //                     CrossAxisAlignment
+                                          //                         .start,
+                                          //                 children: [
+                                          //                   Text(
+                                          //                     NumberToWord().convertDouble(
+                                          //                         'en',
+                                          //                         double.tryParse(
+                                          //                             dataInformation[
+                                          //                                     'GrandTotal']
+                                          //                                 .toString())),
+                                          //                     style: const TextStyle(
+                                          //                         fontSize: 7,
+                                          //                         fontWeight:
+                                          //                             FontWeight
+                                          //                                 .w900),
+                                          //                   ),
+                                          //                   const SizedBox(
+                                          //                     height: 2,
+                                          //                   ),
+                                          //                   const Text(
+                                          //                     "Bank Details",
+                                          //                     style: TextStyle(
+                                          //                         fontSize: 6,
+                                          //                         fontWeight:
+                                          //                             FontWeight
+                                          //                                 .bold,
+                                          //                         decoration:
+                                          //                             TextDecoration
+                                          //                                 .underline),
+                                          //                   ),
+                                          //                   const SizedBox(
+                                          //                     height: 1,
+                                          //                   ),
+                                          //                   SizedBox(
+                                          //                       child: Row(
+                                          //                     children: [
+                                          //                       Column(
+                                          //                         crossAxisAlignment:
+                                          //                             CrossAxisAlignment
+                                          //                                 .start,
+                                          //                         children: [
+                                          //                           Text(
+                                          //                             companySettings!
+                                          //                                 .name!,
+                                          //                             style: const TextStyle(
+                                          //                                 fontSize:
+                                          //                                     7),
+                                          //                           ),
+                                          //                           Text(
+                                          //                             "${dataBankLedger[0]['name'] ?? ''}",
+                                          //                             style: const TextStyle(
+                                          //                                 fontSize:
+                                          //                                     7),
+                                          //                           ),
+                                          //                           Text(
+                                          //                             "A/C  : ${dataBankLedger[0]['account'] ?? ''}",
+                                          //                             style: const TextStyle(
+                                          //                                 fontSize:
+                                          //                                     7),
+                                          //                           ),
+                                          //                           Text(
+                                          //                             "IFSC : ${dataBankLedger[0]['ifsc'] ?? ''}",
+                                          //                             style: const TextStyle(
+                                          //                                 fontSize:
+                                          //                                     7),
+                                          //                           ),
+                                          //                           Text(
+                                          //                             "${dataBankLedger[0]['branch'] ?? ''}",
+                                          //                             style: const TextStyle(
+                                          //                                 fontSize:
+                                          //                                     7),
+                                          //                           ),
+                                          //                         ],
+                                          //                       ),
+                                          //                       const SizedBox(
+                                          //                         width: 30,
+                                          //                       ),
+                                          //                       Visibility(
+                                          //                         visible: !isCashAc!,
+                                          //                         child: Visibility(
+                                          //                           visible:
+                                          //                               oldBalance >
+                                          //                                       0 ||
+                                          //                                   balance >
+                                          //                                       0,
+                                          //                           child: Column(
+                                          //                             mainAxisAlignment:
+                                          //                                 MainAxisAlignment
+                                          //                                     .center,
+                                          //                             crossAxisAlignment:
+                                          //                                 CrossAxisAlignment
+                                          //                                     .start,
+                                          //                             children: [
+                                          //                               Row(
+                                          //                                 children: [
+                                          //                                   const SizedBox(
+                                          //                                     child:
+                                          //                                         Text(
+                                          //                                       "OB           : ",
+                                          //                                       style:
+                                          //                                           TextStyle(fontSize: 6),
+                                          //                                     ),
+                                          //                                   ),
+                                          //                                   Text(
+                                          //                                     double.tryParse(customerBalance)!
+                                          //                                         .toStringAsFixed(decimal),
+                                          //                                     style:
+                                          //                                         const TextStyle(fontSize: 6),
+                                          //                                   )
+                                          //                                 ],
+                                          //                               ),
+                                          //                               Row(
+                                          //                                 children: [
+                                          //                                   const SizedBox(
+                                          //                                     child:
+                                          //                                         Text(
+                                          //                                       "Balance  : ",
+                                          //                                       style:
+                                          //                                           TextStyle(fontSize: 6),
+                                          //                                     ),
+                                          //                                   ),
+                                          //                                   Text(
+                                          //                                      double.tryParse(customerBalance)!
+                                          //                                         .toStringAsFixed(decimal),
+                                          //                                     style:
+                                          //                                         const TextStyle(fontSize: 6),
+                                          //                                   )
+                                          //                                 ],
+                                          //                               ),
+                                          //                             ],
+                                          //                           ),
+                                          //                         ),
+                                          //                       ),
+                                          //                     ],
+                                          //                   )),
+                                          //                   const SizedBox(
+                                          //                     height: 15,
+                                          //                   ),
+                                          //                   const Text(
+                                          //                     "Certified that the particular given above are true and Correct",
+                                          //                     style: TextStyle(
+                                          //                         fontSize: 6,
+                                          //                         fontWeight:
+                                          //                             FontWeight
+                                          //                                 .w500),
+                                          //                   ),
+                                          //                 ],
+                                          //               ),
+                                          //             ],
+                                          //           ),
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //     Expanded(
+                                          //       child: Container(
+                                          //         width: MediaQuery.of(context)
+                                          //                 .size
+                                          //                 .width /
+                                          //             2,
+                                          //         height: 102,
+                                          //         decoration: const BoxDecoration(
+                                          //           border: Border(
+                                          //             // top: BorderSide(color: Colors.black, width: 2),
+                                          //             right: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 1),
+                                          //             bottom: BorderSide(
+                                          //                 color: Colors.black,
+                                          //                 width: 1),
+                                          //           ),
+                                          //         ),
+                                          //         child: Column(
+                                          //           crossAxisAlignment:
+                                          //               CrossAxisAlignment.end,
+                                          //           children: [
+                                          //             _addOtherAmountNew(
+                                          //                 otherAmount),
+                                          //             Row(
+                                          //               children: [
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                       border: Border(
+                                          //                         top: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                         right: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                         bottom: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                       ),
+                                          //                     ),
+                                          //                     child: const Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           "TCS ",
+                                          //                           style: TextStyle(
+                                          //                               fontSize:
+                                          //                                   8,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w500),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                             border:
+                                          //                                 Border(
+                                          //                       top: BorderSide(
+                                          //                           color: Colors
+                                          //                               .black,
+                                          //                           width: 1),
+                                          //                       right: BorderSide(
+                                          //                           color: Colors
+                                          //                               .black,
+                                          //                           width: 1),
+                                          //                       bottom: BorderSide(
+                                          //                           color: Colors
+                                          //                               .black,
+                                          //                           width: 1),
+                                          //                     )),
+                                          //                     child: Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           '${dataInformation['TCS'].toStringAsFixed(2)} ',
+                                          //                           style: const TextStyle(
+                                          //                               fontSize:
+                                          //                                   8,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w500),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //               ],
+                                          //             ),
+                                          //             Row(
+                                          //               children: [
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                       border: Border(
+                                          //                         // top: BorderSide(color: Colors.black, width: 2),
+                                          //                         right: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                         bottom: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                       ),
+                                          //                     ),
+                                          //                     child: const Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           "Round off ",
+                                          //                           style: TextStyle(
+                                          //                               fontSize:
+                                          //                                   8,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w500),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                             border:
+                                          //                                 Border(
+                                          //                       // top: BorderSide(color: Colors.black, width: 2),
+                                          //                       right: BorderSide(
+                                          //                           color: Colors
+                                          //                               .black,
+                                          //                           width: 1),
+                                          //                       bottom: BorderSide(
+                                          //                           color: Colors
+                                          //                               .black,
+                                          //                           width: 1),
+                                          //                     )),
+                                          //                     child: Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           '${dataInformation['Roundoff'].toStringAsFixed(2)} ',
+                                          //                           style: const TextStyle(
+                                          //                               fontSize:
+                                          //                                   8,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w500),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //               ],
+                                          //             ),
+                                          //             Row(
+                                          //               children: [
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                       border: Border(
+                                          //                         // top: BorderSide(color: Colors.black, width: 2),
+                                          //                         right: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                         bottom: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                       ),
+                                          //                     ),
+                                          //                     child: const Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           "Total ",
+                                          //                           style: TextStyle(
+                                          //                               fontSize:
+                                          //                                   8,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w900),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //                 Expanded(
+                                          //                   child: Container(
+                                          //                     height: 17,
+                                          //                     decoration:
+                                          //                         const BoxDecoration(
+                                          //                       border: Border(
+                                          //                         // top: BorderSide(color: Colors.black, width: 2),
+                                          //                         right: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                         bottom: BorderSide(
+                                          //                             color: Colors
+                                          //                                 .black,
+                                          //                             width: 1),
+                                          //                       ),
+                                          //                     ),
+                                          //                     child: Column(
+                                          //                       crossAxisAlignment:
+                                          //                           CrossAxisAlignment
+                                          //                               .end,
+                                          //                       mainAxisAlignment:
+                                          //                           MainAxisAlignment
+                                          //                               .center,
+                                          //                       children: [
+                                          //                         Text(
+                                          //                           "${dataInformation['GrandTotal'].toStringAsFixed(2)} ",
+                                          //                           style: const TextStyle(
+                                          //                               fontSize:
+                                          //                                   7,
+                                          //                               fontWeight:
+                                          //                                   FontWeight
+                                          //                                       .w900),
+                                          //                         ),
+                                          //                       ],
+                                          //                     ),
+                                          //                   ),
+                                          //                 ),
+                                          //               ],
+                                          //             ),
+                                          //             const SizedBox(
+                                          //               height: 3,
+                                          //             ),
+                                          //             Center(
+                                          //               child: Text(
+                                          //                 companySettings!.name!,
+                                          //                 style: const TextStyle(
+                                          //                     fontSize: 8,
+                                          //                     fontWeight:
+                                          //                         FontWeight
+                                          //                             .w900),
+                                          //               ),
+                                          //             ),
+                                          //             const Spacer(),
+                                          //             const Center(
+                                          //               child: Text(
+                                          //                 "Authorised Signatuory",
+                                          //                 style: TextStyle(
+                                          //                     fontSize: 8,
+                                          //                     fontWeight:
+                                          //                         FontWeight
+                                          //                             .w500),
+                                          //               ),
+                                          //             ),
+                                          //           ],
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
+                                      //  const SizedBox(height:6),
+                                       Row(
+                                        // mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              // mainAxisAlignment: MainAxisAlignment.start,
+                                              // crossAxisAlignment: CrossAxisAlignment.start,
+                                              // mainAxisSize:  MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 3,
+                                                    vertical:5
+                                                  ),
+                                                  color:purple1,
+                                                  child: const Row(
+                                                    children: [
+                                                      Text('Invoice Amount in Words',
+                                                      style:TextStyle(
+                                                        color:white,
+                                                      )
+                                                      ),
+                                                    ],
+                                                  )
+                                                ),
+                                                const SizedBox(
+                                                  height:4
+                                                ),
+                                                                    Row(
+                                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        Expanded(
+                                                                          child: Text(
+                                                                                                                                        NumberToWord().convertDouble(
+                                                                                                                                            'en',
+                                                                                                                                            double.tryParse(
+                                                                            dataInformation[
+                                                                                    'GrandTotal']
+                                                                                .toString())),
+                                                                                                                                        style: const TextStyle(
+                                                                                                                                            fontWeight:
+                                                                            FontWeight
+                                                                                .w900),
+                                                                                                                                      ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height: 6,
+                                                                    ),
+                                                                           Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 3,
+                                                    vertical:5
+                                                  ),
+                                                  color:purple1,
+                                                  child: const Row(
+                                                    children: [
+                                                      Text('Terms and Conditions',
+                                                      style:TextStyle(
+                                                        color:white,
+                                                      )
+                                                      ),
+                                                    ],
+                                                  )
+                                                ),
+                                                const SizedBox(
+                                                  height: 2,
+                                                ),
+                                                Row(
+                                                   mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: [
+                                                    Text(data['message'],
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.w900
+                                                    ),
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                           
+                                            )
+                                          ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                               mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              // mainAxisSize:  MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                   padding: const EdgeInsets.symmetric(
+                                                    horizontal: 3,
+                                                    vertical:5
+                                                  ),
+                                                  color:purple1,
+                                                  child: const Row(
+                                                    children: [
+                                                      Text('Amounts',
+                                                       style:TextStyle(
+                                                        color:white,
+                                                      )
+                                                      ),
+                                                    ],
+                                                  )
+                                                ),
+                                                const SizedBox(
+                                                  height:4
+                                                ),
+                                                 Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text('SubTotal'),
+                                                    Text('${dataInformation['Total'].toStringAsFixed(2)}'),
+                                                  ]
+                                                ),
+                                                const Divider(
+                                                  color:grey,
+                                                ),
+                                                  Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text('Total',
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold
+                                                    )
+                                                    ),
+                                                    Text('${dataInformation['Total'].toStringAsFixed(2)}',
+                                                     style: const TextStyle(
+                                                      fontWeight: FontWeight.bold
+                                                    )
+                                                    ),
+                                                  ]
+                                                ),
+                                                const SizedBox(
+                                                  height:6
+                                                ),
+                                                  const Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text('Received'),
+                                                    Text(''),
+                                                  ]
+                                                ),
+                                                   const Divider(
+                                                  color:grey,
+                                                ),
+                                                    Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text('Previous\nBalance'),
+                                                    Text(oldBalance.toStringAsFixed(2)),
+                                                  ]
+                                                ),
+                                                const SizedBox(
+                                                  height: 2,
+                                                ),
+                                                    Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    const Text('Current\nBalance'),
+                                                    Text('${dataInformation['Balance'].toStringAsFixed(2)}'),
+                                                  ]
+                                                ),
+                                              ],
+                                            )
+                                          ),
+                                        ],
+                                       )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      )
+                      : SizedBox(
+                          height: MediaQuery.of(context).size.height,
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 8),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            right: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            left: BorderSide(
+                                                color: Colors.black, width: 2),
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            companySettings!.name,
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 3, horizontal: 8),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            right: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            left: BorderSide(
+                                                color: Colors.black, width: 2),
+                                          ),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            invoiceHead!.isNotEmpty
+                                                ? invoiceHead
+                                                : "TAX INVOICE",
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 5),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            right: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            left: BorderSide(
+                                                color: Colors.black, width: 2),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 35,
+                                                      child: Text(
+                                                        "T.R.No",
+                                                        style: TextStyle(
+                                                            fontSize: 7),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ": $companyTaxNo",
+                                                      style: const TextStyle(
+                                                          fontSize: 7),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 35,
+                                                      child: Text(
+                                                        "Phone",
+                                                        style: TextStyle(
+                                                            fontSize: 7),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ": ${companySettings!.telephone}",
+                                                      style: const TextStyle(
+                                                          fontSize: 7),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 35,
+                                                      child: Text(
+                                                        "Mobile",
+                                                        style: TextStyle(
+                                                            fontSize: 7),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ": ${companySettings!.mobile}",
+                                                      style: const TextStyle(
+                                                          fontSize: 7),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 35,
+                                                      child: Text(
+                                                        "Email",
+                                                        style: TextStyle(
+                                                            fontSize: 7),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ": ${companySettings!.email}",
+                                                      style: const TextStyle(
+                                                          fontSize: 7),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding:
+                                            const EdgeInsetsDirectional.all(8),
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            top: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            right: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            left: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            bottom: BorderSide(
+                                                color: Colors.black, width: 2),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 50,
+                                                      child: Text(
+                                                        " Invoice No",
+                                                        style: TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ":  ${dataInformation['InvoiceNo']}",
+                                                      style: const TextStyle(
+                                                          fontSize: 6),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 50,
+                                                      child: Text(
+                                                        " Date & Time",
+                                                        style: TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ":  ${DateUtil.dateDMY(dataInformation['DDate'])}",
+                                                      style: const TextStyle(
+                                                          fontSize: 6),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                          border: Border(
+                                            right: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            left: BorderSide(
+                                                color: Colors.black, width: 2),
+                                            bottom: BorderSide(
+                                                color: Colors.black, width: 1),
+                                          ),
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  const SizedBox(
+                                                    width: 35,
+                                                    child: Text(
+                                                      'To(cal)',
+                                                      style: TextStyle(
+                                                          fontSize: 6),
+                                                    ),
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        ': ${dataLedger[0]['add1']}',
+                                                        style: const TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                      Text(
+                                                        '  ${dataLedger[0]['add2']}',
+                                                        style: const TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                      Text(
+                                                        '  ${dataLedger[0]['add3']}',
+                                                        style: const TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                      Text(
+                                                        '  ${dataLedger[0]['add4']}',
+                                                        style: const TextStyle(
+                                                            fontSize: 6),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  const SizedBox(
+                                                    width: 35,
+                                                    child: Text(
+                                                      'TRN No',
+                                                      style: TextStyle(
+                                                          fontSize: 6),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    ':  ${dataLedger[0]['gstno']}',
+                                                    style: const TextStyle(
+                                                        fontSize: 6),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration:
+                                            BoxDecoration(border: Border.all()),
+                                        child: Table(
+                                          border: const TableBorder(
+                                            horizontalInside: BorderSide
+                                                .none, // Remove horizontal borders inside the table
+
+                                            verticalInside:
+                                                BorderSide(), // Keep vertical borders
+                                          ),
+                                          columnWidths: const {
+                                            0: FixedColumnWidth(10),
+                                            1: FlexColumnWidth(22),
+                                            2: FlexColumnWidth(7),
+                                            3: FlexColumnWidth(7),
+                                            4: FlexColumnWidth(7),
+                                            5: FlexColumnWidth(10),
+                                            6: FlexColumnWidth(10),
+                                            7: FlexColumnWidth(13),
+                                            8: FlexColumnWidth(20),
+                                            9: FlexColumnWidth(15),
+                                          },
+                                          children: const [
+                                            TableRow(children: [
+                                              Center(
+                                                  child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "No",
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
+                                              Padding(
+                                                padding: EdgeInsets.all(2.0),
+                                                child: Text(
+                                                  "Description /Itemname",
+                                                  style: TextStyle(
+                                                      fontSize: 4,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Qty',
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Unit',
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.all(2.0),
+                                                child: Center(
+                                                  child: Text(
+                                                    'Price',
+                                                    style: TextStyle(
+                                                        fontSize: 4,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Total',
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Discount',
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Taxable Value',
+                                                      style: TextStyle(
+                                                          fontSize: 4,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Center(
+                                                      child: Column(
+                                                        children: [
+                                                          Text(
+                                                            'Tax',
+                                                            style: TextStyle(
+                                                                fontSize: 4,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Amount',
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration:
+                                            BoxDecoration(border: Border.all()),
+                                        child: Table(
+                                          border: const TableBorder(
+                                            horizontalInside: BorderSide
+                                                .none, // Remove horizontal borders inside the table
+
+                                            verticalInside:
+                                                BorderSide(), // Keep vertical borders
+                                          ),
+                                          columnWidths: const {
+                                            0: FixedColumnWidth(10),
+                                            1: FlexColumnWidth(22),
+                                            2: FlexColumnWidth(7),
+                                            3: FlexColumnWidth(7),
+                                            4: FlexColumnWidth(7),
+                                            5: FlexColumnWidth(10),
+                                            6: FlexColumnWidth(10),
+                                            7: FlexColumnWidth(13),
+                                            8: FlexColumnWidth(7),
+                                            9: FlexColumnWidth(13),
+                                            10: FlexColumnWidth(15),
+                                          },
+                                          children: [
+                                            for (var i = 0;
+                                                i < dataParticulars.length;
+                                                i++)
+                                              TableRow(children: [
+                                                Center(
+                                                    child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                            ['slno'],
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(2.0),
+                                                  child: Text(
+                                                    dataParticulars[i]
+                                                        ['itemname'],
+                                                    style: const TextStyle(
+                                                        fontSize: 3,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['Qty']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                            ['unitName'],
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['RealRate']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['GrossValue']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['DiscPersent']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['Net']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['igst']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['IGST']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 3,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2.0),
+                                                      child: Text(
+                                                        dataParticulars[i]
+                                                                ['Total']
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 4,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ]),
+                                            if (dataParticulars.length < 10)
+                                              for (var k = 0; k < 4; k++)
+                                                const TableRow(children: [
+                                                  Center(
+                                                      child: Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          '\n',
+                                                          style: TextStyle(
+                                                              fontSize: 11,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "",
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "",
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          "",
+                                                          style: TextStyle(
+                                                              fontSize: 5,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "",
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "",
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          "",
+                                                          style: TextStyle(
+                                                              fontSize: 5,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Center(
+                                                          child: Text(
+                                                            '',
+                                                            style: TextStyle(
+                                                                fontSize: 5,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Center(
+                                                          child: Text(
+                                                            '',
+                                                            style: TextStyle(
+                                                                fontSize: 5,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          '',
+                                                          style: TextStyle(
+                                                              fontSize: 5,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.end,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.all(2.0),
+                                                        child: Text(
+                                                          "",
+                                                          style: TextStyle(
+                                                              fontSize: 6,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ]),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        decoration:
+                                            BoxDecoration(border: Border.all()),
+                                        child: Table(
+                                          border: const TableBorder(
+                                            horizontalInside: BorderSide
+                                                .none, // Remove horizontal borders inside the table
+
+                                            verticalInside:
+                                                BorderSide(), // Keep vertical borders
+                                          ),
+                                          columnWidths: const {
+                                            0: FixedColumnWidth(10),
+                                            1: FlexColumnWidth(22),
+                                            2: FlexColumnWidth(7),
+                                            3: FlexColumnWidth(7),
+                                            4: FlexColumnWidth(7),
+                                            5: FlexColumnWidth(10),
+                                            6: FlexColumnWidth(10),
+                                            7: FlexColumnWidth(13),
+                                            8: FlexColumnWidth(7),
+                                            9: FlexColumnWidth(13),
+                                            10: FlexColumnWidth(15),
+                                          },
+                                          children: [
+                                            TableRow(children: [
+                                              const Center(
+                                                  child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      '',
+                                                      style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
+                                              const Center(
+                                                  child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      'Total',
+                                                      style: TextStyle(
+                                                          fontSize: 7,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              )),
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  2.0,
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Text(
+                                                      totalQuantity
+                                                          .toStringAsFixed(2),
+                                                      style: const TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      "",
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const Padding(
+                                                padding: EdgeInsets.all(2.0),
+                                                child: Text(
+                                                  "",
+                                                  style: TextStyle(
+                                                      fontSize: 5,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                              const Padding(
+                                                padding: EdgeInsets.all(2.0),
+                                                child: Text(
+                                                  "",
+                                                  style: TextStyle(
+                                                      fontSize: 5,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                              const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Text(
+                                                      '',
+                                                      style: TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            2.0),
+                                                    child: Center(
+                                                      child: Text(
+                                                        totalTaxablevalue
+                                                            .toStringAsFixed(2),
+                                                        style: const TextStyle(
+                                                            fontSize: 5,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.all(2.0),
+                                                    child: Center(
+                                                      child: Text(
+                                                        '',
+                                                        style: TextStyle(
+                                                            fontSize: 5,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            2.0),
+                                                    child: Text(
+                                                      totalVAt
+                                                          .toStringAsFixed(2),
+                                                      style: const TextStyle(
+                                                          fontSize: 5,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            2.0),
+                                                    child: Text(
+                                                      '${dataInformation['Total'].toStringAsFixed(2)}',
+                                                      style: const TextStyle(
+                                                          fontSize: 6,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ]),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration:
+                                            BoxDecoration(border: Border.all()),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 70,
+                                                            child: Text(
+                                                              "Discount",
+                                                              style: TextStyle(
+                                                                  fontSize: 7),
+                                                            )),
+                                                        Text(
+                                                          "${dataInformation['Discount'].toStringAsFixed(2)}",
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 7),
+                                                          textAlign:
+                                                              TextAlign.end,
+                                                        )
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 70,
+                                                            child: Text(
+                                                              "VAT Total",
+                                                              style: TextStyle(
+                                                                  fontSize: 7),
+                                                            )),
+                                                        Text(
+                                                          totalVAt
+                                                              .toStringAsFixed(
+                                                                  2),
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 7),
+                                                        )
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 70,
+                                                            child: Text(
+                                                              "Round To",
+                                                              style: TextStyle(
+                                                                  fontSize: 7),
+                                                            )),
+                                                        Text(
+                                                          '${dataInformation['Roundoff'].toStringAsFixed(2)}',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 7),
+                                                        )
+                                                      ],
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 70,
+                                                            child: Text(
+                                                              "NetAmount",
+                                                              style: TextStyle(
+                                                                  fontSize: 7,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold),
+                                                            )),
+                                                        Text(
+                                                          "${dataInformation['GrandTotal'].toStringAsFixed(2)} ",
+                                                          style: const TextStyle(
+                                                              fontSize: 7,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(3),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                            border: Border(
+                                                left: BorderSide(),
+                                                right: BorderSide(),
+                                                bottom: BorderSide())),
+                                        child: Text(
+                                            NumberToWord().convertDouble(
+                                                'en',
+                                                double.tryParse(dataInformation[
+                                                        'GrandTotal']
+                                                    .toString())),
+                                            style: const TextStyle(
+                                              fontSize: 8,
+                                            )),
+                                      ),
+                                      Container(
+                                        height: 50,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 15),
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: const BoxDecoration(
+                                            border: Border(
+                                                left: BorderSide(),
+                                                right: BorderSide(),
+                                                bottom: BorderSide())),
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text("Buyers Signature",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                )),
+                                            Text("Seller's Signature",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                )),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      Text('${data['message']}',
+                                          style: const TextStyle(
+                                            fontSize: 8,
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+            ),
+          )
+        : SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: _isLoading
+                  ? const Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 5,
+                            color: Colors.grey,
+                            backgroundColor: Colors.red,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Loading",
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          )
+                        ],
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SingleChildScrollView(
+                          child: Column(
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 30,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300], border: Border.all()),
+                            child: const Center(
+                                child: Text(
+                              "ESTIMATE",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            )),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 100,
+                            decoration: const BoxDecoration(
+                                border: Border(
+                                    left: BorderSide(),
+                                    right: BorderSide(),
+                                    bottom: BorderSide())),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  No                :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${dataInformation['InvoiceNo']}",
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  Date             :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${DateUtil.dateDMY(dataInformation['DDate'])}",
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  To                 :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${dataInformation['ToName']}",
+                                      style: const TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "  Address       :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "    ${dataInformation['Add1']}",
+                                          style: const TextStyle(fontSize: 8),
+                                        ),
+                                        Text(
+                                          "    ${dataInformation['Add2']}",
+                                          style: const TextStyle(fontSize: 8),
+                                        ),
+                                        Text(
+                                          "    ${dataInformation['Add3']}",
+                                          style: const TextStyle(fontSize: 8),
+                                        ),
+                                        Text(
+                                          "    ${dataInformation['Add4']}",
+                                          style: const TextStyle(fontSize: 8),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300], border: Border.all()),
+                            child: Table(
+                              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                                1: FlexColumnWidth(20),
+                                2: FlexColumnWidth(10),
+                                3: FlexColumnWidth(10),
+                                4: FlexColumnWidth(10),
+                                5: FlexColumnWidth(20),
+                              },
+                              children: const [
+                                TableRow(children: [
+                                  Center(
+                                      child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          'No',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Description Of Goods',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Qty',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Unit',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Rate',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Total',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ]),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(border: Border.all()),
+                            child: Table(
+                              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                                1: FlexColumnWidth(20),
+                                2: FlexColumnWidth(10),
+                                3: FlexColumnWidth(10),
+                                4: FlexColumnWidth(10),
+                                5: FlexColumnWidth(20),
+                              },
+                              children: [
+                                for (var i = 0; i < dataParticulars.length; i++)
+                                  TableRow(children: [
+                                    Center(
+                                        child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(2.0),
+                                          child: Text(
+                                            '${dataParticulars[i]['slno']}',
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        dataParticulars[i]['itemname'],
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Center(
+                                        child: Text(
+                                          dataParticulars[i]['Qty']
+                                              .toStringAsFixed(2),
+                                          style: const TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            dataParticulars[i]['unitName']
+                                                .toString(),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            dataParticulars[i]['RealRate']
+                                                .toStringAsFixed(2),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            dataParticulars[i]['Total']
+                                                .toStringAsFixed(2),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ]),
+                                if (5 < 10)
+                                  for (var k = 0; k < 8; k++)
+                                    const TableRow(children: [
+                                      Center(
+                                          child: Column(
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.all(2.0),
+                                            child: Text(
+                                              '\n',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      )),
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          '',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Center(
+                                          child: Text(
+                                            '',
+                                            style: TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ]),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                border: const Border(
+                                    bottom: BorderSide(),
+                                    left: BorderSide(),
+                                    right: BorderSide())),
+                            child: Table(
+                              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                                1: FlexColumnWidth(20),
+                                2: FlexColumnWidth(10),
+                                3: FlexColumnWidth(10),
+                                4: FlexColumnWidth(10),
+                                5: FlexColumnWidth(20),
+                              },
+                              children: [
+                                TableRow(children: [
+                                  const Center(
+                                      child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          '',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Total',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        totalQuantity.toStringAsFixed(2),
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        '',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        '',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '${lineTotal.toStringAsFixed(2)} ',
+                                          style: const TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ]),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width / 2,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        "Amount In Words :",
+                                        style: TextStyle(
+                                            fontSize: 8,
+                                            decoration:
+                                                TextDecoration.underline),
+                                      ),
+                                      Text(
+                                        NumberToWord().convertDouble(
+                                            'en',
+                                            double.tryParse(
+                                                dataInformation['GrandTotal']
+                                                    .toString())),
+                                        style: const TextStyle(
+                                          fontSize: 8,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width / 2,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              for (var i = 0;
+                                                  i < otherAmount.length;
+                                                  i++)
+                                                Text(
+                                                  "${otherAmount[i]['LedName']} ",
+                                                  style: const TextStyle(
+                                                    fontSize: 7,
+                                                  ),
+                                                ),
+                                              const Text(
+                                                "Return Amt         :",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "BILL AMOUNT    :",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "OB                        :",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "Cash Recieved   :",
+                                                style: TextStyle(
+                                                  fontSize: 8,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              const Text(
+                                                "NET AMOUNT    :",
+                                                style: TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )
+                                            ],
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              for (var i = 0;
+                                                  i < otherAmount.length;
+                                                  i++)
+                                                Text(
+                                                  "${otherAmount[i]['Amount'].toStringAsFixed(2)} ",
+                                                  style: const TextStyle(
+                                                      fontSize: 8,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              Text(
+                                                "${dataInformation['ReturnAmount'].toStringAsFixed(2)} ",
+                                                style: const TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${dataInformation['GrandTotal'].toStringAsFixed(2)} ",
+                                                style: const TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${dataInformation['BalanceAmount'].toStringAsFixed(2)} ",
+                                                style: const TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                "${dataInformation['CashReceived'].toStringAsFixed(2)} ",
+                                                style: const TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              Text(
+                                                "${(lineTotal - dataInformation['ReturnAmount'] + otherAmount.fold(0.0, (t, e) => t + double.parse(e['Symbol'] == '-' ? (e['Amount'] * -1).toString() : e['Amount'].toString()))).toStringAsFixed(2)} ",
+                                                style: const TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ))),
+            ),
+          );
+  
+ }
+ else{
+      return 
+    taxSale
         ? SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(5.0),
@@ -2149,7 +6421,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                             2.0),
                                                     child: Text(
                                                       dataParticulars[i]
-                                                          ['unitName'],
+                                                          ['unitName'] ?? '',
                                                       style: const TextStyle(
                                                           fontSize: 4,
                                                           fontWeight:
@@ -5270,6 +9542,8 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                       ))),
             ),
           );
+  
+  }
   }
   
   autoVariantProduct(products) {
@@ -6748,7 +11022,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
       return await file!.readAsBytes();
     }
   }
-  return null; // Return null if the image doesn't exist
+  return null; 
 }
  Uint8List? imageBytes = await getImageBytes(isLogo);
   // bool  isCashAc =cashAccount.firstWhere(
@@ -14445,7 +18719,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
           // ),
           pw.Divider(
             thickness: 4,
-            color: PdfColor.fromInt(0xFFAA90E6)
+            color: const PdfColor.fromInt(0xFFAA90E6)
           ),
           pw.Row(
             // crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -14460,7 +18734,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
           ]),
            pw.Divider(
             thickness: 4,
-            color: PdfColor.fromInt(0xFFAA90E6)
+            color: const PdfColor.fromInt(0xFFAA90E6)
           ),
         ]
       ),
@@ -14491,7 +18765,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                         height: 2
                       ),
                       pw.Text('Contact No :  ${dataLedger['Mobile']?? ''}',
-                        style:  pw.TextStyle(
+                        style:  const pw.TextStyle(
                       fontSize: 15,
                     )
                       ),
@@ -14512,7 +18786,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                       height: 2
                     ),
                     pw.Text('Invoice No : ${dataInformation['InvoiceNo']}',
-                      style:  pw.TextStyle(
+                      style:  const pw.TextStyle(
                         // fontWeight: pw.FontWeight.bold,
                     fontSize: 15,
                   )
@@ -14522,7 +18796,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                     ),
                     pw.Text('Date : ${DateUtil.dateDMY(
                                           dataInformation['DDate'])}',
-                      style:  pw.TextStyle(
+                      style:  const pw.TextStyle(
                     fontSize: 15,
                   )
                     ),
@@ -14638,7 +18912,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                       // companyTaxMode == 'INDIA' ?
                            pw.TableRow(
                             // verticalAlignment: pw.TableCellVerticalAlignment. ,
-                             decoration: pw.BoxDecoration(
+                             decoration: const pw.BoxDecoration(
 
                               color: PdfColor.fromInt(0xFFAA90E6)
                              ),
@@ -14655,7 +18929,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[0],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)
                                         ),
@@ -14671,7 +18945,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[1] == 'Description' ? 'ItemName':tableHeaders[1],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -14687,7 +18961,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[4],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -14702,7 +18976,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[3],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -14717,7 +18991,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[11],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -14944,7 +19218,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['slno']}',
-                                            style:  pw.TextStyle(
+                                            style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -14978,7 +19252,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['Qty']}',
-                                           style:  pw.TextStyle(
+                                           style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -14998,7 +19272,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                                         ['RealRate']
                                                     .toString())!
                                                 .toStringAsFixed(decimal!),
-                                            style:  pw.TextStyle(
+                                            style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -15015,7 +19289,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['Total']}',
-                                           style:  pw.TextStyle(
+                                           style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -15367,7 +19641,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                             //   ]),
                              
                               pw.TableRow(children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(2),
+                                pw.Padding(padding: const pw.EdgeInsets.all(2),
                                 child:   pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.center,
@@ -15381,7 +19655,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                     // pw.Divider(thickness: 1)
                                   ]),
                                 ),
-                             pw.Padding(padding: pw.EdgeInsets.all(2),
+                             pw.Padding(padding: const pw.EdgeInsets.all(2),
                              child:      pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -15396,7 +19670,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                              ),
                                pw.Padding(
-                                padding: pw.EdgeInsets.all(2),
+                                padding: const pw.EdgeInsets.all(2),
                                 child:    pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -15411,7 +19685,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                                ),
                                 pw.Padding(
-                                  padding: pw.EdgeInsets.all(2),
+                                  padding: const pw.EdgeInsets.all(2),
                                   child:   pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -15426,7 +19700,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                                 ),
                                  pw.Padding(
-                                  padding: pw.EdgeInsets.all(2),
+                                  padding: const pw.EdgeInsets.all(2),
                                   child:  pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.end,
@@ -15462,12 +19736,12 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                           width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Invoice Amount in Words',
                            style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
                           )
                           )
                         ),
@@ -15495,12 +19769,25 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                           width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Terms and Conditions',
                            style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
+                          )
+                          )
+                        ),
+                          pw.SizedBox(
+                          height: 4
+                        ),
+                         pw.SizedBox(
+                          width: 210,
+                          height: 50,
+                          child: pw.Text( data['message'],
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 16,
                           )
                           )
                         ),
@@ -15521,12 +19808,12 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                             width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Amounts',
                           style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
                           )
                           )
                         ),
@@ -15539,13 +19826,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                             pw.Text('Sub Toatal',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                             pw.Text('${double.tryParse(dataInformation['GrossValue'].toString())!.toStringAsFixed(decimal!)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -15560,7 +19847,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 4
@@ -15594,13 +19881,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Received',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -15614,7 +19901,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 4
@@ -15625,13 +19912,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Balance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${double.tryParse((double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toString())!.toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -15645,7 +19932,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 8
@@ -15656,13 +19943,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Previous\nBalance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -15679,13 +19966,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Current\nBalance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${dataInformation['Balance']!.toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -16839,7 +21126,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
           // ),
           pw.Divider(
             thickness: 4,
-            color: PdfColor.fromInt(0xFFAA90E6)
+            color: const PdfColor.fromInt(0xFFAA90E6)
           ),
           pw.Row(
             // crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -16854,7 +21141,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
           ]),
            pw.Divider(
             thickness: 4,
-            color: PdfColor.fromInt(0xFFAA90E6)
+            color: const PdfColor.fromInt(0xFFAA90E6)
           ),
         ]
       ),
@@ -16885,7 +21172,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                         height: 2
                       ),
                       pw.Text('Contact No :  ${dataLedger['Mobile']?? ''}',
-                        style:  pw.TextStyle(
+                        style:  const pw.TextStyle(
                       fontSize: 15,
                     )
                       ),
@@ -16906,7 +21193,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                       height: 2
                     ),
                     pw.Text('Invoice No : ${dataInformation['InvoiceNo']}',
-                      style:  pw.TextStyle(
+                      style:  const pw.TextStyle(
                         // fontWeight: pw.FontWeight.bold,
                     fontSize: 15,
                   )
@@ -16916,7 +21203,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                     ),
                     pw.Text('Date : ${DateUtil.dateDMY(
                                           dataInformation['DDate'])}',
-                      style:  pw.TextStyle(
+                      style:  const pw.TextStyle(
                     fontSize: 15,
                   )
                     ),
@@ -17032,7 +21319,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                       // companyTaxMode == 'INDIA' ?
                            pw.TableRow(
                             // verticalAlignment: pw.TableCellVerticalAlignment. ,
-                             decoration: pw.BoxDecoration(
+                             decoration: const pw.BoxDecoration(
 
                               color: PdfColor.fromInt(0xFFAA90E6)
                              ),
@@ -17049,7 +21336,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[0],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)
                                         ),
@@ -17065,7 +21352,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[1] == 'Description' ? 'ItemName':tableHeaders[1],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -17081,7 +21368,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[3],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -17096,7 +21383,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[2],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -17111,7 +21398,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   children: [
                                     pw.Text(tableHeaders[5],
                                         style:  pw.TextStyle(
-                                          color: PdfColor.fromInt(0xFFFFFFFF),
+                                          color: const PdfColor.fromInt(0xFFFFFFFF),
                                           fontWeight: pw.FontWeight.bold,
                                           fontSize: 15)),
                                     // pw.Divider(thickness: 1)
@@ -17338,7 +21625,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['slno']}',
-                                            style:  pw.TextStyle(
+                                            style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -17372,7 +21659,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['Qty']}',
-                                           style:  pw.TextStyle(
+                                           style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -17392,7 +21679,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                                         ['RealRate']
                                                     .toString())!
                                                 .toStringAsFixed(decimal!),
-                                            style:  pw.TextStyle(
+                                            style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -17409,7 +21696,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                         padding: const pw.EdgeInsets.all(2.0),
                                         child: pw.Text(
                                             '${dataParticulars[i]['Total']}',
-                                           style:  pw.TextStyle(
+                                           style:  const pw.TextStyle(
                                                 fontSize: 14,
                                                 // fontWeight: pw.FontWeight.bold
                                                 )),
@@ -17761,7 +22048,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                             //   ]),
                              
                               pw.TableRow(children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(2),
+                                pw.Padding(padding: const pw.EdgeInsets.all(2),
                                 child:   pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.center,
@@ -17775,7 +22062,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                     // pw.Divider(thickness: 1)
                                   ]),
                                 ),
-                             pw.Padding(padding: pw.EdgeInsets.all(2),
+                             pw.Padding(padding: const pw.EdgeInsets.all(2),
                              child:      pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -17790,7 +22077,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                              ),
                                pw.Padding(
-                                padding: pw.EdgeInsets.all(2),
+                                padding: const pw.EdgeInsets.all(2),
                                 child:    pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -17805,7 +22092,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                                ),
                                 pw.Padding(
-                                  padding: pw.EdgeInsets.all(2),
+                                  padding: const pw.EdgeInsets.all(2),
                                   child:   pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.start,
@@ -17820,7 +22107,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                                   ]),
                                 ),
                                  pw.Padding(
-                                  padding: pw.EdgeInsets.all(2),
+                                  padding: const pw.EdgeInsets.all(2),
                                   child:  pw.Column(
                                   crossAxisAlignment:
                                       pw.CrossAxisAlignment.end,
@@ -17856,12 +22143,12 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                           width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Invoice Amount in Words',
                            style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
                           )
                           )
                         ),
@@ -17889,12 +22176,38 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                           width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Terms and Conditions',
                            style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
+                          )
+                          )
+                        ),
+                        pw.SizedBox(
+                          height: 4
+                        ),
+                         pw.SizedBox(
+                          width: 210,
+                          height: 50,
+                          child: pw.Text( dataInformation['GrandTotal'],
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 16,
+                          )
+                          )
+                        ),
+                         pw.SizedBox(
+                          height: 4
+                        ),
+                         pw.SizedBox(
+                          width: 210,
+                          height: 50,
+                          child: pw.Text( dataInformation['GrandTotal'],
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 16,
                           )
                           )
                         ),
@@ -17915,12 +22228,12 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           ),
                             width: 220,
                           // height: 15,
-                          color: PdfColor.fromInt(0xFFAA90E6),
+                          color: const PdfColor.fromInt(0xFFAA90E6),
                           child: pw.Text('Amounts',
                           style:  pw.TextStyle(
                             fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
-                            color: PdfColor.fromInt(0xFFFFFFFF)
+                            color: const PdfColor.fromInt(0xFFFFFFFF)
                           )
                           )
                         ),
@@ -17933,13 +22246,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                             pw.Text('Sub Toatal',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                             pw.Text('${double.tryParse(dataInformation['GrossValue'].toString())!.toStringAsFixed(decimal!)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -17954,7 +22267,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 4
@@ -17988,13 +22301,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Received',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -18008,7 +22321,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 4
@@ -18019,13 +22332,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Balance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${double.tryParse((double.tryParse(dataInformation['GrandTotal'].toString())! - double.tryParse(dataInformation['CashReceived'].toString())!).toString())!.toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -18039,7 +22352,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                   pw.Container(
                     width: 220,
                     height: 1,
-                    color: PdfColor.fromInt(0xFF607D8B)
+                    color: const PdfColor.fromInt(0xFF607D8B)
                   ),
                    pw.SizedBox(
                           height: 8
@@ -18050,13 +22363,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Previous\nBalance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${dataInformation['LedgerBalance'].toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -18073,13 +22386,13 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
                               pw.Text('Current\nBalance',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
                             ),
                               pw.Text('${dataInformation['Balance']!.toStringAsFixed(decimal)}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 16,
                           )
@@ -18096,7 +22409,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                             pw.SizedBox(
                           child:  pw.Center(
                             child:  pw.Text('For: ${companySettings.name}',
-                              style: pw.TextStyle(
+                              style: const pw.TextStyle(
                             // fontWeight: pw.FontWeight.bold,
                             fontSize: 15,
                           )
@@ -19362,7 +23675,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(2.0),
                                 child: pw.Text(
-                                  dataParticulars[i]['unitName'],
+                                  dataParticulars[i]['unitName']?? '',
                                   style: pw.TextStyle(
                                       fontSize: 5,
                                       fontWeight: pw.FontWeight.bold),

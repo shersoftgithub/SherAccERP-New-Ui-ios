@@ -1417,7 +1417,7 @@ String cashAc = '';
   }
 
   var footerMessage = '';
-  fetchVoucher(context, data, mode) {
+    fetchVoucher(context, data, mode) {
     double voucherTotal = 0;
     int row = 0;
     api
@@ -1763,7 +1763,7 @@ String cashAc = '';
                   });
                 },
               ),
-              headTxt: 'Ammount'),
+              headTxt: 'Amount'),
           const SizedBox(
             height: 4,
           ),
@@ -1819,6 +1819,7 @@ String cashAc = '';
                   ),
                   border: OutlineInputBorder(),
                 ),
+                onSubmitted: (value) => _calculateResult(value) ,
                 onChanged: (value) {
                   setState(() {
                     narration = value;
@@ -1830,6 +1831,64 @@ String cashAc = '';
         ],
       ),
     );
+  }
+  var _result = '';
+  _calculateResult(String input) {
+    try {
+      String operator = '';
+      double num1, num2;
+
+      if (input.contains('+')) {
+        operator = '+';
+      } else if (input.contains('-')) {
+        operator = '-';
+      } else if (input.contains('*')) {
+        operator = '*';
+      } else if (input.contains('/')) {
+        operator = '/';
+      }
+
+      if (operator.isNotEmpty) {
+        List<String> parts = input.split(operator);
+        num1 = double.parse(parts[0]);
+        num2 = double.parse(parts[1]);
+
+        double result;
+        switch (operator) {
+          case '+':
+            result = num1 + num2;
+            break;
+          case '-':
+            result = num1 - num2;
+            break;
+          case '*':
+            result = num1 * num2;
+            break;
+          case '/':
+            result = num1 / num2;
+            break;
+          default:
+            result = 0;
+        }
+
+        setState(() {
+          _result = '$result';
+        });
+      } else {
+        setState(() {
+          _result = 'Invalid Input!';
+        });
+      }
+
+      if (_result.isNotEmpty) {
+        narration = input + ' = ' + _result;
+        _controllerNarration.text = narration!;
+      }
+    } catch (e) {
+      setState(() {
+        _result = 'Error: Invalid Expression!';
+      });
+    }
   }
 
   // voucherParticularWidget(mode) {

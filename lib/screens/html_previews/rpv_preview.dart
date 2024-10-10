@@ -123,7 +123,7 @@ class _RVPreviewShowState extends State<RVPreviewShow> {
       bill = widget.dataAll[0][0];
       form = widget.dataAll[1];
       eNo = int.tryParse(bill['entryNo'].toString()) ?? 0;
-      dataParticulars = jsonDecode(bill[0][0]);
+      dataParticulars = jsonDecode(bill['particular']);
       // dataParticulars = bill['particular'];
       api
           .getBalance(
