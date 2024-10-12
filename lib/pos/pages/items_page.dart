@@ -484,6 +484,7 @@ class _ItemsPageState extends ConsumerState<ItemsPage> {
                                                                                       taxP: variant.tax?? 0,
                                                                                       sGST: variant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
+                                                                                      unit: unitData.firstWhere((element) => element.name == 'NOS').id,
                                                                                       unitValue: 1,
                                                                                       cGST: variant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       cdPer: cdPer,

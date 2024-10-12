@@ -79,10 +79,13 @@ class _SaleState extends ConsumerState<Sale> {
   LedgerModel? ledgerDataModel;
   CartItem? cartModel;
   String vehicleName = '', invoiceNo = '',entryNo = '';
+  String? fromDate;
+  String? toDate;
   
   StockItem? productModel;
   List<CartItem> cartItem = [];
   List<String> unregisteredNameList = [];
+  List<dynamic> salesManList = otherRegSalesManList;
   List<dynamic> otherAmountList = [];
   bool isTax = true,
       isTaxTypeLocked = false,
@@ -183,7 +186,8 @@ class _SaleState extends ConsumerState<Sale> {
     
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
-
+    fromDate = DateFormat('dd-MM-yyyy').format(now);
+    toDate = DateFormat('dd-MM-yyyy').format(now);
     isCustomForm =
         ComSettings.appSettings('bool', 'key-switch-sales-form-set', false)
             ? true
@@ -243,6 +247,13 @@ class _SaleState extends ConsumerState<Sale> {
     lId = ComSettings.appSettings(
             'int', 'key-dropdown-default-location-view', 2) -
         1;
+         var isIn = salesManList.isEmpty
+        ? null
+        : salesManList.firstWhere((element) => element['Auto'] == salesManId,
+            orElse: () => null);
+    if (isIn == null) {
+      salesManList.add({'Auto': 0, 'Name': ''});
+    }    
 
     groupId =
         ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
@@ -255,7 +266,7 @@ class _SaleState extends ConsumerState<Sale> {
 
     saleAccount = mainAccount.firstWhere(
         (element) => element['LedName'] == 'GENERAL SALES A/C')['LedCode'];
-
+    
     ledgerScanner = ComSettings.appSettings('bool', 'key-customer-scan', false);
     itemCodeVise = ComSettings.appSettings('bool', 'key-item-by-code', false);
     itemCodeViseChek = itemCodeVise;
@@ -1357,7 +1368,7 @@ class _SaleState extends ConsumerState<Sale> {
         'particular': items,
         'serialNoData': json.encode(SerialNOModel.encodedToJson(serialNoData)),
       };
-      // debugPrint('body====${body.toString()}');
+      debugPrint('items ====${items.toString()}');
       if (saleAccountId != '0') {
         if (order.cashAC != '0') {
           if (!(salesTypeData!.type == 'SALES-O' ||
@@ -1939,7 +1950,9 @@ class _SaleState extends ConsumerState<Sale> {
                             ? const Text('No Data 5')
                             : nextWidget == 6
                                 ? const Text('No Data 6')
-                                : const Text('No Widget');
+                                : nextWidget == 7
+                                  ? importFromWidget()
+                                  : Text('No Widget') ;
   }
   final entryNoController = TextEditingController();
 
@@ -2451,6 +2464,15 @@ void _onTabTapped(int index) {
                     }
                   });
                 }
+                  if (value == 'Import From Sales Order') {
+                  if (selectedCashCustomerId != null || selectedCustomerId != null) {
+                  setState(() {
+                    nextWidget= 7;
+                  });
+                }else{
+                  Fluttertoast.showToast(msg: 'Please Select Customer');
+                }
+             }
               },
               itemBuilder: (BuildContext context) => [
                 const PopupMenuItem<String>(
@@ -3193,6 +3215,7 @@ void _onTabTapped(int index) {
                                             rate = cartModel!.rate!;
                                         _quantityController.text =
                                             cartModel!.quantity!.toString();
+                                            quantity = cartModel!.quantity;
                                         _freeQuantityController.text =
                                             cartModel!.free.toString();
                                         _discountController.text =
@@ -6004,7 +6027,7 @@ void _onTabTapped(int index) {
 
       unitValue = cartModel!.unitValue!;
       debugPrint("unitvalue =${unitValue.toString()}");
-      _dropDownUnit = cartModel!.unitId!;
+      // _dropDownUnit = cartModel!.unitId!;
       // rate = cartModel!.rate!;
       // _rateController.text = cartModel!.rate!.toStringAsFixed(decimal);
       _conversion = cartModel!.unitValue!;
@@ -7822,7 +7845,6 @@ void _onTabTapped(int index) {
                                                                   ? DropdownButtonHideUnderline(
                                                                       child: DropdownButton<String>(
                                                                         isExpanded:true,
-                                                                      
                                                                         hint: Text(_dropDownUnit > 0
                                                                             ? UnitSettings.getUnitName(_dropDownUnit)
                                                                             : 'Unit',
@@ -9959,6 +9981,247 @@ void _onTabTapped(int index) {
     );
   }
 
+  importFromWidget(){
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bagroundColor,
+        appBar: AppBar(
+          title: Text('Import From'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+              leading: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      nextWidget = 0;
+                      // itemNameControl.clear();
+                      // selectedQuantity = '';
+                      // _quantityController.clear();
+                      // clearValue();
+                    });
+                  },
+                  icon: const Icon(Icons.arrow_back)),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 10
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                           const Text(
+                      ' From ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          fontFamily: 'poppins'),
+                    ),
+                    const SizedBox(
+                      height: 2,
+                    ),
+                        InkWell(
+                          child: Container(
+                            padding: const EdgeInsetsDirectional.symmetric(
+                                horizontal: 8, vertical: 5),
+                            height: 30,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Row(
+                              children: [
+                                Text(
+                                  fromDate!,
+                                  style: const TextStyle(
+                                      // fontWeight: FontWeight.w500,
+                                      // fontSize: 15,
+                                      fontFamily: 'poppins'),
+                                ),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  color: grey,
+                                  size: 20,
+                                )
+                              ],
+                            ),
+                          ),
+                          onTap: () => _selectDateImport('f'),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                      ' To ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          fontFamily: 'poppins'),
+                    ),
+                    const SizedBox(
+                      height: 2,
+                    ),
+                        InkWell(
+                          child: Container(
+                            padding: const EdgeInsetsDirectional.symmetric(
+                                horizontal: 8, vertical: 5),
+                            height: 30,
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                            child: Row(
+                              children: [
+                                Text(
+                                  toDate!,
+                                  style: const TextStyle(
+                                      // fontWeight: FontWeight.w500,
+                                      // fontSize: 15,
+                                      fontFamily: 'poppins'),
+                                ),
+                                const SizedBox(
+                                  width: 2,
+                                ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  color: grey,
+                                  size: 20,
+                                )
+                              ],
+                            ),
+                          ),
+                          onTap: () => _selectDateImport('t'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              const SizedBox(
+                height: 8,
+              ),
+                    const Text(
+                        ' Select Salesman',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            fontFamily: 'poppins'),
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      Container(  
+                        height: 40,
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(color: grey)),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    
+                                    isExpanded: true,
+                                    hint: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text('Select SalesMan',
+                                          textAlign: TextAlign.center),
+                                    ),
+                                    items: salesManList
+                                        .map<DropdownMenuItem<String>>((item) {
+                                      return DropdownMenuItem<String>(
+                                        value: item['Auto'].toString(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(item['Name'],   
+                                          style: TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontSize: 14
+                                          ),
+                                              overflow: TextOverflow.ellipsis),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    // value: salesManId.toString(),
+                                    value: salesManId.toString(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        salesManId = int.parse(value!);
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+              const SizedBox(
+                height: 8,
+              ),
+               SizedBox(
+                width: MediaQuery.of(context).size.width,
+                 child: Row(
+                  // mainAxisSize: MainAxisSize.min,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //        const Text(
+                      //   ' Entry No ',
+                      //   style: TextStyle(
+                      //       fontWeight: FontWeight.w500,
+                      //       fontSize: 14,
+                      //       fontFamily: 'poppins'),
+                      // ),
+                      // const SizedBox(
+                      //   height: 2,
+                      // ),
+                      //     TextField(
+                      //       decoration: InputDecoration(
+                      //         constraints: BoxConstraints(
+                      //           maxHeight: 35,
+                      //           maxWidth: MediaQuery.of(context).size.width/2.3
+                      //         ),
+                      //         contentPadding: const EdgeInsets.symmetric(
+                      //           horizontal: 4,
+                      //           vertical: 6
+                      //         ),
+                      //         border: const OutlineInputBorder()
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // const Spacer(),
+                     
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)
+                          ),
+                          backgroundColor: kPrimaryColor
+                        ),
+                        onPressed: (){},
+                        child: Text('Show',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          color: white),
+                        ))
+                  ],
+                 ),
+               )
+             ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
   bool isData = false;
 
   scannerWidget() {
@@ -12695,6 +12958,21 @@ itemVarianDetails(selectedItem)async{
       setState(() => {formattedDate = DateFormat('dd-MM-yyyy').format(picked)});
     }
   }
+   Future _selectDateImport(String type) async {
+    DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
+    if (picked != null) {
+      setState(() => {
+            if (type == 'f')
+              {fromDate = DateFormat('dd-MM-yyyy').format(picked)}
+            else
+              {toDate = DateFormat('dd-MM-yyyy').format(picked)}
+          });
+    }
+  }
 
   showEditDialog(context, dataDynamic) {
     ConfirmAlertBox(
@@ -12924,7 +13202,7 @@ itemVarianDetails(selectedItem)async{
           returnEntryNoController.text = returnBillId.toString();
         }
         // nextWidget = 4;
-        
+        getEntryNo(salesTypeData!.id);
         editItem = true;
         oldBill = true;
       });

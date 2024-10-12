@@ -692,6 +692,7 @@ class _StockReportState extends State<StockReport> {
                 ),
               ],
             ),
+           
             const SizedBox(
               height: 10,
             ),

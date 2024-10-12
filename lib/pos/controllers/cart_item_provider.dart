@@ -62,7 +62,7 @@ class CartItem extends _$CartItem{
 
     double totalGross = quantity * priceBeforeTax;
     double totalNet = quantity * updatedCartModel.rate;
-    double totalAmount = totalNet + (quantity * totalTax);  
+    double totalAmount = totalGross + (quantity * totalTax);  
     double totalTaxAmount = quantity * totalTax;  
 
     state = [

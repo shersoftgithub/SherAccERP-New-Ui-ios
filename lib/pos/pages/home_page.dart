@@ -1260,6 +1260,7 @@ if (companyTaxMode == 'INDIA') {
         taxP: product.tax ?? 0,
         sGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
         unitId: unitData.firstWhere((element) => element.name == 'NOS').id,
+        unit: unitData.firstWhere((element) => element.name == 'NOS').id,
         unitValue: 1,
         cGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
         cdPer: cdPer,
@@ -1934,6 +1935,7 @@ if (companyTaxMode == 'INDIA') {
                                                                                       taxP: itemVariant.tax?? 0,
                                                                                       sGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
+                                                                                      unit: unitData.firstWhere((element) => element.name == 'NOS').id,
                                                                                       unitValue: 1,
                                                                                       cGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
                                                                                       cdPer: cdPer,
@@ -2150,10 +2152,12 @@ if (companyTaxMode == 'INDIA') {
     );
     
   }
+
    fetchSale(context, data) {
     
     // selectedItemId = cartModel!.id;
      setState(() {
+      
       // _isLoading = true;
     });
     double billTotal = 0, billCash = 0;
@@ -2265,6 +2269,7 @@ if (companyTaxMode == 'INDIA') {
                                                                                       taxP: double.tryParse(product['igst'].toString())!,
                                                                                       sGST: double.tryParse(product['SGST'].toString())!,
                                                                                       unitId: product['Unit'],
+                                                                                      unit: product['Unit'],
                                                                                       unitValue: double.tryParse(product['UnitValue'].toString())!,
                                                                                       cGST: double.tryParse(product['CGST'].toString())!,
                                                                                       cdPer: 0,

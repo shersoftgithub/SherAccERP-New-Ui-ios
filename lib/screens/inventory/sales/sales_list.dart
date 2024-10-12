@@ -1384,6 +1384,7 @@ class _SalesListState extends State<SalesList> {
                   ),
                 ],
               ),
+             
               const SizedBox(
                 height: 10,
               ),

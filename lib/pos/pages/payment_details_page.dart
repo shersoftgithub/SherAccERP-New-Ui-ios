@@ -65,6 +65,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
   CustomerModel? ledgerModel;
   String vehicleName = '', invoiceNo = '';
   var salesManId = 0;
+  var rateType ;
   double _balance = 0;
   double totalCartValue = 0;
   bool manualInvoiceNumberInSales = false,
@@ -84,6 +85,7 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
     super.initState();
         formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
+        rateType = ref.read(rateTypeProvider);
     ComSettings().fetchOtherData();
     loadSettings();
         saleAccount = mainAccount.firstWhere(
@@ -205,7 +207,13 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
             'date':DateUtil.dateYMD(formattedDate),
             'time':
                 '1900-01-01 ${DateFormat("H:m:s:S").format(DateTime.now())}', //1900-01-01 19:27:23.930
-            'sType': ref.read(rateTypeProvider),
+            'sType': rateType == '' 
+            ? 0 : rateType == 'MRP' 
+            ? 1 : rateType == 'RETAIL'
+            ? 2 : rateType == 'SPRETAIL'
+            ? 3 : rateType == 'WHOLSALE'
+            ? 4 : rateType == 'BRANCH'
+            ? 5 : 0,
             'saleAccountId': saleAccountId,
             'grossValue': widget.totalGrossValue,
             'discPercent': 0,
@@ -318,9 +326,11 @@ class _PaymentPageState extends ConsumerState<PaymentPage> {
                   ];
           api.addOtherAmount(bodyJsonAmount);
           buttonEvent = false;
-          ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
+          // ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
          showMore(context, );
          setState(() {
+          ref.read(cartItemProvider.notifier).removeAllCartItem(widget.cartItems.length);
+          
            _isLoading = false;
            buttonEvent = false;
          });
