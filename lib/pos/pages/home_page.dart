@@ -757,7 +757,7 @@ if (companyTaxMode == 'INDIA') {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Price',
+                  'Gross',
                   style: TextStyle(fontFamily: 'poppins', fontSize: 14),
                 ),
                 const SizedBox(height: 4),

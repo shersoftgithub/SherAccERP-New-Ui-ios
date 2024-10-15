@@ -3293,7 +3293,7 @@ class _OpeningStockState extends State<OpeningStock> {
                       quantity = (controllerQuantity.text.isNotEmpty
                           ? double.tryParse(controllerQuantity.text)
                           : quantity)!;
-                    if(totalItem > 0){
+                    if(total > 0){
                       if (editItem) {
                         cartItem[position!].adCess = adCess;
                         cartItem[position!].barcode = barcode;

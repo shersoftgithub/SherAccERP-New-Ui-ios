@@ -1322,6 +1322,7 @@ class _SalesReturnState extends State<SalesReturn> {
                                       bottom: 15,
                                     ),
                                     child: TextField(
+                                      keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 14
@@ -1457,6 +1458,20 @@ class _SalesReturnState extends State<SalesReturn> {
                                           contentPadding: EdgeInsets.symmetric(
                                               vertical: 5, horizontal: 5),
                                           border: OutlineInputBorder()),
+                                          onSubmitted: (value) {
+                                            setState(() {
+                                                dataDynamic = [
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': value,
+                                             'EntryNo': int.parse(value) ?? 0,
+                                             'Id': int.parse(value) ?? 0
+                                             }
+                                          ];
+                                          cartItem.clear();
+                                          fetchSaleReturn(context, dataDynamic[0]['Id']);
+                                            });
+                                          },
                                     ),
                                   ),
                                   headTxt: 'Entry No')),
@@ -2369,6 +2384,7 @@ dynamic productModelPrizee = [
       }
     ];
 int? selectedProducteId;
+double minimum = 0.00;
 String? selectedTaxOption = 'With Tax';
 var fetchedPrice;
 bool isPrateEdited = false;
@@ -2377,12 +2393,72 @@ bool isPrateEdited = false;
     
     
      if (editItem) {
+     fetchedPrice =  dio
+                                  .fetchProductPrizeStock(selectedProducteId!, locationId).then((value) {
+                                    productModelPrize = value;
+if (productModelPrize.length > 0) {
+                                    if (productModelPrize.length <= 1 ) {
+                                    //  productModelPrize = fetchedPrice;
+                                 pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
+                                //  if (pRate > 0 && !_focusNodeRate.hasFocus) {
+                                //   _rateController.text = pRate.toString();
+                                //    }
+                                //    else {
+                                //     _rateController.text = '';
+                                //   }
+                                rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
+                                 isTax = taxable;
+                                 taxP = (isTax ? cartModel!.taxP: 0);
+                                  cess = (isTax ? cartModel!.cess : 0);
+                                  cessPer = (isTax ? cartModel!.cessPer : 0)!;
+                                 adCessPer =
+                                 (isTax ? cartModel!.adCessPer : 0)!;
+                                  kfcP = isTax
+                                ? enableKeralaFloodCess
+                                 ? kfcPer
+                                 : 0
+                                 : 0;
+                                 if (rateType == 'RETAIL') {
+                                 saleRate = double.tryParse(productModelPrize[0]['retail'].toString())!;
+                                 } else if (rateType == 'WHOLESALE') {
+                                 saleRate = double.tryParse(productModelPrize[0]['wsrate'].toString())!;
+                                 } else {
+                                 saleRate = double.tryParse(productModelPrize[0]['mrp'].toString())!;
+                                 }
+                                  if (saleRate > 0 &&
+                                 !_focusNodeRate.hasFocus &&
+                                 _rateController.text.isEmpty) {
+                                _rateController.text = saleRate.toStringAsFixed(decimal);
+                                rate = saleRate;
+                                 }
+                                 uniqueCode = productModelPrize[0]['uniquecode'];
+                                  }
+                                else{
+                                  setState(() {
+                                    fetchedPrice = productModelPrizee;
+                                  });
+                                }
+                                 
+      if (saleRate > 0 &&
+          !_focusNodeRate.hasFocus &&
+          _rateController.text.isEmpty) {
+        _rateController.text = saleRate.toStringAsFixed(decimal);
+        rate = saleRate;
+        saleRate = rate;
+
+      }
+                                 }
+                                  });
+                                 
+      uniqueCode = cartModel!.itemId;
+
       selectedProducteId = cartModel!.itemId;
       productModelPrize = fetchedPrice;
-      unitValue = cartModel!.unitValue!;
+      // unitValue = cartModel!.unitValue!;
       debugPrint("unitvalue = ${unitValue.toString()}");
-      _dropDownUnit = cartModel!.unitId!;
-      // uniqueCode = cartItem[position!].uniqueCode!;
+      
+      // _dropDownUnit = cartModel!.unitId!;
+      uniqueCode = cartItem[position!].uniqueCode!;
      }
     //   productModel = productModel == null
     //       ? ProductPurchaseModel(
@@ -2430,7 +2506,7 @@ bool isPrateEdited = false;
     // }
     calculate() {
       if (enableMULTIUNIT) {
-        if (saleRate > 0) {
+        if (saleRate > minimum) {
           if (_conversion > 0) {
             if (_focusNodeRate.hasFocus) {
               rate = double.tryParse(_rateController.text)?? 0;
@@ -2545,17 +2621,17 @@ bool isPrateEdited = false;
       if (enableMULTIUNIT && _conversion > 0) {
         profitPer = pRateBasedProfitInSales
             ? CommonService.getRound(2,
-                (total - (productModelPrize[0]['prate'] * _conversion * quantity)))
+                (total - (editItem?cartModel!.pRate : productModelPrize[0]['prate'] * _conversion * quantity)))
             : CommonService.getRound(
                 decimal,
                 (total -
-                    (productModelPrize[0]['realprate'] * _conversion * quantity)));
+                    (editItem?cartModel!.rPRate : productModelPrize[0]['realprate'] * _conversion * quantity)));
       } else {
         profitPer = pRateBasedProfitInSales
             ? CommonService.getRound(
-                2, (total - (productModelPrizee[0]['prate'] * quantity)))
+                2, (total - (editItem?cartModel!.pRate : productModelPrizee[0]['prate'] * quantity)))
             : CommonService.getRound(
-                2, (total - (productModelPrizee[0]['realprate'] * quantity)))?? 0;
+                2, (total - (editItem?cartModel!.rPRate : productModelPrizee[0]['realprate'] * quantity)))?? 0;
       }
       unitValue = _conversion > 0 ? _conversion : 1;
     }
@@ -3634,8 +3710,8 @@ bool isPrateEdited = false;
                   else{
                    setState(() {
                     if (editItem) {
-                      debugPrint("unitvalue === ${unitValue.toString()}");
-                      unitValue = cartModel!.unitValue!;
+                      debugPrint("unitvalue ==! ${unitValue.toString()}");
+                      // unitValue = cartModel!.unitValue!;
                       cartItem[position!].adCess = adCess;
                                 cartItem[position!].quantity = quantity;
                                 cartItem[position!].rate = rate;

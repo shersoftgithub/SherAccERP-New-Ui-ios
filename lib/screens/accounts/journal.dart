@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
+import 'package:sheraccerp/screens/html_previews/jv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
@@ -152,7 +153,7 @@ class _JournalState extends State<Journal> {
                       }
                     }
                   },
-                  icon: const Icon(Icons.delete_forever)),
+                  icon: Image.asset('assets/icons/ic_delete.png',scale: 3.1,)),
             ),
             oldVoucher
                 ? IconButton(
@@ -173,7 +174,7 @@ class _JournalState extends State<Journal> {
                       }
                     }
                     },
-                    icon: const Icon(Icons.edit))
+                    icon: Image.asset('assets/icons/ic_edit.png',scale: 3.1,))
                 : IconButton(
                     color: white,
                     iconSize: 40,
@@ -412,6 +413,7 @@ class _JournalState extends State<Journal> {
   
   widgetPrefix() {
     return Scaffold(
+      backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           actions: [
@@ -545,36 +547,35 @@ class _JournalState extends State<Journal> {
                   );
                 } else {
                   return 
-                  InkWell(
-                    onTap: () {
-                      // showEditDialog(context, dataDisplay[index], mode);
-                    },
-                    child:
-                    Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        // height: 80,
-                        constraints: const BoxConstraints(
-                          maxHeight: 110,
-                          minHeight: 80
-                        ),
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(0, 5),
-                              blurRadius: 6,
-                              color: const Color(0xff000000).withOpacity(0.06),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(10),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Expanded(
-                                flex: 3,
+                  Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      // height: 80,
+                      constraints: const BoxConstraints(
+                        maxHeight: 110,
+                        minHeight: 80
+                      ),
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 5),
+                            blurRadius: 6,
+                            color: const Color(0xff000000).withOpacity(0.06),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: InkWell(
+                                onTap: () {
+                                   showEditDialog(context, dataDisplay[index]);
+                                },
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -628,8 +629,25 @@ class _JournalState extends State<Journal> {
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                flex: 2,
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: InkWell(
+                                onTap: () {
+            //                        var dataAll = [
+            //   {
+            //     'entryNo':
+            //         oldVoucher ? dataDynamic[0]['EntryNo'].toString() : refNo,
+            //     'date': formatDMY(formattedDate),
+            //     'amount': amount,
+            //     'particular': particular,
+            //     'message': footerMessage,
+            //     'dName': ledgerDebitData!.name,
+            //     'cName': ledgerCreditData!.name
+            //   }
+            // ];
+            //                       actionShow(context, dataDisplay);
+                                },
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
@@ -650,23 +668,23 @@ class _JournalState extends State<Journal> {
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        )
-                        // ListTile(
-                        //   title: Text(dataDisplay[index]['Name']),
-                        //   subtitle: Text('Date: ' +
-                        //       dataDisplay[index]['Date'] +
-                        //       ' / EntryNo : ' +
-                        //       dataDisplay[index]['Id'].toString()),
-                        //   trailing: Text(
-                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
-                        //   onTap: () {
-                        //     showEditDialog(context, dataDisplay[index]);
-                        //   },
-                        // ),
+                            ),
+                          ],
                         ),
-                  );
+                      )
+                      // ListTile(
+                      //   title: Text(dataDisplay[index]['Name']),
+                      //   subtitle: Text('Date: ' +
+                      //       dataDisplay[index]['Date'] +
+                      //       ' / EntryNo : ' +
+                      //       dataDisplay[index]['Id'].toString()),
+                      //   trailing: Text(
+                      //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                      //   onTap: () {
+                      //     showEditDialog(context, dataDisplay[index]);
+                      //   },
+                      // ),
+                      );
                 }
               },
               controller: _scrollController,
@@ -793,7 +811,9 @@ class _JournalState extends State<Journal> {
                 'date': formatDMY(formattedDate),
                 'amount': amount,
                 'particular': particular,
-                'message': footerMessage
+                'message': footerMessage,
+                'dName': ledgerDebitData!.name,
+                'cName': ledgerCreditData!.name
               }
             ];
             actionShow(context, dataAll);
@@ -818,7 +838,7 @@ class _JournalState extends State<Journal> {
         icon: Icons.check,
         onPressedNo: () {
           Navigator.of(context).pop();
-          clearData();
+          // clearData();
         },
         onPressedYes: () {
           Navigator.of(context).pop();
@@ -921,12 +941,12 @@ class _JournalState extends State<Journal> {
         context: context);
   }
 
-  sentToPreview(String title, String form, var data) {
+   sentToPreview(String title, String form, var data) {
     var dataAll = [data, form];
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (_) => RVPreviewShow(title: title, dataAll: dataAll)));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => JvPreviewShow(title: title, dataAll: dataAll)));
   }
 
   Uint8List? byteImage;

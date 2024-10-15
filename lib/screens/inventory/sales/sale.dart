@@ -2650,10 +2650,26 @@ void _onTabTapped(int index) {
         ],
       ),
     ),
+    
     constraints: const BoxConstraints(maxHeight: 40),
     contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
     border: const OutlineInputBorder(),
   ),
+   onSubmitted: (value) {
+                                            setState(() {
+                                                dataDynamic = [ 
+                                             {
+                                             'Type': salesTypeData!.type,
+                                             'InvoiceNo': value,
+                                             'EntryNo': int.parse(value) ?? 0,
+                                             'Id': int.parse(value) ?? 0
+                                             }
+                                          ];
+                                          cartItem.clear();
+                                          fetchSale(context, dataDynamic[0]);
+                                            });
+                                          },
+                                          keyboardType: TextInputType.number,
 )
 ),
                                   headTxt: 'Entry No')),
@@ -13044,8 +13060,7 @@ itemVarianDetails(selectedItem)async{
         selectedItemId = information['itemId'];
         returnBillId = information['ReturnNo'];
         controllerNarration.text = information['Narration'];
-     
-       
+
         if (apiV != 'v19/') {
           Object _bankLedgerName = information['BankName'] != null
               ? information['BankName'].toString()
