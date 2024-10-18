@@ -1447,7 +1447,7 @@ class _SaleState extends ConsumerState<Sale> {
 
   postSale(body, otherAmount, Order order, saleFormType, saleFormId) {
     api.addSale(body).then((result) {
-      debugPrint('body====${result.toString()}');
+      // debugPrint('body====${result.toString()}');
       if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
         final bodyJsonAmount = {
           'statement': 'SalesInsert',
@@ -1955,15 +1955,18 @@ class _SaleState extends ConsumerState<Sale> {
                                   : Text('No Widget') ;
   }
   final entryNoController = TextEditingController();
+ bool hasUserModifiedEntry = false;
 
-  getEntryNo(saleFormId) {
-    api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
+getEntryNo(saleFormId) {
+  if (!hasUserModifiedEntry) {
+    api.getSalesInvoiceNo(saleFormId, 'SEntryNo').then((value) {
       setState(() {
         entryNo = (int.parse(value.toString()) + 1).toString();
         entryNoController.text = entryNo;
       });
     });
   }
+}
 
   selectSalesType() {
     return ListView.builder(
@@ -2381,7 +2384,50 @@ void _onTabTapped(int index) {
                       text: 'Cash',
                     )
                   ]),
-            ):const SizedBox(),
+            ):
+            InkWell(
+              onTap: () {
+                setState(() {
+                   nextWidget = 0;
+                hasUserModifiedEntry = false;
+                getEntryNo(salesTypeData!.id);
+                 controllerNarration.text = '';
+      returnEntryNoController.text = '';
+      returnAmountController.text = '';
+      newSale = true;
+      _balance = 0;
+      returnAmount = 0;
+      otherAmountList = [];
+      controllerCashReceived.text = '';
+                 selectedCashCustomerId = 0;
+                 selectedCustomerId = 0;
+                 selectedCustomer = '';
+                 selectedCustomer = [];
+                  LedgerModel.emptyData();
+                 customerNameControl.text = '';
+                editItem = false;
+                oldBill = false;
+                clearCart();
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 5
+                ),
+               decoration:  BoxDecoration(
+                        color: white, borderRadius: BorderRadius.circular(30)),
+                        child:  const Text('New Bill',
+            style: TextStyle(
+              fontFamily: 'poppins',
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: green,
+            ),
+            ),
+              ),
+            ),
+            
             const SizedBox(
               width: 10,
             ),
@@ -2557,33 +2603,50 @@ void _onTabTapped(int index) {
           const SizedBox(
             width: 4,
           ),
-          InkWell(
-            onTap: () {
-              setState(() {
-                try {
-                  int entryNumber = int.parse(entryNoController.text); 
-                  entryNumber--;
-                  entryNoController.text = entryNumber.toString(); 
-                } catch (e) {
-                  debugPrint("Error parsing entry number: $e");
-                }
-              });
+         InkWell(
+  onTap: () async {
+    setState(() {
+      try {
+        hasUserModifiedEntry = true;  
+        int entryNumber = int.parse(entryNoController.text); 
+        entryNumber--; 
+        entryNoController.text = entryNumber.toString(); 
+      } catch (e) {
+        debugPrint("Error parsing entry number: $e");
+      }
 
-              dataDynamic = [
-                {
-                  'Type': salesTypeData!.type,
-                  'InvoiceNo': entryNoController.text,
-                  'EntryNo': int.parse(entryNoController.text),
-                  'Id': int.parse(entryNoController.text)
-                }
-              ];
-              cartItem.clear();
-              fetchSale(context, dataDynamic[0]);
-            },
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
-            ),
-          ),
+      dataDynamic = [
+        {
+          'Type': salesTypeData!.type,
+          'InvoiceNo': entryNoController.text,
+          'EntryNo': int.parse(entryNoController.text),
+          'Id': int.parse(entryNoController.text)
+        }
+      ];
+      _balance = 0;
+      controllerNarration.text = '';
+      // returnEntryNoController.text = '';
+      returnAmountController.text = '';
+      returnAmount = 0;
+      otherAmountList = [];
+      controllerCashReceived.text = '';
+    
+      cartItem.clear();
+    });
+
+    await fetchSale(context, dataDynamic[0]);
+
+    setState(() {
+      if (hasUserModifiedEntry) {
+        entryNoController.text = dataDynamic[0]['EntryNo'].toString();
+      }
+    });
+  },
+  child: const Icon(
+    Icons.arrow_back_ios_rounded,
+  ),
+),
+
         ],
       ),
     ),
@@ -2594,54 +2657,43 @@ void _onTabTapped(int index) {
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
-            onTap: () {
-              setState(() {
-                try {
-                  int invoiceNumber = int.parse(entryNoController.text);
-                  invoiceNumber++;
-                  entryNoController.text = invoiceNumber.toString();
-                } catch (e) {
-                  debugPrint("Error parsing invoice number: $e");
-                }
-              });
+            onTap: () async {
+    setState(() {
+      try {
+        hasUserModifiedEntry = true;  
+        int entryNumber = int.parse(entryNoController.text); 
+        entryNumber++; 
+        entryNoController.text = entryNumber.toString(); 
+      } catch (e) {
+        debugPrint("Error parsing entry number: $e");
+      }
 
-              dataDynamic = [
-                {
-                  'Type': salesTypeData!.type,
-                  'InvoiceNo': entryNoController.text,
-                  'EntryNo': int.parse(entryNoController.text),
-                  'Id': int.parse(entryNoController.text)
-                }
-              ];
-              cartItem.clear();
+      dataDynamic = [
+        {
+          'Type': salesTypeData!.type,
+          'InvoiceNo': entryNoController.text,
+          'EntryNo': int.parse(entryNoController.text),
+          'Id': int.parse(entryNoController.text)
+        }
+      ];
+       _balance = 0;
+controllerNarration.text = '';
+      // returnEntryNoController.text = '';
+      returnAmountController.text = '';
+      returnAmount = 0;
+      otherAmountList = [];
+      controllerCashReceived.text = '';
+      cartItem.clear();
+    });
 
-              try {
-                fetchSale(context, dataDynamic[0]);
-              } catch (e) {
-                if (e is RangeError) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text("Error"),
-                        content: const Text(
-                            "An error occurred while fetching the Sale Bill Invalid value."),
-                        actions: [
-                          TextButton(
-                            child: const Text("OK"),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  debugPrint("An unexpected error occurred: $e");
-                }
-              }
-            },
+    await fetchSale(context, dataDynamic[0]);
+
+    setState(() {
+      if (hasUserModifiedEntry) {
+        entryNoController.text = dataDynamic[0]['EntryNo'].toString();
+      }
+    });
+  },
             child: const Icon(Icons.arrow_forward_ios_rounded),
           ),
           const SizedBox(
@@ -2655,8 +2707,9 @@ void _onTabTapped(int index) {
     contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
     border: const OutlineInputBorder(),
   ),
-   onSubmitted: (value) {
+   onSubmitted: (value) async{
                                             setState(() {
+                                              hasUserModifiedEntry = true;  
                                                 dataDynamic = [ 
                                              {
                                              'Type': salesTypeData!.type,
@@ -2665,9 +2718,22 @@ void _onTabTapped(int index) {
                                              'Id': int.parse(value) ?? 0
                                              }
                                           ];
+                                           _balance = 0;
+                                          controllerNarration.text = '';
+      // returnEntryNoController.text = '';
+      returnAmountController.text = '';
+      returnAmount = 0;
+      otherAmountList = [];
+      controllerCashReceived.text = '';
                                           cartItem.clear();
-                                          fetchSale(context, dataDynamic[0]);
+                                         
                                             });
+                                            await fetchSale(context, dataDynamic[0]);
+                                             setState(() {
+      if (hasUserModifiedEntry) {
+        entryNoController.text = dataDynamic[0]['EntryNo'].toString();
+      }
+    });
                                           },
                                           keyboardType: TextInputType.number,
 )
@@ -4349,14 +4415,43 @@ void _onTabTapped(int index) {
                              Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children:[
-                                const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
-                                Text('₹   ${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}',style:const 
-                                TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                                Expanded(child: const Text('Total Amount ',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'))),
+                                Expanded(
+                                   flex: 1,
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: TextField(
+                                      textAlign: TextAlign.right,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,),
+                                      controller: TextEditingController(
+                                        text: '${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}'
+                                      ),
+                                       decoration:  const InputDecoration(
+                                                                    prefixIcon: Text('₹ ',
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      fontWeight: FontWeight.w500,
+                                                                      ),),
+                                                                    prefixIconConstraints: BoxConstraints(
+                                                                      maxWidth: 15
+                                                                    ),
+                                                                    contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                    border: OutlineInputBorder(
+                                                                      borderSide: BorderSide.none
+                                                                    )
+                                                                  ),
+                                    ),
+                                  ),
+                                  //  Text('₹   ${CommonService.getRound(decimal, grandTotal).toStringAsFixed(decimal)}',style:const 
+                                  // TextStyle(fontSize: 16,fontWeight: FontWeight.w500,),),
+                                ),
                               ]
                              ),
                                 const SizedBox(
-                                        height: 8,
+                                        height: 6,
                                   ),
+                                  oldBill ? selectedCustomerId != acId?
                              Row(
                               children:[
                                 const Expanded(child: Text('Cash Received',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'),),),
@@ -4373,6 +4468,63 @@ void _onTabTapped(int index) {
                                                               linePosition: LinePosition.bottom,
                                                             ),
                                           child: TextField(
+                                            textAlign: TextAlign.right,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,),
+                                                                controller: controllerCashReceived,
+                                                                focusNode: _focusNodeCashReceived,
+                                                                keyboardType:
+                                                                    const TextInputType.numberWithOptions(decimal: true),
+                                                                inputFormatters: [
+                                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                                                      allow: true, replacementString: '.')
+                                                                ],
+                                                                decoration:  const InputDecoration(
+                                                                  prefixIcon: Text('₹ ',
+                                                                  style: TextStyle(
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    ),),
+                                                                  prefixIconConstraints: BoxConstraints(
+                                                                    maxWidth: 15
+                                                                  ),
+                                                                  contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                  border: OutlineInputBorder(
+                                                                    borderSide: BorderSide.none
+                                                                  )
+                                                                ),
+                                                                onChanged: (value) {
+                                                                  setState(() {
+                                                                    balanceCalculate();
+                                                                  });
+                                                                },
+                                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 15,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ]
+                             ) : const SizedBox(): Row(
+                              children:[
+                                const Expanded(child: Text('Cash Received',style:TextStyle(fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'),),),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 30,
+                                        child: Container(
+                                            decoration: DottedDecoration(
+                                                              color: black,
+                                                              strokeWidth: 1,
+                                                              linePosition: LinePosition.bottom,
+                                                            ),
+                                          child: TextField(
+                                            textAlign: TextAlign.right,
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontFamily: 'poppins'),
@@ -4415,16 +4567,75 @@ void _onTabTapped(int index) {
                               ]
                              ),
                              const SizedBox(
-                              height: 8,
+                              height: 2,
                              ),
+                             oldBill ? selectedCustomerId != acId?
                                Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children:[
-                                const Text('Balance Due ',style:TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins')),
-                                Text('₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',style:const 
-                                TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,),),
+                                const Expanded(child: Text('Balance Due ',style:TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'))),
+                                Expanded(
+                                  flex: 1,
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: TextField(
+                                      textAlign: TextAlign.right,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,),
+                                      controller: TextEditingController(
+                                        text: '${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}'
+                                      ),
+                                       decoration:  const InputDecoration(
+                                                                    prefixIcon: Text('₹ ',
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      fontWeight: FontWeight.w500,
+                                                                      ),),
+                                                                    prefixIconConstraints: BoxConstraints(
+                                                                      maxWidth: 15
+                                                                    ),
+                                                                    contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                    border: OutlineInputBorder(
+                                                                      borderSide: BorderSide.none
+                                                                    )
+                                                                  ),
+                                    ),
+                                  ),
+                                  //  Text('₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',style:const 
+                                  // TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,),),
+                                ),
                               ]
-                             ),
+                             ): const SizedBox():  Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children:[
+                                const Expanded(child: Text('Balance Due ',style:TextStyle(color: green,fontSize: 16,fontWeight: FontWeight.w500,fontFamily: 'poppins'))),
+                                Expanded(
+                                  flex: 1,
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: TextField(
+                                      controller: TextEditingController(
+                                        text: '${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}'
+                                      ),
+                                       decoration:  const InputDecoration(
+                                                                    prefixIcon: Text('₹ ',
+                                                                    style: TextStyle(
+                                                                      fontSize: 16,
+                                                                      fontWeight: FontWeight.w500,
+                                                                      ),),
+                                                                    prefixIconConstraints: BoxConstraints(
+                                                                      maxWidth: 15
+                                                                    ),
+                                                                    contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                    border: OutlineInputBorder(
+                                                                      borderSide: BorderSide.none
+                                                                    )
+                                                                  ),
+                                    ),
+                                  ),
+                                ),
+                              ]
+                             )
                            ],
                          ),
                        ),
@@ -6964,7 +7175,6 @@ void _onTabTapped(int index) {
                         taxType: 'T',
                         unitId: cartModel!.unitId,
                         wholeSalePrice: cartModel!.rate);
-                            
                                    return  Form(
                                     key: _resetKey,
                                     autovalidateMode: AutovalidateMode.always,
@@ -12595,8 +12805,19 @@ bool editItem = false;
       f.quantity = 1;
     }
     setState(() {
+      // controllerNarration.text = '';
+      // returnEntryNoController.text = '';
+      // returnAmountController.text = '';
+      // returnAmount = 0;
+      // otherAmountList = [];
+      // controllerCashReceived.text = '';
+      selectedCashCustomerId = 0;
+                 selectedCustomerId = 0;
+                 selectedCustomer = '';
+                 customerNameControl.text = '';
       cartItem = [];
       calculateTotal();
+      
     });
   }
 

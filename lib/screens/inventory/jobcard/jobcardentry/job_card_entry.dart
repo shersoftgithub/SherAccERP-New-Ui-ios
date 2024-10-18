@@ -731,6 +731,9 @@ class _JobcardentryState extends State<Jobcardentry> {
   var nameLike = "a";
   selectLedgerWidget() {
     previewData = true;
+    groupId = 0;
+    areaId = 0;
+    routeId = 0;
 
     return FutureBuilder<List<dynamic>>(
       future: api.getCustomerNameListLike(

@@ -734,8 +734,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
 
                                   return EasyAutocomplete(
                                     progressIndicatorBuilder: const Center(
-                                            child: CircularProgressIndicator())
-                                       ,
+                                            child: CircularProgressIndicator()),
                                        controller: customerNameController,
                                     // controller: oldBill
                                     //     ? selectedSupplierId == acId
@@ -891,8 +890,15 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                                             cartModel!.discount.toString();
                                         controllerDiscountPer.text =
                                             cartModel!.discountPercent.toString();
+                                            unitValue = cartModel!.unitValue;
+                                            tax =  cartModel!.tax;
+                                            taxP = cartModel!.taxP;
                                             gross = cartModel!.gross;
                                             total = cartModel!.total;
+                                             unit = DataJson(
+                                              id: cartModel!.unitId,
+                                              name: cartModel!.unitName,
+                                            );
                                         // _serialNoController.text =
                                         //     cartModel.serialNo;
                                             nextWidget = 1;
@@ -2354,6 +2360,9 @@ const SizedBox(
                                                               taxP.toString()),
                                                   readOnly: true,
                                                   textAlign: TextAlign.right,
+                                                  onChanged: (value) {
+                                                    calculate();
+                                                  },
                                                   decoration: InputDecoration(
                                                     suffixIcon: Container(
                                                       decoration: BoxDecoration(

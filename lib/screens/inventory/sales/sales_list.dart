@@ -1145,42 +1145,39 @@ class _SalesListState extends State<SalesList> {
                                                         dataDisplay[index]['Id']
                                                             .toString())!);
                                   },
-                                  child: Expanded(
-                                    flex: 5,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            dataDisplay[index]['ToName']
-                                                .toString(),
-                                            style: const TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w700),
-                                          ),
-                                          Text(
-                                            'Invoice : ' +
-                                                dataDisplay[index]['Invoice']
-                                                    .toString(),
-                                            style: const TextStyle(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          dataDisplay[index]['ToName']
+                                              .toString(),
+                                          style: const TextStyle(
                                               color: Colors.black,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                        Text(
+                                          'Invoice : ' +
+                                              dataDisplay[index]['Invoice']
+                                                  .toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                          Text(
-                                            'Date     : ' +
-                                                dataDisplay[index]['Date']
-                                                    .toString(),
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                        ),
+                                        Text(
+                                          'Date     : ' +
+                                              dataDisplay[index]['Date']
+                                                  .toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
