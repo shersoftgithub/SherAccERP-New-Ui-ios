@@ -1956,13 +1956,18 @@ class _SaleState extends ConsumerState<Sale> {
   }
   final entryNoController = TextEditingController();
  bool hasUserModifiedEntry = false;
+ bool entryNoLoading = false;
 
 getEntryNo(saleFormId) {
+  setState(() {
+    entryNoLoading = true;
+  });
   if (!hasUserModifiedEntry) {
     api.getSalesInvoiceNo(saleFormId, 'SEntryNo').then((value) {
       setState(() {
         entryNo = (int.parse(value.toString()) + 1).toString();
         entryNoController.text = entryNo;
+        entryNoLoading = false;
       });
     });
   }
@@ -2403,8 +2408,9 @@ void _onTabTapped(int index) {
                  selectedCustomerId = 0;
                  selectedCustomer = '';
                  selectedCustomer = [];
+                 formattedDate = getToDay;
                   LedgerModel.emptyData();
-                 customerNameControl.text = '';
+                 nameControl.text = '';
                 editItem = false;
                 oldBill = false;
                 clearCart();
@@ -2510,15 +2516,15 @@ void _onTabTapped(int index) {
                     }
                   });
                 }
-                  if (value == 'Import From Sales Order') {
-                  if (selectedCashCustomerId != null || selectedCustomerId != null) {
-                  setState(() {
-                    nextWidget= 7;
-                  });
-                }else{
-                  Fluttertoast.showToast(msg: 'Please Select Customer');
-                }
-             }
+            //       if (value == 'Import From Sales Order') {
+            //       if (selectedCashCustomerId != null || selectedCustomerId != null) {
+            //       setState(() {
+            //         nextWidget= 7;
+            //       });
+            //     }else{
+            //       Fluttertoast.showToast(msg: 'Please Select Customer');
+            //     }
+            //  }
               },
               itemBuilder: (BuildContext context) => [
                 const PopupMenuItem<String>(
@@ -2541,14 +2547,14 @@ void _onTabTapped(int index) {
                   value: 'Show Previous Bill',
                   child: Text('Show Previous Bill'),
                 ),
-                const PopupMenuItem<String>(
-                  value: 'Import From Sales Order',
-                  child: Text('Import From Sales Order'),
-                ),
-                const PopupMenuItem<String>(
-                  value: 'Import From Sales Quatation',
-                  child: Text('Import From Sales Quatation'),
-                ),
+                // const PopupMenuItem<String>(
+                //   value: 'Import From Sales Order',
+                //   child: Text('Import From Sales Order'),
+                // ),
+                // const PopupMenuItem<String>(
+                //   value: 'Import From Sales Quatation',
+                //   child: Text('Import From Sales Quatation'),
+                // ),
               ],
             ),
             // IconButton(
@@ -2968,7 +2974,8 @@ controllerNarration.text = '';
                                                           .hasError) {
                                                         return Text(
                                                             'Error: ${snapshot.error}');
-                                                      } else if (!snapshot
+                                                      }
+                                                       else if (!snapshot
                                                           .hasData) {
                                                         return const Text(
                                                             'No data found');
@@ -4614,6 +4621,7 @@ controllerNarration.text = '';
                                   child: SizedBox(
                                     height: 30,
                                     child: TextField(
+                                      textAlign: TextAlign.right,
                                       controller: TextEditingController(
                                         text: '${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}'
                                       ),
@@ -6232,6 +6240,7 @@ controllerNarration.text = '';
     );
   }
 
+
   String selectedQuantity = '';
   List<String> selectedUnits = [];
   int? selectedItemId;
@@ -6520,7 +6529,7 @@ controllerNarration.text = '';
     }
     unitValue = _conversion > 0 ? _conversion : 1;
   }
-  calculateConversion() {
+    calculateConversion() {
     if (enableMULTIUNIT) {
       if (saleRate > 0) {
         if (_conversion > 0 && !isPrateEdited) {
@@ -6688,7 +6697,6 @@ controllerNarration.text = '';
     // }
   }
   
-   
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -6915,7 +6923,7 @@ controllerNarration.text = '';
                     DateUtil.dateDMY2YMD(formattedDate))
                 : api.fetchNoStockProducts(
                     DateUtil.dateDMY2YMD(formattedDate))
-            : api.fetchStockProducts(
+                : api.fetchStockProducts(
                 DateUtil.dateDMY2YMD(formattedDate),),
             // fetchStockProducts(itemNameControl.text), ,
                                       builder: (context, snapshot) {
@@ -6925,6 +6933,7 @@ controllerNarration.text = '';
                               //  else if (snapshot.connectionState == ConnectionState.waiting){
                               //    isLoading == true;
                               // }
+                              
                               else if (!snapshot.hasData) {
                                 return const Text('No data found');
                               }
@@ -6972,15 +6981,81 @@ controllerNarration.text = '';
                                             // clearValue();
                                             // itemNameControl.text = '';
                                             // setState(() {
-                                            
-                                               selectedItem = 
+                   
+                    // selectedItem.hasVariant ?
+                    //   keyItemsVariantStock
+                    // ? SizedBox(
+                    //     height: deviceSize!.height - 20,
+                    //     width: 400.0,
+                    //     child: ListView(children: [
+                    //       Center(child: Text('name' + ' / ' + 'quantity')),
+                    //       SizedBox(
+                    //         height: deviceSize!.height - 100,
+                    //         width: 400.0,
+                    //         child: ListView.builder(
+                    //           // shrinkWrap: true,
+                    //           itemCount: snapshot.data!.length,
+                    //           itemBuilder: (BuildContext context, int index) {
+                    //             return Card(
+                    //               elevation: 5,
+                    //               child: ListTile(
+                    //                   title: Text(
+                    //                       'Id: ${selectedItem.productId} / Quantity : ${selectedItem.quantity} '),
+                    //                   subtitle: Text(ComSettings.appSettings(
+                    //                           'bool',
+                    //                           'key-item-sale-retail',
+                    //                           false)
+                    //                       ? 'Mrp : ${selectedItem.sellingPrice} / Retail : ${selectedItem.retailPrice}'
+                    //                       : 'Rate : ${selectedItem.sellingPrice}'),
+                    //                   trailing: isSerialNoInStockVariant
+                    //                       ? Text(
+                    //                           selectedItem.serialNo,
+                    //                           style:
+                    //                               const TextStyle(fontSize: 10),
+                    //                         )
+                    //                       : const Text(''),
+                    //                   onTap: () {
+                    //                     setState(() {
+                    //                       isVariantSelected = true;
+                    //                       positionID = index;
+                    //                     });
+                    //                   }),
+                    //             );
+                    //           },
+                    //         ),
+                    //       ),
+                    //     ]),
+                    //   ):
+                      selectedItem = 
                                               itemCodeViseChek 
                                               ? snapshot.data!.firstWhere(
                                                 (element) => element.code == value)
                                               : snapshot.data!.firstWhere(
-                                                (element) => element.name == value,
+                                                (element) => element.name == value, 
                                               );
-                                              
+                                              setState(() {
+                                                selectedItemId = selectedItem.id;
+                                              });
+                                            if (selectedItem.hasVariant) {
+                                                var newValue;
+                                                  _dropDownUnit = 0;
+                                              rate = 0;
+                                              quantity = 0;
+                                              _quantityController.text = '';
+                                              _discountController.text = '';
+                                              _discountPercentController.text = '';
+                                              tax = 0;
+                                              _rateController.text = '';
+                                              discount = 0;
+                                              discountPercent = 0;
+                                              subTotal = 0;
+                                              total = 0;
+                                              gross = 0;
+                                           var datas =api.fetchStockVariantList(selectedItemId!).then((value) {
+                                               showItemDialog(context, value, isSerialNoInStockVariant,selectedItem.name,selectedItem.quantity );
+                                           } );                               
+                                          }
+                                          else {
                                                itemNameControl.text = selectedItem.name!;
                                               _dropDownUnit = 0;
                                               rate = 0;
@@ -7069,8 +7144,10 @@ controllerNarration.text = '';
                                         itemVarianDetails(selectedItem);
                                             // });
                                             // print('onSubmitted value: $selectedItemId');
+                                          }
                                           },
                                         );
+                                     
                                       }
                                     ),
                                   ),
@@ -9119,6 +9196,7 @@ controllerNarration.text = '';
                                   );
                                 },
                               )
+                      
                       ],
                     ),
                   ),
@@ -9665,7 +9743,7 @@ controllerNarration.text = '';
                                       }
                                   if (isUnit) {
                                     if (editItem) {
-                                      // unitValue = cartModel!.unitValue!;
+                                      // unitValue = cartModel!.unitValue!; 1
                                       cartItem[position!].adCess = adCess;
                                       cartItem[position!].quantity =
                                           quantity;
@@ -10036,7 +10114,11 @@ controllerNarration.text = '';
                                       }
                                   if (isUnit) {
                                     if (editItem) {
-                                      cartItem[position!].adCess = adCess;
+                                      if (quantity <= 0) {
+                                         Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
+                                      }
+                                     else{
+                                       cartItem[position!].adCess = adCess;
                                       cartItem[position!].quantity =
                                           quantity;
                                       cartItem[position!].rate = rate;
@@ -10081,6 +10163,7 @@ controllerNarration.text = '';
                                           selectedVariant.quantity!;
                                       editItem = false;
                                       calculateTotal();
+                                     }
                                     } 
                                     else {
                                       if (quantity <= 0) {
@@ -10207,6 +10290,158 @@ controllerNarration.text = '';
     );
   }
 
+ void showItemDialog(BuildContext context, List<dynamic> snapshotData, bool isSerialNoInStockVariant,String name, double quantity) {
+  bool isItemSelected = false;
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: SizedBox(
+          height: MediaQuery.of(context).size.height - 150,
+          width: 400.0,
+          child: ListView(
+            scrollDirection: Axis.vertical,
+            children: [
+              Center(child: Text(name + ' / ' + quantity.toString(),
+              style: const TextStyle(
+                fontFamily: 'poppins'
+              ),
+              )),
+              SizedBox(
+                height: MediaQuery.of(context).size.height/2,
+                width: 400.0,
+                child: ListView.builder(
+                  itemCount: snapshotData.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var selectedItem = snapshotData[index];
+                    return Card(
+                      elevation: 0,
+                      child: ListTile(
+                        title: Text(
+                          'Id: ${snapshotData[index].productId} / Quantity: ${snapshotData[index].quantity}',
+                        ),
+                        titleTextStyle: const TextStyle(
+                          fontFamily: 'poppins',
+                          color: black
+                        ),
+                        subtitle: Text(
+                          ComSettings.appSettings('bool', 'key-item-sale-retail', false)
+                              ? 'Mrp: ${snapshotData[index].sellingPrice} / Retail: ${selectedItem.retailPrice}'
+                              : 'Rate: ${snapshotData[index].sellingPrice}',
+                        ),
+                        subtitleTextStyle: const TextStyle(
+                          fontFamily: 'poppins',
+                          color: black
+                        ),
+                        trailing: isSerialNoInStockVariant
+                            ? Text(
+                                selectedItem.serialNo,
+                                style: const TextStyle(fontSize: 10),
+                              )
+                            : const Text(''),
+                        onTap: () async{
+                          isItemSelected = true;
+                          Navigator.pop(context);
+                          setState(() {
+                            isVariantSelected = true;
+                            // selectedItem = index;
+                             selectedQuantity =
+                                                  selectedItem.quantity.toString();
+                                              selectedItemId = selectedItem.itemId!;
+                                               fetchedData = selectedItemId != null
+                                                 ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
+                                                 ? isStockProductOnlyInSalesQO
+                                        ?  api.fetchNoStockVariants(selectedItemId.toString())
+                                        :  api.fetchStockVariants(selectedItemId!)
+                                        : _autoVariantSelect 
+                                        ?  api.fetchStockVariantListStream(selectedItemId!) 
+                                        : api.fetchStockVariants(selectedItemId!)
+                                                  : null
+                                                  ;
+                                              if (fetchedData != null) {
+                                                fetchedData.listen((variants) {
+                                                 selectedVariant = variants.firstWhere(
+                                                    (element) =>
+                                                        element.itemId == selectedItemId,
+                                                    orElse: () => StockProduct.empty(),
+                                                  );
+                                                  if (_autoVariantSelect) {
+                                                  stockVariantProductList.clear();
+                                                   stockVariantProductList.addAll(variants) ;
+                                                }
+                                                  Future<double?> rateFuture;
+                                                  if (salesTypeData!.rateType == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (salesTypeData!.rateType ==
+                                                      'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'MRP') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.sellingPrice);
+                                                  } else if (rateTypeItem!.name == 'RETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.retailPrice);
+                                                  } else if (rateTypeItem!.name == 'SPRETAIL') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.spRetailPrice);
+                                                  } else if (rateTypeItem!.name == 'BRANCH') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.branch);
+                                                  }else if (rateTypeItem!.name == 'WHOLESALE') {
+                                                    rateFuture = Future.value(
+                                                        selectedVariant.wholeSalePrice);
+                                                  } else {
+                                                    rateFuture = Future.value(null);
+                                                  }
+                                                  rateFuture.then((rate) {
+                                                    if (rate != null) {
+                                                      _rateController.text =
+                                                          rate.toStringAsFixed(2);
+                                                       
+                                                    }
+                                                  });
+                                                   salesTypeData!.type != 'SALES-ES' 
+                                                   ?taxP = selectedVariant.tax! ?? 0
+                                                   :taxP = 0;
+                                                });
+                                              }
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  ).then((_) {
+    if (!isItemSelected) {
+      setState(() {
+        clearValue();
+      });
+      // Show a message if no item was selected
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No Variant selected'),
+        ),
+      );
+    }
+  });
+}
+ 
   importFromWidget(){
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),

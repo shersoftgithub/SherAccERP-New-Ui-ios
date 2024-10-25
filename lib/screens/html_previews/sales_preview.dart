@@ -317,7 +317,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
           title: Text(title + ' Preview'),
           actions: [
             IconButton(
-                icon: const Icon(Icons.picture_as_pdf),
+                icon: Image.asset('assets/icons/ic_pdf.png',scale: 2.6,),
                 onPressed: () {
                   setState(
                     () {
@@ -345,7 +345,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                   );
                 }),
             IconButton(
-                icon: const Icon(Icons.list),
+                icon: Image.asset('assets/icons/ic_menu-bar.png',scale: 2.6,),
                 onPressed: () {
                   argumentsPass = {
                     'mode': 'selectedLedger',
@@ -358,7 +358,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                   );
                 }),
             IconButton(
-                icon: const Icon(Icons.print),
+                icon: Image.asset('assets/icons/ic_printer.png',scale: 2.8,),
                 onPressed: () {
                   _capturePng().then((value) => {
                         setState(() {
@@ -437,20 +437,17 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
 
   var pdfPath = '';
 
-  invoiceGenerate(context) {
+   invoiceGenerate(context) {
     bool isLoading = false;
     var taxSale = salesTypeData!.tax;
     var invoiceHead = salesTypeData!.type == 'SALES-ES'
-        ? Settings.getValue<String>('key-sales-estimate-head',
-            defaultValue: 'ESTIMATE')
+        ? Settings.getValue<String>('key-sales-estimate-head', defaultValue: 'ESTIMATE')
         : salesTypeData!.type == 'SALES-Q'
-            ? Settings.getValue<String>('key-sales-quotation-head',
-                defaultValue: 'QUOTATION')
+            ? Settings.getValue<String>('key-sales-quotation-head', defaultValue: 'QUOTATION')
             : salesTypeData!.type == 'SALES-O'
-                ? Settings.getValue<String>('key-sales-order-head',
-                    defaultValue: 'ORDER')
-                : Settings.getValue<String>('key-sales-invoice-head',
-                    defaultValue: 'INVOICE');
+                ? Settings.getValue<String>('key-sales-order-head', defaultValue: 'ORDER')
+                : Settings.getValue<String>(
+                    'key-sales-invoice-head', defaultValue: 'INVOICE');
     var ledger = dataLedger[0];
     List<dynamic> itemData = [];
     double subTotalQty = 0,
@@ -461,17 +458,20 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         subTotalDiscount = 0,
         subTotalGross = 0,
         subTotalMrp = 0;
-        bool serialNoIsEmpty = false;
+    bool serialNoIsEmpty = false;
     for (var item in dataParticulars) {
       subTotalQty += double.tryParse(item['Qty'].toString())!;
       subTotalRate += double.tryParse(item['Rate'].toString())!;
       subTotalDiscount += double.tryParse(item['Disc'].toString())!;
       // subTotalMrp += 0;
       subTotalCGST += double.tryParse(item['CGST'].toString())!;
-      // subTotalIGST += double.tryParse(item['Disc'].toString())!;
+      subTotalIGST += double.tryParse(item['IGST'].toString())!;
       subTotalSGST += double.tryParse(item['SGST'].toString())!;
       subTotalGross += double.tryParse(item['GrossValue'].toString())!;
-
+      if (!serialNoIsEmpty) {
+        serialNoIsEmpty =
+            item['serialno'].toString().trim().isNotEmpty ? true : false;
+      }
       itemData.add({
         "Barcode": item['UniqueCode'].toString() ?? '0.00',
         "ItemCode": item['itemId'].toString() ?? '0',
@@ -492,8 +492,10 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         "SGSTP": (double.tryParse(item['igst'].toString())! / 2)
                 .toStringAsFixed(decimal) ??
             '0',
-        "IGST": '0',
-        "IGSTP": '0',
+        "IGST": item['IGST'].toString() ?? '0',
+        "IGSTP": (double.tryParse(item['igst'].toString()))!
+                .toStringAsFixed(decimal) ??
+            '0',
         "KFC": item['Fcess'].toString() ?? '0',
         "KFCPer": "0",
         "Total": item['Total'].toString() ?? '0',
@@ -508,8 +510,9 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         "SerialNo": item['serialno'].toString() ?? '',
         "HSN": item['hsncode'].toString() ?? '',
         "AltQty": '0', //arabic
-        "RegItemName": '', //arabic
-        "isRegItemName": '', //arabic
+        "RegItemName": item['RegItemName'].toString() ?? '', //arabic
+        "isRegItemName":
+            (item['RegItemName'].toString() ?? '').isNotEmpty, //arabic
         "QtyArabic": '0', //arabic
         "RateArabic": '0', //arabic
         "TotalArabic": '0', //arabic
@@ -528,10 +531,12 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         "UnitId": '',
         "UnitValue": item['UnitValue'].toString() ?? '1',
         "Remark": item['serialno'].toString() ?? '',
-        "isRegName": false
+        "isRegName": (item['RegItemName'].toString() ?? '').isNotEmpty
       });
-       if (isPrintSerialNoInSales! &&
-          serialNoIsEmpty && !isQuantityBasedSerialNo!) {
+
+      if (isPrintSerialNoInSales! &&
+          serialNoIsEmpty &&
+          !isQuantityBasedSerialNo!) {
         for (var slItem in dataSerialNO) {
           itemData.add({
             "Barcode": '',
@@ -589,12 +594,11 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
           });
         }
       }
-      
-      if (!(isPrintSerialNoLineByLine!)) {
+      if (!isPrintSerialNoLineByLine!) {
         String slNoData = '';
         for (var slItem in dataSerialNO) {
           if (slItem['SerialNO'].toString().trim().isNotEmpty) {
-            slNoData += '${slItem['SerialNO'].toString() ?? ''}, ';
+            slNoData += (slItem['SerialNO'].toString() ?? '') + ', ';
           }
         }
         itemData.add({
@@ -767,6 +771,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         }
       }
     }
+
     var dataMap = {
       "fileName":
           ComSettings.removeInvDesignFilePath(printSettingsModel!.filePath) ??
@@ -849,11 +854,13 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       "Roundoff": dataInformation['Roundoff'].toString() ?? '0',
       "Time":
           DateUtil.timeHMSA(dataInformation['BTime'].toString()) ?? '00:00:000',
-      "words":
-          ('${(companySettings!.sCurrency!.isEmpty ? ' Rupees ' :
-           companySettings!.sCurrency)!}${NumberToWord().convertDouble('en',
-          double.tryParse(dataInformation['GrandTotal'].toString()))}Only') ??
-              ' ',
+      "words": ((companySettings!.sCurrency!.isEmpty
+                  ? ' Rupees '
+                  : companySettings!.sCurrency)! +
+              NumberToWord().convertDouble('en',
+                  double.tryParse(dataInformation['GrandTotal'].toString())) +
+              'Only') ??
+          ' ',
       "deliverynote": ' ',
       "vehicle": ' ',
       "destination": ' ',
@@ -939,7 +946,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     // }
 
     return FutureBuilder<List<int>?>(
-      future: api.getInvoiceDesignerPdfData(data),
+      future: api.getInvoiceDesignerPdfData(dataMap),
       builder: (context, AsyncSnapshot<List<int>?> snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data != null) {
@@ -1008,10 +1015,10 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
             ],
           );
         }
-        return const Center(
+        return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
+            children: const <Widget>[
               CircularProgressIndicator(),
               SizedBox(height: 20),
               Text('This may take some time..')
@@ -1021,7 +1028,6 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       },
     );
   }
-
   String uint8ListTob64(Uint8List uint8list) {
     String base64String = base64Encode(uint8list);
     String header = "data:image/png;base64,";
@@ -1295,7 +1301,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     try {
       final Directory appDir = await getTemporaryDirectory();
       String tempPath = appDir.path;
-      final String fileName = '${DateTime.now().microsecondsSinceEpoch}-s.pdf';
+      final String fileName = DateTime.now().microsecondsSinceEpoch.toString() + '-' + 's.pdf';
       File file = File('$tempPath/$fileName');
       if (!await file.exists()) {
         await file.create();

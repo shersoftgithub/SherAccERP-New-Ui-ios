@@ -3677,7 +3677,9 @@ class DioService {
       if (response.statusCode == 200) {
         var jsonResponse = response.data;
         for (var product in jsonResponse) {
-          _items.add(StockItem.fromJson(product));
+          if (product['qty'] > 0) {
+            _items.add(StockItem.fromJson(product));
+          }
         }
       } else {
         debugPrint('Unexpected error Occurred!');
@@ -7311,7 +7313,7 @@ class DioService {
     );
 
     if (response.statusCode == 200) {
-      return List<Map<String, dynamic>>.from(response.data);  // Ensure correct casting here
+      return List<Map<String, dynamic>>.from(response.data); 
     } else {
       debugPrint('Failed to load data');
       return [];

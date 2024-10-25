@@ -49,7 +49,7 @@ class AppSettings extends StatelessWidget {
                               color: bagroundColor,
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 10),
+                                    horizontal: 16, vertical: 8),
                                 child: Column(
                                   children: [
                                     // DropDownSettingsTile<int>(
@@ -557,7 +557,7 @@ class AppSettings extends StatelessWidget {
                                 color: bagroundColor,
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
+                                      horizontal: 16),
                                   child: Column(
                                     children: [
                                       SwitchSettingsTile(
@@ -1002,7 +1002,7 @@ class AppSettings extends StatelessWidget {
                               color: bagroundColor,
                               child: Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 child: Column(
                                   children: [
                                     // SwitchSettingsTile(
@@ -1374,7 +1374,7 @@ class AppSettings extends StatelessWidget {
                             color: bagroundColor,
                             child: Padding(
                               padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Column(
                                 children: [
                                   SwitchSettingsTile(
@@ -1484,7 +1484,9 @@ class AppSettings extends StatelessWidget {
                                       5: 'VAT1',
                                       6: 'Other',
                                       7: 'VAT2',
-                                      8: 'New Model 1',
+                                      8: 'VAT3',
+                                      9: 'VAT4',
+                                      10: 'New Model 1',
                                     },
                                     selected: 2,
                                     onChange: (value) {

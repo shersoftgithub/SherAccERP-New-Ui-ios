@@ -834,6 +834,7 @@ String cashAc = '';
                     var bal = ledgerData!.balance.toString().split(' ');
                     double oldBalance = 0;
                     if (bal[1] == 'Dr') {
+                      
                       oldBalance = double.tryParse(bal[0].toString()) ?? 0;
                       if (mode == 'Payment') {
                         balance = oldBalance - (data[0]['total'] as double?)!;

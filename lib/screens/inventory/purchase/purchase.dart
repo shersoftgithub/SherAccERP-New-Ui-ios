@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -2397,33 +2398,186 @@ class _PurchaseState extends State<Purchase> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
+                            children : [
+                              Container(
+                                 padding: const EdgeInsets.symmetric(
+                                horizontal: 3
+                              ),
+                                 decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: grey
+                                ),
+                                borderRadius: BorderRadius.circular(3)
+                              ),
+                              child: ExpansionTile(
+                                  initiallyExpanded: valueMore,
+                                onExpansionChanged: (expanded) {
+                                  setState(() {
+                                    valueMore = expanded;
+                                  });
+                                },
+                                 title: const Text('Other Amounts',
+                                style: TextStyle(fontFamily: 'poppins'),),
+                                 trailing: Icon(
+                                  valueMore
+                                      ? Icons.keyboard_double_arrow_down_outlined
+                                      : Icons.keyboard_double_arrow_up_outlined,
+                                ),
+                                 children: [
+                                   const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _otherDiscountController,
+                          focusNode: _focusNodeOtherDiscount,
+                          keyboardType:
+                              const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(
+                                                  horizontal: 4,
+                                                  vertical: 8
+                                                ),
+                                                border: OutlineInputBorder(),
+                                                labelText: 'Other Discount',
+                                                 labelStyle: TextStyle(
+                                                  fontFamily: 'poppins'
+                                                )
+                                              ),
+                                              onChanged: (value) {
+                                                 setState(() {
+                              calculateGrandTotal();
+                            });
+                                              },
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                       Expanded(
+                         child: TextField(
+                                             controller: _otherChargesController,
+                                             focusNode: _focusNodeOtherCharges,
+                                             keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                                          decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(
+                                                  horizontal: 4,
+                                                  vertical: 8
+                                                ),
+                                                border: OutlineInputBorder(),
+                                                labelText: 'Other Charges',
+                                                 labelStyle: TextStyle(
+                                                  fontFamily: 'poppins'
+                                                )
+                                              ),
+                                               onChanged: (value) {
+                                                 setState(() {
+                              calculateGrandTotal();
+                            });
+                                              },
+                                           ),
+                       ),
+                    ],
+                  ),
+                 const SizedBox(
+                  height: 6,
+                 ),
+                  TextField(
+                    controller: _narrationController,
+                    decoration: const InputDecoration(
+                                                contentPadding: EdgeInsets.symmetric(
+                                                  horizontal: 4,
+                                                  vertical: 8
+                                                ),
+                                                border: OutlineInputBorder(),
+                                                labelText: 'Narration',
+                                                labelStyle: TextStyle(
+                                                  fontFamily: 'poppins'
+                                                )
+                                              ),
+                  ),
+                  const SizedBox(
+                    height: 6,
+                  ),
+                  // Text(calculateGrandTotal()),
+                  // Center(
+                  //     child: ElevatedButton(
+                  //         onPressed: () {
+                  //           setState(() {
+                  //             calculateGrandTotal();
+                  //           });
+                  //         },
+                  //         child: const Text('Submit')))
+                ],
+                                )
+                              )
+                            ]
+                          ),
+                           ),
+                           const SizedBox(
+                            height: 8,
+                           ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
                             children: [
                               Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Total Amount ',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'poppins')),
-                                    Text(
-                                      '₹   ${calculateGrandTotal()}',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    Expanded(
+                                      child: const Text('Total Amount ',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'poppins')),
                                     ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: SizedBox(
+                                      height: 30,
+                                      child: TextField(
+                                        textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,),
+                                        controller: TextEditingController(
+                                          text: '${calculateGrandTotal()}'
+                                        ),
+                                         decoration:  const InputDecoration(
+                                                                      prefixIcon: Text('₹ ',
+                                                                      style: TextStyle(
+                                                                        fontSize: 16,
+                                                                        fontWeight: FontWeight.w500,
+                                                                        ),),
+                                                                      prefixIconConstraints: BoxConstraints(
+                                                                        maxWidth: 15
+                                                                      ),
+                                                                      contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                      border: OutlineInputBorder(
+                                                                        borderSide: BorderSide.none
+                                                                      )
+                                                                    ),
+                                      ),
+                                                                        ),
+                                    ),
+                                    // Text(
+                                    //   '₹   ${calculateGrandTotal()}',
+                                    //   style: const TextStyle(
+                                    //     fontSize: 16,
+                                    //     fontWeight: FontWeight.w500,
+                                    //   ),
+                                    // ),
                                   ]),
                               const SizedBox(
-                                height: 8,
+                                height: 6,
                               ),
                               Row(
                                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Expanded(
                                       child: Text(
-                                        'Cash Received',
+                                        'Cash Paid',
                                         style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -2432,67 +2586,124 @@ class _PurchaseState extends State<Purchase> {
                                     ),
                                     Expanded(
                                       flex: 1,
-                                      child: SizedBox(
-                                        height: 30,
-                                        child: TextField(
-                                          controller: cashPaidController,
-                                          // focusNode: _focusNodeCashReceived,
-                                          keyboardType: const TextInputType
-                                              .numberWithOptions(decimal: true),
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter(
-                                                RegExp(r'[0-9]'),
-                                                allow: true,
-                                                replacementString: '.')
-                                          ],
-                                          decoration: const InputDecoration(
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    vertical: 3, horizontal: 5),
-                                            border: OutlineInputBorder(
-                                                gapPadding: 10,
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(2))),
+                                      child: Column(
+                                        children: [
+                                          SizedBox(
+                                            height: 30,
+                                            child: Container(
+                                              decoration: DottedDecoration(
+                                                                  color: black,
+                                                                  strokeWidth: 1,
+                                                                  linePosition: LinePosition.bottom,
+                                                                ),
+                                              child: TextField(
+                                                textAlign: TextAlign.right,
+                                                controller: cashPaidController,
+                                                // focusNode: _focusNodeCashReceived,
+                                                keyboardType: const TextInputType
+                                                    .numberWithOptions(decimal: true),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter(
+                                                      RegExp(r'[0-9]'),
+                                                      allow: true,
+                                                      replacementString: '.')
+                                                ],
+                                                
+                                                decoration: const InputDecoration(
+                                                    prefixIcon: Text('₹ ',
+                                                                      style: TextStyle(
+                                                                        fontSize: 16,
+                                                                        fontWeight: FontWeight.w500,
+                                                                        ),),
+                                                                      prefixIconConstraints: BoxConstraints(
+                                                                        maxWidth: 15
+                                                                      ),
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          vertical: 3, horizontal: 5),
+                                                           border: OutlineInputBorder(
+                                                                        borderSide: BorderSide.none
+                                                                      )
+                                                  // border: OutlineInputBorder(
+                                                  //     gapPadding: 10,
+                                                  //     borderRadius: BorderRadius.all(
+                                                  //         Radius.circular(2))),
+                                                ),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _balance =
+                                                        double.tryParse(value) != null
+                                                            ? totalCartTotal > 0
+                                                                ? totalCartTotal -
+                                                                    double.tryParse(
+                                                                        value)!
+                                                                : 0
+                                                            : totalCartTotal > 0
+                                                                ? totalCartTotal
+                                                                : 0;
+                                                  });
+                                                },
+                                              ),
+                                            ),
                                           ),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _balance =
-                                                  double.tryParse(value) != null
-                                                      ? totalCartTotal > 0
-                                                          ? totalCartTotal -
-                                                              double.tryParse(
-                                                                  value)!
-                                                          : 0
-                                                      : totalCartTotal > 0
-                                                          ? totalCartTotal
-                                                          : 0;
-                                            });
-                                          },
-                                        ),
+                                          const SizedBox(
+                                            height: 15,
+                                          )
+                                        ],
                                       ),
                                     ),
                                   ]),
                               const SizedBox(
-                                height: 8,
+                                height: 5,
                               ),
                               Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text('Balance Due ',
-                                        style: TextStyle(
-                                            color: green,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'poppins')),
-                                    Text(
-                                      '₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        color: green,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    Expanded(
+                                      child: const Text('Balance Due ',
+                                          style: TextStyle(
+                                              color: green,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              fontFamily: 'poppins')),
                                     ),
+                                     Expanded(
+                                      flex: 1,
+                                       child: SizedBox(
+                                                                           height: 30,
+                                                                           child: TextField(
+                                        textAlign: TextAlign.right,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w500,),
+                                        controller: TextEditingController(
+                                          text: '${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}'
+                                        ),
+                                         decoration:  const InputDecoration(
+                                                                      prefixIcon: Text('₹ ',
+                                                                      style: TextStyle(
+                                                                        fontSize: 16,
+                                                                        fontWeight: FontWeight.w500,
+                                                                        ),),
+                                                                      prefixIconConstraints: BoxConstraints(
+                                                                        maxWidth: 15
+                                                                      ),
+                                                                      contentPadding: EdgeInsets.symmetric(vertical: 3,horizontal: 5),
+                                                                      border: OutlineInputBorder(
+                                                                        borderSide: BorderSide.none
+                                                                      )
+                                                                    ),
+                                                                           ),
+                                                                         ),
+                                     ),
+                                    // Text(
+                                    //   '₹   ${ComSettings.appSettings('bool', 'key-round-off-amount', false) ? _balance.toStringAsFixed(2) : _balance.toStringAsFixed(2)}',
+                                    //   style: const TextStyle(
+                                    //     color: green,
+                                    //     fontSize: 16,
+                                    //     fontWeight: FontWeight.w500,
+                                    //   ),
+                                    // ),
                                   ]),
                             ],
                           ),

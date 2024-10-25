@@ -674,12 +674,12 @@ class _ProductRegisterState extends State<ProductRegister> {
                               findProduct(pItemName);
                             }
                           },
-                          textChanged: (data) {
-                            if (data.isNotEmpty && isGoogleTranslator) {
-                              api.translateText(data.trim()).then((value) =>
-                                  itemLocalNameController.text = value);
-                            }
-                          },
+                          // textChanged: (data) {
+                          //   if (data.isNotEmpty && isGoogleTranslator) {
+                          //     api.translateText(data.trim()).then((value) =>
+                          //         itemLocalNameController.text = value);
+                          //   }
+                          // },
                         ),
                         headTxt: 'Item Name'),
                     const SizedBox(
@@ -688,12 +688,24 @@ class _ProductRegisterState extends State<ProductRegister> {
                     ContainerFieldWidget(
                         widget: TextField(
                           controller: itemLocalNameController,
-                          decoration: const InputDecoration(
+                          decoration:  InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
                                                           horizontal: 5,
                                                           vertical: 7
                                                         ),
                             border: OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                      onPressed: () {
+                        var data = itemNameController.text;
+                        if (data.isNotEmpty && isGoogleTranslator) {
+                          api.translateText(data.trim()).then(
+                              (value) => itemLocalNameController.text = value);
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.g_translate,
+                        color: kPrimaryColor,
+                      )),
                           ),
                         ),
                         headTxt: 'Item Local Name'),
