@@ -1373,7 +1373,7 @@ class _SaleState extends ConsumerState<Sale> {
         if (order.cashAC != '0') {
           if (!(salesTypeData!.type == 'SALES-O' ||
               salesTypeData!.type == 'SALES-Q')) {
-            if (ledgerModel!.cAmount! > 0) {
+            if (selectedTabIndex == 1 ? cashLedgerModel!.cAmount! > 0: ledgerModel!.cAmount! > 0) {
               var bal0 = ledgerModel!.balance.toString().split(' ');
               String bal = bal0[1] == 'Dr' ? bal0[0] : '0';
               isCreditLimitedLedger = (double.tryParse(bal)! +
@@ -5053,9 +5053,8 @@ controllerNarration.text = '';
                                       style: const TextStyle(
                                         fontSize: 14
                                       ),
-                                      controller: invoiceNoController,
-                                      decoration:  InputDecoration(
-                                      
+                                      controller: entryNoController,
+                                      decoration:  InputDecoration(                                 
                                   //        prefixIcon: Row(
                                   //         mainAxisSize: MainAxisSize.min,
                                   //         children: [
@@ -5066,49 +5065,16 @@ controllerNarration.text = '';
                                   //          InkWell(
                                   //               onTap: () {
                                   //                var invoiceNum = invoiceNo;
-
                                   //               setState(() {
                                   //                int invoiceNumber = int.parse(invoiceNum); 
                                   //                invoiceNumber--; 
                                   //                invoiceNum = invoiceNumber.toString(); 
                                   //              });
-
                                   //             debugPrint(invoiceNum.toString());
-
                                   //         dataDynamic = [
-                                  //          {
-                                  //          'Type': salesTypeData!.type,
-                                  //          'InvoiceNo': invoiceNum,
-                                  //          'EntryNo': int.parse(invoiceNum) ?? 0,
-                                  //          'Id': int.parse(invoiceNum) ?? 0
-                                  //          }
-                                  //       ];
-                                  //       cartItem.clear();
-                                  //      fetchSale(context, dataDynamic[0]);
-                                  //     },
-                                  //      child: const Icon(
-                                  //        Icons.arrow_back_ios_rounded,
-                                  //        // size: 16, 
-                                  //    ),
-                                  // ),
-
                                   //         ],
-                                  //       ),
-                                      //   suffixIcon: Row(
-                                      //     mainAxisSize: MainAxisSize.min,
-                                      //     children: [
-                                      //       InkWell(
-                                      //         onTap: () {
-                                      //              var invoiceNum = invoiceNo;
-
                                       //           setState(() {
-                                      //            int invoiceNumber = int.parse(invoiceNum); 
-                                      //            invoiceNumber++; 
-                                      //            invoiceNum = invoiceNumber.toString(); 
-                                      //          });
-
                                       //         debugPrint(invoiceNum.toString());
-
                                       //     dataDynamic = [
                                       //      {
                                       //      'Type': salesTypeData!.type,
@@ -5233,7 +5199,7 @@ controllerNarration.text = '';
                         children: [
                           const SizedBox(height: 10),
                           const Text(
-                            ' Biiling Name',
+                            ' Billing Name',
                             style: TextStyle(
                               fontFamily: 'poppins',
                               fontSize: 15,
@@ -5680,6 +5646,387 @@ controllerNarration.text = '';
                          padding: const EdgeInsets.symmetric(horizontal: 20),
                          child: Column(
                            children: [
+                             Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: grey
+                                ),
+                                borderRadius: BorderRadius.circular(3)
+                              ),
+                              child: ExpansionTile(
+                                initiallyExpanded: valueMore,
+                                onExpansionChanged: (expanded) {
+                                  setState(() {
+                                    valueMore = expanded;
+                                  });
+                                },
+                                title: const Text('Other Amounts',
+                                style: TextStyle(fontFamily: 'poppins'),),
+                                trailing: Icon(
+                                  valueMore
+                                      ? Icons.keyboard_double_arrow_down_outlined
+                                      : Icons.keyboard_double_arrow_up_outlined,
+                                ),
+                                children: [
+                                  Column(
+                                    children: [
+                                      const SizedBox(height: 10),
+                                      TextField(
+                                        controller: controllerNarration,
+                                        decoration: const InputDecoration(
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 8
+                                          ),
+                                          border: OutlineInputBorder(),
+                                          labelText: 'Narration',
+                                        ),
+                                      ),
+                                      Visibility(
+                                        visible: _isReturnInSales,
+                                        child: const SizedBox(
+                                        height: 6,
+                                      )),
+                                      Visibility(
+                                        visible: _isReturnInSales,
+                                        child: SizedBox(
+                                          width: MediaQuery.of(context).size.width,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              // const SizedBox(height: 3),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: returnEntryNoController,
+                                                  decoration: const InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                    border: OutlineInputBorder(),
+                                                    labelText: 'Bill No :',
+                                                  ),
+                                                  keyboardType: const TextInputType.numberWithOptions(
+                                                    decimal: true,
+                                                  ),
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                  ],
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      returnBillId = int.tryParse(value)!;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      loadReturnForm = true;
+                                                        int _id = oldBill
+        ? returnBillId > 0
+            ? returnBillId
+            : 0
+        : 0;
+    var data = [
+      {'ledger': ledgerModel, 'id': _id}
+    ];
+                                                      
+             Navigator.push(context, MaterialPageRoute(builder: (context) => SalesReturn(
+                                                                                  fromSale: true,
+                                                                                  data: data,
+                                                                          ),));
+                                                    });
+                                                  },
+                                                  style: ButtonStyle(
+                                                    shape: MaterialStatePropertyAll(
+                                                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))
+                                                    ),
+                                                    foregroundColor: const MaterialStatePropertyAll(white),
+                                                    backgroundColor: MaterialStateProperty.all(kPrimaryColor),
+                                                  ),
+                                                  child: const Text('Return Bill'),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: TextField(
+                                                  controller: returnAmountController,
+                                                  decoration: const InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                    border: OutlineInputBorder(),
+                                                    labelText: 'Amount',
+                                                  ),
+                                                  keyboardType: const TextInputType.numberWithOptions(
+                                                    decimal: true,
+                                                  ),
+                                                  inputFormatters: [
+                                                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                  ],
+                                                  onChanged: (value) {
+                                                    if (value.isNotEmpty) {
+                                                      setState(() {
+                                                        returnAmount = double.tryParse(value)!;
+                                                        grandTotal = grandTotal - returnAmount;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: SizedBox(
+                                                height: 45,
+                                                child: DropdownSearch<dynamic>(
+                                                  popupProps: const PopupPropsMultiSelection.dialog(
+                                                    showSearchBox: true,
+                                                  ),
+                                                  asyncItems: (String filter) =>
+                                                      api.getLedgerDataByParent(filter, 0, 0, 0, 0),
+                                                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                                                    dropdownSearchDecoration: InputDecoration(
+                                                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                      // labelStyle: TextStyle(
+                                                      //   color: black
+                                                      // ),
+                                                      border: OutlineInputBorder(),
+                                                      labelText: 'Select Unit',
+                                                    ),
+                                                  ),
+                                                  onChanged: (dynamic data) {
+                                                    setState(() {
+                                                      commissionLedgerData = data;
+                                                    commissionAccount = data.id;
+                                                    });
+                                                    debugPrint(data.toString());
+                                                  },
+                                                  selectedItem: commissionLedgerData,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: commissionAmountController,
+                                                decoration: const InputDecoration(
+                                                   contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Amount',
+                                                ),
+                                                keyboardType: const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            Expanded(
+                                              flex: 2,
+                                              child: SizedBox(
+                                                height: 45,
+                                                child: DropdownSearch<dynamic>(
+                                                  popupProps: PopupPropsMultiSelection.dialog(
+                                                    showSearchBox: true,
+                                                  ),
+                                                  asyncItems: (String filter) => widgetBankAccount(filter),
+                                                  dropdownDecoratorProps: const DropDownDecoratorProps(
+                                                    dropdownSearchDecoration: InputDecoration(
+                                                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                      border: OutlineInputBorder(),
+                                                      labelText: 'Card A/C',
+                                                    ),
+                                                  ),
+                                                  onChanged: (dynamic data) {
+                                                    bankLedgerData = data;
+                                                    bankLedgerName = data.name;
+                                                    bankAccount = data.id;
+                                                  },
+                                                  selectedItem: bankLedgerData,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              width: 4,
+                                            ),
+                                            Expanded(
+                                              child: TextField(
+                                                controller: bankAmountController,
+                                                decoration: const InputDecoration(
+                                                   contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Amount',
+                                                ),
+                                                keyboardType: const TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                                ],
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    balanceCalculate();
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 6,
+                                      ),
+                                      SizedBox(
+                                        // height: deviceSize!.height / 5,
+                                        child: Container(
+                                          child: ListView.separated(
+                                            separatorBuilder: (context, index) {
+                                              return SizedBox(
+                                                height: 6,
+                                              );
+                                            },
+                                            physics: const BouncingScrollPhysics(),
+                                            itemCount: otherAmountList.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (BuildContext context, int index) {
+                                              _controllers.add(TextEditingController());
+                                              _controllers[index].text =
+                                                  otherAmountList[index]['Amount'].toString();
+                              
+                                              return SizedBox(
+                                                width: MediaQuery.of(context).size.width,
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
+                                                  children: [
+                                                    Expanded(
+                                                      flex: 2,
+                                                      child: Container(
+                                                        margin: const EdgeInsets.only(left: 2),
+                                                        child: Text(
+                                                                                '${otherAmountList[index]['LedName']} : ',
+                                                                                style: TextStyle(
+                                                                                  fontFamily: 'poppins'
+                                                                                ),
+                                                                                ),
+                                                      ),
+                                                    ),
+                                                  Expanded(
+                                                    child: TextField(
+                                                      decoration: const InputDecoration(
+                                                         contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                                                        border: OutlineInputBorder(),
+                                                      ),
+                                                      controller: TextEditingController.fromValue(
+                                                        TextEditingValue(
+                                                                              text: otherAmountList[index]['Amount'].toString(),
+                                                                              selection: TextSelection(
+                                                                                baseOffset: 0,
+                                                                                extentOffset: otherAmountList[index]['Amount']
+                                                                                    .toString()
+                                                                                    .length,
+                                                                              ),
+                                                        ),
+                                                      ),
+                                                      keyboardType: const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                                              RegExp(r'[0-9]'),
+                                                                              allow: true,
+                                                                              replacementString: '.',
+                                                        ),
+                                                      ],
+                                                      onSubmitted: (String str) {
+                                                        var cartTotal = totalCartValue;
+                                                        if (str.isNotEmpty) {
+                                                                              try {
+                                                                                otherAmountList[index]['Amount'] =
+                                                                                    double.tryParse(str);
+                                                                                otherAmountList[index]['Percentage'] =
+                                                                                    CommonService.getRound(
+                                                                                        decimal,
+                                                                                        ((double.tryParse(str)! * 100) /
+                                                                                            cartTotal));
+                                                                                var netTotal = (cartTotal - returnAmount) +
+                                                                                    otherAmountList.fold(
+                                                                                        0.0,
+                                                                                        (t, e) => t +
+                                                                                            double.parse(e['Symbol'] == '-'
+                                                                                                  ? (e['Amount'] * -1).toString()
+                                                                                                  : e['Amount'].toString()));
+                                                                                setState(() {
+                                                                                  grandTotal = netTotal;
+                                                                                });
+                                                                              } on FormatException {
+                                                                                debugPrint('ex');
+                                                                              }
+                                                        }
+                                                      },
+                                                    ),
+                                                  )
+                                                ]),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                           const SizedBox(
+                            height: 8,
+                           ),
                              Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children:[
@@ -5702,11 +6049,11 @@ controllerNarration.text = '';
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      color: white,
-                    ),
+                    // Container(
+                    //   width: MediaQuery.of(context).size.width,
+                    //   height: 50,
+                    //   color: white,
+                    // ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       // decoration: const BoxDecoration(
@@ -5738,8 +6085,7 @@ controllerNarration.text = '';
                       //                                       billingNameController.text.isNotEmpty ? 
                       //                                       ledgerModel!.name = billingNameController.text
                       //                                       :
-                      //                                       ledgerModel!.name; 
-                                            
+                      //                                       ledgerModel!.name;                                            
                       //                                     });
                       //                                     _insert(
                       //                                         'SAVE DateTime:$formattedDate $timeIs location:${lId.toString()} ledger:${selectedCustomerId!} ${CartItem.encodeCartToJson(cartItem)}',
@@ -5761,13 +6107,11 @@ controllerNarration.text = '';
                       //       route: ledgerModel!.route,
                       //       state: ledgerModel!.state,
                       //       stateCode: ledgerModel!.stateCode,
-                      //       taxNumber: ledgerModel!.taxNumber));
-                    
+                      //       taxNumber: ledgerModel!.taxNumber));                    
                       //   var locationId =
                       //       lId.toString().trim().isNotEmpty ? lId : salesTypeData!.location;
                       //   invoiceNo =
-                      //       invoiceNoController.text.isNotEmpty ? invoiceNoController.text : '0';
-                    
+                      //       invoiceNoController.text.isNotEmpty ? invoiceNoController.text : '0';                    
                       //   Order order = Order(
                       //       customerModel: ledger,
                       //       lineItems: cartItem,
@@ -5931,8 +6275,7 @@ controllerNarration.text = '';
                       //               ? 0
                       //               : bankAmountController.text,
                       //           'eVehicleNo': vehicleNameControl.text
-                      //         })}]';
-                    
+                      //         })}]';                    
                       //     final body = {
                       //       'information': ledger,
                       //       'data': data,
@@ -6087,24 +6430,21 @@ controllerNarration.text = '';
                       //         }
                       //       } else {
                       //         showErrorDialog(
-                      //             context, "Date Is Incompatible With This Financial Year");
-                    
+                      //             context, "Date Is Incompatible With This Financial Year");                    
                       //         setState(() {
                       //           _isLoading = false;
                       //           buttonEvent = false;
                       //         });
                       //       }
                       //     } else {
-                      //       Fluttertoast.showToast(msg: "select SalesAccount");
-                    
+                      //       Fluttertoast.showToast(msg: "select SalesAccount");                    
                       //       setState(() {
                       //         _isLoading = false;
                       //         buttonEvent = false;
                       //       });
                       //     }
                       //   } else {
-                      //     Fluttertoast.showToast(msg: "Add item");
-                    
+                      //     Fluttertoast.showToast(msg: "Add item");                   
                       //     setState(() {
                       //       _isLoading = false;
                       //       buttonEvent = false;
@@ -6172,7 +6512,7 @@ controllerNarration.text = '';
                                             _isLoading = true;
                                             buttonEvent = true;
                                             billingNameController.text.isNotEmpty ? 
-                                            ledgerModel!.name = billingNameController.text
+                                            cashLedgerModel!.name = billingNameController.text
                                             :
                                             cashLedgerModel!.name; 
                                             
@@ -7679,9 +8019,10 @@ controllerNarration.text = '';
                                           ],
                                         ),
                                         const SizedBox(
-                                          height: 10,
+                                          height: 8,
                                         ),
                                         Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
                                                 child: ContainerFieldWidget(
@@ -7699,6 +8040,9 @@ controllerNarration.text = '';
                                                                 '.')
                                                       ],
                                                       decoration: const InputDecoration(
+                                                        constraints: BoxConstraints(
+                                                          maxHeight: 45
+                                                        ),
                                                           contentPadding:
                                                               EdgeInsets
                                                                   .symmetric(
@@ -7752,6 +8096,7 @@ controllerNarration.text = '';
                                            : Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
+                                                      height: 45,
                                                       margin:
                                                           const EdgeInsets.only(
                                                               bottom: 7),
@@ -13510,6 +13855,8 @@ itemVarianDetails(selectedItem)async{
         
         invoiceNo = information['InvoiceNo'];
         invoiceNoController.text = invoiceNo;
+        entryNo = information['EntryNo'].toString();
+        entryNoController.text = entryNo;
         billCash = double.tryParse(information['CashReceived'].toString())!;
         billTotal = double.tryParse(information['GrandTotal'].toString())!;
         returnAmount = double.tryParse(information['ReturnAmount'].toString())!;
@@ -13673,9 +14020,12 @@ itemVarianDetails(selectedItem)async{
           returnEntryNoController.text = returnBillId.toString();
         }
         // nextWidget = 4;
-        getEntryNo(salesTypeData!.id);
+        
         editItem = true;
         oldBill = true;
+        // oldBill 
+        // ? getEntryNo(salesTypeData!.id)
+        // : dataDynamic[0]['EntryNo'];
       });
       // Navigator.pushReplacementNamed(context, '/preview_show',
       // arguments: {'title': 'Sale'});

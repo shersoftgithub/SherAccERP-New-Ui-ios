@@ -69,6 +69,7 @@ class RecordListMenu extends StatelessWidget {
                           '0',
                           [1],
                           '0',
+                          '0',
                           '0')));
             },
           ),
@@ -121,6 +122,7 @@ class RecordListMenu extends StatelessWidget {
                           '0',
                           [1],
                           '0',
+                          '0',
                           '0')));
             },
           ),
@@ -172,6 +174,7 @@ class RecordListMenu extends StatelessWidget {
                           'CustomerCardList',
                           '0',
                           [1],
+                          '0',
                           '0',
                           '0')));
             },

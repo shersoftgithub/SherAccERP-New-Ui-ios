@@ -21,6 +21,7 @@ import 'package:sheraccerp/provider/stock_provider.dart';
 import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/accounts/bank_voucher.dart';
 import 'package:sheraccerp/screens/accounts/journal.dart';
+import 'package:sheraccerp/screens/accounts/project_profit_loss.dart';
 import 'package:sheraccerp/screens/accounts/receipt_order.dart';
 import 'package:sheraccerp/screens/accounts/salesman_report.dart';
 import 'package:sheraccerp/screens/accounts/tax_report.dart';
@@ -186,6 +187,7 @@ class MyApp extends StatelessWidget {
                   '0',
                   [0],
                   '0',
+                  '0',
                   '0'),
               '/RPVoucher': (context) => const RPVoucher(),
               '/SalesList': (context) => const SalesList(),
@@ -193,6 +195,7 @@ class MyApp extends StatelessWidget {
               '/StockReport': (context) => const StockReport(),
               '/salesMan_home': (context) => const SalesManHome(),
               '/salesManReport': (context) => const SalesManReport(),
+              '/project_profit_loss': (context) =>  const ProjectProfitLoss(),
               '/delivery_home': (context) => const DeliveryHome(),
               '/product': (context) => const ProductRegister(),
               '/salesReturn': (context) =>

@@ -41,8 +41,9 @@ class _JournalState extends State<Journal> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   Size? deviceSize;
   DateTime now = DateTime.now();
-  String? formattedDate, narration = '';
+  String? formattedDate, narration = '',projectId = '-1';
   List<LedgerModel>? ledgerList = [];
+  List<DataJson> projectList = [];
   LedgerModel? ledgerDebitData, ledgerCreditData;
   bool _isLoading = false,
       isSelected = false,
@@ -50,7 +51,9 @@ class _JournalState extends State<Journal> {
       valueMore = false,
       widgetID = true,
       lastRecord = false,
-      buttonEvent = false;
+      isProjectSoftware = false,
+      buttonEvent = false,
+      isNarrationAsCalculator = false;
   int refNo = 0;
   int page = 1, pageTotal = 0, totalRecords = 0;
   int locationId = 1, salesManId = 0, decimal = 2;
@@ -82,6 +85,15 @@ class _JournalState extends State<Journal> {
     decimal = (ComSettings.getValue('DECIMAL', settings!).toString().isNotEmpty
         ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())
         : 2)!;
+    isNarrationAsCalculator =
+        ComSettings.getStatus('KEY NARRATION AS CALCULATOR', settings!);
+    isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings!);
+    loadLedgerData();
+     if (isProjectSoftware) {
+      api.getProject().then((value) {
+        projectList = value;
+      });
+    }
 
     api.getLedgerAll().then((value) => ledgerList!.addAll(value));
   }
@@ -281,11 +293,15 @@ class _JournalState extends State<Journal> {
                       ),
                   ),
                 ),
+                 const SizedBox(
+                  height: 10,
+                ),
+                projectWidget(),
                 const SizedBox(
                   height: 10,
                 ),
                 DropdownSearch<LedgerModel>(
-                  popupProps: PopupPropsMultiSelection.dialog(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       isFilterOnline: true,
                       showSearchBox: true,
                       // constraints: BoxConstraints(
@@ -298,7 +314,7 @@ class _JournalState extends State<Journal> {
                     var models = ledgerUserFilterCreation(ledgerList!, nameLike);
                     return models;
                   },
-                  dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Select Debit Account"),
@@ -316,7 +332,7 @@ class _JournalState extends State<Journal> {
                   height: 10,
                 ),
                 DropdownSearch<LedgerModel>(
-                  popupProps: PopupPropsMultiSelection.dialog(
+                  popupProps: const PopupPropsMultiSelection.dialog(
                       isFilterOnline: true,
                       showSearchBox: true,
                       // constraints: BoxConstraints(
@@ -328,7 +344,7 @@ class _JournalState extends State<Journal> {
                     var models = ledgerUserFilterCreation(ledgerList!, nameLike);
                     return models;
                   },
-                  dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "Select Credit Account"),
@@ -384,15 +400,18 @@ class _JournalState extends State<Journal> {
                     Expanded(
                       child: TextField(
                         controller: _controllerNarration,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text('Narration'),
+                        decoration:  InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: isNarrationAsCalculator
+                            ? 'Enter expression (e.g. 3+4 abcd)'
+                            : 'Narration'
                         ),
                         onChanged: (value) {
                           setState(() {
                             narration = value;
                           });
                         },
+                        onSubmitted: (value) => _calculateResult(value),
                       ),
                     ),
                   ],
@@ -781,7 +800,7 @@ class _JournalState extends State<Journal> {
           'toDevice': 'api',
           'location': locationId,
           'user': userIdC,
-          'project': '-1',
+          'project': projectId,
           'salesman': salesManId,
           'checkReturn': -1,
           'particular': particular,
@@ -956,6 +975,117 @@ class _JournalState extends State<Journal> {
     final buffer = bytes.buffer;
     byteImage = Uint8List.view(buffer);
   }
+  String _result = '';
+   // Function to parse the input and calculate
+  void _calculateResult(String input) {
+    try {
+      String operator = '';
+      String word = '';
+      double? num1, num2;
+
+      if (input.contains('+')) {
+        operator = '+';
+      } else if (input.contains('-')) {
+        operator = '-';
+      } else if (input.contains('*')) {
+        operator = '*';
+      } else if (input.contains('/')) {
+        operator = '/';
+      }
+
+      if (operator.isNotEmpty) {
+        List<String> parts = input.split(operator);
+        num1 = double.parse(parts[0]);
+        num2 = double.parse(parts[1].split(' ')[0]);
+        word = parts[1].split(' ')[1];
+
+        double result;
+        switch (operator) {
+          case '+':
+            result = num1 + num2;
+            break;
+          case '-':
+            result = num1 - num2;
+            break;
+          case '*':
+            result = num1 * num2;
+            break;
+          case '/':
+            result = num1 / num2;
+            break;
+          default:
+            result = 0;
+        }
+
+        setState(() {
+          _result = '$result';
+        });
+      } else {
+        setState(() {
+          _result = '';
+        });
+      }
+
+      if (_result.isNotEmpty) {
+        narration = '$num1 $operator $num2 = $_result $word';
+        _controllerNarration.text = narration!;
+      } else {
+        narration = input;
+        _controllerNarration.text = narration!;
+      }
+    } catch (e) {
+      setState(() {
+        _result = '';
+      });
+    }
+  }
 
   getFilterItems(String text) {}
+    projectWidget() {
+    return isProjectSoftware
+        ? SizedBox(
+            child: DropdownSearch<dynamic>(
+               popupProps: PopupPropsMultiSelection.dialog(
+                      isFilterOnline: true,
+                      showSearchBox: true,
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 500,
+                      //   minHeight: 200
+                      // ),
+                      ),
+              asyncItems: (String filter) => getProjectListData(filter),
+              dropdownDecoratorProps: DropDownDecoratorProps(dropdownSearchDecoration:  InputDecoration(
+                  border: OutlineInputBorder(), labelText: 'Select Project')),
+              onChanged: (dynamic data) {
+                projectId = data.id.toString();
+              },
+              // showSearchBox: true,
+              selectedItem: int.tryParse(projectId!)! > 0
+                  ? DataJson(
+                      id: int.tryParse(projectId!),
+                      name: projectList
+                          .firstWhere(
+                              (element) => element.id.toString() == projectId,
+                              orElse: () => DataJson(id: 0, name: ''))
+                          .name)
+                  : DataJson(id: 0, name: ''),
+            ),
+          )
+        : Container();
+  }
+  Future<List<dynamic>> getProjectListData(String filter) async {
+    var dd = filter.isEmpty
+        ? projectList
+        : projectList
+            .where((element) => element.name
+                .toString()
+                .toLowerCase()
+                .contains(filter.toLowerCase()))
+            .toList();
+    List<DataJson> dataResult = [];
+    for (var data in dd) {
+      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
+    }
+    return dataResult;
+  }
 }

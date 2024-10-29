@@ -37,6 +37,7 @@ class ReportView extends StatefulWidget {
       this.branchId,
       this.area,
       this.route,
+      this.partyId,
       {Key? key})
       : super(key: key);
   final String id;
@@ -50,6 +51,7 @@ class ReportView extends StatefulWidget {
   final List<int> branchId;
   final String area;
   final String route;
+  final String partyId;
 
   @override
   State<ReportView> createState() => _ReportViewState();
@@ -433,6 +435,11 @@ class _ReportViewState extends State<ReportView> {
       if (widget.type != 'ledger') {
       classic = true;
     }
+
+    project = [
+      {'id': widget.partyId}
+    ];
+
     var dataJson = '[${json.encode({
           'statementType':
               widget.statement.isEmpty ? 'Ledger_Report' : widget.statement,
@@ -444,6 +451,7 @@ class _ReportViewState extends State<ReportView> {
           'project': jsonEncode(project),
           'salesMan': 0,
           'fyId': currentFinancialYear!.id,
+          'partyId': widget.partyId
         })}]';
    return FutureBuilder<List<dynamic>>(
       future: api.fetchLedgerReport(dataJson),

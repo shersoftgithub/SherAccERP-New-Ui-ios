@@ -1503,10 +1503,10 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     calculate() {
       quantity = (controllerQuantity.text.isNotEmpty
           ? double.tryParse(controllerQuantity.text)
-          : 0)!;
+          : 0)?? 0;
       rate = (controllerRate.text.isNotEmpty
           ? double.tryParse(controllerRate.text)
-          : 0)!;
+          : 0)?? 0;
            if (enableMULTIUNIT) {
         if (currentRate > 0) {
           if (conversion > 0 ) {
@@ -1767,19 +1767,19 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     calculateRate() {
       mrp = (controllerMrp.text.isNotEmpty
           ? double.tryParse(controllerMrp.text)
-          : 0)!;
+          : 0)??0;
       retail = (controllerRetail.text.isNotEmpty
           ? double.tryParse(controllerRetail.text)
-          : 0)!;
+          : 0)?? 0;
       wholeSale = (controllerWholeSale.text.isNotEmpty
           ? double.tryParse(controllerWholeSale.text)
-          : 0)!;
+          : 0)?? 0;
       branch = (controllerBranch.text.isNotEmpty
           ? double.tryParse(controllerBranch.text)
-          : 0)!;
+          : 0)?? 0;
       rate = (controllerRate.text.isNotEmpty
           ? double.tryParse(controllerRate.text)
-          : 0)!;
+          : 0)?? 0;
     }
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),

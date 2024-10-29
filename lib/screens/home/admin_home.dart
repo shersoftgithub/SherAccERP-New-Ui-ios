@@ -673,12 +673,14 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
   Widget _expire(CompanyUser args, context) {
     return Center(
       child: Card(
-        elevation: 10,
+        elevation: 4,
         margin: const EdgeInsets.all(10),
         child: Container(
           padding: const EdgeInsets.all(0.0),
-          height: 220,
+          height: 250,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Image.asset(
                 'assets/logo.png',
@@ -688,7 +690,9 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
               Text(
                 firm.toUpperCase(),
                 style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    const TextStyle(
+                      fontFamily: 'poppins',
+                      fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const Divider(
                 height: 1,

@@ -36,6 +36,7 @@ class _RPVoucherState extends State<RPVoucher> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<LedgerModel> cashBankACList = [];
   List<RpVoucherParticularModel> particularList = [];
+   List<DataJson> projectList = [];
   Size? deviceSize;
   List<dynamic> items = [];
   List<dynamic> itemDisplay = [];
@@ -58,6 +59,8 @@ class _RPVoucherState extends State<RPVoucher> {
       keyLockCashAccount = false,
       isSalesManWiseLedger = false,
       keyEditAndDeleteAdminOnlyDaysBefore = false,
+      isNarrationAsCalculator = false,
+      isProjectSoftware = false,
       daysBefore = false;
   int refNo = 0, acId = 0;
   int page = 1, pageTotal = 0, totalRecords = 0, valueDaysBefore = 0;
@@ -146,12 +149,25 @@ String cashAc = '';
             1;
     keyEditAndDeleteAdminOnlyDaysBefore = ComSettings.getStatus(
         'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!);
+
     valueDaysBefore = int.tryParse(ComSettings.getValue(
             'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!)
         .toString())!;
+
     isSalesManWiseLedger =
         ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+
     userDateCheck(DateUtil.dateYMD(formattedDate));
+
+    isNarrationAsCalculator =
+        ComSettings.getStatus('KEY NARRATION AS CALCULATOR', settings!);
+
+    isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings!);
+    if (isProjectSoftware) {
+      api.getProject().then((value) {
+        projectList = value;
+      });
+    }
   }
 
   userDateCheck(String date) {
@@ -1194,6 +1210,55 @@ String cashAc = '';
     );
   }
 
+   projectWidget() {
+    return isProjectSoftware
+        ? SizedBox(
+          // height: 50,
+            child: DropdownSearch<dynamic>(
+                popupProps: const PopupPropsMultiSelection.dialog(
+                      isFilterOnline: true,
+                      showSearchBox: true,
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 500,
+                      //   minHeight: 200
+                      // ),
+                      ),
+              asyncItems: (String filter) => getProjectListData(filter),
+              dropdownDecoratorProps: const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                  border: OutlineInputBorder(), labelText: 'Select Project')),
+              onChanged: (dynamic data) {
+                projectId = data.id.toString();
+              },
+              // showSearchBox: true,
+              selectedItem: int.tryParse(projectId!)! > 0
+                  ? DataJson(
+                      id: int.tryParse(projectId!),
+                      name: projectList
+                          .firstWhere(
+                              (element) => element.id.toString() == projectId,
+                              orElse: () => DataJson(id: 0, name: ''))
+                          .name)
+                  : DataJson(id: 0, name: ''),
+            ),
+          )
+        : Container();
+  }
+  Future<List<dynamic>> getProjectListData(String filter) async {
+    var dd = filter.isEmpty
+        ? projectList
+        : projectList
+            .where((element) => element.name
+                .toString()
+                .toLowerCase()
+                .contains(filter.toLowerCase()))
+            .toList();
+    List<DataJson> dataResult = [];
+    for (var data in dd) {
+      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
+    }
+    return dataResult;
+  }
+
   Future _selectDate() async {
     DateTime? picked = await showDatePicker(
         context: context,
@@ -1447,6 +1512,7 @@ String cashAc = '';
         accountName = information['LedName'].toString();
         accountId = information['LedCode'].toString();
         acId = information['LedCode'];
+        projectId = information['Project'].toString();
         var part1 = particulars[0];
         ledData = LedgerModel(id: part1['LedCode'], name: part1['LedName']);
         amount = double.tryParse(part1['Amount'].toString())!;
@@ -1683,7 +1749,10 @@ String cashAc = '';
           const SizedBox(
             height: 10,
           ),
-          
+          projectWidget(),
+          const SizedBox(
+            height: 10,
+          ),
           ContainerFieldWidget(
               widget: DropdownSearch<LedgerModel>(
                 popupProps: const PopupPropsMultiSelection.dialog(
@@ -1837,7 +1906,8 @@ String cashAc = '';
   _calculateResult(String input) {
     try {
       String operator = '';
-      double num1, num2;
+      String word = '';
+      double? num1, num2;
 
       if (input.contains('+')) {
         operator = '+';
@@ -1852,7 +1922,8 @@ String cashAc = '';
       if (operator.isNotEmpty) {
         List<String> parts = input.split(operator);
         num1 = double.parse(parts[0]);
-        num2 = double.parse(parts[1]);
+        num2 = double.parse(parts[1].split(' ')[0]);
+        word = parts[1].split(' ')[1];
 
         double result;
         switch (operator) {
@@ -1877,17 +1948,20 @@ String cashAc = '';
         });
       } else {
         setState(() {
-          _result = 'Invalid Input!';
+          _result = '';
         });
       }
 
       if (_result.isNotEmpty) {
-        narration = input + ' = ' + _result;
+        narration = '$num1 $operator $num2 = $_result $word';
         _controllerNarration.text = narration!;
+      } else {
+        narration = input;
+          _controllerNarration.text = narration!;
       }
     } catch (e) {
       setState(() {
-        _result = 'Error: Invalid Expression!';
+        _result = '';
       });
     }
   }
@@ -1952,6 +2026,7 @@ String cashAc = '';
             ],
           ),
         ),
+        projectWidget(),
         const Divider(),
         DropdownSearch<LedgerModel>(
           // onFind: (String filter) async {

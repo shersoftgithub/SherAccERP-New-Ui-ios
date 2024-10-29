@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dotted_decoration/dotted_decoration.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,7 @@ class _PurchaseState extends State<Purchase> {
   CartItemP? cartModel;
   ProductPurchaseModel? productModel;
   List<dynamic> purchaseAccountList = [];
+  List<DataJson> projectList = [];
   DateTime now = DateTime.now();
   String? formattedDate, invDate = '';
   double _balance = 0;
@@ -72,6 +74,7 @@ class _PurchaseState extends State<Purchase> {
       lastRecord = false,
       isItemSerialNo = false,
       isFreeQty = false,
+      isProjectSoftware = false,
       isFreeItem = false,
       realPRateBasedProfitPercentage = false,
       isQuantityBasedSerialNo = false,
@@ -101,7 +104,7 @@ class _PurchaseState extends State<Purchase> {
       buttonEvent = false,
       enableBarcode = false;
   int locationId = 1, salesManId = 0, decimal = 2;
-  String labelSerialNo = 'SerialNo';
+  String labelSerialNo = 'SerialNo',projectId = '-1';
   String cashAc = '';
   Barcode? result;
   QRViewController? controller;
@@ -186,6 +189,13 @@ class _PurchaseState extends State<Purchase> {
       fetchPurchase(context, dataDynamic[0]);
       _isLoading = false;
     }
+        isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings);
+    if (isProjectSoftware) {
+      api.getProject().then((value) {
+        projectList = value;
+      });
+    }
+
     voucherTypeData = voucherTypeList.firstWhere(
   (element) => element.voucher.toLowerCase() == 'purchase',
   orElse: () => VoucherType.emptyData(), // Provide a fallback if no element is found
@@ -1591,6 +1601,7 @@ class _PurchaseState extends State<Purchase> {
                             ],
                           ),
                         ),
+                        
                         const SizedBox(
                           height: 8,
                         ),
@@ -1602,6 +1613,15 @@ class _PurchaseState extends State<Purchase> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Visibility(
+                                visible: isProjectSoftware,
+                                child:const Text(' Select Project',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ),
+                               projectWidget(),
                               const Text(
                                 ' Type',
                                 style: TextStyle(
@@ -2798,6 +2818,7 @@ class _PurchaseState extends State<Purchase> {
                                                   'fyId':
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id,
+                                                  'projectId':projectId
                                                 }) +
                                                 ']';
 
@@ -2956,7 +2977,8 @@ class _PurchaseState extends State<Purchase> {
                                                   'statementtype': stType,
                                                   'fyId':
                                                       currentFinancialYear!.id,
-                                                  'frmId': voucherTypeData!.id
+                                                  'frmId': voucherTypeData!.id,
+                                                  'projectId':projectId
                                                 })}]';
 
                                             final body = {
@@ -3073,7 +3095,8 @@ class _PurchaseState extends State<Purchase> {
                                                   'statementtype': stType,
                                                   'fyId':
                                                       currentFinancialYear!.id,
-                                                  'frmId': voucherTypeData!.id
+                                                  'frmId': voucherTypeData!.id,
+                                                  'projectId':projectId
                                                 }) +
                                                 ']';
 
@@ -4137,7 +4160,8 @@ class _PurchaseState extends State<Purchase> {
                                             'location': locationId,
                                             'statementtype': stType,
                                             'fyId': currentFinancialYear!.id,
-                                            'frmId': voucherTypeData!.id
+                                            'frmId': voucherTypeData!.id,
+                                            'projectId':projectId
                                           }) +
                                           ']';
 
@@ -4232,6 +4256,50 @@ class _PurchaseState extends State<Purchase> {
         ),
       ),
     );
+  }
+  
+   projectWidget() {
+    return isProjectSoftware
+        ? SizedBox(
+          // height: 50,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: DropdownSearch<dynamic>(
+                popupProps: const PopupPropsMultiSelection.dialog(
+                        isFilterOnline: true,
+                        showSearchBox: true,
+                        // constraints: BoxConstraints(
+                        //   maxHeight: 500,
+                        //   minHeight: 200
+                        // ),
+                        ),
+                asyncItems: (String filter) => getProjectListData(filter),
+                dropdownDecoratorProps: const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                  constraints: BoxConstraints(
+                    maxHeight: 45
+                  ),
+                    contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 6,
+                                                                                            vertical: 8
+                                                                                          ),
+                    border: OutlineInputBorder(), )),
+                onChanged: (dynamic data) {
+                  projectId = data.id.toString();
+                },
+                // showSearchBox: true,
+                selectedItem: int.tryParse(projectId)! > 0
+                    ? DataJson(
+                        id: int.tryParse(projectId),
+                        name: projectList
+                            .firstWhere(
+                                (element) => element.id.toString() == projectId,
+                                orElse: () => DataJson(id: 0, name: ''))
+                            .name)
+                    : DataJson(id: 0, name: ''),
+              ),
+            ),
+          )
+        : Container();
   }
 
   int? selectedProducteId;
@@ -7501,6 +7569,7 @@ class _PurchaseState extends State<Purchase> {
       },
     );
   }
+  
 
   bool isItemData = false, isBarcodePicker = false;
   selectProductWidget() {
@@ -10455,6 +10524,22 @@ class _PurchaseState extends State<Purchase> {
         title: 'Update',
         context: context);
   }
+    Future<List<dynamic>> getProjectListData(String filter) async {
+    var dd = filter.isEmpty
+        ? projectList
+        : projectList
+            .where((element) => element.name
+                .toString()
+                .toLowerCase()
+                .contains(filter.toLowerCase()))
+            .toList();
+    List<DataJson> dataResult = [];
+    for (var data in dd) {
+      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
+    }
+    return dataResult;
+  }
+
    showDetails(context, data) {
     dataDynamic = [
       {

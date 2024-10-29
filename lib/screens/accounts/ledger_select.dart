@@ -26,6 +26,7 @@ class _LedgerSelectState extends State<LedgerSelect> {
   TextEditingController editingController = TextEditingController();
   List<dynamic> items = [];
   List<dynamic> itemDisplay = [];
+  List<DataJson> projectList = [];
   DioService api = DioService();
 bool _loading = true,
       _showQty = false,
@@ -33,9 +34,15 @@ bool _loading = true,
       _gAll = true,
       isSalesManWiseLedger = false,
       isAdminUser = false,
+      isProjectSoftware = false,
       _0b = false;
 var _ledger, _id, locationId, _dropDownBranchId;
-  String? fromDate, toDate, sType = 'Summery', area = '0', route = '0';
+   String? fromDate,
+      toDate,
+      sType = 'Summery',
+      area = '0',
+      route = '0',
+      projectId = '0';
   dynamic areaModel, routeModel;
   var statement = '';
   var salesMan = '0';
@@ -308,6 +315,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
         otherRegRouteDataList.add(OtherRegistrationModel.emptyData());
         routeModel = otherRegRouteDataList.last;
       }
+    }
+        isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings);
+    if (isProjectSoftware) {
+      api.getProject().then((value) {
+        projectList = value;
+      });
     }
   }
 
@@ -586,6 +599,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                 const SizedBox(
                   height: 10,
                 ),
+                projectWidget(),
+                const SizedBox(
+                  height: 10,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -609,7 +626,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                     salesMan,
                                     branches,
                                     area!,
-                                    route!)));
+                                    route!,
+                                   '0')));
                       },
                       style: ButtonStyle(
                         shape: MaterialStatePropertyAll(
@@ -802,7 +820,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                 ? [locationId.id]
                                                 : [_dropDownBranchId],
                                             area!,
-                                            route!)));
+                                            route!,
+                                            '0')));
                           },
                           style: ButtonStyle(
                             shape: MaterialStatePropertyAll(
@@ -962,7 +981,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                 ? [locationId.id]
                                                 : [_dropDownBranchId],
                                             area!,
-                                            route!)));
+                                            route!,
+                                            '0')));
                           },
                           style: ButtonStyle(
                             shape: MaterialStatePropertyAll(
@@ -1111,7 +1131,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         ? [locationId.id]
                                                         : [_dropDownBranchId],
                                                     area!,
-                                                    route!)));
+                                                    route!,
+                                                    '0')));
                                   },
                                   style: ButtonStyle(
                                     shape: MaterialStatePropertyAll(
@@ -1285,7 +1306,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         ? [locationId.id]
                                                         : [_dropDownBranchId],
                                                     area!,
-                                                    route!)));
+                                                    route!,
+                                                    '0')));
                                   },
                                   style: ButtonStyle(
                                     shape: MaterialStatePropertyAll(
@@ -1427,7 +1449,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 _dropDownBranchId
                                                               ],
                                                         area!,
-                                                        route!)));
+                                                        route!,
+                                                        '0')));
                                       },
                                       style: ButtonStyle(
                                         shape: MaterialStatePropertyAll(
@@ -1585,7 +1608,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 _dropDownBranchId
                                                               ],
                                                             area!,
-                                                            route!)));
+                                                            route!,
+                                                            '0')));
                                           },
                                           style: ButtonStyle(
                                             shape: MaterialStatePropertyAll(
@@ -1966,7 +1990,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           _dropDownBranchId
                                                                         ],
                                                                   area!,
-                                                                  route!)));
+                                                                  route!,
+                                                                  '0')));
                                                 },
                                                 style: ButtonStyle(
                                                   shape: MaterialStatePropertyAll(
@@ -2316,7 +2341,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             _dropDownBranchId
                                                                           ],
                                                                     area!,
-                                                                    route!)));
+                                                                    route!,
+                                                                    '0')));
                                                       },
                                                       style: ButtonStyle(
                                                         shape:
@@ -2607,7 +2633,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 _dropDownBranchId
                                                                               ],
                                                                         area!,
-                                                                        route!)));
+                                                                        route!,
+                                                                        '0')));
                                                           },
                                                           style: ButtonStyle(
                                                             shape:
@@ -2882,7 +2909,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                     _dropDownBranchId
                                                                                   ],
                                                                             area!,
-                                                                            route!)));
+                                                                            route!,
+                                                                            '0')));
                                                               },
                                                               style:
                                                                   ButtonStyle(
@@ -3169,7 +3197,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 salesMan,
                                                                                 locationId != null ? [locationId.id] : [_dropDownBranchId],
                                                                                 area!,
-                                                                                route!)));
+                                                                                route!,
+                                                                                '0')));
                                                                   },
                                                                   style:
                                                                       ButtonStyle(
@@ -3409,7 +3438,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             DateUtil.dateDMY2YMD(fromDate),
                                                                             DateUtil.dateDMY2YMD(toDate), statement, '', 
                                                                           statement, salesMan, locationId != null ?
-                                                                           [locationId.id] : [_dropDownBranchId], area!, route!)));
+                                                                           [locationId.id] : [_dropDownBranchId], area!, route!,'0')));
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
@@ -3599,7 +3628,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                              ReportView('0', (_ob ? '1' : '0'),
                                                                              DateUtil.dateDMY2YMD(fromDate), DateUtil.dateDMY2YMD(toDate),
                                                                              statement, '', statement, salesMan, locationId != null ?
-                                                                            [locationId.id] : [_dropDownBranchId], area!, route!)));
+                                                                            [locationId.id] : [_dropDownBranchId], area!, route!,'0')));
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
@@ -3704,6 +3733,31 @@ var _ledger, _id, locationId, _dropDownBranchId;
     );
   }
 
+    projectWidget() {
+    return isProjectSoftware
+        ? SizedBox(
+            child: DropdownSearch<dynamic>(
+              popupProps: PopupPropsMultiSelection.dialog(
+                      isFilterOnline: true,
+                      showSearchBox: true,
+                      // constraints: BoxConstraints(
+                      //   maxHeight: 500,
+                      //   minHeight: 200
+                      // ),
+                      ),
+              asyncItems: (String filter) => getProjectListData(filter),
+              dropdownDecoratorProps: DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                  border: OutlineInputBorder(), labelText: 'Select Project')),
+              onChanged: (dynamic data) {
+                projectId = data.id.toString();
+              },
+              // showSearchBox: true,
+            ),
+          )
+        : Container();
+  }
+
+
   Future _selectDate(String type) async {
     DateTime? picked = await showDatePicker(
         context: context,
@@ -3718,5 +3772,20 @@ var _ledger, _id, locationId, _dropDownBranchId;
               {toDate = DateUtil.datePickerDMY(picked)}
           });
     }
+  }
+    Future<List<dynamic>> getProjectListData(String filter) async {
+    var dd = filter.isEmpty
+        ? projectList
+        : projectList
+            .where((element) => element.name
+                .toString()
+                .toLowerCase()
+                .contains(filter.toLowerCase()))
+            .toList();
+    List<DataJson> dataResult = [];
+    for (var data in dd) {
+      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
+    }
+    return dataResult;
   }
 }

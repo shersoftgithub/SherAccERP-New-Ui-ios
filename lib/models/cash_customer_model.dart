@@ -10,6 +10,8 @@ class CashCustomerModel {
   String? email;
   String? balance;
   String? city, route, state, stateCode, remarks, pinNo;
+   double? cDays, cAmount;
+  int? orderDate, deliveryDate;
 
   CashCustomerModel(
       {this.id,
@@ -27,7 +29,11 @@ class CashCustomerModel {
       this.state,
       this.stateCode,
       this.remarks,
-      this.pinNo});
+      this.pinNo,
+      this.cDays,
+      this.cAmount,
+      this.orderDate,
+      this.deliveryDate});
 
   factory CashCustomerModel.fromJson(Map<String, dynamic> json) {
     return CashCustomerModel(
@@ -46,7 +52,11 @@ class CashCustomerModel {
         state: json['state'],
         stateCode: json['stateCode'],
         remarks: json['remarks'],
-        pinNo: json['PinNo']);
+        pinNo: json['PinNo'],
+        cDays: double.tryParse(json['CDays'].toString()),
+        cAmount: double.tryParse(json['CAmount'].toString()),
+        orderDate: json['OrderDate'],
+        deliveryDate: json['DeliveryDate']);
   }
 
   Map toCustomerMap() {
@@ -115,6 +125,10 @@ class CashCustomerModel {
         route: '',
         state: '',
         stateCode: '',
-        taxNumber: '');
+        taxNumber: '',
+         cAmount: 0.0,
+        cDays: 0.0,
+        deliveryDate: 0,
+        orderDate: 0);
   }
 }

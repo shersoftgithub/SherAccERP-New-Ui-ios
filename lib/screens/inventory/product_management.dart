@@ -59,7 +59,6 @@ class _ProductManagementState extends State<ProductManagement> {
                   context: context,
                   delegate: CustomDelegateProduct(productList),
                 );
-      
                 setState(() {
                   _result = result![0].name;
                   productId = result[0].id.toString();
@@ -69,7 +68,6 @@ class _ProductManagementState extends State<ProductManagement> {
                 });
               },
             ),
-            
           ]),
           body: ProgressHUD(
               inAsyncCall: _isLoading, opacity: 0.0, child: formWidget())),
