@@ -69,7 +69,9 @@ class _SaleState extends ConsumerState<Sale> {
       _isLoading = false,
       isCustomForm = false,
       buttonEvent = false,
-      isSerialNoInStockVariant = false;
+      isSerialNoInStockVariant = false,
+      disableRoundOffInSales = false,
+      isSerialNoItem = false;
   bool _autoVariantSelect = false;
   DioService api = DioService();
   Size? deviceSize;
@@ -78,7 +80,7 @@ class _SaleState extends ConsumerState<Sale> {
   CashCustomerModel? cashLedgerModel;
   LedgerModel? ledgerDataModel;
   CartItem? cartModel;
-  String vehicleName = '', invoiceNo = '',entryNo = '';
+  String vehicleName = '', invoiceNo = '',entryNo = '',projectId = '-1';
   String? fromDate;
   String? toDate;
   
@@ -125,6 +127,7 @@ class _SaleState extends ConsumerState<Sale> {
       isAdminUser = false,
       newSale = false,
       manualInvoiceNumberInSales = false,
+      isProjectSoftware = false,
       isCreditLimitedLedger = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
@@ -139,6 +142,7 @@ class _SaleState extends ConsumerState<Sale> {
   final siteNameControl = TextEditingController();
   final taxNoControl = TextEditingController();
   final mobileNoControl = TextEditingController();
+  TextEditingController newSerialNoController = TextEditingController();
   final nameControl = TextEditingController();
   final billingNameController = TextEditingController();
   final itemNameControl = TextEditingController();
@@ -155,9 +159,11 @@ class _SaleState extends ConsumerState<Sale> {
   List<LedgerModel> ledgerDisplay = [];
   List<LedgerModel> _ledger = [];
   List<dynamic> itemDisplay = [];
+  List<DataJson> projectList = [];
   List<dynamic> items = [];
   List<LedgerModel> cashBankACList = [];
   List<SerialNOModel> serialNoData = [];
+  List<String> selectedItemSerialNoData = [];
   List<String> vehicleNameListDisplay = [];
   late List<LedgerModel> customerList = [];
   List<String> nameListDisplay = [];
@@ -179,6 +185,7 @@ class _SaleState extends ConsumerState<Sale> {
   final dbHelper = DatabaseHelper.instance;
   GlobalKey<AutoCompleteTextFieldState<String>> keyVehicleName = GlobalKey();
   GlobalKey<AutoCompleteTextFieldState<String>> keyCustomerName = GlobalKey();
+  GlobalKey<AutoCompleteTextFieldState<String>> keySelectedItemSerialNo = GlobalKey();
 
   @override
   void initState() {
@@ -406,6 +413,11 @@ class _SaleState extends ConsumerState<Sale> {
     manualInvoiceNumberInSales =
         ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
 
+    isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings!);
+
+    disableRoundOffInSales =
+        ComSettings.getStatus('DISABLE ROUND OFF IN SALES', settings!);    
+
     if (widget.oldSale != null && widget.oldSale) {
       _isLoading = true;
       fetchSale(context, dataDynamic[0]);
@@ -438,6 +450,12 @@ class _SaleState extends ConsumerState<Sale> {
     api.getVehicleNameList().then((value) {
       vehicleNameListDisplay.addAll(value);
     });
+
+     if (isProjectSoftware) {
+      api.getProject().then((value) {
+        projectList = value;
+      });
+    }
   }
   
     getOldBalance(int id, String type, String entryNo) {
@@ -672,7 +690,7 @@ class _SaleState extends ConsumerState<Sale> {
                                   deleteSale(context);
                                 } else {
                                   Fluttertoast.showToast(
-                                      msg: 'Please select at least one bill');
+                                      msg: 'Please add an item');
                                   setState(() {
                                     buttonEvent = false;
                                   });
@@ -717,7 +735,7 @@ class _SaleState extends ConsumerState<Sale> {
                                     updateSale();
                                   } else {
                                     Fluttertoast.showToast(
-                                        msg: 'Please select at least one bill');
+                                        msg: 'Please add an item');
                                     setState(() {
                                       buttonEvent = false;
                                     });
@@ -1226,8 +1244,7 @@ class _SaleState extends ConsumerState<Sale> {
             ? _balance.toStringAsFixed(decimal)
             : controllerCashReceived.text.isNotEmpty
                 ? grandTotal > 0
-                    ? ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    ? disableRoundOffInSales
                         ? (grandTotal -
                                 double.tryParse(controllerCashReceived.text)!)
                             .toStringAsFixed(decimal)
@@ -1235,8 +1252,7 @@ class _SaleState extends ConsumerState<Sale> {
                                 double.tryParse(controllerCashReceived.text)!)
                             .roundToDouble()
                             .toString()
-                    : ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    :  disableRoundOffInSales
                         ? ((totalCartValue) -
                                 double.tryParse(controllerCashReceived.text)!)
                             .toStringAsFixed(decimal)
@@ -1245,12 +1261,10 @@ class _SaleState extends ConsumerState<Sale> {
                             .roundToDouble()
                             .toString()
                 : grandTotal > 0
-                    ? ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    ? disableRoundOffInSales
                         ? grandTotal.toStringAsFixed(decimal)
                         : grandTotal.roundToDouble().toString()
-                    : ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    :  disableRoundOffInSales
                         ? totalCartValue.toStringAsFixed(decimal)
                         : totalCartValue.roundToDouble().toString(),
         creditPeriod: '0',
@@ -1292,7 +1306,7 @@ class _SaleState extends ConsumerState<Sale> {
                   decimal, double.tryParse(order.otherDiscount)!))
           : 0;
       double roundOff = 0, different = 0;
-      if (!ComSettings.appSettings('bool', 'key-round-off-amount', false)) {
+      if (!disableRoundOffInSales) {
         different = grandTotal - grandTotal.round();
         if (different < 0.5) {
           roundOff = CommonService.getRound(decimal, (different * -1));
@@ -1328,15 +1342,13 @@ class _SaleState extends ConsumerState<Sale> {
             'otherDiscount': order.otherDiscount,
             'otherCharges': order.otherCharges,
             'loadingCharge': order.loadingCharge,
-            'balanceAmount': ComSettings.appSettings(
-                    'bool', 'key-round-off-amount', false)
+            'balanceAmount': disableRoundOffInSales
                 ? double.parse(order.balanceAmount).toStringAsFixed(decimal)
                 : double.parse(order.balanceAmount).roundToDouble().toString(),
             'labourCharge': order.labourCharge,
-            'grandTotal':
-                ComSettings.appSettings('bool', 'key-round-off-amount', false)
-                    ? grandTotal.toStringAsFixed(decimal)
-                    : grandTotal.roundToDouble().toString(),
+              'grandTotal': disableRoundOffInSales
+                ? grandTotal.toStringAsFixed(decimal)
+                : grandTotal.roundToDouble().toString(),
             'creditPeriod': order.creditPeriod,
             'takeUser': order.takeUser,
             'narration': order.narration,
@@ -1359,7 +1371,8 @@ class _SaleState extends ConsumerState<Sale> {
             'bankAmount': bankAmountController.text.isEmpty
                 ? 0
                 : bankAmountController.text,
-            'eVehicleNo': vehicleNameControl.text
+            'eVehicleNo': vehicleNameControl.text,
+            'project': projectId
           })}]';
 
       final body = {
@@ -1382,42 +1395,52 @@ class _SaleState extends ConsumerState<Sale> {
                   ledgerModel!.cAmount!;
             }
           }
-          if (!isCreditLimitedLedger) {
-            if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
-              if (manualInvoiceNumberInSales) {
-                api.checkManualInvoiceNoStatus(invoiceNo).then((value) {
-                  if (!value) {
-                    postSale(
-                        body, otherAmount, order, saleFormType, saleFormId);
-                  } else {
-                    showErrorDialog(context, 'Duplicate Invoice No');
+             if (isProjectSoftware && int.tryParse(projectId)! <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please Select Project')));
 
-                    setState(() {
-                      _isLoading = false;
-                      buttonEvent = false;
-                    });
-                  }
-                });
+            setState(() {
+              _isLoading = false;
+              buttonEvent = false;
+            });
+          } else {
+            if (!isCreditLimitedLedger) {
+              if (checkFinancialYear(DateUtil.dateYMD(formattedDate))) {
+                if (manualInvoiceNumberInSales) {
+                  api.checkManualInvoiceNoStatus(invoiceNo).then((value) {
+                    if (!value) {
+                      postSale(
+                          body, otherAmount, order, saleFormType, saleFormId);
+                    } else {
+                      showErrorDialog(context, 'Duplicate Invoice No');
+
+                      setState(() {
+                        _isLoading = false;
+                        buttonEvent = false;
+                      });
+                    }
+                  });
+                } else {
+                  postSale(body, otherAmount, order, saleFormType, saleFormId);
+                }
               } else {
-                postSale(body, otherAmount, order, saleFormType, saleFormId);
+                showErrorDialog(
+                    context, "Date Is Incompatible With This Financial Year");
+
+                setState(() {
+                  _isLoading = false;
+                  buttonEvent = false;
+                });
               }
             } else {
-              showErrorDialog(
-                  context, "Date Is Incompatible With This Financial Year");
-
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text(
+                      'Balance Exceeds Credit Limit, Cannot Bill To This Customer')));
               setState(() {
                 _isLoading = false;
                 buttonEvent = false;
               });
             }
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text(
-                    'Balance Exceeds Credit Limit, Cannot Bill To This Customer')));
-            setState(() {
-              _isLoading = false;
-              buttonEvent = false;
-            });
           }
         } else {
           Fluttertoast.showToast(msg: "set CashAccount");
@@ -1468,8 +1491,7 @@ class _SaleState extends ConsumerState<Sale> {
                 'statement': 'CheckPrint',
                 'entryNo': int.tryParse(result.toString()),
                 'sType': saleFormId.toString(),
-                'grandTotal': ComSettings.appSettings(
-                        'bool', 'key-round-off-amount', false)
+                'grandTotal': disableRoundOffInSales
                     ? grandTotal.toStringAsFixed(decimal)
                     : grandTotal.roundToDouble().toString()
               };
@@ -1518,10 +1540,9 @@ class _SaleState extends ConsumerState<Sale> {
             'statement': 'CheckPrint',
             'entryNo': int.tryParse(result.toString()),
             'sType': saleFormId.toString(),
-            'grandTotal':
-                ComSettings.appSettings('bool', 'key-round-off-amount', false)
-                    ? grandTotal.toStringAsFixed(decimal)
-                    : grandTotal.roundToDouble().toString()
+            'grandTotal': disableRoundOffInSales
+                ? grandTotal.toStringAsFixed(decimal)
+                : grandTotal.roundToDouble().toString()
           };
           api.checkBill(bodyJson).then((data) {
             if (data) {
@@ -1627,8 +1648,7 @@ class _SaleState extends ConsumerState<Sale> {
             ? _balance.toStringAsFixed(decimal)
             : controllerCashReceived.text.isNotEmpty
                 ? grandTotal > 0
-                    ? ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    ? disableRoundOffInSales
                         ? (grandTotal -
                                 double.tryParse(controllerCashReceived.text)!)
                             .toStringAsFixed(decimal)
@@ -1636,8 +1656,7 @@ class _SaleState extends ConsumerState<Sale> {
                                 double.tryParse(controllerCashReceived.text)!)
                             .roundToDouble()
                             .toString()
-                    : ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                     : disableRoundOffInSales
                         ? ((totalCartValue) -
                                 double.tryParse(controllerCashReceived.text)!)
                             .toStringAsFixed(decimal)
@@ -1646,12 +1665,10 @@ class _SaleState extends ConsumerState<Sale> {
                             .roundToDouble()
                             .toString()
                 : grandTotal > 0
-                    ? ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                   ? disableRoundOffInSales
                         ? grandTotal.toStringAsFixed(decimal)
                         : grandTotal.roundToDouble().toString()
-                    : ComSettings.appSettings(
-                            'bool', 'key-round-off-amount', false)
+                    :  disableRoundOffInSales
                         ? totalCartValue.toStringAsFixed(decimal)
                         : totalCartValue.roundToDouble().toString(),
         creditPeriod: '0',
@@ -1693,7 +1710,7 @@ class _SaleState extends ConsumerState<Sale> {
                   decimal, double.tryParse(order.otherDiscount)!))
           : 0;
       double roundOff = 0, different = 0;
-      if (!ComSettings.appSettings('bool', 'key-round-off-amount', false)) {
+      if (!disableRoundOffInSales) {
         different = grandTotal - grandTotal.round();
         if (different < 0.5) {
           roundOff = CommonService.getRound(decimal, (different * -1));
@@ -1732,15 +1749,13 @@ class _SaleState extends ConsumerState<Sale> {
             'otherDiscount': order.otherDiscount,
             'otherCharges': order.otherCharges,
             'loadingCharge': order.loadingCharge,
-            'balanceAmount': ComSettings.appSettings(
-                    'bool', 'key-round-off-amount', false)
+            'balanceAmount': disableRoundOffInSales
                 ? double.parse(order.balanceAmount).toStringAsFixed(decimal)
                 : double.parse(order.balanceAmount).roundToDouble().toString(),
             'labourCharge': order.labourCharge,
-            'grandTotal':
-                ComSettings.appSettings('bool', 'key-round-off-amount', false)
-                    ? grandTotal.toStringAsFixed(decimal)
-                    : grandTotal.roundToDouble().toString(),
+             'grandTotal': disableRoundOffInSales
+                ? grandTotal.toStringAsFixed(decimal)
+                : grandTotal.roundToDouble().toString(),
             'creditPeriod': order.creditPeriod,
             'takeUser': order.takeUser,
             'narration': order.narration,
@@ -1763,7 +1778,8 @@ class _SaleState extends ConsumerState<Sale> {
             'bankAmount': bankAmountController.text.isEmpty
                 ? 0
                 : bankAmountController.text,
-            'eVehicleNo': vehicleNameControl.text
+            'eVehicleNo': vehicleNameControl.text,
+            'project': projectId
           })}]";
 
       final body = {
@@ -1786,27 +1802,51 @@ class _SaleState extends ConsumerState<Sale> {
           }
         }
         if (!isCreditLimitedLedger) {
-        api.editSale(body).then((result) {
-          if (CommonService().isNumeric(result) && int.tryParse(result)! > 0) {
-            final bodyJsonAmount = {
-              'statement': 'SalesUpdate',
-              'entryNo': dataDynamic[0]['EntryNo'].toString(),
-              'data': otherAmount,
-              'date': order.dated.toString(),
-              'saleFormType': saleFormType,
-              'narration': order.narration,
-              'location': order.location.toString(),
-              'id': order.customerModel[0].id.toString(),
-              'fyId': currentFinancialYear!.id.toString()
-            };
-            if (salesTypeData!.accounts) {
-              api.addOtherAmount(bodyJsonAmount).then((retNotUsed) {
+             if (isProjectSoftware && int.tryParse(projectId)! <= 0) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please Select Project')));
+            setState(() {
+              _isLoading = false;
+              buttonEvent = false;
+            });
+          } else {
+            api.editSale(body).then((result) {
+              if (CommonService().isNumeric(result) &&
+                  int.tryParse(result)! > 0) {
+                final bodyJsonAmount = {
+                  'statement': 'SalesUpdate',
+                  'entryNo': dataDynamic[0]['EntryNo'].toString(),
+                  'data': otherAmount,
+                  'date': order.dated.toString(),
+                  'saleFormType': saleFormType,
+                  'narration': order.narration,
+                  'location': order.location.toString(),
+                  'id': order.customerModel[0].id.toString(),
+                  'fyId': currentFinancialYear!.id.toString()
+                };
+                if (salesTypeData!.accounts) {
+                  api.addOtherAmount(bodyJsonAmount).then((retNotUsed) {
+                    final bodyJson = {
+                      'statement': 'CheckPrint',
+                      'entryNo': dataDynamic[0]['EntryNo'].toString(),
+                      'sType': dataDynamic[0]['Type'].toString(),
+                      'grandTotal': disableRoundOffInSales
+                          ? grandTotal.toStringAsFixed(decimal)
+                          : grandTotal.roundToDouble().toString()
+                    };
+                    api.checkBill(bodyJson).then((data) {
+                      if (data) {
+                        clearCart();
+                        showMore(context, false);
+                      }
+                    });
+                  });
+                } else {
                 final bodyJson = {
                   'statement': 'CheckPrint',
                   'entryNo': dataDynamic[0]['EntryNo'].toString(),
                   'sType': dataDynamic[0]['Type'].toString(),
-                  'grandTotal': ComSettings.appSettings(
-                          'bool', 'key-round-off-amount', false)
+                  'grandTotal': disableRoundOffInSales
                       ? grandTotal.toStringAsFixed(decimal)
                       : grandTotal.roundToDouble().toString()
                 };
@@ -1816,33 +1856,17 @@ class _SaleState extends ConsumerState<Sale> {
                     showMore(context, false);
                   }
                 });
+                 }
+                setState(() {
+                  _isLoading = false;
               });
             } else {
-              final bodyJson = {
-                'statement': 'CheckPrint',
-                'entryNo': dataDynamic[0]['EntryNo'].toString(),
-                'sType': dataDynamic[0]['Type'].toString(),
-                'grandTotal': ComSettings.appSettings(
-                        'bool', 'key-round-off-amount', false)
-                    ? grandTotal.toStringAsFixed(decimal)
-                    : grandTotal.roundToDouble().toString()
-              };
-              api.checkBill(bodyJson).then((data) {
-                if (data) {
-                  clearCart();
-                  showMore(context, false);
-                }
-              });
+                showErrorDialog(context, result.toString());
                }
-            setState(() {
-              _isLoading = false;
+                }).catchError((e) {
+              showErrorDialog(context, e.toString());
             });
-          } else {
-            showErrorDialog(context, result.toString());
           }
-           }).catchError((e) {
-          showErrorDialog(context, e.toString());
-        });
       }else {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text(
@@ -1952,7 +1976,9 @@ class _SaleState extends ConsumerState<Sale> {
                                 ? const Text('No Data 6')
                                 : nextWidget == 7
                                   ? importFromWidget()
-                                  : Text('No Widget') ;
+                                  : nextWidget == 8
+                                    ? serialNoWidget()
+                                    : Text('No Widget') ;
   }
   final entryNoController = TextEditingController();
  bool hasUserModifiedEntry = false;
@@ -2249,6 +2275,8 @@ void _onTabTapped(int index) {
 
   if (index == 1) {
     setState(() {
+       projectId = '-1';
+       DataJson(id: 0,name: '');
       cashCustomer = true;
       selectedCashCustomerId = acId;
       debugPrint('Selected cash Account ${selectedCashCustomerId.toString()}');
@@ -2276,6 +2304,8 @@ void _onTabTapped(int index) {
   }
   else{
     setState(() {
+      DataJson(id: 0,name: '');
+      projectId = '-1';
       cashCustomer = false;
       selectedCustomerId = selectedCustomerId;
       debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
@@ -2286,7 +2316,7 @@ void _onTabTapped(int index) {
 
   // void _onTabTapped(int index) {
   // setState(() {
-  //   selectedTabIndex = index;
+  //   selectedTabIndex = index; 
   // });
   // if (index == 1) {
 
@@ -2413,6 +2443,7 @@ void _onTabTapped(int index) {
                  nameControl.text = '';
                 editItem = false;
                 oldBill = false;
+                projectId = '-1';
                 clearCart();
                 });
               },
@@ -2798,17 +2829,55 @@ controllerNarration.text = '';
                       color: white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
-                      child: ContainerFieldWidget(
-                          widget: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: widgetRateType(),
-                          ),
-                          headTxt: 'Sales Rate'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Visibility(
+                                visible: isProjectSoftware,
+                                child:const Text(' Select Project',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ),
+                          projectWidget(),
+                          //  Container(
+                          //       margin: const EdgeInsets.symmetric(vertical: 4),
+                          //       padding: const EdgeInsets.symmetric(horizontal: 5),
+                          //       width: MediaQuery.of(context).size.width,
+                          //       decoration: BoxDecoration(
+                          //           border: Border.all(color: grey),
+                          //           borderRadius: BorderRadius.circular(3)),
+                          //       child: projectWidget(),
+                          //     ),
+                          const Text(' Sales Rate',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ,
+                          Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                width: MediaQuery.of(context).size.width,
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: widgetRateType(),
+                              ),
+                          // ContainerFieldWidget(
+                          //     widget: Container(
+                          //       margin: const EdgeInsets.symmetric(vertical: 4),
+                          //       padding: const EdgeInsets.symmetric(horizontal: 5),
+                          //       width: MediaQuery.of(context).size.width,
+                          //       decoration: BoxDecoration(
+                          //           border: Border.all(color: grey),
+                          //           borderRadius: BorderRadius.circular(3)),
+                          //       child: widgetRateType(),
+                          //     ),
+                          //     headTxt: 'Sales Rate'),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 15),
                     AnimatedContainer(
@@ -5175,17 +5244,44 @@ controllerNarration.text = '';
                       color: white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
-                      child: ContainerFieldWidget(
-                          widget: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                                border: Border.all(color: grey),
-                                borderRadius: BorderRadius.circular(3)),
-                            child: widgetRateType(),
-                          ),
-                          headTxt: 'Sales Rate'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                           Visibility(
+                                visible: isProjectSoftware,
+                                child:const Text(' Select Project',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ),
+                          projectWidget(),
+                          //  Container(
+                          //       margin: const EdgeInsets.symmetric(vertical: 4),
+                          //       padding: const EdgeInsets.symmetric(horizontal: 5),
+                          //       width: MediaQuery.of(context).size.width,
+                          //       decoration: BoxDecoration(
+                          //           border: Border.all(color: grey),
+                          //           borderRadius: BorderRadius.circular(3)),
+                          //       child: projectWidget(),
+                          //     ),
+                          const Text(' Sales Rate',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ,
+                          Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                width: MediaQuery.of(context).size.width,
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: widgetRateType(),
+                              ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 15),
                     AnimatedContainer(
@@ -5485,7 +5581,7 @@ controllerNarration.text = '';
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rRate!.toStringAsFixed(2) : cartItem[index].rate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                    "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rate!.toStringAsFixed(2) : cartItem[index].rRate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
                                                     style: const TextStyle(
                                                       fontSize: 12,
                                                     ),
@@ -6579,6 +6675,8 @@ controllerNarration.text = '';
       ),
     );
   }
+   
+
 
 
   String selectedQuantity = '';
@@ -7036,7 +7134,12 @@ controllerNarration.text = '';
     //   }
     // }
   }
-  
+    //     if (isQuantityBasedSerialNo) {
+    //   var itemId = selectedVariant.itemId;
+    //   api
+    //       .getSelectedItemSerialNoList(uniqueCode, itemId, 'SelectSerialNo')
+    //       .then((value) => selectedItemSerialNoData = value);
+    // }
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -7392,7 +7495,21 @@ controllerNarration.text = '';
                                               total = 0;
                                               gross = 0;
                                            var datas =api.fetchStockVariantList(selectedItemId!).then((value) {
-                                               showItemDialog(context, value, isSerialNoInStockVariant,selectedItem.name,selectedItem.quantity );
+                                              if(keyItemsVariantStock){
+                                                 fetchProductDetails(selectedItem.name);
+                                                showItemDialog(context, value, isSerialNoInStockVariant,selectedItem.name,selectedItem.quantity );
+    //                                                  if (isQuantityBasedSerialNo) {
+    //   var itemId = selectedVariant.itemId;
+    //   api
+    //       .getSelectedItemSerialNoList(uniqueCode, itemId, 'SelectSerialNo')
+    //       .then((value) => selectedItemSerialNoData = value);
+    // }
+                                              }else{
+                                                itemVarianDetails(selectedItem);
+                                                fetchProductDetails(selectedItem.name);
+                                              
+                                                // selectedItem == value[0];
+                                              }
                                            } );                               
                                           }
                                           else {
@@ -7481,7 +7598,14 @@ controllerNarration.text = '';
                                         //            :taxP = 0;
                                         //         });
                                         //       }
+                                        
                                         itemVarianDetails(selectedItem);
+                                        setState(() {
+                                           if (isQuantityBasedSerialNo) {
+                                // isSerialNoItem = false;
+                                fetchProductDetails(selectedItem.name);
+                              }
+                                        });
                                             // });
                                             // print('onSubmitted value: $selectedItemId');
                                           }
@@ -7697,6 +7821,44 @@ controllerNarration.text = '';
                                                           });
                                                         }
                                                       },
+                                                       onFieldSubmitted: (value) {
+                            if (isQuantityBasedSerialNo) {
+                              var named = editItem
+                                  ? cartItem
+                                      .elementAt(position!)
+                                      .itemId
+                                      .toString()
+                                  : '0';
+                              bool state = false;
+
+                              state = oldBill
+                                  ? (serialNoData
+                                              .firstWhere(
+                                                  (element) =>
+                                                      element.itemName
+                                                          .toString() ==
+                                                      named,
+                                                  orElse: () =>
+                                                      SerialNOModel.emptyData())
+                                              .gId! >
+                                          0
+                                      ? true
+                                      : false)
+                                  : (isSerialNoItem);
+                              if (state) {
+                                if (_quantityController.text.isNotEmpty) {
+                                  // editing = true;
+                                  serialNoListOfSelectedItem = serialNoData
+                                      .where((element) =>
+                                          element.itemName == productModel!.id)
+                                      .toList();
+                                  setState(() {
+                                    nextWidget = 8;
+                                  });
+                                }
+                              }
+                            }
+                          },
                                                     ),
                                                     headTxt: 'Quantity')),
                                                     Visibility(
@@ -8329,6 +8491,44 @@ controllerNarration.text = '';
                                                           });
                                                         }
                                                       },
+                                                       onFieldSubmitted: (value) {
+                            if (isQuantityBasedSerialNo) {
+                              var named = editItem
+                                  ? cartItem
+                                      .elementAt(position!)
+                                      .itemId
+                                      .toString()
+                                  : '0';
+                              bool state = false;
+
+                              state = oldBill
+                                  ? (serialNoData
+                                              .firstWhere(
+                                                  (element) =>
+                                                      element.itemName
+                                                          .toString() ==
+                                                      named,
+                                                  orElse: () =>
+                                                      SerialNOModel.emptyData())
+                                              .gId! >
+                                          0
+                                      ? true
+                                      : false)
+                                  : (isSerialNoItem);
+                              if (state) {
+                                if (_quantityController.text.isNotEmpty) {
+                                  // editing = true;
+                                  serialNoListOfSelectedItem = serialNoData
+                                      .where((element) =>
+                                          element.itemName == selectedItem!.id)
+                                      .toList();
+                                  setState(() {
+                                    nextWidget = 8;
+                                  });
+                                }
+                              }
+                            }
+                          },
                                                     ),
                                                     headTxt: 'Quantity')),
                                                     Visibility(
@@ -8350,16 +8550,17 @@ controllerNarration.text = '';
                                                                     }
                                                                     return null;
                                                                   },
-                                                                  keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true),
+                                                                  keyboardType: const 
+                                                                  TextInputType.numberWithOptions(
+                                                                  decimal: true),
                                                                   inputFormatters: [
                                                                     FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
+                                                                    allow: true, replacementString: '.')
                                                                   ],
                                                                   decoration: const InputDecoration(
-                                                                     constraints: const BoxConstraints(
-                                                          maxHeight: 45
-                                                        ),
+                                                                     constraints: BoxConstraints(
+                                                                      maxHeight: 45
+                                                                      ),
                                                                      contentPadding:
                                                                EdgeInsets
                                                                   .symmetric(
@@ -8599,7 +8800,6 @@ controllerNarration.text = '';
                                                                   : DropdownButtonHideUnderline(
                                                                       child: DropdownButton<String>(
                                                                         isExpanded: true,
-                                                                        
                                                                         hint: Text(_dropDownUnit > 0
                                                                             ? UnitSettings.getUnitName(_dropDownUnit)
                                                                             : 'Unit',style: const TextStyle(
@@ -11131,6 +11331,68 @@ controllerNarration.text = '';
       debugPrint(e as String?);
     }
   }
+  projectWidget() {
+  return isProjectSoftware
+      ? SizedBox(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: DropdownSearch<dynamic>(
+              popupProps: const PopupPropsMultiSelection.dialog(
+                isFilterOnline: true,
+                showSearchBox: true,
+              ),
+              asyncItems: (String filter) async {
+                var items = await getProjectListData(filter);
+                if (!mounted) return [];
+                return items;
+              },
+              dropdownDecoratorProps: const DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  constraints: BoxConstraints(maxHeight: 45),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  border: OutlineInputBorder(
+                    // borderSide: BorderSide.none
+                  ),
+                ),
+              ),
+              onChanged: (dynamic data) {
+                if (mounted) {
+                  setState(() {
+                    projectId = data.id.toString();
+                  });
+                }
+              },
+              selectedItem: int.tryParse(projectId)! > 0
+                  ? DataJson(
+                      id: int.tryParse(projectId),
+                      name: projectList
+                          .firstWhere(
+                            (element) => element.id.toString() == projectId,
+                            orElse: () => DataJson(id: 0, name: ''),
+                          ).name
+                        )
+                  : DataJson(id: 0, name: ''),
+            ),
+          ),
+        )
+      : Container();
+}
+
+    Future<List<dynamic>> getProjectListData(String filter) async {
+    var dd = filter.isEmpty
+        ? projectList
+        : projectList
+            .where((element) => element.name
+                .toString()
+                .toLowerCase()
+                .contains(filter.toLowerCase()))
+            .toList();
+    List<DataJson> dataResult = [];
+    for (var data in dd) {
+      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
+    }
+    return dataResult;
+  }
 
   OptionRateType? rateTypeItem;
 
@@ -13269,6 +13531,7 @@ bool editItem = false;
                                       //     debugPrint('ex');
                                       //   }
                                       // },
+                                     
                                       onSubmitted: (String str) {
                                         var cartTotal = totalCartValue;
                                         if (str.isNotEmpty) {
@@ -13716,6 +13979,12 @@ itemVarianDetails(selectedItem)async{
                                                        
                                                     }
                                                   });
+                                                         if (isQuantityBasedSerialNo) {
+      var itemId = selectedVariant.itemId;
+      api
+          .getSelectedItemSerialNoList(selectedVariant.productId, itemId, 'SelectSerialNo')
+          .then((value) => selectedItemSerialNoData = value);
+    }
                                                    salesTypeData!.type != 'SALES-ES' 
                                                    ?taxP = selectedVariant.tax! ?? 0
                                                    :taxP = 0;
@@ -13863,6 +14132,7 @@ itemVarianDetails(selectedItem)async{
         selectedItemId = information['itemId'];
         returnBillId = information['ReturnNo'];
         controllerNarration.text = information['Narration'];
+        projectId = information['Project'].toString();
 
         if (apiV != 'v19/') {
           Object _bankLedgerName = information['BankName'] != null
@@ -14033,6 +14303,269 @@ itemVarianDetails(selectedItem)async{
  
   }
 
+  //  bool isSerialNoScanner = false;
+  // serialNoWidget() {
+  //   int gId = 0;
+  //   if (editItem) {
+  //     gId = cartItem[position!].id;
+  //   } else {
+  //     gId = cartItem.length + 1;
+  //   }
+  //   return isSerialNoScanner
+  //       ? scanSerialNumber(context)
+  //       : Scaffold(
+  //         appBar: AppBar(
+  //           centerTitle: true,
+  //           leading: IconButton(onPressed: (){
+  //             setState(() {
+  //               nextWidget = 1;
+  //             });
+  //           }, icon: Icon(Icons.arrow_back_rounded)),
+  //           title: Text('Add Serial Number'),
+  //         ),
+  //         body: Container(
+  //           padding: const EdgeInsets.all(5.0),
+  //           child: Column(children: [
+  //             const Text(
+  //               'SerialNo List',
+  //               style: TextStyle(fontWeight: FontWeight.bold),
+  //             ),
+  //              Row(
+  //               children: [
+  //                 Expanded(
+  //                     child: MaterialButton(
+  //                   onPressed: () {
+  //                     int qtyTotal =
+  //                         int.parse(controllerQuantity.text.split('.')[0]);
+
+  //                     if (qtyTotal == serialNoData.length) {
+  //                       setState(() {
+  //                         nextWidget = 1;
+  //                       });
+  //                     } else {
+  //                       showInSnackBar('Quantity not equal\nAdd more serialNo');
+  //                     }
+  //                   },
+  //                   color: kPrimaryColor,
+  //                   child: const Text("Add",
+  //                   style: TextStyle(
+  //                     fontFamily: 'poppins',
+  //                     color: white
+  //                   ),
+  //                   ),
+  //                 )),
+  //               ],
+  //             ),
+  //                           const Divider(),
+  //               const SizedBox(
+  //                 height: 8,
+  //               ),
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: TextField(
+  //                       controller: newSerialNoController,
+  //                       decoration: InputDecoration(
+  //                         suffixIcon: IconButton(
+  //                           icon: const Icon(Icons.document_scanner),
+  //                           onPressed: () {
+  //                             setState(() {
+  //                               isSerialNoScanner = true;
+  //                             });
+  //                           },
+  //                         ),
+  //                         label: const Text('Type SerialNo'),
+  //                         border: const OutlineInputBorder(),
+  //                       )),
+  //                 ),
+  //                 IconButton(
+  //                     onPressed: () {
+  //                       int qtyTotal =
+  //                           int.parse(controllerQuantity.text.split('.')[0]);
+  //                       if (qtyTotal == serialNoData.length) {
+  //                         showInSnackBar('qty already full');
+  //                       } else {
+  //                         if (newSerialNoController.text.isNotEmpty) {
+  //                           bool serialNoIn = false;
+  //                           serialNoIn = serialNoData
+  //                                   .firstWhere(
+  //                                     (element) =>
+  //                                         element.serialNo
+  //                                             .toString()
+  //                                             .trim()
+  //                                             .toLowerCase() ==
+  //                                         newSerialNoController.text
+  //                                             .trim()
+  //                                             .toLowerCase(),
+  //                                     orElse: () => SerialNOModel.emptyData(),
+  //                                   )
+  //                                   .serialNo!
+  //                                   .isNotEmpty
+  //                               ? true
+  //                               : false;
+  //                           if (!serialNoIn) {
+  //                             setState(() {
+  //                               serialNoData.add(SerialNOModel(
+  //                                   entryNo: 0,
+  //                                   gId: gId,
+  //                                   itemName: editItem
+  //                                       ? cartItem[position!].itemId
+  //                                       : selectedItem!.slNo,
+  //                                   serialNo: newSerialNoController.text,
+  //                                   slNo: serialNoData.length + 1,
+  //                                   tType: 'P',
+  //                                   uniqueCode: editItem
+  //                                       ? cartItem[position!].uniqueCode
+  //                                       : 0));
+  //                             });
+  //                           } else {
+  //                             showInSnackBar('already exists');
+  //                           }
+  //                         }
+  //                       }
+  //                     },
+  //                     icon: const Icon(Icons.add))
+  //               ],
+  //             ),
+               
+  //             const Divider(),
+  //             Expanded(
+  //                 child: ListView.builder(
+  //                     itemCount: serialNoData.length,
+  //                     itemBuilder: (context, index) {
+  //                       return InkWell(
+  //                         onDoubleTap: () {
+  //                           setState(() {
+  //                             serialNoData.removeAt(index);
+  //                           });
+  //                         },
+  //                         child: Card(
+  //                           elevation: 2,
+  //                           shape: RoundedRectangleBorder(
+  //                             borderRadius: BorderRadius.circular(3)
+  //                           ),
+  //                           child: Padding(
+  //                             padding: const EdgeInsets.all(8.0),
+  //                             child: Center(
+  //                                 child: Row(
+  //                                   children: [
+  //                                     Text('${index + 1} )   '),
+  //                                     Text(serialNoData[index].serialNo!),
+  //                                   ],
+  //                                 )),
+  //                           ),
+  //                         ),
+  //                       );
+  //                     }))
+  //           ]),
+  //         ),
+  //       );
+  // }
+
+  
+   scanSerialNumber(context) {
+    return Column(
+      children: <Widget>[
+        Expanded(flex: 4, child: _buildQrViewSerialNo(context)),
+        Expanded(
+          flex: 1,
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                if (result != null)
+                  Text(
+                      'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
+                else
+                  const Text('Scan a code'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            await controller?.toggleFlash();
+                            setState(() {});
+                          },
+                          child: FutureBuilder(
+                            future: controller?.getFlashStatus(),
+                            builder: (context, snapshot) {
+                              return Text('Flash: ${snapshot.data}');
+                            },
+                          )),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            await controller?.flipCamera();
+                            setState(() {});
+                          },
+                          child: FutureBuilder(
+                            future: controller?.getCameraInfo(),
+                            builder: (context, snapshot) {
+                              if (snapshot.data != null) {
+                                return Text(
+                                    'Camera facing ${describeEnum(snapshot.data!)}');
+                              } else {
+                                return const Text('loading');
+                              }
+                            },
+                          )),
+                    )
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await controller?.pauseCamera();
+                        },
+                        child:
+                            const Text('pause', style: TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await controller?.resumeCamera();
+                        },
+                        child: const Text('resume',
+                            style: TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.all(8),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await controller?.stopCamera();
+                          setState(() {
+                            result = null;
+                            isSerialNoScanner = false;
+                          });
+                        },
+                        child: const Text('Cancel',
+                            style: TextStyle(fontSize: 20)),
+                      ),
+                    )
+                  ],
+                ),
+              ],
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
   Widget _buildQrViewLedger(BuildContext context) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
@@ -14053,6 +14586,7 @@ itemVarianDetails(selectedItem)async{
       onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
     );
   }
+
 
   Widget _buildQrViewProduct(BuildContext context) {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
@@ -14820,6 +15354,337 @@ itemVarianDetails(selectedItem)async{
           labelText: 'Mobile'),
     );
   }
+    void fetchProductDetails(String pItemName) {
+    api.getProductByName(pItemName).then((value) {
+      if (value != null) {
+        if (value.slno > 0) {
+          isSerialNoItem = value.serialno > 0 ? true : false;
+        }
+      }
+    });
+  }
+  bool isSerialNoScanner = false, editingX = false;
+  List<SerialNOModel> serialNoListOfSelectedItem = [];
+  serialNoWidget() {
+    newSerialNoController.text = '';
+    int gId = 0;
+    if (editItem) {
+      gId = cartItem[position!].id;
+    } else {
+      gId = cartItem.length + 1;
+    }
+    return isSerialNoScanner
+        ? scanSerialNumber(context)
+        : Scaffold(
+            appBar: AppBar(
+            centerTitle: true,
+            leading: IconButton(onPressed: (){
+              setState(() {
+                nextWidget = 2;
+              });
+            }, icon: Icon(Icons.arrow_back_rounded)),
+            title: Text('Add Serial Number'),
+          ),
+          body: Container(
+              padding: const EdgeInsets.all(5.0),
+              child: Column(children: [
+                const Text(
+                  'SerialNo List',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                        child: MaterialButton(
+                      onPressed: () {
+                        int qtyTotal =
+                            int.parse(_quantityController.text.split('.')[0]);
+                        if (qtyTotal == serialNoListOfSelectedItem.length) {
+                          for (SerialNOModel sData
+                              in serialNoListOfSelectedItem) {
+                            serialNoData.removeWhere((element) =>
+                                element.itemName == sData.itemName &&
+                                element.serialNo == sData.serialNo);
+                            serialNoData.add(SerialNOModel(
+                                entryNo: sData.entryNo,
+                                gId: sData.gId,
+                                itemName: sData.itemName,
+                                serialNo: sData.serialNo,
+                                slNo: sData.slNo,
+                                tType: sData.tType,
+                                uniqueCode: sData.uniqueCode));
+                          }
+                          // editing = false;
+                          setState(() {
+                            nextWidget = 2;
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Quantity not equal\nAdd more serialNo')));
+                        }
+                      },
+                      child: const Text("OK"),
+                      color: blue[400],
+                    )),
+                  ],
+                ),
+                const Divider(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SimpleAutoCompleteTextField(
+                        key: keySelectedItemSerialNo,
+                        suggestions: selectedItemSerialNoData,
+                        controller: newSerialNoController,
+                        clearOnSubmit: false,
+                        decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Type SerialNo',
+                            hintText: 'Type SerialNo'),
+                        textSubmitted: (data) {
+                          // editing = true;
+                          int qtyTotal =
+                              int.parse(_quantityController.text.split('.')[0]);
+                          if (qtyTotal == serialNoListOfSelectedItem.length) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('qty already full')));
+                          } else {
+                            if (newSerialNoController.text.isNotEmpty) {
+                              bool serialNoIn = serialNoListOfSelectedItem
+                                      .firstWhere(
+                                        (element) =>
+                                            element.serialNo
+                                                .toString()
+                                                .trim()
+                                                .toLowerCase() ==
+                                            newSerialNoController.text
+                                                .trim()
+                                                .toLowerCase(),
+                                        orElse: () => SerialNOModel.emptyData(),
+                                      )
+                                      .serialNo!
+                                      .isNotEmpty
+                                  ? true
+                                  : false;
+                              if (!serialNoIn) {
+                                serialNoListOfSelectedItem.add(SerialNOModel(
+                                    entryNo: 0,
+                                    gId: gId,
+                                    itemName: (editItem
+                                        ? cartItem[position!].itemId
+                                        : selectedItem.id),
+                                    serialNo: newSerialNoController.text,
+                                    slNo: serialNoData.length + 1,
+                                    tType: 'P',
+                                    uniqueCode: (editItem
+                                        ? cartItem[position!].uniqueCode
+                                        : 0)));
+                                setState(() {
+                                  //
+                                });
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('already exists')));
+                              }
+                            }
+                          }
+                        },
+                      ),
+                      // child: TextField(
+                      //     controller: newSerialNoController,
+                      //     decoration: InputDecoration(
+                      //       suffixIcon: IconButton(
+                      //         icon: const Icon(Icons.document_scanner),
+                      //         onPressed: () {
+                      //           setState(() {
+                      //             isSerialNoScanner = true;
+                      //           });
+                      //         },
+                      //       ),
+                      //       label: const Text('Type SerialNo'),
+                      //       border: const OutlineInputBorder(),
+                      //     )),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.document_scanner),
+                      onPressed: () {
+                        setState(() {
+                          isSerialNoScanner = true;
+                        });
+                      },
+                    ),
+                    // IconButton(
+                    //     onPressed: () async {
+                    //       int qtyTotal =
+                    //           int.parse(_quantityController.text.split('.')[0]);
+                    //       if (qtyTotal == serialNoListOfSelectedItem.length) {
+                    //         ScaffoldMessenger.of(context).showSnackBar(
+                    //             const SnackBar(
+                    //                 content: Text('qty already full')));
+                    //       } else {
+                    //         if (newSerialNoController.text.isNotEmpty) {
+                    //           bool serialNoIn = serialNoListOfSelectedItem
+                    //                   .firstWhere(
+                    //                     (element) =>
+                    //                         element.serialNo
+                    //                             .toString()
+                    //                             .trim()
+                    //                             .toLowerCase() ==
+                    //                         newSerialNoController.text
+                    //                             .trim()
+                    //                             .toLowerCase(),
+                    //                     orElse: () => SerialNOModel.emptyData(),
+                    //                   )
+                    //                   .serialNo
+                    //                   .isNotEmpty
+                    //               ? true
+                    //               : false;
+                    //           if (!serialNoIn) {
+                    //             setState(() {
+                    //               serialNoData.add(SerialNOModel(
+                    //                   entryNo: 0,
+                    //                   gId: gId,
+                    //                   itemName: (editItem
+                    //                       ? cartItem[position].itemId
+                    //                       : productModel.id),
+                    //                   serialNo: newSerialNoController.text,
+                    //                   slNo: serialNoData.length + 1,
+                    //                   tType: 'P',
+                    //                   uniqueCode: (editItem
+                    //                       ? cartItem[position].uniqueCode
+                    //                       : 0)));
+                    //             });
+                    //             serialNoListOfSelectedItem.add(SerialNOModel(
+                    //                 entryNo: 0,
+                    //                 gId: gId,
+                    //                 itemName: (editItem
+                    //                     ? cartItem[position].itemId
+                    //                     : productModel.id),
+                    //                 serialNo: newSerialNoController.text,
+                    //                 slNo: serialNoData.length + 1,
+                    //                 tType: 'P',
+                    //                 uniqueCode: (editItem
+                    //                     ? cartItem[position].uniqueCode
+                    //                     : 0)));
+                    //           } else {
+                    //             ScaffoldMessenger.of(context).showSnackBar(
+                    //                 const SnackBar(
+                    //                     content: Text('already exists')));
+                    //           }
+                    //         }
+                    //       }
+                    //     },
+                    //     icon: const Icon(Icons.add))
+                  ],
+                ),
+                const Divider(),
+                Expanded(
+                    child: ListView.builder(
+                        itemCount: serialNoListOfSelectedItem.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onDoubleTap: () {
+                              setState(() {
+                                serialNoListOfSelectedItem.removeAt(index);
+                              });
+                            },
+                            child: Card(
+                              elevation: 5,
+                              child: Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Center(
+                                    child: Text(serialNoListOfSelectedItem[index]!
+                                        .serialNo!)),
+                              ),
+                            ),
+                          );
+                        }))
+              ]),
+            ),
+        );
+  }
+ 
+  Widget _buildQrViewSerialNo(BuildContext context) {
+    // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
+    var scanArea = (MediaQuery.of(context).size.width < 400 ||
+            MediaQuery.of(context).size.height < 400)
+        ? 150.0
+        : 300.0;
+    // To ensure the Scanner view is properly sizes after rotation
+    // we need to listen for Flutter SizeChanged notification and update controller
+    return QRView(
+      key: qrKey,
+      onQRViewCreated: _onQRViewCreatedSerialNo,
+      overlay: QrScannerOverlayShape(
+          borderColor: Colors.red,
+          borderRadius: 10,
+          borderLength: 30,
+          borderWidth: 10,
+          cutOutSize: scanArea),
+      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
+    );
+  }
+  void _onQRViewCreatedSerialNo(QRViewController controller) {
+    setState(() {
+      this.controller = controller;
+    });
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        result = scanData;
+        String code = result!.code!;
+        if (code.isNotEmpty) {
+          int gId = 0;
+          if (editItem) {
+            gId = cartItem[position!].id;
+          } else {
+            gId = cartItem.length + 1;
+          }
+          List<SerialNOModel> serialNoListOfSelectedItem =
+              serialNoData.where((element) => element.gId == gId).toList();
+          int qtyTotal = int.parse(_quantityController.text.split('.')[0]);
+          if (qtyTotal == serialNoListOfSelectedItem.length) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('qty already full')));
+          } else {
+            bool serialNoIn = false;
+            serialNoIn = serialNoData
+                    .firstWhere(
+                      (element) =>
+                          element.serialNo.toString().trim().toLowerCase() ==
+                          code.trim().toLowerCase(),
+                      orElse: () => SerialNOModel.emptyData(),
+                    )
+                    .serialNo!
+                    .isNotEmpty
+                ? true
+                : false;
+            if (!serialNoIn) {
+              setState(() {
+                serialNoData.add(SerialNOModel(
+                    entryNo: 0,
+                    gId: gId,
+                    itemName:
+                        editItem ? cartItem[position!].itemId : productModel!.id,
+                    serialNo: code,
+                    slNo: serialNoData.length + 1,
+                    tType: 'P',
+                    uniqueCode: editItem ? cartItem[position!].uniqueCode : 0));
+              });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('already exists')));
+            }
+          }
+        }
+        isSerialNoScanner = false;
+      });
+    });
+  }
+
 }
 
 String _otherAmountTotal(var otherAmountData) {

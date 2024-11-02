@@ -389,6 +389,7 @@ class _PurchaseState extends State<Purchase> {
                                       SerialNOModel.encodedToJson(
                                           serialNoData)),
                                 };
+                                debugPrint(body.toString());
                                 bool _state = await api.addPurchase(body);
                                 setState(() {
                                   _isLoading = false;
@@ -3050,8 +3051,7 @@ class _PurchaseState extends State<Purchase> {
                                                     cartItem);
                                             var items = json.encode(jsonItem);
                                             var stType = 'P_Insert';
-                                            var data = '[' +
-                                                json.encode({
+                                            var data = '[${json.encode({
                                                   'date': DateUtil.dateYMD(
                                                       formattedDate),
                                                   'grossValue': totalGrossValue,
@@ -3097,8 +3097,7 @@ class _PurchaseState extends State<Purchase> {
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id,
                                                   'projectId':projectId
-                                                }) +
-                                                ']';
+                                                })}]';
 
                                             final body = {
                                               'information': inf,
@@ -3108,7 +3107,7 @@ class _PurchaseState extends State<Purchase> {
                                                   SerialNOModel.encodedToJson(
                                                       serialNoData)),
                                             };
-                                            // debugPrint(body.toString());
+                                            debugPrint(body.toString());
                                             bool _state =
                                                 await api.addPurchase(body);
 
@@ -4173,7 +4172,7 @@ class _PurchaseState extends State<Purchase> {
                                             SerialNOModel.encodedToJson(
                                                 serialNoData)),
                                       };
-                                      // debugPrint(body.toString());
+                                      debugPrint(body.toString());
                                       bool _state = await api.addPurchase(body);
 
                                       setState(() {
@@ -4279,9 +4278,9 @@ class _PurchaseState extends State<Purchase> {
                     maxHeight: 45
                   ),
                     contentPadding: EdgeInsets.symmetric(
-                                                                                            horizontal: 6,
-                                                                                            vertical: 8
-                                                                                          ),
+                                                          horizontal: 6,
+                                                          vertical: 8
+                                                           ),
                     border: OutlineInputBorder(), )),
                 onChanged: (dynamic data) {
                   projectId = data.id.toString();
@@ -10549,7 +10548,7 @@ class _PurchaseState extends State<Purchase> {
         'Type': '0'
       }
     ];
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchasePreviewShow(),));
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PurchasePreviewShow(),));
   }
 
   fetchPurchase(context, data) {
@@ -10572,6 +10571,9 @@ class _PurchaseState extends State<Purchase> {
 
         formattedDate = DateUtil.dateDMY(information['DDate']);
         invDate = DateUtil.dateDMY(information['InvDate']);
+        entryNo = information['EntryNo'].toString();
+        invNoController.text = information['Sup_Inv'].toString();
+        projectId = information['Project'].toString();
 
         dataDynamic = [
           {
