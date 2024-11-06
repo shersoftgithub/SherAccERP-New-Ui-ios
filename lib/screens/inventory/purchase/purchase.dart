@@ -84,7 +84,8 @@ class _PurchaseState extends State<Purchase> {
       itemCodeVise = false,
       itemCodeViseChek = false,
       isAdminUser = false,
-      isAccountLedger = false;
+      isAccountLedger = false,
+      isAllowWithOutSerialNo = false;
   List<CartItemP> cartItem = [];
   int page = 1,
       pageTotal = 0,
@@ -182,6 +183,8 @@ class _PurchaseState extends State<Purchase> {
 
     isFreeItem = ComSettings.getStatus('KEY FREE ITEM', settings);
     isFreeQty = ComSettings.getStatus('KEY FREE QTY IN PURCHASE', settings);
+     isAllowWithOutSerialNo =
+        ComSettings.getStatus('ALLOW WITHOUT SERIAL NO', settings);
     isQuantityBasedSerialNo =
         ComSettings.getStatus('ENABLE QUANTITY BASED SERIAL NO', settings);
     if (widget.oldPurchase) {
@@ -5192,17 +5195,32 @@ class _PurchaseState extends State<Purchase> {
                                     });
                                   },
                                   onSubmitted: (value) {
-                                    bool state = editItem
-                                        ? (isQuantityBasedSerialNo)
-                                        : (isQuantityBasedSerialNo &&
-                                            selectedItem!.serialNo);
-                                    // editItem ? 'Edit SerialNo' : 'Add SerialNo'),
-                                    if (state) {
-                                      if (controllerQuantity.text.isNotEmpty) {
-                                        setState(() {
-                                          nextWidget = 10;
-                                          calculate();
-                                        });
+                                    if (isQuantityBasedSerialNo) {
+                        var named = editItem
+                            ? cartItem.elementAt(position!).itemId.toString()
+                            : '0';
+                        bool state = false;
+                        state = oldBill
+                            ? (serialNoData
+                                        .firstWhere(
+                                            (element) =>
+                                                element.itemName.toString() ==
+                                                named,
+                                            orElse: () =>
+                                                SerialNOModel.emptyData())
+                                        .gId! >
+                                    0
+                                ? true
+                                : false)
+                            : (productModel!.serialNo);
+                        // editItem ? 'Edit SerialNo' : 'Add SerialNo'),}
+                        if (state) {
+                          if (controllerQuantity.text.isNotEmpty) {
+                            setState(() {
+                              nextWidget = 10;
+                              calculate();
+                            });
+                          }
                                       }
                                     }
                                   },

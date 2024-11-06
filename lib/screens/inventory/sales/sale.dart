@@ -8589,8 +8589,7 @@ controllerNarration.text = '';
                                             cartQ = true;
                                           }
                                         }
-                                      }
-                                                                
+                                      }                                                   
                                       outOfStock = isLockQtyOnlyInSales
                                           ? ((quantity * unitValue) +
                                                       double.tryParse(value)!) >
