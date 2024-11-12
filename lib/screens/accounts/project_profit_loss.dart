@@ -339,50 +339,130 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
     return ListView(
       children: [
         Container(
-          padding: const EdgeInsets.all(8.0),
+           padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
           child: Column(
             children: [
-              Card(
-                elevation: 0.5,
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     const Text(
-                      'From : ',
+                      ' From ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14),
                     ),
-                    InkWell(
-                      child: Text(
-                        fromDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
+                    Container(
+                      padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)
                       ),
-                      onTap: () => _selectDate('f'),
+                      child: InkWell(
+                        child: Row(
+                          children: [
+                            Text(
+                              fromDate!,
+                              style: const TextStyle(
+                                  // fontWeight: FontWeight.w500, 
+                                  // fontSize: 15,
+                                  fontFamily: 'poppins'
+                                  ),
+                            ),
+                            const SizedBox(
+                              width: 2,
+                            ),
+                            const Icon(
+                              Icons.calendar_month,
+                              color: grey,
+                              size: 20,)
+                          ],
+                        ),
+                        onTap: () => _selectDate('f'),
+                      ),
                     ),
+                    const Spacer(),
                     const Text(
-                      'To : ',
+                      ' To ',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14),
                     ),
-                    InkWell(
-                      child: Text(
-                        toDate!,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22),
+                    Container(
+                      padding:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal:
+                                                                          8,
+                                                                      vertical:
+                                                                          5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: grey)
                       ),
-                      onTap: () => _selectDate('t'),
+                      child: InkWell(
+                        child: Row(
+                          children: [
+                            Text(
+                              toDate!,
+                              style: const TextStyle(
+                                      // fontWeight: FontWeight.w500, 
+                                      // fontSize: 15,
+                                      fontFamily: 'poppins'
+                                      ),
+                            ),
+                            const SizedBox(
+                              width: 2,
+                            ),
+                            const Icon(
+                              Icons.calendar_month,
+                              color: grey,
+                              size: 20,)
+                          ],
+                        ),
+                        onTap: () => _selectDate('t'),
+                      ),
                     ),
                   ],
                 ),
+              ), 
+              const SizedBox(
+                height: 10,
               ),
-              const Divider(),
-              Row(
+                Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Report Type :'),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: DropdownButton(
+                  const Text(' Report Type',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(color: grey)
+                          ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
                         items: items.map((dynamic items) {
                           return DropdownMenuItem(
                             value: items['name'],
@@ -394,12 +474,30 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                           setState(() {
                             // selectedReportType = value!;
                           });
-                        })),
+                        }))
+                    ),
                   ),
                 ],
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
+              const SizedBox(
+                height: 8,
+              ),
+                Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(' Select Project',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    
+                    child: DropdownButtonHideUnderline(
+                      child:  DropdownSearch<dynamic>(
                  popupProps: const PopupPropsMultiSelection.dialog(
                       isFilterOnline: true,
                       showSearchBox: true,
@@ -410,76 +508,166 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                       ),
                 asyncItems: (String filter) => api.getProject(),
                 dropdownDecoratorProps: const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Select Project')),
+                    border: OutlineInputBorder())),
                 onChanged: (dynamic data) {
                   projectId = data.id;
                 },
                 // showSearchBox: true,
               ),
-              const Divider(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              // Row(
+              //   children: [
+              //     const Text('Report Type :'),
+              //     const SizedBox(width: 10),
+              //     Expanded(
+              //       child: DropdownButton(
+              //           items: items.map((dynamic items) {
+              //             return DropdownMenuItem(
+              //               value: items['name'],
+              //               child: Text(items['name'].toString()),
+              //             );
+              //           }).toList(),
+              //           value: selectedReportType,
+              //           onChanged: ((value) {
+              //             setState(() {
+              //               // selectedReportType = value!;
+              //             });
+              //           })),
+              //     ),
+              //   ],
+              // ),
+              // const Divider(),
+              // DropdownSearch<dynamic>(
+              //    popupProps: const PopupPropsMultiSelection.dialog(
+              //         isFilterOnline: true,
+              //         showSearchBox: true,
+              //         // constraints: BoxConstraints(
+              //         //   maxHeight: 500,
+              //         //   minHeight: 200
+              //         // ),
+              //         ),
+              //   asyncItems: (String filter) => api.getProject(),
+              //   dropdownDecoratorProps: const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+              //       border: OutlineInputBorder(), labelText: 'Select Project')),
+              //   onChanged: (dynamic data) {
+              //     projectId = data.id;
+              //   },
+              //   // showSearchBox: true,
+              // ),
+              // const Divider(),
               Visibility(
                 visible: isAdminUser,
-                child: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.dialog(
-                      isFilterOnline: true,
-                      showSearchBox: true,
-                      // constraints: BoxConstraints(
-                      //   maxHeight: 500,
-                      //   minHeight: 200
-                      // ),
-                      ),
-                  asyncItems: (String filter) =>
-                      api.getSalesListData(filter, 'sales_list/salesMan'),
-                  dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Select Salesman'))),
-                  onChanged: (dynamic data) {
-                    salesMan = data.id.toString();
-                  },
-                  // showSearchBox: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     const Text(' Select Salesman',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                    DropdownSearch<dynamic>(
+                        popupProps: const PopupPropsMultiSelection.dialog(
+                          isFilterOnline: true,
+                          showSearchBox: true,
+                          // constraints: BoxConstraints(
+                          //   maxHeight: 500,
+                          //   minHeight: 200
+                          // ),
+                          ),
+                      asyncItems: (String filter) =>
+                          api.getSalesListData(filter, 'sales_list/salesMan'),
+                      dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                          border: OutlineInputBorder(),)),
+                      onChanged: (dynamic data) {
+                        salesMan = data.id.toString();
+                      },
+                      // showSearchBox: true,
+                    ),
+                  ],
                 ),
               ),
-              const Divider(),
-              DropdownSearch<dynamic>(
-                 popupProps: const PopupPropsMultiSelection.dialog(
-                      isFilterOnline: true,
-                      showSearchBox: true,
-                      // constraints: BoxConstraints(
-                      //   maxHeight: 500,
-                      //   minHeight: 200
-                      // ),
-                      ),
-                asyncItems: (String filter) =>
-                    api.getSalesListData(filter, 'sales_list/customer'),
-                dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: "Select Customer")),
-                onChanged: (dynamic data) {
-                  ledgerId = data.id;
-                },
-                // showSearchBox: true,
+              const SizedBox(
+                height: 8,
               ),
-              const Divider(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                      const Text(' Select Customer',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                  DropdownSearch<dynamic>(
+                     popupProps: const PopupPropsMultiSelection.dialog(
+                          isFilterOnline: true,
+                          showSearchBox: true,
+                          // constraints: BoxConstraints(
+                          //   maxHeight: 500,
+                          //   minHeight: 200
+                          // ),
+                          ),
+                    asyncItems: (String filter) =>
+                        api.getSalesListData(filter, 'sales_list/customer'),
+                    dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                        border: OutlineInputBorder())),
+                    onChanged: (dynamic data) {
+                      ledgerId = data.id;
+                    },
+                    // showSearchBox: true,
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 8,
+              ),
               Visibility(
                 visible: isAdminUser,
-                child: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.dialog(
-                      isFilterOnline: true,
-                      showSearchBox: true,
-                      // constraints: BoxConstraints(
-                      //   maxHeight: 500,
-                      //   minHeight: 200
-                      // ),
-                      ),
-                  asyncItems: (String filter) =>
-                      api.getSalesListData(filter, 'sales_list/salesMan'),
-                  dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      label: Text('Select Employee'))),
-                  onChanged: (dynamic data) {
-                    employeeId = data.id;
-                  },
-                  // showSearchBox: true,
+                child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                         const Text(' Select Employee',
+                  style: TextStyle(
+                    fontFamily: 'poppins'
+                  ),
+                  ),
+                  const SizedBox(
+                    height: 4,
+                  ),
+                    DropdownSearch<dynamic>(
+                        popupProps: const PopupPropsMultiSelection.dialog(
+                          isFilterOnline: true,
+                          showSearchBox: true,
+                          // constraints: BoxConstraints(
+                          //   maxHeight: 500,
+                          //   minHeight: 200
+                          // ),
+                          ),
+                      asyncItems: (String filter) =>
+                          api.getSalesListData(filter, 'sales_list/salesMan'),
+                      dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                          border: OutlineInputBorder(),)),
+                      onChanged: (dynamic data) {
+                        employeeId = data.id;
+                      },
+                      // showSearchBox: true,
+                    ),
+                  ],
                 ),
+              ),
+              const SizedBox(
+                height: 8,
               ),
               TextButton(
                 onPressed: () {
@@ -488,6 +676,11 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                   });
                 },
                 style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)
+                    )
+                  ),
                   backgroundColor:
                       MaterialStateProperty.all<Color>(kPrimaryColor),
                   foregroundColor:

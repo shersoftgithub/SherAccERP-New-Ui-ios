@@ -612,6 +612,46 @@ class InventoryMenu extends StatelessWidget {
               Navigator.pushNamed(context, '/DeliveryNote');
             },
           ),
+        GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                          image: AssetImage('assets/icons/ic_warranty.png',),
+                          scale: 1.8,
+                          ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: kPrimaryColor),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Warranty Entry',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.pushNamed(context, '/Warranty');
+            },
+          ),
+
         ],
       ),
     );

@@ -313,6 +313,88 @@ class _DashPageState extends State<DashPage> {
                     ),
                   ),
                 ),
+               SizedBox(
+                height: 8,
+               ),
+                Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  height: 40,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8), color: white),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Select Date',
+                          style: TextStyle(
+                              fontFamily: 'poppins',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () => _selectDate(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4
+                            ),
+                            // width: 100,
+                            height: 30,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(color: grey)),
+                            child: Row(
+                              children: [
+                                Text(getToDay),
+                                SizedBox(
+                                  width: 4,
+                                ),
+                                const Icon(Icons.calendar_month,
+                                color: grey,
+                                size: 20,)
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Container(
+                        //   width: 3,
+                        //   height: 1,
+                        //   color: grey,
+                        // ),
+                        // Container(
+                        //   width: 100,
+                        //   height: 20,
+                        //   decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(3),
+                        //       border: Border.all(color: grey)),
+                        //   child: Center(child: Text('$endDate')),
+                        // ),
+                      ],
+                    ),
+                  ),
+                ),
+               
+                //  Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //         crossAxisAlignment: CrossAxisAlignment.center,
+                //         children: [
+                //           const Text('Date',
+                //               style: TextStyle(
+                //                   color: black,
+                //                   fontWeight: FontWeight.w700,
+                //                   fontSize: 18.0)),
+                //           InkWell(
+                //             child: Text(getToDay,
+                //                 style: const TextStyle(
+                //                     color: black,
+                //                     fontWeight: FontWeight.w700,
+                //                     fontSize: 18.0)),
+                //             onTap: () => _selectDate(),
+                //           ),
+                //         ],
+                //       ),
+               
                 locationList.isNotEmpty
                     ? DropdownButtonHideUnderline(
                         child: DropDownSettingsTile<int>(
@@ -341,7 +423,7 @@ class _DashPageState extends State<DashPage> {
                       )
                     : const Text(''),
                 const SizedBox(
-                  height: 10,
+                  height: 8,
                 ),
                 GridView.builder(
                   physics: const ClampingScrollPhysics(),

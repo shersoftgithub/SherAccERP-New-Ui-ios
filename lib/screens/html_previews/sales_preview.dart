@@ -857,7 +857,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
       "words": ((companySettings!.sCurrency!.isEmpty
                   ? ' Rupees '
                   : companySettings!.sCurrency)! +
-              NumberToWord().convertDouble('en',
+              NumberToWord().convertDouble(companySettings!.secondFont ?? 'en',
                   double.tryParse(dataInformation['GrandTotal'].toString())) +
               'Only') ??
           ' ',

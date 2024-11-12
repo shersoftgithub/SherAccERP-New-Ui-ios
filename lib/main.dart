@@ -34,6 +34,7 @@ import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/Job_card_home.
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/job_card_entry.dart';
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/jobcardmenu.dart';
 import 'package:sheraccerp/screens/inventory/serial_no_list.dart';
+import 'package:sheraccerp/screens/inventory/warranty/warranty_page.dart';
 import 'package:sheraccerp/screens/other_registration.dart';
 import 'package:sheraccerp/screens/settings/software_settings.dart';
 import 'package:sheraccerp/screens/html_previews/invoice_models.dart';
@@ -223,6 +224,7 @@ class MyApp extends StatelessWidget {
               '/InvoiceDesign': (context) => const InvoiceDesign(),
               '/OtherRegistration': (context) => const OtherRegistration(),
               '/DeliveryNote': (context) => const DeliveryNote(),
+              '/Warranty': (context) => const Warranty(),
               '/jobcardmenu': (context) => const Jobcardmenu(),
               '/jobcardhome': (context) => const JobCardHome(),
               '/jobcardentry': (context) => const Jobcardentry(),

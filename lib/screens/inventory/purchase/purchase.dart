@@ -1295,103 +1295,104 @@ class _PurchaseState extends State<Purchase> {
                                       ),
                                       controller: invoiceNoController,
                                       decoration:  InputDecoration(
-                                         prefixIcon: Visibility(
-                                          visible: isAdminUser,
-                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              // Icon(Icons.keyboard_double_arrow_left_rounded),
-                                              const SizedBox(
-                                                width: 4,
-                                              ),
-                                             InkWell(
-                                                  onTap: () {
-                                                   var invoiceNum = 'invoiceNo';
-                                                  setState(() {
-                                                   int invoiceNumber = int.parse(invoiceNum); 
-                                                   invoiceNumber--; 
-                                                   invoiceNum = invoiceNumber.toString(); 
-                                                 });
-                                                debugPrint(invoiceNum.toString());
-                                            dataDynamic = [
-                                             {
-                                             'Type': 0,
-                                             'InvoiceNo': invoiceNum,
-                                             'EntryNo': int.parse(invoiceNum) ?? 0,
-                                             'Id': int.parse(invoiceNum) ?? 0
-                                             }
-                                                                                   ];
-                                                                                   cartItem.clear();
-                                                                                  fetchPurchase(context, dataDynamic[0]);
-                                                                                 },
-                                                                                  child: const Icon(
-                                           Icons.arrow_back_ios_rounded,
-                                           // size: 16, 
-                                                                                ),
-                                                                             ),
-                                            ],
-                                                                                   ),
-                                         ),
-                                        suffixIcon: Visibility(
-                                          visible: isAdminUser,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              InkWell(
-                                                onTap: () {
-                                                     var invoiceNum = 'invoiceNo';
-                                                  setState(() {
-                                                   int invoiceNumber = int.parse(invoiceNum); 
-                                                   invoiceNumber++; 
-                                                   invoiceNum = invoiceNumber.toString(); 
-                                                 });
+                                        //  prefixIcon: Visibility(
+                                        //   visible: isAdminUser,
+                                        //    child: Row(
+                                        //     mainAxisSize: MainAxisSize.min,
+                                        //     children: [
+                                        //       // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                        //       const SizedBox(
+                                        //         width: 4,
+                                        //       ),
+                                        //      InkWell(
+                                        //           onTap: () {
+                                        //            var invoiceNum = 'invoiceNo';
+                                        //           setState(() {
+                                        //            int invoiceNumber = int.parse(invoiceNum); 
+                                        //            invoiceNumber--; 
+                                        //            invoiceNum = invoiceNumber.toString(); 
+                                        //          });
+                                        //         debugPrint(invoiceNum.toString());
+                                        //     dataDynamic = [
+                                        //      {
+                                        //      'Type': 0,
+                                        //      'InvoiceNo': invoiceNum,
+                                        //      'EntryNo': int.parse(invoiceNum) ?? 0,
+                                        //      'Id': int.parse(invoiceNum) ?? 0
+                                        //      }
+                                        //                                            ];
+                                        //                                            cartItem.clear();
+                                        //                                           fetchPurchase(context, dataDynamic[0]);
+                                        //                                          },
+                                        //                                           child: const Icon(
+                                        //    Icons.arrow_back_ios_rounded,
+                                        //    // size: 16, 
+                                        //                                         ),
+                                        //                                      ),
+                                        //     ],
+                                        //                                            ),
+                                        //  ),
+                                        // suffixIcon: Visibility(
+                                        //   visible: isAdminUser,
+                                        //   child: Row(
+                                        //     mainAxisAlignment: MainAxisAlignment.end,
+                                        //     mainAxisSize: MainAxisSize.min,
+                                        //     children: [
+                                        //       InkWell(
+                                        //         onTap: () {
+                                        //              var invoiceNum = 'invoiceNo';
+                                        //           setState(() {
+                                        //            int invoiceNumber = int.parse(invoiceNum); 
+                                        //            invoiceNumber++; 
+                                        //            invoiceNum = invoiceNumber.toString(); 
+                                        //          });
                                           
-                                                debugPrint(invoiceNum.toString());
+                                        //         debugPrint(invoiceNum.toString());
                                           
-                                            dataDynamic = [
-                                             {
-                                             'Type': 0,
-                                             'InvoiceNo': invoiceNum,
-                                             'EntryNo': int.parse(invoiceNum) ?? 0,
-                                             'Id': int.parse(invoiceNum) ?? 0
-                                             }
-                                          ];
-                                                                                 cartItem.clear();
-                                                                                 try {
-                                           fetchPurchase(context, dataDynamic[0]);
-                                                                                 } catch (e) {
-                                           if (e is RangeError) {
-                                              showDialog(
-                                                   context: context,
-                                                   builder: (BuildContext context) {
-                                                    return AlertDialog(
-                                                           title: const Text("Error"),
-                                                           content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
-                                                           actions: [
-                                                            TextButton(
-                                                             child: const Text("OK"),
-                                                             onPressed: () {
-                                                             Navigator.of(context).pop(); 
-                                                          },
-                                                        ),
-                                                      ],
-                                                   );
-                                                 },
-                                              );
-                                           }else {
-                                              debugPrint("An unexpected error occurred: $e");
-                                           }
-                                                                                 }
-                                                },
-                                                child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                                const SizedBox(
-                                                  width: 4,
-                                                )
-                                              //  Icon(Icons.keyboard_double_arrow_right_rounded),
-                                            ],
-                                          ),
-                                        ),
+                                        //     dataDynamic = [
+                                        //      {
+                                        //      'Type': 0,
+                                        //      'InvoiceNo': invoiceNum,
+                                        //      'EntryNo': int.parse(invoiceNum) ?? 0,
+                                        //      'Id': int.parse(invoiceNum) ?? 0
+                                        //      }
+                                        //   ];
+                                        //                                          cartItem.clear();
+                                        //                                          try {
+                                        //    fetchPurchase(context, dataDynamic[0]);
+                                        //                                          } catch (e) {
+                                        //    if (e is RangeError) {
+                                        //       showDialog(
+                                        //            context: context,
+                                        //            builder: (BuildContext context) {
+                                        //             return AlertDialog(
+                                        //                    title: const Text("Error"),
+                                        //                    content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                        //                    actions: [
+                                        //                     TextButton(
+                                        //                      child: const Text("OK"),
+                                        //                      onPressed: () {
+                                        //                      Navigator.of(context).pop(); 
+                                        //                   },
+                                        //                 ),
+                                        //               ],
+                                        //            );
+                                        //          },
+                                        //       );
+                                        //    }else {
+                                        //       debugPrint("An unexpected error occurred: $e");
+                                        //    }
+                                        //                                          }
+                                        //         },
+                                        //         child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                        //         const SizedBox(
+                                        //           width: 4,
+                                        //         )
+                                        //       //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                        //     ],
+                                        //   ),
+                                        // ),
+                                       
                                         constraints: const BoxConstraints(
                                           maxHeight: 34
                                         ),
@@ -5212,7 +5213,7 @@ class _PurchaseState extends State<Purchase> {
                                     0
                                 ? true
                                 : false)
-                            : (productModel!.serialNo);
+                            : (selectedItem!.serialNo);
                         // editItem ? 'Edit SerialNo' : 'Add SerialNo'),}
                         if (state) {
                           if (controllerQuantity.text.isNotEmpty) {

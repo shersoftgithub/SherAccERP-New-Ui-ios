@@ -859,7 +859,7 @@ class AccountsReportMenu extends StatelessWidget {
                       // child: Image.asset(iconsUrl),
                     ),
                     const Text(
-                      'Verify Cash Book',
+                      'Project Profit Loss',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: 'poppins',
@@ -871,11 +871,10 @@ class AccountsReportMenu extends StatelessWidget {
               ),
             ),
             onTap: () {
-              // argumentsPass = {'mode': 'InvoiceWiseBalanceSuppliers'};
-            // Navigator.pushNamed(
-            //   context,
-            //   '/select_ledger',
-            // );
+             Navigator.pushNamed(
+              context,
+              '/project_profit_loss',
+            );
             },
           ),
         ],

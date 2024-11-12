@@ -1980,6 +1980,7 @@ class _SaleState extends ConsumerState<Sale> {
                                     ? serialNoWidget()
                                     : Text('No Widget') ;
   }
+
   final entryNoController = TextEditingController();
  bool hasUserModifiedEntry = false;
  bool entryNoLoading = false;
@@ -2268,15 +2269,15 @@ getEntryNo(saleFormId) {
   bool cashCustomer = false;
   var filteredName;
   
-void _onTabTapped(int index) {
+ void _onTabTapped(int index) {
   setState(() {
     selectedTabIndex = index;
   });
 
   if (index == 1) {
-    setState(() {
-       projectId = '-1';
-       DataJson(id: 0,name: '');
+    setState(() { 
+      //  projectId = '-1';
+      //  DataJson(id: 0,name: '');
       cashCustomer = true;
       selectedCashCustomerId = acId;
       debugPrint('Selected cash Account ${selectedCashCustomerId.toString()}');
@@ -2297,15 +2298,14 @@ void _onTabTapped(int index) {
 
           cashLedgerModel!.name = filteredName.toString(); 
 
-          // print(filteredName);
+          // print(filteredName);  
         });
       });
     });
   }
   else{
     setState(() {
-      DataJson(id: 0,name: '');
-      projectId = '-1';
+     
       cashCustomer = false;
       selectedCustomerId = selectedCustomerId;
       debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
@@ -2822,6 +2822,7 @@ controllerNarration.text = '';
                                   headTxt: 'Date')),
                         ],
                       ),
+                   
                     ),
                     const SizedBox(height: 15),
                     Container(
@@ -2841,15 +2842,6 @@ controllerNarration.text = '';
                                     fontWeight: FontWeight.w500),
                                 ) ),
                           projectWidget(),
-                          //  Container(
-                          //       margin: const EdgeInsets.symmetric(vertical: 4),
-                          //       padding: const EdgeInsets.symmetric(horizontal: 5),
-                          //       width: MediaQuery.of(context).size.width,
-                          //       decoration: BoxDecoration(
-                          //           border: Border.all(color: grey),
-                          //           borderRadius: BorderRadius.circular(3)),
-                          //       child: projectWidget(),
-                          //     ),
                           const Text(' Sales Rate',
                                  style: TextStyle(
                                     fontFamily: 'poppins',
@@ -5689,6 +5681,7 @@ controllerNarration.text = '';
                               ),
                             ),
                           )
+                       
                         : const Center(
                             child: Text("No items in Cart"),
                           ),
@@ -11330,6 +11323,7 @@ controllerNarration.text = '';
       debugPrint(e as String?);
     }
   }
+
   projectWidget() {
   return isProjectSoftware
       ? SizedBox(
@@ -11342,6 +11336,7 @@ controllerNarration.text = '';
               ),
               asyncItems: (String filter) async {
                 var items = await getProjectListData(filter);
+                // Ensure the widget is still mounted
                 if (!mounted) return [];
                 return items;
               },
@@ -11349,9 +11344,7 @@ controllerNarration.text = '';
                 dropdownSearchDecoration: InputDecoration(
                   constraints: BoxConstraints(maxHeight: 45),
                   contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                  border: OutlineInputBorder(
-                    // borderSide: BorderSide.none
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
               onChanged: (dynamic data) {
@@ -11368,14 +11361,59 @@ controllerNarration.text = '';
                           .firstWhere(
                             (element) => element.id.toString() == projectId,
                             orElse: () => DataJson(id: 0, name: ''),
-                          ).name
-                        )
+                          ).name,
+                    )
                   : DataJson(id: 0, name: ''),
             ),
           ),
         )
       : Container();
 }
+//   projectWidgetCash() {
+//   return isProjectSoftware
+//       ? SizedBox(
+//           child: Padding(
+//             padding: const EdgeInsets.symmetric(vertical: 4),
+//             child: DropdownSearch<dynamic>(
+//               popupProps: const PopupPropsMultiSelection.dialog(
+//                 isFilterOnline: true,
+//                 showSearchBox: true,
+//               ),
+//               asyncItems: (String filter) async {
+//                 var items = await getProjectListData(filter);
+//                 // Ensure the widget is still mounted
+//                 if (!mounted) return [];
+//                 return items;
+//               },
+//               dropdownDecoratorProps: const DropDownDecoratorProps(
+//                 dropdownSearchDecoration: InputDecoration(
+//                   constraints: BoxConstraints(maxHeight: 45),
+//                   contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+//                   border: OutlineInputBorder(),
+//                 ),
+//               ),
+//               onChanged: (dynamic data) {
+//                 if (mounted) {
+//                   setState(() {
+//                     projectId = data.id.toString();
+//                   });
+//                 }
+//               },
+//               selectedItem: int.tryParse(projectId)! > 0
+//                   ? DataJson(
+//                       id: int.tryParse(projectId),
+//                       name: projectList
+//                           .firstWhere(
+//                             (element) => element.id.toString() == projectId,
+//                             orElse: () => DataJson(id: 0, name: ''),
+//                           ).name,
+//                     )
+//                   : DataJson(id: 0, name: ''),
+//             ),
+//           ),
+//         )
+//       : Container();
+// }
 
     Future<List<dynamic>> getProjectListData(String filter) async {
     var dd = filter.isEmpty
@@ -14119,8 +14157,7 @@ itemVarianDetails(selectedItem)async{
             'InvoiceNo': information['InvoiceNo'],
             'Type': salesTypeData!.id
           }
-        ];
-        
+        ];   
         invoiceNo = information['InvoiceNo'];
         invoiceNoController.text = invoiceNo;
         entryNo = information['EntryNo'].toString();

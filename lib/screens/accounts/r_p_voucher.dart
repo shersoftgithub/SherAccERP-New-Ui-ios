@@ -430,7 +430,6 @@ String cashAc = '';
         setState(() {
           isLoadingData = true;
         });
-
         List tempList = [];
         var statement = mode == 'Payment' ? 'PVList' : 'RVList';
         salesManId = salesManId > 0 ? salesManId : -1;
@@ -455,7 +454,6 @@ String cashAc = '';
           for (int i = 0; i < response[0].length; i++) {
             tempList.add(response[0][i]);
           }
-
           setState(() {
             isLoadingData = false;
             dataDisplay.addAll(tempList);
@@ -1519,6 +1517,7 @@ String cashAc = '';
         discount = double.tryParse(part1['Discount'].toString())!;
         total = double.tryParse(part1['Total'].toString())!;
         narration = part1['Narration'].toString();
+        oldVoucher = true;
          if (isMultiRvPv) {
           for (var part in particulars) {
             particularList.add(RpVoucherParticularModel(

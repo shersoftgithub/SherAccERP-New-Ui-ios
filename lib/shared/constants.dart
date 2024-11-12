@@ -60,7 +60,7 @@ String _sherSoftPassword = '';
 String get sherSoftPassword => _sherSoftPassword;
 set sherSoftPassword(String value) => _sherSoftPassword = value;
 
-const String apiV = 'v25/';
+const String apiV = 'v26/';
 
 const currencySymbol = '₹';
 // const bool isVariant = false;

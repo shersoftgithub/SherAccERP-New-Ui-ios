@@ -4256,11 +4256,11 @@ class _PurchasePreviewShowState extends State<PurchasePreviewShow> {
     //         )));
   }
 
-  invoiceGenerate(context) {
+   invoiceGenerate(context) {
     bool isLoading = false;
     var taxSale = dataInformation['TaxType'] == 'T' ? true : false;
-    var invoiceHead = Settings.getValue<String>('key-purchase-return-head',
-        defaultValue: 'PURCHASE RETURN');
+    var invoiceHead = Settings.getValue<String>(
+        'key-purchase-return-head', defaultValue: 'PURCHASE RETURN');
     var ledger = dataLedger[0];
     List<dynamic> itemData = [];
     double subTotalQty = 0,
@@ -4422,9 +4422,13 @@ class _PurchasePreviewShowState extends State<PurchasePreviewShow> {
       "Roundoff": dataInformation['ROUNDOFF'].toString() ?? '0',
       "Time":
           DateUtil.timeHMSA(dataInformation['DDate'].toString()) ?? '00:00:000',
-      "words":
-          ('${(companySettings!.sCurrency!.isEmpty ? ' Rupees ' : companySettings!.sCurrency)!}${NumberToWord().convertDouble('en', double.tryParse(dataInformation['GrandTotal'].toString()))}Only') ??
-              ' ',
+      "words": ((companySettings!.sCurrency!.isEmpty
+                  ? ' Rupees '
+                  : companySettings!.sCurrency)! +
+              NumberToWord().convertDouble('en',
+                  double.tryParse(dataInformation['GrandTotal'].toString())) +
+              'Only') ??
+          ' ',
       "purchaseExpense": ' ',
       "vehicle": ' ',
       "destination": ' ',
@@ -4592,7 +4596,6 @@ class _PurchasePreviewShowState extends State<PurchasePreviewShow> {
       },
     );
   }
-
   String uint8ListTob64(Uint8List uint8list) {
     String base64String = base64Encode(uint8list);
     String header = "data:image/png;base64,";

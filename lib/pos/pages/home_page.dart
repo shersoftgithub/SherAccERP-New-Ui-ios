@@ -459,7 +459,7 @@ if (companyTaxMode == 'INDIA') {
                         color: white,
                       ),
                       controller: invoiceNoController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         border: OutlineInputBorder(
                           borderSide: BorderSide.none
                         ),

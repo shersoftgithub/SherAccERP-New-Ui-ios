@@ -468,6 +468,7 @@ class _SalesManReportState extends State<SalesManReport> {
                   ],
                 ),
               ),
+            
               const SizedBox(
                 height: 10,
               ),
