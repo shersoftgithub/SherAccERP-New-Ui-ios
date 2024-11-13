@@ -7671,6 +7671,67 @@ class DioService {
     }
     return ret;
   }
+
+  Future<dynamic>fetchWarranty(entryNo)async{
+   
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    dynamic _items = [];    
+    try {
+      final response =await dio.get(
+        '${pref.getString('api' ?? '127.0.0.1:80/api/')}${apiV}WarrantyEntry/find/$dataBase',
+        queryParameters: {
+          'entryNo':entryNo
+        }
+      );
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+
+        _items = jsonResponse;
+      } else {
+        debugPrint('Unexpected error Occurred!');
+      }
+    }  catch (e) {
+     final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;   
+  }
+  Future<dynamic> editWarranty(var body)async{
+    dynamic ret = 0;
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+        try {
+      final response = await dio.put(
+          '${pref.getString('api')}${apiV}WarrantyEntry/edit/$dataBase',
+          data: json.encode(body),
+          options: Options(headers: {'Content-Type': 'application/json'}));
+
+      if (response.statusCode == 200) {
+        if (response.data['id'] > 0) {
+          ret = response.data['id'].toString();
+        } else {
+          ret = response.data['message'];
+        }
+      } else {
+        ret = '0';
+        debugPrint('Unexpected error occurred!');
+        ret = 'Unexpected error occurred!';
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+      ret = errorMessage.toString();
+    }
+    return ret;
+  }
 }
 
 

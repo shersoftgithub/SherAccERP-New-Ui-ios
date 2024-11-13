@@ -1,7 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:sheraccerp/screens/inventory/warranty/warranty_cart_model.dart';
+import 'package:sheraccerp/screens/inventory/warranty/warranty_complaint_model.dart';
+import 'package:sheraccerp/screens/inventory/warranty/warranty_customer_model.dart';
+import 'package:sheraccerp/screens/inventory/warranty/warranty_replace_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
@@ -28,6 +36,10 @@ class _WarrantyState extends State<Warranty> {
   int lId = 0, groupId = 0, areaId = 0, routeId = 0;
   var salesManId = 0;
   int saleAccount = 0, acId = 0, decimal = 2;
+   List<WarrantyCart> cart  = [];
+   List<WarrantyRepalceModel> replacementCart = [];
+   WarrantyCustomerModel? customer ;
+   WarrantyComplaintModel? complaint;
    bool isTax = true,
       otherAmountLoaded = false,
       valueMore = false,
@@ -55,7 +67,15 @@ class _WarrantyState extends State<Warranty> {
       isAdminUser = false,
       taxable = true;
 
-  bool isLoading = false;    
+  bool isLoading = false; 
+    final List<String> statusOptions = [
+    'Pending',
+    'Repair',
+    'Replace',
+    'Reject',
+    'Transfer To Mfr',
+    'Sales Return',
+  ];   
   
    @override
   void initState() {
@@ -413,7 +433,8 @@ class _WarrantyState extends State<Warranty> {
               } else {
                 return InkWell(
                   onTap: () {
-                    
+                    debugPrint(dataDisplay.toString());
+                    showEditDialog(context, dataDisplay[index]['Id']);
                   },
                   child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 2),
@@ -602,6 +623,9 @@ class _WarrantyState extends State<Warranty> {
   final collaps = 300.0;
  bool isExpanded = false;
  final animationDuration = const Duration(milliseconds: 400);
+ final entryNoController = TextEditingController();
+ final customerNameController = TextEditingController();
+ String entryNo = '';
   warrantyWidget(){
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -625,12 +649,13 @@ class _WarrantyState extends State<Warranty> {
                                         bottom: 15,
                                       ),
                                       child: TextField(
+                                        controller: entryNoController,
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 14,
           ),
           // controller: entryNoController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
         //     prefixIcon: Visibility(
         //       visible: isAdminUser,
         //       child: Row(
@@ -730,9 +755,9 @@ class _WarrantyState extends State<Warranty> {
         //         ],
         //       ),
         //     ),  
-            constraints: const BoxConstraints(maxHeight: 40),
-            contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-            border: const OutlineInputBorder(),
+            constraints: BoxConstraints(maxHeight: 40),
+            contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+            border: OutlineInputBorder(),
           ),
           //  onSubmitted: (value) async{
           //                                           setState(() {
@@ -828,8 +853,14 @@ class _WarrantyState extends State<Warranty> {
                 children: [
                   ContainerFieldWidget(
                     widget: TextField(
+                      style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                      controller: customerNameController,
+                      maxLines: null,
                       readOnly: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 5,
                           vertical: 6
@@ -847,7 +878,7 @@ class _WarrantyState extends State<Warranty> {
                       ),
                     ),
                     headTxt: 'Customer'),
-                    SizedBox(
+                    const SizedBox(
                       height: 4,
                     ),
                      Expanded(
@@ -882,25 +913,25 @@ class _WarrantyState extends State<Warranty> {
                                               ),
                                               child: Column(
                                                 children: [
-                                                   ContainerFieldWidget(
-                                                                widget: TextField(
-                                                                  maxLines: null,
-                                                                  // controller:
-                                                                  readOnly: true,
-                                                                  decoration: InputDecoration(
-                                                                      contentPadding: EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              10,
-                                                                          horizontal:
-                                                                              5),
-                                                                      border:
-                                                                          OutlineInputBorder()),
-                                                                ),
-                                                                headTxt:
-                                                                    'Mobile'),
-                                                                    SizedBox(
-                                                                      height: 4,
-                                                                    ),
+                                                  //  ContainerFieldWidget(
+                                                  //               widget: TextField(
+                                                  //                 maxLines: null,
+                                                  //                 // controller:
+                                                  //                 readOnly: true,
+                                                  //                 decoration: InputDecoration(
+                                                  //                     contentPadding: EdgeInsets.symmetric(
+                                                  //                         vertical:
+                                                  //                             10,
+                                                  //                         horizontal:
+                                                  //                             5),
+                                                  //                     border:
+                                                  //                         OutlineInputBorder()),
+                                                  //               ),
+                                                  //               headTxt:
+                                                  //                   'Mobile'),
+                                                  //                   SizedBox(
+                                                  //                     height: 4,
+                                                  //                   ),
                                                                     ContainerFieldWidget(
                                                                       widget: TextField(
                                                                   maxLines: null,
@@ -1139,42 +1170,35 @@ class _WarrantyState extends State<Warranty> {
                                       const SizedBox(height: 4),
                                   shrinkWrap: true,
                                   // physics: ClampingScrollPhysics() ,
-                                  itemCount: 4,//cartItem.length ,
+                                  itemCount: cart.length ,
                                   // scrollDirection: Axis.vertical,
                                   itemBuilder: (context, index) {
                                     return InkWell(
                                       onTap: () {
                                         setState(() {
                                           nextWidget = 1;
+                                          itemNameContrroler.text = cart[index].productName!;
+                                          qtyContrroler.text = cart[index].qty.toString();
+                                          selectedStatus = cart[index].status!;
+                                          entryNo = cart[index].entryNo.toString();
+                                          wDate = cart[index].wDate!;
+                                          auto = cart[index].auto!;
+                                          barcode = cart[index].barcode!;
+                                          itemId = cart[index].itemId!;
+                                          serialNo = cart[index].serialNo!;
+                                          qty = cart[index].qty!;
+                                          sRate = cart[index].sRate!;
+                                          total = cart[index].total!;
+                                          narration = cart[index].narration!;
+                                          eType = cart[index].eType!;
+                                          gid = cart[index].gid!;
+                                          location = cart[index].location!;
+                                          warrantyDate = cart[index].warrantyDate!;
+                                          fyId = cart[index].fyId!;
+                                          transferStatus = cart[index].transferStatus!;
+                                          productName = cart[index].productName!;
+
                                         });
-                                        // setState(() {
-                                        //   editItem = true;
-                                        //   position = index;
-                                        //   cartModel =
-                                        //       cartItem.elementAt(position!);
-                                        //   itemNameControl.text =
-                                        //       cartModel!.itemName.toString();
-                                        //   _rateController.text =
-                                        //       cartModel!.rate!.toString();
-                                        //   _quantityController.text =
-                                        //       cartModel!.quantity!.toString();
-                                        //   _freeQuantityController.text =
-                                        //       cartModel!.free.toString();
-                                        //   _discountController.text =
-                                        //       cartModel!.discount.toString();
-                                        //   _discountPercentController.text =
-                                        //       cartModel!.discountPercent
-                                        //           .toString();
-                                        //   _serialNoController.text =
-                                        //       cartModel!.serialNo!;
-                                        //   _dropDownUnit = cartModel!.unitId!;
-                                        //   taxP = cartModel!.taxP!;
-                                        //   tax = cartModel!.tax!;
-                                        //   gross = cartModel!.gross!;
-                                        //   total = cartModel!.total!;
-                                        //   nextWidget = 2;
-                                        // });
-                                      
                                       },
                                       child: Container(
                                         width:
@@ -1222,20 +1246,27 @@ class _WarrantyState extends State<Warranty> {
                                                                 color: grey,
                                                               )),
                                                       child: Text(
-                                                       'id', // '# ${cartItem[index].id}',
+                                                         '# ${cart[index].auto}',
                                                         style:
                                                             const TextStyle(
                                                                 fontSize: 12),
                                                       )),
-                                                  Text(
-                                                       ' name',//' ${cartItem[index].itemName}',
-                                                      style: const TextStyle(
-                                                          color: black,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontFamily:
-                                                              'poppins')),
-                                                  const Spacer(),
+                                                  Flexible(
+                                                    child: Tooltip(
+                                                      message: cart[index].productName,
+                                                      child: Text(
+                                                           ' ${cart[index].productName}',
+                                                           overflow: TextOverflow.ellipsis,
+                                                          //  maxLines: 1,
+                                                          style: const TextStyle(
+                                                              color: black,
+                                                              fontWeight:
+                                                                  FontWeight.w500,
+                                                              fontFamily:
+                                                                  'poppins')),
+                                                    ),
+                                                  ),
+                                                  // const Spacer(),
                                                   
                                                 ]),
                                               ),
@@ -1254,7 +1285,7 @@ class _WarrantyState extends State<Warranty> {
                                                     ),
                                                     const Spacer(),
                                                     Text(
-                                                      " ", // "${cartItem[index].quantity!.toStringAsFixed(0)} ${UnitSettings.getUnitName(cartItem[index].unitId!)} x ${(selectedTaxOption == 'With Tax' ? cartItem[index].rate!.toStringAsFixed(2) : cartItem[index].rRate!.toStringAsFixed(2))} = ₹ ${cartItem[index].gross}",
+                                                      "${cart[index].barcode!.toStringAsFixed(0)}",
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                       ),
@@ -1278,6 +1309,7 @@ class _WarrantyState extends State<Warranty> {
                                                             fontSize: 12,
                                                             color: Colors
                                                                 .orange[700],
+                                                                fontWeight: FontWeight.w500,
                                                             fontFamily:
                                                                 'poppins'),
                                                       ),
@@ -1295,9 +1327,10 @@ class _WarrantyState extends State<Warranty> {
                                                     //   ),
                                                       const Spacer(),
                                                       Text(
-                                                        " " ,//'₹ ${cartItem[index].discount!.toStringAsFixed(2)}',
+                                                        '${cart[index].status!}',
                                                         style: TextStyle(
                                                           fontSize: 12,
+                                                          fontWeight: FontWeight.w500,
                                                           color: Colors
                                                               .orange[700],
                                                         ),
@@ -1313,14 +1346,14 @@ class _WarrantyState extends State<Warranty> {
                                                     .width,
                                                 child: Row(children: [
                                                   Text(
-                                                    "Qty ", // 'Tax (%): ${cartItem[index].taxP}',
+                                                    'Qty',
                                                     style: const TextStyle(
                                                       fontSize: 12,
                                                     ),
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                    " ",//'₹ ${cartItem[index].tax!.toStringAsFixed(2)}',
+                                                    '${cart[index].qty}',
                                                     style: const TextStyle(
                                                       fontSize: 12,
                                                     ),
@@ -1342,7 +1375,7 @@ class _WarrantyState extends State<Warranty> {
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                   "", //'₹ ${cartItem[index].total!.toStringAsFixed(2)}',
+                                                   '₹ ${cart[index].sRate!.toStringAsFixed(2)}',
                                                     style: const TextStyle(
                                                         fontSize: 12,),
                                                   ),
@@ -1361,9 +1394,83 @@ class _WarrantyState extends State<Warranty> {
           ],
         ),
       ),
+        bottomNavigationBar: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            children: [
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  const Center(
+                                  child: 
+                                   Text(
+                                     'Delete',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                )),
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                    setState(() {
+                      editWarranty();
+                    });
+                    },
+                    child: Container(
+                                  height: 60,
+                                  color: kPrimaryColor,
+                                  child:  const Center(
+                                    child: 
+                                     Text(
+                                     'Edit',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                  ),
+                ))
+            ],
+          ),
+        ),
     );
   }
-  
+
+
+  final itemNameContrroler = TextEditingController();
+  final qtyContrroler = TextEditingController();
+  String selectedStatus = 'Pending';
+  String? wDate;
+  int? auto;
+  int? barcode;
+  int? itemId;
+  String? serialNo;
+  int? qty;
+  int? sRate;
+  int? total;
+  String? narration;
+  String? eType;
+  String? status;
+  int? gid;
+  int? location;
+  String? warrantyDate;
+  int? fyId;
+  int? transferStatus;
+  String? productName;
   itemDetailWidget(){
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -1389,12 +1496,18 @@ class _WarrantyState extends State<Warranty> {
               ),
               width: MediaQuery.of(context).size.width,
               color: white,
-              child: const Column(
+              child:  Column(
                 children: [
                   ContainerFieldWidget(
                     widget: TextField(
+                      style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                      controller: itemNameContrroler,
+                      maxLines: null,
                       readOnly: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 5,
                           vertical: 6
@@ -1411,14 +1524,23 @@ class _WarrantyState extends State<Warranty> {
                         )
                       ),
                     ), headTxt: 'Item Name'),
-                    SizedBox(
+                    const SizedBox(
                       height: 6,
                     ),
                     Row(
                       children: [
-                        Expanded(child: ContainerFieldWidget(widget: TextField(
+                        Expanded(child: ContainerFieldWidget(
+                          widget: TextField(
+                             style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                          controller: qtyContrroler,
                       readOnly: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
                         contentPadding: EdgeInsets.symmetric(
                           horizontal: 5,
                           vertical: 6
@@ -1435,28 +1557,41 @@ class _WarrantyState extends State<Warranty> {
                         )
                       ),
                     ), headTxt: 'Qty')),
-                    SizedBox(
+                    const SizedBox(
                       width: 4,
                     ),
-                        Expanded(child: ContainerFieldWidget(widget: TextField(
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 6
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: grey
-                          )
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: grey
-                          )
-                        )
+                        Expanded(child: ContainerFieldWidget(widget:
+                         DropdownButtonFormField<String>(
+          value: selectedStatus,
+          items: statusOptions.map((status) {
+            return DropdownMenuItem(
+              value: status,
+              child: Text(status,
+               style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
                       ),
-                    ), headTxt: 'Status'))
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedStatus = value!;
+            });
+          },
+          decoration: const InputDecoration(
+             constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+          ),
+        ), headTxt: 'Status'))
                       ],
                     )
                 ],
@@ -1464,15 +1599,240 @@ class _WarrantyState extends State<Warranty> {
             )
           ],
         )),
+        bottomNavigationBar: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            children: [
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                                height: 60,
+                                color: Colors.white,
+                                child:  const Center(
+                                  child: 
+                                   Text(
+                                     'Delete',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                )),
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        updateProduct(WarrantyCart(
+                          entryNo: int.parse(entryNo),
+                          wDate: wDate,
+                          auto: auto,
+                          barcode: barcode,
+                          itemId: itemId,
+                          serialNo: serialNo,
+                          qty: qty,
+                          sRate: sRate,
+                          total: total,
+                          narration: narration,
+                          eType: eType,
+                          status: selectedStatus,
+                          gid: gid,
+                          location: location,
+                          warrantyDate: warrantyDate,
+                          fyId: fyId,
+                          transferStatus: transferStatus,
+                          productName: productName,
+                      ), 0);
+                      nextWidget = 0;
+                      debugPrint(cart.toList().toString());
+                      });
+                    },
+                    child: Container(
+                                  height: 60,
+                                  color: kPrimaryColor,
+                                  child:  const Center(
+                                    child: 
+                                     Text(
+                                     'Edit',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                  ),
+                ))
+            ],
+          ),
+        ),
     );
   }
-  
+
+editWarranty() {
+  final cartList = cart.map((item) => item.toMap()).toList();
+
+    final replacementCartList = replacementCart.map((item) => item.toMap()).toList();
+
+final combinedList = cartList + replacementCartList;
+
+  final body = {
+    'customer': customer!.toMap(), 
+    'particular': combinedList,
+    'complaints': complaint,
+  };
+
+  debugPrint(body.toString());
+  // api.editWarranty(body);
+}
+
+
+    showEditDialog(context, dataDynamic) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          fetchWarranty(context, dataDynamic);
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage:
+            'Do you want to edit or delete\nRefNo:${dataDynamic}',
+        title: 'Update',
+        context: context);
+  } 
+
   fetchWarranty(context,data){
     setState(() {
       isLoading = true;
     });
+    api.fetchWarranty(data).then((value) {
+      if (value != null) {
+         var information = value[0];
+        var particulars = value[1];
+        var replacement = value[2];
+        var compliant = value[3];
+        debugPrint(information.toString());
+        debugPrint(particulars.toString());
+        entryNo = information[0]['EntryNo'].toString();
+        entryNoController.text = entryNo;
+        formattedDate = DateUtil.dateDMY(information[0]['WDate']);
+        customerNameController.text = information[0]['CustomerName'];
+        customer = WarrantyCustomerModel(
+          auto: information[0]['Auto'],
+          entryNo: information[0]['EntryNo'],
+          wDate: information[0]['WDate'],
+          customer: information[0]['Customer'],
+          location: information[0]['Location'],
+          mobile: information[0]['mobile'],
+          userId: information[0]['UserId'],
+          warrantyLocation: information[0]['WarrentyLocation'],
+          salesman: information[0]['salesman'],
+          transferStatus: information[0]['TransferStatus'],
+          customerName: information[0]['CustomerName']
+        );
+        for (var product in particulars){
+          addProduct( 
+               WarrantyCart(
+          entryNo: product['EntryNo'],
+          wDate: DateUtil.dateDMY(product['WDate']),
+          auto: product['Auto'],
+          barcode: product['Barcode'],
+          itemId: product['Itemid'],
+          serialNo: product['Serialno'],
+          qty: product['Qty'],
+          sRate: product['Srate'],
+          total: product['Total'],
+          narration: product['Narration'],
+          eType: product['EType'],
+          status: product['Status'],
+          gid: product['Gid'],
+          location: product['Location'],
+          warrantyDate: product['WarrentyDate'],
+          fyId: product['FyId'] ?? 0,
+          transferStatus: product['TransferStatus'],
+          productName: product['ProductName']
+        ), -1);
+        }
+        for(var items in replacement){
+          addReplacement(
+            WarrantyRepalceModel(
+              entryNo: items['EntryNo'],
+          wDate: DateUtil.dateDMY(items['WDate']),
+          auto: items['Auto'],
+          barcode: items['Barcode'],
+          itemId: items['ItemId'],
+          serialNo: items['Serialno'],
+          qty: items['Qty'],
+          sRate: items['Srate'],
+          total: items['Total'],
+          narration: items['Narration'],
+          eType: items['EType'],
+          status: items['Status'],
+          gid: items['Gid'],
+          location: items['Location'],
+          warrantyDate: items['WarrantyDate'],
+          fyId: items['FyId'] ?? 0,
+          transferStatus: items['TransferStatus'],
+          productName: items['ProductName']
+            ), -1);
+        }
+        
+        setState(() {
+          widgetID = false;
+        });
+      }
+    });
     
   }
+    
+    void addProduct(product, int index) {
+    // index = isFreeItem
+    //     ? index
+    //     : cartItem.indexWhere((i) => i.itemId == product.itemId);
+
+    // if (index != -1) {
+    //   updateProduct(
+    //       product, cartItem[index].quantity! + product.quantity, index);
+    // } else {
+      cart.add(product);
+      // calculateTotal();
+    // }
+  }
+    void addReplacement(product, int index) {
+      replacementCart.add(product);
+  }
+   void updateProduct(product,int index){
+    cart[index].entryNo = int.parse(entryNo);
+    cart[index].wDate = wDate;
+    cart[index].auto = auto;
+    cart[index].barcode = barcode;
+    cart[index].itemId = itemId;
+    cart[index].serialNo = serialNo;
+    cart[index].qty = qty;
+    cart[index].sRate = sRate;
+    cart[index].total = total;
+    cart[index].narration = narration;
+    cart[index].eType = eType;
+    cart[index].status = selectedStatus;
+    cart[index].gid = gid;
+    cart[index].location = location;
+    cart[index].warrantyDate = warrantyDate;
+    cart[index].transferStatus = transferStatus;
+    cart[index].productName = productName;
+   }
 
   Future _selectDate() async {
     DateTime? picked = await showDatePicker(
