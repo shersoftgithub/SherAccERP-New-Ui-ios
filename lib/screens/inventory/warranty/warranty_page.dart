@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_cart_model.dart';
@@ -11,6 +12,7 @@ import 'package:sheraccerp/screens/inventory/warranty/warranty_complaint_model.d
 import 'package:sheraccerp/screens/inventory/warranty/warranty_customer_model.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_replace_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -39,7 +41,7 @@ class _WarrantyState extends State<Warranty> {
    List<WarrantyCart> cart  = [];
    List<WarrantyRepalceModel> replacementCart = [];
    WarrantyCustomerModel? customer ;
-   WarrantyComplaintModel? complaint;
+   List<WarrantyComplaintModel> complaint = [];
    bool isTax = true,
       otherAmountLoaded = false,
       valueMore = false,
@@ -1676,22 +1678,55 @@ class _WarrantyState extends State<Warranty> {
     );
   }
 
-editWarranty() {
+void editWarranty() {
   final cartList = cart.map((item) => item.toMap()).toList();
+  final replacementCartList = replacementCart.map((item) => item.toMap()).toList();
+  final combinedList = cartList + replacementCartList;
 
-    final replacementCartList = replacementCart.map((item) => item.toMap()).toList();
-
-final combinedList = cartList + replacementCartList;
-
+  final complaintList = complaint.map((item) => item.toMap()).toList();
+  
+  var mapValue = json.encode({
+    "entryNo": customer!.entryNo, 
+    'date': customer!.wDate,
+    'customer':customer!.customer,
+    'location':customer!.location,
+    'mobile':customer!.mobile,
+    'userId':customer!.userId,
+    'warrantyLocation':customer!.warrantyLocation,
+    'salesman':customer!.customer,
+  });
   final body = {
-    'customer': customer!.toMap(), 
-    'particular': combinedList,
-    'complaints': complaint,
+    
+    'information':mapValue,
+    'particular': json.encode(combinedList),
+    'complaints': json.encode(complaintList),
   };
-
-  debugPrint(body.toString());
-  // api.editWarranty(body);
+  
+  
+  debugPrint(json.encode(body).toString());
+  api.editWarranty(body).then((value) {
+    if (CommonService().isNumeric(value) && int.tryParse(value)! > 0) {
+      Fluttertoast.showToast(
+        backgroundColor: green,
+        msg: 'Warranty Updated');
+    }else {
+        showErrorDialog(context, value.toString());
+      }
+  });
 }
+  showErrorDialog(context, String msg) {
+    debugPrint('error save warranty :$msg');
+    setState(() {
+      _isLoading = false;
+      buttonEvent = false;
+    });
+    SimpleAlertBox(
+      context: context,
+      title: 'Error',
+      buttonText: 'Close',
+      infoMessage: msg,
+    );
+  }
 
 
     showEditDialog(context, dataDynamic) {
@@ -1724,8 +1759,8 @@ final combinedList = cartList + replacementCartList;
         var particulars = value[1];
         var replacement = value[2];
         var compliant = value[3];
-        debugPrint(information.toString());
-        debugPrint(particulars.toString());
+        debugPrint(value.toString());
+        // debugPrint(particulars.toString());
         entryNo = information[0]['EntryNo'].toString();
         entryNoController.text = entryNo;
         formattedDate = DateUtil.dateDMY(information[0]['WDate']);
@@ -1737,17 +1772,18 @@ final combinedList = cartList + replacementCartList;
           customer: information[0]['Customer'],
           location: information[0]['Location'],
           mobile: information[0]['mobile'],
-          userId: information[0]['UserId'],
+          userId: information[0]['UserID'],
           warrantyLocation: information[0]['WarrentyLocation'],
           salesman: information[0]['salesman'],
+          fyId: information[0]['FyID'],
           transferStatus: information[0]['TransferStatus'],
           customerName: information[0]['CustomerName']
-        );
+        ); 
         for (var product in particulars){
           addProduct( 
                WarrantyCart(
           entryNo: product['EntryNo'],
-          wDate: DateUtil.dateDMY(product['WDate']),
+          wDate: product['WDate'],
           auto: product['Auto'],
           barcode: product['Barcode'],
           itemId: product['Itemid'],
@@ -1773,7 +1809,7 @@ final combinedList = cartList + replacementCartList;
           wDate: DateUtil.dateDMY(items['WDate']),
           auto: items['Auto'],
           barcode: items['Barcode'],
-          itemId: items['ItemId'],
+          itemId: items['Itemid'],
           serialNo: items['Serialno'],
           qty: items['Qty'],
           sRate: items['Srate'],
@@ -1788,6 +1824,12 @@ final combinedList = cartList + replacementCartList;
           transferStatus: items['TransferStatus'],
           productName: items['ProductName']
             ), -1);
+        }
+        for(var cm in compliant){
+          addCompliants(WarrantyComplaintModel(
+            complaint: cm['Complaints'],
+            gid: cm['gid']
+          ), -1);
         }
         
         setState(() {
@@ -1814,6 +1856,7 @@ final combinedList = cartList + replacementCartList;
     void addReplacement(product, int index) {
       replacementCart.add(product);
   }
+
    void updateProduct(product,int index){
     cart[index].entryNo = int.parse(entryNo);
     cart[index].wDate = wDate;
@@ -1832,6 +1875,9 @@ final combinedList = cartList + replacementCartList;
     cart[index].warrantyDate = warrantyDate;
     cart[index].transferStatus = transferStatus;
     cart[index].productName = productName;
+   }
+   void addCompliants(cmp ,int index){
+    complaint.add(cmp);
    }
 
   Future _selectDate() async {

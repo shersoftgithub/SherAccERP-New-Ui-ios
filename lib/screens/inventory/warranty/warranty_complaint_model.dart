@@ -5,4 +5,10 @@ class WarrantyComplaintModel{
     this.complaint,
     this.gid
   });
+  Map<String, dynamic> toMap() {
+    return {
+      'compliant':complaint,
+      'gid':gid,
+    };
+  }
 }

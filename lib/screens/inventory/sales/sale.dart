@@ -56,11 +56,18 @@ class Sale extends ConsumerStatefulWidget {
     required this.thisSale,
     required this.oldSale,
   }) : super(key: key);
+  
   @override
   ConsumerState<Sale> createState() => _SaleState();
 }
 
 class _SaleState extends ConsumerState<Sale> {
+  //   @override
+  // void setState(fn) {
+  //   if(mounted) {
+  //     super.setState(fn);
+  //   }
+  // }
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<SalesType> salesTypeDisplay = [];
   dynamic salesData;
@@ -2269,13 +2276,20 @@ getEntryNo(saleFormId) {
   bool cashCustomer = false;
   var filteredName;
   
- void _onTabTapped(int index) {
-  setState(() {
+  void _onTabTapped(int index) {
+ if(!mounted){
+   return;
+ }
+    setState(() {
     selectedTabIndex = index;
   });
 
+
   if (index == 1) {
-    setState(() { 
+    if(!mounted){
+      return;
+    }
+      setState(() { 
       //  projectId = '-1';
       //  DataJson(id: 0,name: '');
       cashCustomer = true;
@@ -2284,35 +2298,35 @@ getEntryNo(saleFormId) {
       
       final csDetails = api.getCashCustomerDetail(acId);
       
+     if(mounted){return;}
       csDetails.then((value) { 
         setState(() {
           cashLedgerModel = value;
-
           filterCashAccount = cashAccount.where((element) {
             return element.key == selectedCashCustomerId;
           }).toList();
-
           filteredName = filterCashAccount.map((element) {
             return element.value; 
           }).join(', ');
-
           cashLedgerModel!.name = filteredName.toString(); 
-
           // print(filteredName);  
         });
       });
     });
+ 
   }
   else{
+   if(!mounted){
+     return;
+   }
     setState(() {
-     
       cashCustomer = false;
       selectedCustomerId = selectedCustomerId;
       debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
     });
+  
   }
 }
-
 
   // void _onTabTapped(int index) {
   // setState(() {
@@ -3444,17 +3458,14 @@ controllerNarration.text = '';
                                                     child: Text('# ${index + 1}',
                                                       style: const TextStyle( fontSize: 12),
                                                     )),
-                                                SizedBox(
-                                                  width: MediaQuery.of(context).size.width/1.25,
-                                                  child: Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: Text(' ${cartItem[index].itemName}',
-                                                    textAlign: TextAlign.left,
-                                                        style: const TextStyle(
-                                                            color: black,
-                                                            fontWeight:FontWeight.w500,
-                                                            fontFamily:'poppins')),
-                                                  ),
+                                                Flexible(
+                                                  child: Text(' ${cartItem[index].itemName}',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.left,
+                                                      style: const TextStyle(
+                                                          color: black,
+                                                          fontWeight:FontWeight.w500,
+                                                          fontFamily:'poppins')),
                                                 ),
                                                 // const Spacer(),
                                                 // PopUpMenuAction(
@@ -11324,51 +11335,6 @@ controllerNarration.text = '';
     }
   }
 
-  projectWidget() {
-  return isProjectSoftware
-      ? SizedBox(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: DropdownSearch<dynamic>(
-              popupProps: const PopupPropsMultiSelection.dialog(
-                isFilterOnline: true,
-                showSearchBox: true,
-              ),
-              asyncItems: (String filter) async {
-                var items = await getProjectListData(filter);
-                // Ensure the widget is still mounted
-                if (!mounted) return [];
-                return items;
-              },
-              dropdownDecoratorProps: const DropDownDecoratorProps(
-                dropdownSearchDecoration: InputDecoration(
-                  constraints: BoxConstraints(maxHeight: 45),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              onChanged: (dynamic data) {
-                if (mounted) {
-                  setState(() {
-                    projectId = data.id.toString();
-                  });
-                }
-              },
-              selectedItem: int.tryParse(projectId)! > 0
-                  ? DataJson(
-                      id: int.tryParse(projectId),
-                      name: projectList
-                          .firstWhere(
-                            (element) => element.id.toString() == projectId,
-                            orElse: () => DataJson(id: 0, name: ''),
-                          ).name,
-                    )
-                  : DataJson(id: 0, name: ''),
-            ),
-          ),
-        )
-      : Container();
-}
 //   projectWidgetCash() {
 //   return isProjectSoftware
 //       ? SizedBox(
@@ -11414,6 +11380,52 @@ controllerNarration.text = '';
 //         )
 //       : Container();
 // }
+
+  projectWidget() {
+  return isProjectSoftware
+      ? SizedBox(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: DropdownSearch<dynamic>(
+              popupProps: const PopupPropsMultiSelection.dialog(
+                isFilterOnline: true,
+                showSearchBox: true,
+              ),
+              asyncItems: (String filter) async {
+                var items = await getProjectListData(filter);
+                if (!mounted) return [];
+                return items;
+              },
+              dropdownDecoratorProps: const DropDownDecoratorProps(
+                dropdownSearchDecoration: InputDecoration(
+                  constraints: BoxConstraints(maxHeight: 45),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              onChanged: (dynamic data) {
+                if (mounted) {
+                  setState(() {
+                    projectId = data.id.toString();
+                  });
+                }
+              },
+              selectedItem: int.tryParse(projectId)! > 0
+                  ? DataJson(
+                      id: int.tryParse(projectId),
+                      name: projectList
+                          .firstWhere(
+                            (element) => element.id.toString() == projectId,
+                            orElse: () => DataJson(id: 0, name: ''),
+                          ).name,
+                    )
+                  : DataJson(id: 0, name: ''),
+            ),
+          ),
+        )
+      : Container();
+}
+
 
     Future<List<dynamic>> getProjectListData(String filter) async {
     var dd = filter.isEmpty

@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -121,56 +123,77 @@ class PreviousBill extends StatelessWidget {
                               children: [
                                 /**** loop start ***/
                                 for (var item in items)
-                                  Row(children: [
-                                    Flexible(
-                                        flex: 2500,
-                                        child: Row(children: [
-                                          const Icon(Icons.check_circle,
-                                              size: 14),
-                                          const SizedBox(width: 5),
-                                          Expanded(
-                                            child: RichText(
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              strutStyle: const StrutStyle(
-                                                  fontSize: 12.0),
-                                              text: TextSpan(
-                                                  text: "${item['itemname']}",
-                                                  style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                  )),
-                                            ),
-                                          )
-                                        ])),
-                                    Flexible(
-                                        flex: 700,
-                                        child: Row(children: [
-                                          Text("${item['Qty']}",
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                              )),
-                                          const Text("X",
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 14,
-                                              )),
-                                          Text("${item['Rate']}",
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 12,
-                                              ))
-                                        ])),
-                                    Flexible(
-                                        flex: 0,
-                                        child: Text(
-                                            "${item['Total'].toStringAsFixed(2)}",
+                                  Row(
+                                    children: [
+                                    Expanded(
+                                        // flex: 2500,
+                                        child: SizedBox(
+                                          width: MediaQuery.of(context).size.width/2,
+                                          child: Row(children: [
+                                            const Icon(Icons.check_circle,
+                                                size: 14),
+                                            const SizedBox(width: 5),
+                                            Expanded(
+                                              child: RichText(
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                strutStyle: const StrutStyle(
+                                                    fontSize: 12.0),
+                                                text: TextSpan(
+                                                    text: "${item['itemname']}",
+                                                    style: const TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                    )),
+                                              ),
+                                            )
+                                          ]),
+                                        )),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width/6,
+                                      child: Row(
+                                        // crossAxisAlignment: CrossAxisAlignment.end,
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                        Text("${item['Qty']}",
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 14,
+                                            )),
+                                        const Text("X",
+                                        textAlign: TextAlign.end,
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 14,
+                                            )),
+                                        Text("${item['Rate']}",
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontSize: 12,
-                                            ))),
+                                            ))
+                                      ]),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        SizedBox(
+                                          width: MediaQuery.of(context).size.width/6,
+                                          child: Text(
+                                              "${item['Total'].toStringAsFixed(2)}",
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.end,
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 12,
+                                              )),
+                                        ),
+                                      ],
+                                    ),
                                   ]),
                               ],
                               /**loop end****/

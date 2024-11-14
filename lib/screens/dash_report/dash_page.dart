@@ -272,7 +272,7 @@ class _DashPageState extends State<DashPage> {
                   width: MediaQuery.sizeOf(context).width,
                   height: 40,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8), color: white),
+                      borderRadius: BorderRadius.circular(5), color: white),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: Row(
@@ -313,14 +313,14 @@ class _DashPageState extends State<DashPage> {
                     ),
                   ),
                 ),
-               SizedBox(
-                height: 8,
+               const SizedBox(
+                height: 12,
                ),
                 Container(
                   width: MediaQuery.sizeOf(context).width,
                   height: 40,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8), color: white),
+                      borderRadius: BorderRadius.circular(5), color: white),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     child: Row(
@@ -398,11 +398,13 @@ class _DashPageState extends State<DashPage> {
                 locationList.isNotEmpty
                     ? DropdownButtonHideUnderline(
                         child: DropDownSettingsTile<int>(
-                          title: 'Branch',
-                          titleTextStyle: const TextStyle(
+                          title: '',
+                          leading: const Text('Branch',
+                           style:  TextStyle(
                             fontFamily: 'poppins',
                             fontWeight: FontWeight.w500,
                             fontSize: 15
+                          ),
                           ),
                           settingKey: 'key-dropdown-default-location-view',
                           values: locationList.isNotEmpty

@@ -7713,9 +7713,9 @@ class DioService {
           data: json.encode(body),
           options: Options(headers: {'Content-Type': 'application/json'}));
 
-      if (response.statusCode == 200) {
-        if (response.data['id'] > 0) {
-          ret = response.data['id'].toString();
+      if (response.statusCode == 201) {
+        if (response.data['returnValue'] > 0) {
+          ret = response.data['returnValue'].toString();
         } else {
           ret = response.data['message'];
         }

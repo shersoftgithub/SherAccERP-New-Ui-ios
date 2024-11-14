@@ -210,11 +210,13 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultBranch,
-                                      title: 'Default Branch',
-                                      titleTextStyle: const TextStyle(
+                                      leading: const Text('Default Branch',
+                                      style: TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
                                           fontSize: 15),
+                                      ),
+                                      title: '',
                                       settingKey:
                                           'key-dropdown-default-location-view',
                                       values: locationList.isNotEmpty
@@ -285,7 +287,13 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultGroup,
-                                      title: 'Default Group',
+                                      leading: Text('Default Group',
+                                      style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
+                                      ),
+                                      title: '',
                                       titleTextStyle: const TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
