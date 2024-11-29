@@ -306,7 +306,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
     }
 
     if (otherRegRouteList.isNotEmpty) {
-      otherRegAreaDataList.addAll(otherRegRouteList);
+      otherRegRouteDataList.addAll(otherRegRouteList);
       if (routeId > 1) {
         areaModel = otherRegRouteDataList.firstWhere(
             (element) => element.id == routeId,
@@ -2019,6 +2019,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                               ),
                                               ContainerFieldWidget(
                                                   widget: Container(
+                                                    width: MediaQuery.of(context).size.width,
                                                     padding: const EdgeInsets
                                                         .symmetric(horizontal: 5),
                                                     decoration: BoxDecoration(
@@ -2061,6 +2062,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                               ),
                                               ContainerFieldWidget(
                                                   widget: Container(
+                                                    width: MediaQuery.of(context).size.width,
                                                     padding: const EdgeInsets
                                                         .symmetric(horizontal: 5),
                                                     decoration: BoxDecoration(
@@ -2072,29 +2074,28 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     child:
                                                         DropdownButtonHideUnderline(
                                                       child: DropdownButton<
-                                                          OtherRegistrationModel>(
-                                                        isExpanded: true,
-                                                        icon: const Icon(Icons
-                                                            .keyboard_arrow_down),
-                                                        items: otherRegRouteList.map(
+                                                      OtherRegistrationModel>(
+                                                    icon: const Icon(Icons
+                                                        .keyboard_arrow_down),
+                                                    items: otherRegRouteDataList
+                                                        .map(
                                                             (OtherRegistrationModel
                                                                 items) {
-                                                          return DropdownMenuItem<
-                                                              OtherRegistrationModel>(
-                                                            value: items,
-                                                            child:
-                                                                Text(items.name),
-                                                          );
-                                                        }).toList(),
-                                                        value: routeModel,
-                                                        onChanged: (value) {
-                                                          setState(() {
-                                                        routeModel = value;
-                                                        route =
+                                                      return DropdownMenuItem<
+                                                          OtherRegistrationModel>(
+                                                        value: items,
+                                                        child: Text(items.name),
+                                                      );
+                                                    }).toList(),
+                                                    value: areaModel,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        areaModel = value;
+                                                        area =
                                                             value!.id.toString();
                                                       });
-                                                        },
-                                                      ),
+                                                    },
+                                                  ),
                                                     ),
                                                   ),
                                                   headTxt: 'Select Route')
@@ -3377,7 +3378,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 DropdownButton<OtherRegistrationModel>(
                                                                               isExpanded: true,
                                                                               icon: const Icon(Icons.keyboard_arrow_down),
-                                                                              items: otherRegAreaList.map((OtherRegistrationModel items) {
+                                                                              items: otherRegAreaDataList.map((OtherRegistrationModel items) {
                                                                                 return DropdownMenuItem<OtherRegistrationModel>(
                                                                                   value: items,
                                                                                   child: Text(items.name),

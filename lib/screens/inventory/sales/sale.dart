@@ -22,6 +22,7 @@ import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/option_rate_type.dart';
 import 'package:sheraccerp/models/order.dart';
+import 'package:sheraccerp/models/other_registrations.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
@@ -335,6 +336,8 @@ class _SaleState extends ConsumerState<Sale> {
           bankLedgerName = bankLedgerData.name;
         }
       });
+      // newSale = oldBill ? false : true;
+      // !oldBill ? newSale == true : false;
     });
   }
 
@@ -2276,102 +2279,90 @@ getEntryNo(saleFormId) {
   bool cashCustomer = false;
   var filteredName;
   
-  void _onTabTapped(int index) {
- if(!mounted){
-   return;
- }
-    setState(() {
-    selectedTabIndex = index;
-  });
+final selectedTabIndexProvider = StateProvider<int>((ref) => 0);
+final cashCustomerProvider = StateProvider<bool>((ref) => false);
+final selectedCashCustomerIdProvider = StateProvider<int>((ref) => 0);
+final selectedCustomerIdProvider = StateProvider<int>((ref) => 0);
 
+
+void _onTabTapped(WidgetRef ref, int index) {
+  ref.read(selectedTabIndexProvider.notifier).state = index;
+  selectedTabIndex = ref.read(selectedTabIndexProvider.notifier).state;
 
   if (index == 1) {
-    if(!mounted){
-      return;
-    }
-      setState(() { 
-      //  projectId = '-1';
-      //  DataJson(id: 0,name: '');
+      // setState(() {
       cashCustomer = true;
       selectedCashCustomerId = acId;
       debugPrint('Selected cash Account ${selectedCashCustomerId.toString()}');
-      
-      final csDetails = api.getCashCustomerDetail(acId);
-      
-     if(mounted){return;}
-      csDetails.then((value) { 
-        setState(() {
-          cashLedgerModel = value;
-          filterCashAccount = cashAccount.where((element) {
-            return element.key == selectedCashCustomerId;
-          }).toList();
-          filteredName = filterCashAccount.map((element) {
-            return element.value; 
-          }).join(', ');
-          cashLedgerModel!.name = filteredName.toString(); 
-          // print(filteredName);  
-        });
+    // });
+    debugPrint('Selected cash Account ${acId.toString()}');
+
+    // Perform API call as usual
+    final csDetails = api.getCashCustomerDetail(acId);
+     csDetails.then((value) {
+      if (!mounted) return;
+      setState(() {
+        cashLedgerModel = value;
+        filterCashAccount = cashAccount.where((element) {
+          return element.key == selectedCashCustomerId;
+        }).toList();
+        filteredName = filterCashAccount.map((element) {
+          return element.value; 
+        }).join(', ');
+        cashLedgerModel!.name = filteredName.toString(); 
+        selectedCashCustomerId = acId;
       });
     });
- 
-  }
-  else{
-   if(!mounted){
-     return;
-   }
-    setState(() {
-      cashCustomer = false;
-      selectedCustomerId = selectedCustomerId;
-      debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
-    });
-  
+  } else {
+    // Reset for credit customer
+    // setState(() {
+    //   selectedCustomerId = selectedCustomerId;
+    // });
+    cashCustomer = false;
+    ref.read(cashCustomerProvider.notifier).state = false;
+    ref.read(selectedCustomerIdProvider.notifier).state = selectedCustomerId?? 0;
+     selectedCustomerId = ref.read(selectedCustomerIdProvider.notifier).state;
+    debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
   }
 }
 
-  // void _onTabTapped(int index) {
-  // setState(() {
-  //   selectedTabIndex = index; 
-  // });
-  // if (index == 1) {
+// **** ontap first method *****
+//  void _onTabTapped(int index) {
+//   if (!mounted) return;
+//   setState(() {
+//     selectedTabIndex = index;
+//   });
+//   if (index == 1) {
+//     setState(() {
+//       cashCustomer = true;
+//       selectedCashCustomerId = acId;
+//       debugPrint('Selected cash Account ${selectedCashCustomerId.toString()}');
+//     });
+//  if(!mounted)return;
+//     final csDetails = api.getCashCustomerDetail(acId);
+//     csDetails.then((value) {
+//       if (!mounted) return;
+//       setState(() {
+//         cashLedgerModel = value;
+//         filterCashAccount = cashAccount.where((element) {
+//           return element.key == selectedCashCustomerId;
+//         }).toList();
+//         filteredName = filterCashAccount.map((element) {
+//           return element.value; 
+//         }).join(', ');
+//         cashLedgerModel!.name = filteredName.toString(); 
+//       });
+//     });
+//   } else {
+//     setState(() {
+//       cashCustomer = false;
+//       selectedCustomerId = selectedCustomerId;
+//       debugPrint('Selected Credit Account ${selectedCustomerId.toString()}');
+//     });
+//   }
+// }
+ 
 
-  //   setState(() {
-  //    selectedCustomerId =  acId;
-  //     final csDetails = api.getCustomerDetail(acId);
-      
-  //     csDetails.then((value)  { 
-  //       ledgerModel = value;
-  //       ledgerModel!.name = filteredName.toString(); 
-  //     });
-  //     filterCashAccount = cashAccount.firstWhere((element) {
-  //           return element.key == selectedCustomerId;
-  //         }).toList();
-  //         print(filterCashAccount);
-          
-  //          filteredName = filterCashAccount.map((element) {
-  //       return element.key.toString(); 
-        
-  //     });
-  //     print(filteredName);
-
-  //   });
-    
-       
-  //   // ref.watch(customersProvider).whenData((data) {
-  //   //   LedgerModel? cashCustomer;
-  //   //   try {
-
-  //   //     cashCustomer = data.firstWhere((customer) => customer.name == 'CASH');
-  //   //   } catch (e) {
-  //   //     cashCustomer = null;
-  //   //   }
-
-  //   //   setState(() {
-  //   //     if (cashCustomer != null) {
-  //   //       selectedCustomerId = cashCustomer.id;
-  //   //       final csDetails = api.getCustomerDetail(cashCustomer.id);
-  //   //       csDetails.then((value) => ledgerModel = value,);
-
-  //   //       print(acId);
   //   //       print("Selected Customer ID: $selectedCustomerId, Name: ${cashCustomer.name}");
   //   //     } else {
   //   //       selectedCustomerId = null;
@@ -2381,14 +2372,19 @@ getEntryNo(saleFormId) {
   //   }
   // }
   TabController? tabController;
+ late String selectedTaxOption = '';
+  
   newSaleWidget(newSale) {
     if (newSale) {
       setState(() {
         newSale = true;
+        selectedTabIndex  = ref.watch(selectedTabIndexProvider);
+        isTax = taxable;
+        selectedTaxOption = isTax ? 'With Tax' : 'Without Tax';
       });
     }
     return DefaultTabController(
-      initialIndex: selectedTabIndex,
+      initialIndex: selectedTabIndex ,
       animationDuration: const Duration(milliseconds: 1),
       length: 2,
       child: Scaffold(
@@ -2409,7 +2405,10 @@ getEntryNo(saleFormId) {
               ),
               width: 130,
               child: TabBar(
-                onTap: _onTabTapped,
+                onTap: (index){
+                  _onTabTapped(ref, index);
+                  debugPrint("index ====== ${index.toString()}");
+                } ,
                   indicatorSize: TabBarIndicatorSize.tab,
                   indicatorColor: green,
                   unselectedLabelColor: black,
@@ -6681,13 +6680,11 @@ controllerNarration.text = '';
   }
    
 
-
-
   String selectedQuantity = '';
   List<String> selectedUnits = [];
   int? selectedItemId;
   bool isPrateEdited = false;
-  String? selectedTaxOption = 'With Tax';
+  
   late StockProduct selectedVariant;
   bool isVariantSelected = false;
   bool cantEdit = false;
@@ -6695,8 +6692,7 @@ controllerNarration.text = '';
   var selectedItem;
   var fetchedData;
   bool defaultUnitItem = false;
-  addItemWidget() {
-    
+  addItemWidget() { 
      List<UnitModel> unitListData = [];
     if (editItem) {
       editItem = true;
@@ -6714,6 +6710,16 @@ controllerNarration.text = '';
                                               name: cartModel!.itemName!,
                                             );
       calculateTotal();
+    }
+    else
+      if (!enableMULTIUNIT) {
+      if (selectedVariant.unitId! > 0) {
+        defaultUnitItem = true;
+        _dropDownUnit = selectedVariant.unitId!;
+      } else {
+        defaultUnitItem = false;
+        _dropDownUnit = 0;
+      }
     }
     calculateTextBatch(StockProduct product, double qty) {
       double sRate = _rateController.text.isNotEmpty
@@ -6767,9 +6773,14 @@ controllerNarration.text = '';
         : discount;
     gross = CommonService.getRound(decimal, ((rRate * qty)));
     subTotal = CommonService.getRound(decimal, (gross - rDisc));
-    if (taxP > 0) {
+
+   if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
       tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
     }
+   }else{
+    tax = 0;
+   }
     if (companyTaxMode == 'INDIA') {
       kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
       double csPer = taxP / 2;
@@ -6797,8 +6808,12 @@ controllerNarration.text = '';
       cess = 0;
       adCess = 0;
     }
-    total = CommonService.getRound(
-        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    // total = CommonService.getRound(
+    //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+     total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
@@ -6924,9 +6939,16 @@ controllerNarration.text = '';
         ? CommonService.getRound(decimal, ((rRate * quantity)))
         : CommonService.getRound(decimal, ((rate * quantity)));
     subTotal = CommonService.getRound(decimal, (gross - rDisc));
-    if (taxP > 0) {
+  if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
       tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
     }
+   }else{
+    tax = 0;
+   }
+    // if (taxP > 0) {
+    //   tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    // }
     if (companyTaxMode == 'INDIA') {
       kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
       double csPer = taxP / 2;
@@ -6954,8 +6976,12 @@ controllerNarration.text = '';
       cess = 0;
       adCess = 0;
     }
-    total = CommonService.getRound(
-        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    // total = CommonService.getRound(
+    //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+     total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
@@ -7081,9 +7107,16 @@ controllerNarration.text = '';
         ? CommonService.getRound(decimal, ((rRate * quantity)))
         : CommonService.getRound(decimal, ((rate * quantity)));
     subTotal = CommonService.getRound(decimal, (gross - rDisc));
-    if (taxP > 0) {
+   if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
       tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
     }
+   }else{
+    tax = 0;
+   }
+    // if (taxP > 0) {
+    //   tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    // }
     if (companyTaxMode == 'INDIA') {
       kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
       double csPer = taxP / 2;
@@ -7111,8 +7144,10 @@ controllerNarration.text = '';
       cess = 0;
       adCess = 0;
     }
-    total = CommonService.getRound(
-        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+    total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
@@ -7128,16 +7163,9 @@ controllerNarration.text = '';
     }
     unitValue = _conversion > 0 ? _conversion : 1;
         List<UnitModel> unitListData = [];
-    // if (!enableMULTIUNIT) {
-    //   if (selectedVariant.unitId! > 0) {
-    //     defaultUnitItem = true;
-    //     _dropDownUnit = selectedVariant.unitId!;
-    //   } else {
-    //     defaultUnitItem = false;
-    //     _dropDownUnit = 0;
-    //   }
-    // }
+  
   }
+  
     //     if (isQuantityBasedSerialNo) {
     //   var itemId = selectedVariant.itemId;
     //   api
@@ -7306,7 +7334,6 @@ controllerNarration.text = '';
           //         ? data.map((e) => e.code!).toList()
           //         : data.map((item) => item.name!).toList();
           //         return
-
             // StreamBuilder<List<StockItem>>(
             // stream: (salesTypeData!.type == 'SALES-O' ||
             //     salesTypeData!.type == 'SALES-Q')
@@ -7327,14 +7354,12 @@ controllerNarration.text = '';
             //                   // }
             //                   else if (!snapshot.hasData) {
             //                     return const Text('No data found');
-            //                   }
-                   
+            //                   }             
             //     final itemNameListDisplay = snapshot.data!
             //         .map((item) => item.name)
             //         .where((name) => name != null)
             //         .cast<String>()
             //         .toList();
-
             //     return
                   SingleChildScrollView(
                     child: Column(
@@ -7398,7 +7423,6 @@ controllerNarration.text = '';
                     .cast<String>()
                     .toList();
                                         return EasyAutocomplete(
-                                          
                                           // progressIndicatorBuilder:
                                           //     const CircularProgressIndicator(),
                                           controller: itemNameControl,
@@ -7427,8 +7451,7 @@ controllerNarration.text = '';
                                           onSubmitted: (value) async{
                                             // clearValue();
                                             // itemNameControl.text = '';
-                                            // setState(() {
-                   
+                                            // setState(() {                
                     // selectedItem.hasVariant ?
                     //   keyItemsVariantStock
                     // ? SizedBox(
@@ -7511,7 +7534,6 @@ controllerNarration.text = '';
                                               }else{
                                                 itemVarianDetails(selectedItem);
                                                 fetchProductDetails(selectedItem.name);
-                                              
                                                 // selectedItem == value[0];
                                               }
                                            } );                               
@@ -7593,16 +7615,14 @@ controllerNarration.text = '';
                                         //           rateFuture.then((rate) {
                                         //             if (rate != null) {
                                         //               _rateController.text =
-                                        //                   rate.toStringAsFixed(2);
-                                                       
+                                        //                   rate.toStringAsFixed(2);                                                     
                                         //             }
                                         //           });
                                         //            salesTypeData!.type != 'SALES-ES' 
                                         //            ?taxP = selectedVariant.tax! ?? 0
                                         //            :taxP = 0;
                                         //         });
-                                        //       }
-                                        
+                                        //       }                                      
                                         itemVarianDetails(selectedItem);
                                         setState(() {
                                            if (isQuantityBasedSerialNo) {
@@ -7614,8 +7634,7 @@ controllerNarration.text = '';
                                             // print('onSubmitted value: $selectedItemId');
                                           }
                                           },
-                                        );
-                                     
+                                        );                                   
                                       }
                                     ),
                                   ),
@@ -7957,8 +7976,7 @@ controllerNarration.text = '';
                                                           : false;
                                       calculate();
                                     });
-                                    }
-                                    },
+                                    }},
                                   ), headTxt: 'Free Qty')),
                                     ),
                                             const SizedBox(
@@ -8182,6 +8200,27 @@ controllerNarration.text = '';
                                                           )),
                                                       headTxt: 'Unit')),
                                             ),
+                                                             Visibility(
+                          visible: (!enableMULTIUNIT && defaultUnitItem),
+                          child: DropdownButton<OtherRegistrationModel>(
+                            hint: Text(_dropDownUnit > 0
+                                ? UnitSettings.getOtherUnitName(_dropDownUnit)
+                                : 'Unit'),
+                            items: otherRegUnitList
+                                .map<DropdownMenuItem<OtherRegistrationModel>>(
+                                    (item) {
+                              return DropdownMenuItem<OtherRegistrationModel>(
+                                value: item,
+                                child: Text(item.name),
+                              );
+                            }).toList(),
+                            onChanged: (valueData) {
+                              setState(() {
+                                _dropDownUnit =
+                                    int.tryParse(valueData!.id.toString())!;
+                              });
+                            },
+                          )),
                                           ],
                                         ),
                                         const SizedBox(
@@ -8257,9 +8296,10 @@ controllerNarration.text = '';
                                             const SizedBox(
                                               width: 5,
                                             ),
-                                            salesTypeData!.type == 'SALES-ES'
-                                            ?const SizedBox()
-                                           : Expanded(
+                                          //   salesTypeData!.type == 'SALES-ES'
+                                          //   ?const SizedBox()
+                                          //  : 
+                                           Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
                                                       height: 45,
@@ -8287,9 +8327,10 @@ controllerNarration.text = '';
                                                           value:
                                                               selectedTaxOption,
                                                           items: [
-                                                            const DropdownMenuItem(
+                                                             DropdownMenuItem(
+                                                              enabled: editItem  ? false : true,
                                                               value: 'With Tax',
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'With Tax'),
                                                             ),
                                                             DropdownMenuItem(
@@ -8305,12 +8346,12 @@ controllerNarration.text = '';
                                                                           :null
                                                                           :null;
                                                               },
-                                                              enabled: salesTypeData!
+                                                              enabled: editItem  ? false : 
+                                                              salesTypeData!
                                                                               .id ==
                                                                           1 ||
                                                                       salesTypeData!
-                                                                              .id ==
-                                                                          2
+                                                                              .id == 2
                                                                   ? false
                                                                   : true,
                                                               value:
@@ -8322,9 +8363,17 @@ controllerNarration.text = '';
                                                           onChanged: (value) {
                                                             setState(() {
                                                               selectedTaxOption = value!;
-                                                              value == 'Without Tax' 
-                                                                  ? isTax = false
-                                                                  : isTax = true;
+                                                              if(value == 'Without Tax'){
+                                                                isTax = false;
+                                                                taxP = 0;
+                                                                tax = 0;
+                                                              }
+                                                              else{
+                                                                isTax = true;
+                                                              }
+                                                              // value == 'Without Tax' 
+                                                              //     ? isTax = false
+                                                              //     : isTax = true;
                                                               calculateConversion();
                                                             });
                                                           },
@@ -8922,9 +8971,10 @@ controllerNarration.text = '';
                                             const SizedBox(
                                               width: 5,
                                             ),
-                                            salesTypeData!.type == 'SALES-ES'
-                                            ?const SizedBox()
-                                           : Expanded(
+                                          //   salesTypeData!.type == 'SALES-ES'
+                                          //   ?const SizedBox()
+                                          //  : 
+                                           Expanded(
                                                 child: ContainerFieldWidget(
                                                     widget: Container(
                                                       height: 45,
@@ -8952,9 +9002,10 @@ controllerNarration.text = '';
                                                           value:
                                                               selectedTaxOption,
                                                           items: [
-                                                            const DropdownMenuItem(
+                                                             DropdownMenuItem(
+                                                              enabled: editItem  ? false :true,
                                                               value: 'With Tax',
-                                                              child: Text(
+                                                              child: const Text(
                                                                   'With Tax'),
                                                             ),
                                                             DropdownMenuItem(
@@ -8970,12 +9021,12 @@ controllerNarration.text = '';
                                                                           :null
                                                                           :null;
                                                               },
-                                                              enabled: salesTypeData!
+                                                              enabled: editItem  ? false : 
+                                                              salesTypeData!
                                                                               .id ==
                                                                           1 ||
                                                                       salesTypeData!
-                                                                              .id ==
-                                                                          2
+                                                                              .id == 2
                                                                   ? false
                                                                   : true,
                                                               value:
@@ -8987,9 +9038,19 @@ controllerNarration.text = '';
                                                           onChanged: (value) {
                                                             setState(() {
                                                               selectedTaxOption = value!;
-                                                              value == 'Without Tax' 
-                                                                  ? isTax = false
-                                                                  : isTax = true;
+                                                                if(value == 'Without Tax'){
+                                                                taxValue = taxP;  
+                                                                isTax = false;
+                                                                taxP = 0;
+                                                                tax = 0;
+                                                              }
+                                                              else{
+                                                                isTax = true;
+                                                                taxP = taxValue;
+                                                              }
+                                                              // value == 'Without Tax' 
+                                                              //     ? isTax = false
+                                                              //     : isTax = true;
                                                               calculateConversion();
                                                             });
                                                           },
@@ -9226,9 +9287,11 @@ controllerNarration.text = '';
                                         const SizedBox(
                                           height: 10,
                                         ),
-                                        salesTypeData!.type == 'SALES-ES'
-                                        ?const SizedBox()
-                                       : SizedBox(
+                                      //   salesTypeData!.type == 'SALES-ES'
+                                      !isTax 
+                                       ?const SizedBox()
+                                       : 
+                                       SizedBox(
                                           width:
                                               MediaQuery.of(context).size.width,
                                           child: Row(children: [
@@ -9587,9 +9650,11 @@ controllerNarration.text = '';
                                         const SizedBox(
                                           height: 10,
                                         ),
-                                        salesTypeData!.type == 'SALES-ES'
-                                        ?const SizedBox()
-                                       : SizedBox(
+                                      //   salesTypeData!.type == 'SALES-ES'
+                                      !isTax
+                                      ? const SizedBox()
+                                      : 
+                                       SizedBox(
                                           width:
                                               MediaQuery.of(context).size.width,
                                           child: Row(children: [
@@ -11381,7 +11446,7 @@ controllerNarration.text = '';
 //       : Container();
 // }
 
-  projectWidget() {
+projectWidget() {
   return isProjectSoftware
       ? SizedBox(
           child: Padding(
@@ -11392,8 +11457,8 @@ controllerNarration.text = '';
                 showSearchBox: true,
               ),
               asyncItems: (String filter) async {
-                var items = await getProjectListData(filter);
                 if (!mounted) return [];
+                var items = await getProjectListData(filter);
                 return items;
               },
               dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -11426,23 +11491,23 @@ controllerNarration.text = '';
       : Container();
 }
 
-
-    Future<List<dynamic>> getProjectListData(String filter) async {
-    var dd = filter.isEmpty
-        ? projectList
-        : projectList
-            .where((element) => element.name
-                .toString()
-                .toLowerCase()
-                .contains(filter.toLowerCase()))
-            .toList();
-    List<DataJson> dataResult = [];
-    for (var data in dd) {
-      dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
-    }
-    return dataResult;
+Future<List<dynamic>> getProjectListData(String filter) async {
+ 
+var dd = filter.isEmpty
+      ? projectList
+      : projectList
+          .where((element) => element.name
+              .toString()
+              .toLowerCase()
+              .contains(filter.toLowerCase()))
+          .toList();
+  List<DataJson> dataResult = [];
+  for (var data in dd) {
+    dataResult.add(DataJson(id: data.id, name: data.name!.trim().toString()));
   }
-
+  return dataResult;
+}
+ 
   OptionRateType? rateTypeItem;
 
   widgetRateType() {
@@ -13960,6 +14025,7 @@ bool editItem = false;
     },
   );
 }
+double taxValue = 0;
 
 itemVarianDetails(selectedItem)async{
    _autoVariantSelect = selectedItem.hasVariant! ? true : false;
@@ -14031,12 +14097,24 @@ itemVarianDetails(selectedItem)async{
                                                          if (isQuantityBasedSerialNo) {
       var itemId = selectedVariant.itemId;
       api
-          .getSelectedItemSerialNoList(selectedVariant.productId, itemId, 'SelectSerialNo')
+          .getSelectedItemSerialNoList(selectedVariant.productId, itemId, 'SelectSerialNo') 
           .then((value) => selectedItemSerialNoData = value);
     }
-                                                   salesTypeData!.type != 'SALES-ES' 
-                                                   ?taxP = selectedVariant.tax! ?? 0
-                                                   :taxP = 0;
+                                                   setState(() {
+                                                    selectedTaxOption =
+                                                    salesTypeData!.tax ? 'With Tax' : 'Without Tax';
+                                                   isTax = selectedTaxOption == 'With Tax' ? true : false;
+                                                   
+                                                  //    salesTypeData!.tax 
+                                                  //  ?
+                                                   if(selectedTaxOption == 'With Tax'){
+                                                    taxP = selectedVariant.tax! ?? 0;
+                                                   }
+                                                   else{
+                                                    taxValue = selectedVariant.tax! ?? 0;
+                                                   }
+                                                  //  :taxP = 0;
+                                                   });
                                                 });
                                               }
 }

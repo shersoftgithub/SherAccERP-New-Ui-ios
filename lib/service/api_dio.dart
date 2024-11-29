@@ -2652,6 +2652,41 @@ class DioService {
         for (var ledger in jsonResponse) {
           _items.add(LedgerModel.fromJson(ledger));
         }
+        // "http://202.21.37.226:90/api/v26/Ledger/getLedgerBySalesManLike/ASPER23?salesman=2&like=a"
+      } else {
+        debugPrint('Failed to load data');
+      }
+    } catch (e) {
+      final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+    }
+    return _items;
+  }
+  Future<List<LedgerModel>> getLedgerBySalesMans(
+      int salesman, ) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    List<LedgerModel> _items = [];
+    try {
+      Response response;
+      if (salesman > 1) {
+        var _salesman = salesman > 1 ? salesman : 0;
+        response = await dio.get(
+          '${pref.getString('api')}${apiV}Ledger/getLedgerBySales/$dataBase',
+          queryParameters: {'salesman': _salesman, },
+        );
+      } else {
+        response = await dio.get(
+            '${pref.getString('api')}${apiV}Ledger/getLedgerListLike/$dataBase',);
+      }
+      if (response.statusCode == 200) {
+        var jsonResponse = response.data;
+        for (var ledger in jsonResponse) {
+          _items.add(LedgerModel.fromJson(ledger));
+        }
       } else {
         debugPrint('Failed to load data');
       }
@@ -2722,7 +2757,7 @@ class DioService {
         ? (pref.getString('DBName') ?? "cSharp")
         : (pref.getString('DBNameT') ?? "cSharp");
     CustomerModel _item = CustomerModel();
-    try {
+    try { 
       final response = await dio
           .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
       if (response.statusCode == 200) {
@@ -2734,7 +2769,7 @@ class DioService {
         } else {
           _item = CustomerModel.emptyData();
           _item.id = id;
-          _item.name = '';
+          _item.name = '';  
         }
       } else {
         debugPrint('Failed to load data');
@@ -2758,7 +2793,6 @@ class DioService {
           .get('${pref.getString('api')}${apiV}Ledger/getDetail/$dataBase/$id');
       if (response.statusCode == 200) {
         List<dynamic> _data = response.data;
-
         // _item = CustomerModel.fromJson(_data[0]);
           if (_data.isNotEmpty) {
           _item = CashCustomerModel.fromJson(_data[0]);
@@ -2804,7 +2838,7 @@ class DioService {
     debugPrint(errorMessage);
     return [];
   }
-}
+}   
 
 
 //   Stream<CustomerModel> getCustomerDetailStream(int id) async* {
@@ -5201,7 +5235,7 @@ class DioService {
             'cashId': cashId,
             'salesman': salesman,
             'statement': statement,
-            'areaId': area,
+            'areaId': area,   
             'routeId': route
           });
 
@@ -5471,7 +5505,7 @@ class DioService {
       final errorMessage =
           DioExceptions.fromDioError('$e' as DioError).toString();
       debugPrint(errorMessage.toString());
-      return false;
+      return false; 
     }
   }
 
@@ -7670,6 +7704,31 @@ class DioService {
       debugPrint(errorMessage.toString());
     }
     return ret;
+  }
+
+  Future<String> getWarrantyEntryNo(String statement)async{
+    String ret = '0';
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+      try {
+          final response = await dio.get(
+          '${pref.getString('api')}${apiV}WarrantyEntry/getEntryNo/$dataBase',
+          queryParameters: {
+            'statementType':statement
+          });
+           if (response.statusCode == 200) {
+        ret = response.data.toString();
+      } else {
+        debugPrint('Unexpected error occurred!');
+      }
+      } catch (e) {
+        final errorMessage = DioExceptions.fromDioError(e as DioError).toString();
+      debugPrint(errorMessage.toString());
+      }
+      return ret;
   }
 
   Future<dynamic>fetchWarranty(entryNo)async{

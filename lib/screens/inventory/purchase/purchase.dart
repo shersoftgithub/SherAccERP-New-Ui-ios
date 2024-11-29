@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -35,15 +36,15 @@ import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/popup_menu_action.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
-class Purchase extends StatefulWidget {
+class Purchase extends ConsumerStatefulWidget {
   final bool oldPurchase;
   const Purchase({Key? key, required this.oldPurchase}) : super(key: key);
 
   @override
-  State<Purchase> createState() => _PurchaseState();
+  ConsumerState<Purchase> createState() => _PurchaseState();
 }
 
-class _PurchaseState extends State<Purchase> {
+class _PurchaseState extends ConsumerState<Purchase> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   DioService api = DioService();
   CustomerModel? ledgerModel, accountModel;
@@ -1144,44 +1145,53 @@ class _PurchaseState extends State<Purchase> {
   TabController? tabController;
   var filterCashAccount;
   var filteredName;
-  void _onTabTapped(int index) {
-    setState(() {
-      selectedTabIndex = index;
-    });
+  
+  final selectedTabIndexProvider = StateProvider<int>((ref) => 0);
+final cashCustomerProvider = StateProvider<bool>((ref) => false);
+final selectedCashCustomerIdProvider = StateProvider<int>((ref) => 0);
+final selectedCustomerIdProvider = StateProvider<int>((ref) => 0);
 
-    if (index == 1) {
+
+void _onTabTapped(WidgetRef ref, int index) {
+  ref.read(selectedTabIndexProvider.notifier).state = index;
+  selectedTabIndex = ref.read(selectedTabIndexProvider.notifier).state;
+
+  if (index == 1) {
+      // setState(() {
+      cashCustomer = true;
+      selectedCashSupplierId = acId;
+      debugPrint('Selected cash Account ${selectedCashSupplierId.toString()}');
+    // });
+    debugPrint('Selected cash Account ${acId.toString()}');
+
+    // Perform API call as usual
+    final csDetails = api.getCashCustomerDetail(acId);
+     csDetails.then((value) {
+      if (!mounted) return;
       setState(() {
-        cashCustomer = true;
+        cashLedgerModel = value;
+        filterCashAccount = cashAccount.where((element) {
+          return element.key == selectedCashSupplierId;
+        }).toList();
+        filteredName = filterCashAccount.map((element) {
+          return element.value; 
+        }).join(', ');
+        cashLedgerModel!.name = filteredName.toString(); 
         selectedCashSupplierId = acId;
-
-        final csDetails = api.getCashCustomerDetail(acId);
-
-        csDetails.then((value) {
-          setState(() {
-            cashLedgerModel = value;
-
-            filterCashAccount = cashAccount.where((element) {
-              return element.key == selectedCashSupplierId;
-            }).toList();
-
-            filteredName = filterCashAccount.map((element) {
-              return element.value;
-            }).join(', ');
-
-            cashLedgerModel!.name = filteredName.toString();
-
-            print(filteredName);
-          });
-        });
       });
-    }
-    else{
-    setState(() {
-      cashCustomer = false;
-      selectedSupplierId = selectedSupplierId;
     });
+  } else {
+    // Reset for credit customer
+    // setState(() {
+    //   selectedCustomerId = selectedCustomerId;
+    // });
+    cashCustomer = false;
+    ref.read(cashCustomerProvider.notifier).state = false;
+    ref.read(selectedCustomerIdProvider.notifier).state = selectedSupplierId?? 0;
+     selectedSupplierId = ref.read(selectedCustomerIdProvider.notifier).state;
+    debugPrint('Selected Credit Account ${selectedSupplierId.toString()}');
   }
-  }
+}
 
   newPurchaseWidget(newPurchase) {
     if (newPurchase) {
@@ -1217,7 +1227,10 @@ class _PurchaseState extends State<Purchase> {
                       ),
                       width: 130,
                       child: TabBar(
-                          onTap: _onTabTapped,
+                            onTap: (index){
+                  _onTabTapped(ref, index);
+                  debugPrint("index ====== ${index.toString()}");
+                } ,
                           indicatorSize: TabBarIndicatorSize.tab,
                           indicatorColor: green,
                           unselectedLabelColor: black,
@@ -3470,6 +3483,15 @@ class _PurchaseState extends State<Purchase> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                               Visibility(
+                                visible: isProjectSoftware,
+                                child:const Text(' Select Project',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ),
+                               projectWidget(),
                               const Text(
                                 ' Type',
                                 style: TextStyle(

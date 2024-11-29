@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -7,6 +8,9 @@ import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/models/company.dart';
+import 'package:sheraccerp/scoped-models/main.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_cart_model.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_complaint_model.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_customer_model.dart';
@@ -42,6 +46,7 @@ class _WarrantyState extends State<Warranty> {
    List<WarrantyRepalceModel> replacementCart = [];
    WarrantyCustomerModel? customer ;
    List<WarrantyComplaintModel> complaint = [];
+   Future<List<dynamic>>? _getledgerListData;
    bool isTax = true,
       otherAmountLoaded = false,
       valueMore = false,
@@ -77,7 +82,8 @@ class _WarrantyState extends State<Warranty> {
     'Reject',
     'Transfer To Mfr',
     'Sales Return',
-  ];   
+  ];  
+  var nameLike = "a"; 
   
    @override
   void initState() {
@@ -93,8 +99,30 @@ class _WarrantyState extends State<Warranty> {
             'int', 'key-dropdown-default-location-view', 2) -
         1;
     isAdminUser =
-        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;    
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;  
+    // isSalesManWiseLedger =
+    //  ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    loadSettings();
+    //  _getledgerListData = isSalesManWiseLedger
+    //       ? api.getLedgerBySalesMan(salesManId,)
+    //       : api.getLedgersAll(); 
+    // getLedger(nameLike);   
   }
+   CompanyInformation? companySettings;
+   List<CompanySettings>? settings;
+   
+   loadSettings() {
+        companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
+    settings = ScopedModel.of<MainModel>(context).getSettings();
+    isSalesManWiseLedger = true;
+        // ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+        _getledgerListData = isSalesManWiseLedger
+          ? api.getLedgerBySalesMan(salesManId,)
+          : api.getLedgersAll();
+   }
+  //  getLedger(String like){
+     
+  //  }
 
   @override
   Widget build(BuildContext context) {
@@ -317,27 +345,48 @@ class _WarrantyState extends State<Warranty> {
             fontFamily: 'poppins'
           ),
           actions: [
-            Visibility(
-              visible: previewData,
-              child: TextButton(
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(3)
-                    ),
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.blue[700],
+            TextButton(
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3)
                   ),
-                  onPressed: () async {
-                    setState(() {
-                      widgetID = false;
-                    });
-                  },
-                  child: const Text(
-                    'New Warranty Note',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  )),
-            ),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue[700],
+                ),
+                 onPressed: () async {
+        setState(() {
+          isLoading = true; 
+        });
+        try {
+          final value = await api.getWarrantyEntryNo('Reseed');
+          debugPrint(value);
+          setState(() {
+            entryNo = value;
+            entryNoController .text = entryNo;
+            widgetID = false; 
+          });
+        } catch (error) {
+          debugPrint("Error: $error");
+        } finally {
+          setState(() {
+            isLoading = false; 
+          });
+        }
+      },
+                child: isLoading
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          :  const Text(
+                  'New',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                )),
           ],
         ),
         body: Padding(
@@ -589,13 +638,28 @@ class _WarrantyState extends State<Warranty> {
                     foregroundColor:
                         MaterialStateProperty.all<Color>(Colors.white),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      widgetID = false;
-                    });
-                  },
+                   onPressed: () async {
+        setState(() {
+          isLoading = true; 
+        });
+        try {
+          final value = await api.getWarrantyEntryNo('Reseed');
+          debugPrint(value);
+          setState(() {
+            entryNo = value;
+            entryNoController .text = entryNo;
+            widgetID = false; 
+          });
+        } catch (error) {
+          debugPrint("Error: $error");
+        } finally {
+          setState(() {
+            isLoading = false; 
+          });
+        }
+      },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Take New DeliveryNote',
+                  label: const Text('Take New Warranty',
                    style: TextStyle(
                 fontFamily: 'poppins'
               ),
@@ -604,7 +668,7 @@ class _WarrantyState extends State<Warranty> {
           ));
   }
   
-  int nextWidget = 0;
+  int nextWidget = 0; 
   selectWidget() {
     return nextWidget == 0
         // ? loadScanner
@@ -616,18 +680,22 @@ class _WarrantyState extends State<Warranty> {
         // selectLedgerWidget()
         : nextWidget == 1
             ? itemDetailWidget()
-            : Text('No Widget') ;
+            : const Text('No Widget') ;
   }
 
 
   final expandedHeight = 472.0;
-  final collapsedHeight =   160.0;
+  final collapsedHeight =   180.0;
   final collaps = 300.0;
  bool isExpanded = false;
  final animationDuration = const Duration(milliseconds: 400);
  final entryNoController = TextEditingController();
  final customerNameController = TextEditingController();
+ final mobileController = TextEditingController();
  String entryNo = '';
+ var query = 'a';
+  var selectedSupplier;
+  int? selectedSupplierId;
   warrantyWidget(){
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -853,9 +921,79 @@ class _WarrantyState extends State<Warranty> {
               color: white,
               child:  Column(
                 children: [
-                  ContainerFieldWidget(
+                  !oldBill
+                  ?  FutureBuilder(
+                                future: _getledgerListData,
+                                builder: (context, snapshot) {
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData) {
+                                    return const Text('No data found');
+                                  }
+                                  final supplierList = snapshot.data;
+
+                                  final names = supplierList!
+                                      .map((e) => isSalesManWiseLedger? e.name: e['LedName'])
+                                      .where((name) => name != null)
+                                      .cast<String>()
+                                      .toList();
+                                  return EasyAutocomplete(
+                                    progressIndicatorBuilder: isLoading == true
+                                        ? const Center(
+                                            child: CircularProgressIndicator())
+                                        : null,
+                                    controller: customerNameController,
+                                    // oldBill
+                                    //     ? selectedSupplierId == acId
+                                    //         ? TextEditingController(
+                                    //             text: cashAc)
+                                    //         : supplierController
+                                    //     : supplierController,
+                                    inputTextStyle: const TextStyle(
+                                        fontFamily: 'poppins', fontSize: 14),
+                                    suggestionTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                    suggestions: names,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        // getLedger(value);
+                                        nameLike = value.isNotEmpty
+                                            ? value.toLowerCase()
+                                            : 'a';
+                                      });
+                                    },
+                                    onSubmitted: (value) {
+                                      setState(() {
+                                        final selectedSupplier = 
+                                        isSalesManWiseLedger ? supplierList.firstWhere((element) => element.name == value)
+                                            : supplierList.firstWhere((element) =>
+                                           element['LedName'] == value);
+                                        selectedSupplierId =
+                                           isSalesManWiseLedger? selectedSupplier.id : selectedSupplier['Ledcode'];
+                                        _isLoading = true;
+                                        api.getCustomerDetail(selectedSupplierId!)
+                                            .then((value) {
+                                          setState(() {
+                                            mobileController.text = value.phone! ?? '';
+                                            // customer!.customerName = value.name;
+                                            _isLoading = false;
+                                          });
+                                        });
+                                      });
+                                    },
+                                  );
+                                },
+                              )     
+                 : ContainerFieldWidget(
                     widget: TextField(
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 14
                       ),
@@ -907,9 +1045,9 @@ class _WarrantyState extends State<Warranty> {
                                               fontSize: 15,
                                             ),
                                           ),
-                                          children: const [
+                                          children:  [
                                             Padding(
-                                              padding: EdgeInsets.symmetric(
+                                              padding: const EdgeInsets.symmetric(
                                                 horizontal: 8,
                                                 vertical: 2
                                               ),
@@ -937,6 +1075,23 @@ class _WarrantyState extends State<Warranty> {
                                                                     ContainerFieldWidget(
                                                                       widget: TextField(
                                                                   maxLines: null,
+                                                                  controller: mobileController,
+                                                                  readOnly: true,
+                                                                  decoration: const InputDecoration(
+                                                                      contentPadding: EdgeInsets.symmetric(
+                                                                          vertical:
+                                                                              10,
+                                                                          horizontal:
+                                                                              5),
+                                                                      border:
+                                                                          OutlineInputBorder()),
+                                                                ), headTxt: 'Mobile'),
+                                                                    const SizedBox(
+                                                                      height: 4,
+                                                                    ),
+                                                                    const ContainerFieldWidget(
+                                                                      widget: TextField(
+                                                                  maxLines: null,
                                                                   // controller:
                                                                   readOnly: true,
                                                                   decoration: InputDecoration(
@@ -948,10 +1103,10 @@ class _WarrantyState extends State<Warranty> {
                                                                       border:
                                                                           OutlineInputBorder()),
                                                                 ), headTxt: 'Warranty Location'),
-                                                                    SizedBox(
+                                                                    const SizedBox(
                                                                       height: 4,
                                                                     ),
-                                                                    ContainerFieldWidget(
+                                                                    const ContainerFieldWidget(
                                                                       widget: TextField(
                                                                   maxLines: null,
                                                                   // controller:
@@ -965,10 +1120,10 @@ class _WarrantyState extends State<Warranty> {
                                                                       border:
                                                                           OutlineInputBorder()),
                                                                 ), headTxt: 'Replace Location'),
-                                                                  SizedBox(
+                                                                  const SizedBox(
                                                                       height: 4,
                                                                     ),
-                                                                    ContainerFieldWidget(
+                                                                    const ContainerFieldWidget(
                                                                       widget: TextField(
                                                                   maxLines: null,
                                                                   // controller:
@@ -1149,10 +1304,48 @@ class _WarrantyState extends State<Warranty> {
                                         ),
                                       ),
                                     ),
+                                  const SizedBox(
+                                    height: 8,
+                                  )
                                   ],
                                 ),
                               ),
                             ),
+                   const SizedBox(
+                    height: 4,
+                   ),
+                   ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                nextWidget = 1;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              backgroundColor: const Color(0xff0008B3),
+                            ),
+                            // onPressed: () => context.push(AddItemToSalePage.routePath),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Image(
+                                //     image: AssetImage(
+                                //         'assets/icons/add_item_icon.png')),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Add Item',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'poppins',
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
                 ],
               )
             ),
@@ -1347,9 +1540,9 @@ class _WarrantyState extends State<Warranty> {
                                                     .size
                                                     .width,
                                                 child: Row(children: [
-                                                  Text(
+                                                  const Text(
                                                     'Qty',
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontSize: 12,
                                                     ),
                                                   ),
@@ -1696,7 +1889,6 @@ void editWarranty() {
     'salesman':customer!.customer,
   });
   final body = {
-    
     'information':mapValue,
     'particular': json.encode(combinedList),
     'complaints': json.encode(complaintList),
@@ -1826,7 +2018,8 @@ void editWarranty() {
             ), -1);
         }
         for(var cm in compliant){
-          addCompliants(WarrantyComplaintModel(
+          addCompliants(
+            WarrantyComplaintModel(
             complaint: cm['Complaints'],
             gid: cm['gid']
           ), -1);
@@ -1834,6 +2027,7 @@ void editWarranty() {
         
         setState(() {
           widgetID = false;
+          oldBill = true;
         });
       }
     });

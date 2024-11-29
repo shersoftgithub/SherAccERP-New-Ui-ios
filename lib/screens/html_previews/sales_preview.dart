@@ -284,6 +284,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
         }
       });
     });
+    
 
   }
   
@@ -945,88 +946,180 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
     //   return file.path.toString();
     // }
 
-    return FutureBuilder<List<int>?>(
-      future: api.getInvoiceDesignerPdfData(dataMap),
-      builder: (context, AsyncSnapshot<List<int>?> snapshot) {
-        if (snapshot.hasData) {
-          if (snapshot.data != null) {
-            List<int> bytes = snapshot.data!;
-            if (kIsWeb) {
-              try {
-                // final blob = html.Blob([bytes], 'application/pdf');
-                // final url = html.Url.createObjectUrlFromBlob(blob);
-                // final anchor = html.AnchorElement()
-                //   ..href = url
-                //   ..style.display = 'none'
-                //   ..download = '$title.pdf';
-                // html.document.body.children.add(anchor);
-                // anchor.click();
-                // html.document.body.children.remove(anchor);
-                // html.Url.revokeObjectUrl(url);
-              } catch (ex) {
-                ex.toString();
-              }
-            } else {
-              pdfFunction(bytes);
-            }
-          } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  const Text('No Data Found..'),
-                  ElevatedButton(
-                      onPressed: () {
-                        //try agin
-                      },
-                      child: const Text('Select Again'))
-                ],
-              ),
-            );
+    // *** old code ***
+    // return FutureBuilder<List<int>?>(
+    //   future: api.getInvoiceDesignerPdfData(dataMap),
+    //   builder: (context, AsyncSnapshot<List<int>?> snapshot) {   
+    //     if (snapshot.hasData) {
+    //       if (snapshot.data != null) {
+    //         List<int> bytes = snapshot.data!;
+    //         if (kIsWeb) {
+    //           try {
+    //             // final blob = html.Blob([bytes], 'application/pdf');
+    //             // final url = html.Url.createObjectUrlFromBlob(blob);
+    //             // final anchor = html.AnchorElement()
+    //             //   ..href = url
+    //             //   ..style.display = 'none'
+    //             //   ..download = '$title.pdf';
+    //             // html.document.body.children.add(anchor);
+    //             // anchor.click();
+    //             // html.document.body.children.remove(anchor);
+    //             // html.Url.revokeObjectUrl(url);
+    //           } catch (ex) {
+    //             ex.toString();
+    //           }
+    //         } else {
+    //           pdfFunction(bytes);
+    //         }
+    //       } else {
+    //         return Center(
+    //           child: Column(
+    //             mainAxisAlignment: MainAxisAlignment.center,
+    //             children: [
+    //               const SizedBox(height: 20),
+    //               const Text('No Data Found..'),
+    //               ElevatedButton(
+    //                   onPressed: () {
+    //                     //try agin
+    //                   },
+    //                   child: const Text('Select Again'))
+    //             ],
+    //           ),
+    //         );
+    //       }
+    //     } else if (snapshot.hasError) {
+    //       return AlertDialog(
+    //         title: const Text(
+    //           'An Error Occurred!',
+    //           textAlign: TextAlign.center,
+    //           style: TextStyle(
+    //             color: Colors.redAccent,
+    //           ),
+    //         ),
+    //         content: Text(
+    //           "${snapshot.error}",
+    //           style: const TextStyle(
+    //             color: Colors.blueAccent,
+    //           ),
+    //         ),
+    //         actions: <Widget>[
+    //           TextButton(
+    //             child: const Text(
+    //               'Go Back',
+    //               style: TextStyle(
+    //                 color: Colors.redAccent,
+    //               ),
+    //             ),
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //           )
+    //         ],
+    //       );
+    //     }
+    //     return Center(
+    //       child: Column(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: const <Widget>[
+    //           CircularProgressIndicator(),
+    //           SizedBox(height: 20),
+    //           Text('This may take some time..')
+    //         ],
+    //       ),
+    //     );
+    //   },
+    // );
+    
+    bool _isPdfFunctionCalled = false; // Add this switch variable at the beginning of your widget or as a class-level variable
+
+return FutureBuilder<List<int>?>(
+  future: api.getInvoiceDesignerPdfData(dataMap),
+  builder: (context, AsyncSnapshot<List<int>?> snapshot) {
+    if (snapshot.hasData) {
+      if (snapshot.data != null) {
+        List<int> bytes = snapshot.data!;
+        if (kIsWeb) {
+          try {
+            // Uncomment and implement if needed for web
+            // final blob = html.Blob([bytes], 'application/pdf');
+            // final url = html.Url.createObjectUrlFromBlob(blob);
+            // final anchor = html.AnchorElement()
+            //   ..href = url
+            //   ..style.display = 'none'
+            //   ..download = '$title.pdf';
+            // html.document.body.children.add(anchor);
+            // anchor.click();
+            // html.document.body.children.remove(anchor);
+            // html.Url.revokeObjectUrl(url);
+          } catch (ex) {
+            ex.toString();
           }
-        } else if (snapshot.hasError) {
-          return AlertDialog(
-            title: const Text(
-              'An Error Occurred!',
-              textAlign: TextAlign.center,
+        } else {
+          if (!_isPdfFunctionCalled) { // Ensure pdfFunction is called only once
+            _isPdfFunctionCalled = true;
+            pdfFunction(bytes);
+          }
+        }
+      } else {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              const Text('No Data Found..'),
+              ElevatedButton(
+                onPressed: () {
+                  //try again
+                },
+                child: const Text('Select Again'),
+              )
+            ],
+          ),
+        );
+      }
+    } else if (snapshot.hasError) {
+      return AlertDialog(
+        title: const Text(
+          'An Error Occurred!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.redAccent,
+          ),
+        ),
+        content: Text(
+          "${snapshot.error}",
+          style: const TextStyle(
+            color: Colors.blueAccent,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text(
+              'Go Back',
               style: TextStyle(
                 color: Colors.redAccent,
               ),
             ),
-            content: Text(
-              "${snapshot.error}",
-              style: const TextStyle(
-                color: Colors.blueAccent,
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text(
-                  'Go Back',
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text('This may take some time..')
-            ],
-          ),
-        );
-      },
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    }
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const <Widget>[
+          CircularProgressIndicator(),
+          SizedBox(height: 20),
+          Text('This may take some time..'),
+        ],
+      ),
     );
+  },
+);
+
   }
   
   String uint8ListTob64(Uint8List uint8list) {
@@ -5714,7 +5807,7 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
                                                   Visibility(
                                                       visible:
                                                           companySettings!
-                                                              .add4!
+                                                              .add4!  
                                                               .isNotEmpty,
                                                       child: Text(
                                                         companySettings!
@@ -13435,6 +13528,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
   //        element.key.toString() == dataInformation['Customer'].toString(),
   //        orElse: () => AppSettingsMap(key: 0,value: ''), );
   var dataParticulars = data['Particulars'];
+  var information = data['Information'];
   var dataSerialNO = data['SerialNO'];
   var dataDeliveryNote = data['DeliveryNote'];
   var otherAmount = data['otherAmount'];
@@ -13442,7 +13536,7 @@ Future<Uint8List?> getImageBytes(bool isLogo) async {
   var dataBankLedger = data['bankLedger'][0];
   bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
   bool isEsQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-
+// shersoft@997755
   bool printHeaderOnES =
       ComSettings.appSettings('bool', 'key-print-header-es', false);
   var taxSale = salesTypeData!.tax;

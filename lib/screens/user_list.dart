@@ -60,11 +60,7 @@ class _UserScreenState extends State<UserScreen> {
               child: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)
             ),
             onTapSecond: () {
-              Visibility(
-                visible: nextWidget,
-                child: IconButton(
-                    onPressed: () {
-                      List<FormModel> forms = [];
+              List<FormModel> forms = [];
                       forms = form
                           .where((element) => element.isChecked == true)
                           .toList();
@@ -92,12 +88,14 @@ class _UserScreenState extends State<UserScreen> {
                   if (changes) {
                     editCompanyUser(body).then((value) => null);
                   }
-                    },
-                    icon: const Icon(
-                      Icons.save,
-                      color: white,
-                    )),
-              );
+              // Visibility(        
+              //       },
+              //       icon: const Icon(
+              //         Icons.save,
+              //         color: white,
+              //       )),
+              // );
+            
             },
           )),
       // AppBar(

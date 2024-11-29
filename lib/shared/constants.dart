@@ -504,8 +504,8 @@ class ComSettings {
     return rateTypeList;
   }
 
-  static userControl(String name) {
-    int result;
+   static userControl(String name) {
+    int? result;
     if (userControlData.isNotEmpty) {
       bool? status = userControlData
           .firstWhere(
@@ -522,9 +522,10 @@ class ComSettings {
       result = -1;
     }
     return result < 0
-        ? name == 'RECEIPT' || name == 'PAYMENT'
-            ? true
-            : false
+        ? false
+        // ? name == 'RECEIPTX' || name == 'PAYMENTX'
+        //     ? true
+        //     : false
         : result == 1
             ? true
             : false;

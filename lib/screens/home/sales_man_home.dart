@@ -442,24 +442,36 @@ class _SalesManHomeState extends State<SalesManHome> {
                                                                   ),),
                               onPressed: () {
                                 bool sType = true;
-                                salesTypeData = salesTypeList.firstWhere(
-                                    (element) =>
-                                        element.name == 'Sales Order Entry');
-                                args.active == "false"
-                                    ? _commonService.getTrialPeriod(args.atDate)
-                                            ? Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                                    builder: (context) => Sale(
-                                                          oldSale: false,
-                                                          thisSale: sType,
-                                                        )))
-                                        : _expire(args, context)
-                                        : Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                                builder: (context) => Sale(
-                                                      oldSale: false,
-                                                      thisSale: sType,
-                                                    )));
+                                  salesTypeData = salesTypeList.firstWhere(
+                                      (element) =>
+                                          element.name == 'Sales Order Entry');
+                                  bool isSimpleSales = ComSettings.appSettings(
+                                          'bool', 'key-simple-sales', false)
+                                      ? true
+                                      : false;
+                                  args.active == "false"
+                                      ? _commonService
+                                              .getTrialPeriod(args.atDate)
+                                          ? isSimpleSales
+                                              ? Navigator.pushNamed(
+                                                  context, '/SimpleSale')
+                                              : Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Sale(
+                                                            oldSale: false,
+                                                            thisSale: sType,
+                                                          )))
+                                          : _expire(args, context)
+                                      : isSimpleSales
+                                          ? Navigator.pushNamed(
+                                              context, '/SimpleSale')
+                                          : Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                                  builder: (context) => Sale(
+                                                        oldSale: false,
+                                                        thisSale: sType,
+                                                      )));
                               },
                             ),
                           ),
@@ -485,31 +497,47 @@ class _SalesManHomeState extends State<SalesManHome> {
                                                                   ),),
                               onPressed: () {
                                 bool sType = isEstimateDataBase;
-                                              
-                                salesTypeData = ComSettings.appSettings('bool',
-                                        'key-switch-sales-form-set', false)
-                                    ? salesTypeList.firstWhere((element) =>
-                                        element.name ==
-                                        ComSettings.salesFormList(
-                                                'key-item-sale-form-', false)[0]
-                                            .name)
-                                    : salesTypeList.firstWhere((element) =>
-                                        element.name == 'Sales Estimate Entry');
-                                args.active == "false"
-                                    ? _commonService.getTrialPeriod(args.atDate)
-                                            ? Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                                    builder: (context) => Sale(
-                                                          oldSale: false,
-                                                          thisSale: sType,
-                                                        )))
-                                        : _expire(args, context)
-                                        : Navigator.of(context)
-                                            .push(MaterialPageRoute(
-                                                builder: (context) => Sale(
-                                                      oldSale: false,
-                                                      thisSale: sType,
-                                                    )));
+
+                                  salesTypeData = ComSettings.appSettings(
+                                          'bool',
+                                          'key-switch-sales-form-set',
+                                          false)
+                                      ? salesTypeList.firstWhere((element) =>
+                                          element.name ==
+                                          ComSettings.salesFormList(
+                                                  'key-item-sale-form-',
+                                                  false)[0]
+                                              .name)
+                                      : salesTypeList.firstWhere((element) =>
+                                          element.name ==
+                                          'Sales Estimate Entry');
+                                  bool isSimpleSales = ComSettings.appSettings(
+                                          'bool', 'key-simple-sales', false)
+                                      ? true
+                                      : false;
+                                  args.active == "false"
+                                      ? _commonService
+                                              .getTrialPeriod(args.atDate)
+                                          ? isSimpleSales
+                                              ? Navigator.pushNamed(
+                                                  context, '/SimpleSale')
+                                              : Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Sale(
+                                                            oldSale: false,
+                                                            thisSale: sType,
+                                                          )))
+                                          : _expire(args, context)
+                                      : isSimpleSales
+                                          ? Navigator.pushNamed(
+                                              context, '/SimpleSale')
+                                          : Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                                  builder: (context) => Sale(
+                                                        oldSale: false,
+                                                        thisSale: sType,
+                                                      )));
                               },
                             ),
                           ),
@@ -1094,6 +1122,33 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
+                        
+                          Visibility(
+                            visible: ComSettings.userControl('WARRANTY'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('WARRANTY',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/Warranty');
+                                },
+                              ),
+                            ),
+                          ),
+                        
                         Container(
                           margin: const EdgeInsets.only(
                               bottom: 6

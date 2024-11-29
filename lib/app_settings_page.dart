@@ -185,7 +185,13 @@ class AppSettings extends StatelessWidget {
                                     // ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultSalesMan,
-                                      title: 'Default SalesMan',
+                                        leading: const Text('Default SalesMan',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
+                                      ),
+                                      title: '',
                                       titleTextStyle: const TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
@@ -237,7 +243,13 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultCashAc,
-                                      title: 'Default CASH AC',
+                                       leading: const Text('Default CASH AC',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
+                                      ),
+                                      title: '',
                                       titleTextStyle: const TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
@@ -262,7 +274,13 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultArea,
-                                      title: 'Default Area',
+                                      leading: const Text('Default Area',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
+                                      ),
+                                      title: '',
                                       titleTextStyle: const TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
@@ -287,8 +305,8 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultGroup,
-                                      leading: Text('Default Group',
-                                      style: const TextStyle(
+                                      leading: const Text('Default Group',
+                                      style: TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
                                           fontSize: 15),
@@ -318,7 +336,13 @@ class AppSettings extends StatelessWidget {
                                     ),
                                     DropDownSettingsTile<int>(
                                       enabled: defaultRoute,
-                                      title: 'Default Route',
+                                       leading: const Text('Default Route',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 15),
+                                      ),
+                                      title: '',
                                       titleTextStyle: const TextStyle(
                                           fontFamily: 'poppins',
                                           fontWeight: FontWeight.w500,
