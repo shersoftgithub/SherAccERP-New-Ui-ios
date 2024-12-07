@@ -206,7 +206,7 @@ class _AccountSummeryState extends State<AccountSummery> {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                "ACCOUNT SUMMERY",
+                "ACCOUNT SUMMARY",
                 style:
                     pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
               ),
@@ -531,7 +531,7 @@ class _AccountSummeryState extends State<AccountSummery> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "ACCOUNT SUMMERY",
+                                  "ACCOUNT SUMMARY",
                                   style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),

@@ -402,6 +402,10 @@ class _ProductReportState extends State<ProductReport> {
                         api.getSalesListData(filter, 'sales_list/unit'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -411,7 +415,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Select Unit'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownButtonHideUnderline(
@@ -425,7 +429,12 @@ class _ProductReportState extends State<ProductReport> {
                           filter, 'sales_list/manufacture'),
                       dropdownDecoratorProps: const DropDownDecoratorProps(
                         dropdownSearchDecoration:
-                            InputDecoration(border: OutlineInputBorder()),
+                            InputDecoration(
+                                                 contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
+                              border: OutlineInputBorder()),
                       ),
                       onChanged: (dynamic data) {
                         mfr = data;
@@ -434,7 +443,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Select Item MFR'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -471,6 +480,10 @@ class _ProductReportState extends State<ProductReport> {
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -480,7 +493,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Select Sub Category'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: Container(
@@ -509,7 +522,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Type of Supply'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -523,6 +536,10 @@ class _ProductReportState extends State<ProductReport> {
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -532,7 +549,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Select Tax Group'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -546,6 +563,10 @@ class _ProductReportState extends State<ProductReport> {
                         api.getSalesListData(filter, 'Product/getHsnCodeList'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -555,7 +576,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: "Select HSN Code"),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -569,6 +590,10 @@ class _ProductReportState extends State<ProductReport> {
                         api.getSalesListData(filter, 'sales_list/rack'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -578,7 +603,7 @@ class _ProductReportState extends State<ProductReport> {
                   ),
                   headTxt: 'Select Rack'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -588,8 +613,11 @@ class _ProductReportState extends State<ProductReport> {
                           widget: TextField(
                             controller: taxPController,
                             decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                label: Text('TAX %')),
+                                                 contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
+                                border: OutlineInputBorder(),),
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             inputFormatters: [
@@ -597,7 +625,7 @@ class _ProductReportState extends State<ProductReport> {
                                   allow: true, replacementString: '.')
                             ],
                           ),
-                          headTxt: 'Tax')),
+                          headTxt: 'Tax %')),
                   const SizedBox(
                     width: 5,
                   ),
@@ -606,8 +634,11 @@ class _ProductReportState extends State<ProductReport> {
                           widget: TextField(
                             controller: reorderController,
                             decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                label: Text('Reorder')),
+                                                 contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
+                                border: OutlineInputBorder(),),
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             inputFormatters: [

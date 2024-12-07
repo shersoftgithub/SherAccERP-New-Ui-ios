@@ -62,7 +62,7 @@ class ReceivablesAndPayables extends StatelessWidget {
                   children: pieData,
                   borderEdge: StrokeCap.butt,
                   pieType: PieType.crust,
-                  // showValue: false,
+                  showValue: false,
                   shouldAnimate: false,
                   borderWidth: 45,
                   // onTap: (index) {

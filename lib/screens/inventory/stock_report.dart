@@ -265,7 +265,7 @@ class _StockReportState extends State<StockReport> {
               ),
             ));
   }
-
+bool basic = false;
   reportView(title) {
     var statementType = title == 'Stock'
         ? stockValuation
@@ -290,7 +290,10 @@ class _StockReportState extends State<StockReport> {
                                         : dropdownValueReportType!.id ==
                                                 reportTypeList[7].id
                                             ? 'ReOrderLevelList'
-                                            : 'SimpleSummery'
+                                            : dropdownValueReportType!.id ==
+                                               reportTypeList[8].id
+                                               ? 'SimpleSummery' 
+                                               : 'SimpleSummery'
         : dropdownValueLedgerReportType!.id == reportTypeLedgerList[0].id
             ? 'StockLedger_Summery'
             : dropdownValueLedgerReportType!.id == reportTypeLedgerList[1].id
@@ -301,7 +304,10 @@ class _StockReportState extends State<StockReport> {
                     : dropdownValueLedgerReportType!.id ==
                             reportTypeLedgerList[6].id
                         ? 'StockLedger_Wop'
-                        : 'StockLedger_Summery';
+                        : dropdownValueLedgerReportType!.id ==
+                            reportTypeLedgerList[8].id
+                            ? 'BasicReport'
+                            : 'StockLedger_Summery';
     var _location = '0',
         _itemCode = '',
         _itemName = '',
@@ -396,6 +402,16 @@ class _StockReportState extends State<StockReport> {
             'unitId': unit != null ? unit!.id.toString() : 0,
             "itemMovingType": stockMovingType
           };
+          if (dropdownValueReportType!.id ==
+               reportTypeList[8].id) {
+            setState(() {
+              basic = true;
+            });
+          }else{
+            setState(() {
+              basic = false;
+            });
+          }
 
     return FutureBuilder<List<dynamic>>(
       future: title == 'Stock'
@@ -405,6 +421,17 @@ class _StockReportState extends State<StockReport> {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
             var data = snapshot.data;
+            if(basic){
+              tableColumn = ['itemName', 'qty'];
+              data = data!.map((item) {
+        return {
+          'itemName': item['ItemName'],
+          'qty': item['Qty'],
+        };
+      }).toList();
+            }else {
+      tableColumn = data![0].keys.toList();
+    }
             var filterItems = data;
             for (ReportDesign design in reportDesign!) {
               if (!design.visibility) {
@@ -501,13 +528,15 @@ class _StockReportState extends State<StockReport> {
                         DataColumn(
                           label: Align(
                             alignment: Alignment.center,
-                            child: Text(
-                              col[i],
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: 'poppins',
-                                  color: white),
-                              textAlign: TextAlign.center,
+                            child: Center(
+                              child: Text(
+                                col[i],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'poppins',
+                                    color: white),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
                         ),
@@ -714,8 +743,11 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text('Select Branch')),
+                        contentPadding: EdgeInsets.symmetric(
+                         horizontal: 4,
+                         vertical: 8
+                        ),
+                          border: OutlineInputBorder(),),
                     ),
                     onChanged: (dynamic data) {
                       location = data;
@@ -796,6 +828,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/ItemCode'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -805,7 +841,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Item Code'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -819,6 +855,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/itemName'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -828,7 +868,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Item Name'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -842,6 +882,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/manufacture'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -851,7 +895,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Item MFR'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -865,6 +909,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/category'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -874,7 +922,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Category'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -888,6 +936,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/subCategory'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -897,7 +949,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select SubCategory'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -911,6 +963,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/rack'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -920,7 +976,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Rack'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -934,6 +990,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/taxGroup'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -943,7 +1003,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select TaxGroup'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -957,6 +1017,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/supplier'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -966,7 +1030,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select SUpplier'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
             ContainerFieldWidget(
                 widget: DropdownSearch<dynamic>(
@@ -980,6 +1044,10 @@ class _StockReportState extends State<StockReport> {
                       api.getSalesListData(filter, 'sales_list/unit'),
                   dropdownDecoratorProps: const DropDownDecoratorProps(
                     dropdownSearchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -989,7 +1057,7 @@ class _StockReportState extends State<StockReport> {
                 ),
                 headTxt: 'Select Unit'),
             const SizedBox(
-              height: 10,
+              height: 8,
             ),
           ],
         ),
@@ -1106,8 +1174,11 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/location'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          label: Text("Select Branch")),
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
+                          border: OutlineInputBorder(),),
                     ),
                     onChanged: (dynamic data) {
                       location = data;
@@ -1116,7 +1187,7 @@ class _StockReportState extends State<StockReport> {
                     headTxt: 'Select Branch'),
               ),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1180,6 +1251,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1189,7 +1264,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Item Code'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1203,6 +1278,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1212,7 +1291,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Item Name'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1226,6 +1305,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/manufacture'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1235,7 +1318,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Item MFR'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1249,6 +1332,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/category'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1258,7 +1345,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Category'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1272,6 +1359,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1281,7 +1372,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select SubCategory'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1295,6 +1386,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/rack'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1304,7 +1399,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Rack'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1318,6 +1413,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1327,7 +1426,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select TaxGroup'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -1341,6 +1440,10 @@ class _StockReportState extends State<StockReport> {
                         api.getSalesListData(filter, 'sales_list/supplier'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                          ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1350,7 +1453,7 @@ class _StockReportState extends State<StockReport> {
                   ),
                   headTxt: 'Select Supplier'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
             ],
           ),
@@ -1392,6 +1495,7 @@ class _StockReportState extends State<StockReport> {
     DataJson(id: 5, name: 'Location Comparison'),
     DataJson(id: 6, name: 'SerialNo Report'),
     DataJson(id: 7, name: 'Below Reorder'),
+     DataJson(id: 8, name: 'Basic'),
   ];
 
   List<DataJson> reportTypeLedgerList = [
@@ -1441,7 +1545,12 @@ class _StockReportState extends State<StockReport> {
                   .map<DropdownMenuItem<DataJson>>((DataJson value) {
                 return DropdownMenuItem<DataJson>(
                   value: value,
-                  child: Text(value.name!),
+                  child: Text(value.name!,
+                   style: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14
+                  ),
+                  ),
                 );
               }).toList(),
             ),
@@ -1490,7 +1599,10 @@ class _StockReportState extends State<StockReport> {
                                                 : dropdownValueReportType!.id ==
                                                         reportTypeList[7].id
                                                     ? 'ReOrderLevelList'
-                                                    : 'SimpleSummery';
+                                                    :dropdownValueReportType!.id ==
+                                                        reportTypeList[8].id
+                                                        ? 'BasicReport'
+                                                        : 'SimpleSummery';
                 loadDesignColumns(fName);
                 });
               },
@@ -1498,7 +1610,12 @@ class _StockReportState extends State<StockReport> {
                   .map<DropdownMenuItem<DataJson>>((DataJson value) {
                 return DropdownMenuItem<DataJson>(
                   value: value,
-                  child: Text(value.name!),
+                  child: Text(value.name!,
+                   style: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14
+                  ),
+                  ),
                 );
               }).toList(),
             ),
@@ -1529,7 +1646,12 @@ class _StockReportState extends State<StockReport> {
                   .map<DropdownMenuItem<DataJson>>((DataJson value) {
                 return DropdownMenuItem<DataJson>(
                   value: value,
-                  child: Text(value.name!),
+                  child: Text(value.name!,
+                  style: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14
+                  ),
+                  ),
                 );
               }).toList(),
             ),

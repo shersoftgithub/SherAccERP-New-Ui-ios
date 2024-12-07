@@ -393,7 +393,13 @@ class _DamageReportState extends State<DamageReport> {
               ),
               DropdownButtonHideUnderline(
                 child: DropDownSettingsTile<int>(
-                  title: 'Branch',
+                  leading: const Text('Branch',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 14
+                  ),
+                  ),
+                  title: '',
                   settingKey: 'key-dropdown-default-location-view',
                   values: locationList.isNotEmpty
                       ? {for (var e in locationList) e.key + 1: e.value}
@@ -408,7 +414,7 @@ class _DamageReportState extends State<DamageReport> {
                 ),
               ),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: Container(
@@ -423,8 +429,13 @@ class _DamageReportState extends State<DamageReport> {
                         value: valueType,
                         items: dropdownItemsType.map((TypeItem item) {
                           return DropdownMenuItem<int>(
-                            child: Text(item.name),
                             value: item.id,
+                            child: Text(item.name,
+                            style: const TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 14
+                            ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -437,7 +448,7 @@ class _DamageReportState extends State<DamageReport> {
                   ),
                   headTxt: 'Type'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               TextButton(
                 onPressed: () {
@@ -462,7 +473,7 @@ class _DamageReportState extends State<DamageReport> {
                 ),
               ),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -476,6 +487,10 @@ class _DamageReportState extends State<DamageReport> {
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -485,7 +500,7 @@ class _DamageReportState extends State<DamageReport> {
                   ),
                   headTxt: 'Select Item Code'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -499,6 +514,10 @@ class _DamageReportState extends State<DamageReport> {
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -508,7 +527,7 @@ class _DamageReportState extends State<DamageReport> {
                   ),
                   headTxt: 'Select Item Name'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
             ],
           ),

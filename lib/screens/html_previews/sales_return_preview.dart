@@ -361,9 +361,9 @@ class _SalesReturnPreviewShowState extends State<SalesReturnPreviewShow> {
           //     // Navigator.pushReplacementNamed(context, '/salesReturn');
           //   },
           // ),
-          // leading: IconButton(onPressed: (){
-          //   Navigator.of(context).pop();
-          // }, icon: Icon(Icons.arrow_back)),
+          leading: IconButton(onPressed: (){
+            Navigator.of(context).pushNamedAndRemoveUntil('/salesReturn', (route) => false);
+          }, icon: Icon(Icons.arrow_back)),
           // title: Text('$title Preview'),
           title:  Text('$title Preview'),
           titleTextStyle: const TextStyle(

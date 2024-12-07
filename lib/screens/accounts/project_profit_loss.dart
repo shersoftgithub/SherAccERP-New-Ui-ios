@@ -466,7 +466,12 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                         items: items.map((dynamic items) {
                           return DropdownMenuItem(
                             value: items['name'],
-                            child: Text(items['name'].toString()),
+                            child: Text(items['name'].toString(),
+                            style: const TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 14
+                            ),
+                            ),
                           );
                         }).toList(),
                         value: selectedReportType,
@@ -508,6 +513,10 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                       ),
                 asyncItems: (String filter) => api.getProject(),
                 dropdownDecoratorProps: const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                     border: OutlineInputBorder())),
                 onChanged: (dynamic data) {
                   projectId = data.id;
@@ -586,6 +595,10 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                       asyncItems: (String filter) =>
                           api.getSalesListData(filter, 'sales_list/salesMan'),
                       dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                                               contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                           border: OutlineInputBorder(),)),
                       onChanged: (dynamic data) {
                         salesMan = data.id.toString();
@@ -621,6 +634,10 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                     asyncItems: (String filter) =>
                         api.getSalesListData(filter, 'sales_list/customer'),
                     dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                                             contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder())),
                     onChanged: (dynamic data) {
                       ledgerId = data.id;
@@ -657,6 +674,10 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                       asyncItems: (String filter) =>
                           api.getSalesListData(filter, 'sales_list/salesMan'),
                       dropdownDecoratorProps:  const DropDownDecoratorProps(dropdownSearchDecoration: InputDecoration(
+                                               contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                           border: OutlineInputBorder(),)),
                       onChanged: (dynamic data) {
                         employeeId = data.id;

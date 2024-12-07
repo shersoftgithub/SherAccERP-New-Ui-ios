@@ -867,7 +867,7 @@ class _LedgerState extends State<Ledger> {
                               ),
                               headTxt: 'Select Route'),
                           const SizedBox(
-                            height: 4,
+                            height: 6,
                           ),
                           TextFormField(
                             controller: _phoneNumberCtr,
@@ -902,70 +902,127 @@ class _LedgerState extends State<Ledger> {
                           const SizedBox(
                             height: 4,
                           ),
-                          const Card(
-                            // color: kPrimaryColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(3))),
-                            elevation: 2,
-                            child: Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'State',
-                                    style: TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  ),
-                                  Text(
-                                    'Code',
-                                    style: TextStyle(
-                                        decoration: TextDecoration.underline),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // const Card(
+                          //   // color: kPrimaryColor,
+                          //   shape: RoundedRectangleBorder(
+                          //       borderRadius:
+                          //           BorderRadius.all(Radius.circular(3))),
+                          //   elevation: 2,
+                          //   child: Padding(
+                          //     padding: EdgeInsets.all(8.0),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //       children: [
+                          //         Text(
+                          //           'State',
+                          //           style: TextStyle(
+                          //               decoration: TextDecoration.underline),
+                          //         ),
+                          //         Text(
+                          //           'Code',
+                          //           style: TextStyle(
+                          //               decoration: TextDecoration.underline),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(
                             height: 4,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ContainerFieldWidget(
+                                    widget: Container(
+                                      height: 48,
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
                             decoration: BoxDecoration(
                                 border: Border.all(color: grey),
                                 borderRadius: BorderRadius.circular(3)),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<GSTStateModel>(
-                                isExpanded: true,
-                                items: gstStateModels
-                                    .map<DropdownMenuItem<GSTStateModel>>((item) {
-                                  return DropdownMenuItem<GSTStateModel>(
-                                    value: item,
-                                    child: Text(item.state!),
-                                  );
-                                }).toList(),
-                                onChanged: (item) {
-                                  setState(() {
-                                    _dropDownState = item!.state!;
-                                    _stateCode = item.code!;
-                                    gstStateM = item;
-                                  });
-                                },
-                                value: gstStateM,
-                              ),
+                                      child: DropdownButtonHideUnderline(
+                                                                  child: DropdownButton<GSTStateModel>(
+                                                                        isExpanded: true,
+                                                                        items: gstStateModels
+                                        .map<DropdownMenuItem<GSTStateModel>>((item) {
+                                      return DropdownMenuItem<GSTStateModel>(
+                                        value: item,
+                                        child: Text(item.state!),
+                                      );
+                                                                        }).toList(),
+                                                                        onChanged: (item) {
+                                      setState(() {
+                                        _dropDownState = item!.state!;
+                                        _stateCode = item.code!;
+                                        gstStateM = item;
+                                      });
+                                                                        },
+                                                                        value: gstStateM,
+                                                                  ),
+                                                                ),
+                                    ), headTxt: 'State'),
+                                ),
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                Expanded(
+                                  child:ContainerFieldWidget(
+                                    widget:  Container(
+                                    height: 48,
+                                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                            decoration: BoxDecoration(
+                                border: Border.all(color: grey),
+                                borderRadius: BorderRadius.circular(3)),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                    "$_stateCode",
+                                    style: const TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'poppins',
+                                    // color: kPrimaryColor,
+                                    fontWeight: FontWeight.w500),
+                                                              ),
+                                  ],
+                                ),
+                                ), headTxt: 'Code')
+                                )
+                              ],
                             ),
                           ),
+                          // Container(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 5),
+                          //   decoration: BoxDecoration(
+                          //       border: Border.all(color: grey),
+                          //       borderRadius: BorderRadius.circular(3)),
+                          //   child: DropdownButtonHideUnderline(
+                          //     child: DropdownButton<GSTStateModel>(
+                          //       isExpanded: true,
+                          //       items: gstStateModels
+                          //           .map<DropdownMenuItem<GSTStateModel>>((item) {
+                          //         return DropdownMenuItem<GSTStateModel>(
+                          //           value: item,
+                          //           child: Text(item.state!),
+                          //         );
+                          //       }).toList(),
+                          //       onChanged: (item) {
+                          //         setState(() {
+                          //           _dropDownState = item!.state!;
+                          //           _stateCode = item.code!;
+                          //           gstStateM = item;
+                          //         });
+                          //       },
+                          //       value: gstStateM,
+                          //     ),
+                          //   ),
+                          // ),
+                         
                           const SizedBox(
                             height: 10,
                           ),
-                          Text(
-                            "State Code : $_stateCode",
-                            style: const TextStyle(
-                                fontFamily: 'poppins',
-                                color: kPrimaryColor,
-                                fontWeight: FontWeight.bold),
-                          ),
+                          
                           const SizedBox(
                             height: 4,
                           ),
@@ -1210,6 +1267,9 @@ class _LedgerState extends State<Ledger> {
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
                                           decoration: const InputDecoration(
+                                            constraints: BoxConstraints(
+                                              maxHeight: 45
+                                            ),
                                             border: OutlineInputBorder(),
                                           ),
                                           textAlign: TextAlign.right,
@@ -1228,6 +1288,9 @@ class _LedgerState extends State<Ledger> {
                                           keyboardType: const TextInputType
                                               .numberWithOptions(decimal: true),
                                           decoration: const InputDecoration(
+                                            constraints: BoxConstraints(
+                                              maxHeight: 45
+                                            ),
                                             border: OutlineInputBorder(),
                                           ),
                                           textAlign: TextAlign.right,
@@ -1244,33 +1307,62 @@ class _LedgerState extends State<Ledger> {
                                 children: [
                                   Expanded(
                                     child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.only(
+                                        left: 10
+                                      ),
                                       decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(3),
                                           color: kPrimaryColor),
-                                      child: CheckboxListTile(
-                                        title: const Text(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
                                           'Active',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontFamily: 'poppins',
-                                              fontSize: 13,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w500,
                                               color: white),
                                         ),
-                                        value: valueActive,
-                                        activeColor: white,
-                                        checkColor: kPrimaryColor,
-                                        side: const BorderSide(color: white),
-                                        onChanged: (value) {
+                                          Checkbox(
+                                            value:  valueActive,
+                                            activeColor: white,
+                                            checkColor: kPrimaryColor,
+                                            side: const BorderSide(color: white),
+                                            onChanged: (value) {
                                           setState(() {
                                             valueActive = value!;
                                           });
-                                        },
-                                      ),
+                                        },)
+                                        ],
+                                      )
+                                      // CheckboxListTile(
+                                      //   title: const Text(
+                                      //     'Active',
+                                      //     textAlign: TextAlign.center,
+                                      //     style: TextStyle(
+                                      //         fontFamily: 'poppins',
+                                      //         fontSize: 12,
+                                      //         fontWeight: FontWeight.w500,
+                                      //         color: white),
+                                      //   ),
+                                      //   value: valueActive,
+                                      //   activeColor: white,
+                                      //   checkColor: kPrimaryColor,
+                                      //   side: const BorderSide(color: white),
+                                      //   onChanged: (value) {
+                                      //     setState(() {
+                                      //       valueActive = value!;
+                                      //     });
+                                      //   },
+                                      // ),
+                                   
                                     ),
                                   ),
                                   const SizedBox(
-                                    width: 5,
+                                    width: 8,
                                   ),
                                   // const VerticalDivider(
                                   //   color: Colors.black,
@@ -1278,30 +1370,63 @@ class _LedgerState extends State<Ledger> {
                                   // ),
                                   Expanded(
                                     child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.only(
+                                        left: 10
+                                      ),
                                       decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(3),
                                           color: kPrimaryColor),
-                                      child: CheckboxListTile(
-                                        value: valueCostCenter,
-                                        activeColor: white,
-                                        checkColor: kPrimaryColor,
-                                        side: const BorderSide(color: white),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            valueCostCenter = value!;
-                                          });
-                                        },
-                                        title: const Text(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
                                           'Cost Center',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontFamily: 'poppins',
-                                              fontSize: 12,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w500,
                                               color: white),
                                         ),
-                                      ),
+                                          Checkbox(
+                                            value:  valueCostCenter,
+                                            activeColor: white,
+                                            checkColor: kPrimaryColor,
+                                            side: const BorderSide(color: white),
+                                            onChanged: (value) {
+                                          setState(() {
+                                            valueCostCenter = value!;
+                                          });
+                                        },)
+                                        ],
+                                      )
                                     ),
+                                    // Container(
+                                    //   decoration: BoxDecoration(
+                                    //       borderRadius: BorderRadius.circular(3),
+                                    //       color: kPrimaryColor),
+                                    //   child: CheckboxListTile(
+                                    //     value: valueCostCenter,
+                                    //     activeColor: white,
+                                    //     checkColor: kPrimaryColor,
+                                    //     side: const BorderSide(color: white),
+                                    //     onChanged: (value) {
+                                    //       setState(() {
+                                    //         valueCostCenter = value!;
+                                    //       });
+                                    //     },
+                                    //     title: const Text(
+                                    //       'Cost Center',
+                                    //       textAlign: TextAlign.center,
+                                    //       style: TextStyle(
+                                    //           fontFamily: 'poppins',
+                                    //           fontSize: 12,
+                                    //           fontWeight: FontWeight.w500,
+                                    //           color: white),
+                                    //     ),
+                                    //   ),
+                                    // ),
                                   )
                                 ],
                               ),
@@ -1315,59 +1440,125 @@ class _LedgerState extends State<Ledger> {
                                 children: [
                                   Expanded(
                                     child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.only(
+                                        left: 10
+                                      ),
                                       decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(3),
                                           color: kPrimaryColor),
-                                      child: CheckboxListTile(
-                                          value: valueFranchisee,
-                                          activeColor: white,
-                                          checkColor: kPrimaryColor,
-                                          side: const BorderSide(color: white),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              valueFranchisee = value!;
-                                            });
-                                          },
-                                          title: const Text(
-                                            'Franchisee',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontFamily: 'poppins',
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: white),
-                                          )),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                          'Franchisee',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: white),
+                                        ),
+                                          Checkbox(
+                                            value:  valueFranchisee,
+                                            activeColor: white,
+                                            checkColor: kPrimaryColor,
+                                            side: const BorderSide(color: white),
+                                            onChanged: (value) {
+                                          setState(() {
+                                            valueFranchisee = value!;
+                                          });
+                                        },)
+                                        ],
+                                      )
                                     ),
+                                    //  Container(
+                                    //   decoration: BoxDecoration(
+                                    //       borderRadius: BorderRadius.circular(3),
+                                    //       color: kPrimaryColor),
+                                    //   child: CheckboxListTile(
+                                    //       value: valueFranchisee,
+                                    //       activeColor: white,
+                                    //       checkColor: kPrimaryColor,
+                                    //       side: const BorderSide(color: white),
+                                    //       onChanged: (value) {
+                                    //         setState(() {
+                                    //           valueFranchisee = value!;
+                                    //         });
+                                    //       },
+                                    //       title: const Text(
+                                    //         'Franchisee',
+                                    //         textAlign: TextAlign.center,
+                                    //         style: TextStyle(
+                                    //             fontFamily: 'poppins',
+                                    //             fontSize: 12,
+                                    //             fontWeight: FontWeight.w500,
+                                    //             color: white),
+                                    //       )),
+                                    // ),
                                   ),
                                   const SizedBox(
                                     width: 5,
                                   ),
                                   Expanded(
                                     child: Container(
+                                      height: 40,
+                                      padding: const EdgeInsets.only(
+                                        left: 10
+                                      ),
                                       decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(3),
                                           color: kPrimaryColor),
-                                      child: CheckboxListTile(
-                                        value: valueBillWise,
-                                        activeColor: white,
-                                        checkColor: kPrimaryColor,
-                                        side: const BorderSide(color: white),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            valueBillWise = value!;
-                                          });
-                                        },
-                                        title: const Text(
-                                          'Bill Wise (Receipt/Payment)',
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                          'Bill Wise',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                               fontFamily: 'poppins',
-                                              fontSize: 11,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w500,
                                               color: white),
                                         ),
-                                      ),
+                                          Checkbox(
+                                            value:  valueBillWise,
+                                            activeColor: white,
+                                            checkColor: kPrimaryColor,
+                                            side: const BorderSide(color: white),
+                                            onChanged: (value) {
+                                          setState(() {
+                                            valueBillWise = value!;
+                                          });
+                                        },)
+                                        ],
+                                      )
                                     ),
+                                    // Container(
+                                    //   decoration: BoxDecoration(
+                                    //       borderRadius: BorderRadius.circular(3),
+                                    //       color: kPrimaryColor),
+                                    //   child: CheckboxListTile(
+                                    //     value: valueBillWise,
+                                    //     activeColor: white,
+                                    //     checkColor: kPrimaryColor,
+                                    //     side: const BorderSide(color: white),
+                                    //     onChanged: (value) {
+                                    //       setState(() {
+                                    //         valueBillWise = value!;
+                                    //       });
+                                    //     },
+                                    //     title: const Text(
+                                    //       'Bill Wise',
+                                    //       textAlign: TextAlign.center,
+                                    //       style: TextStyle(
+                                    //           fontFamily: 'poppins',
+                                    //           fontSize: 12,
+                                    //           fontWeight: FontWeight.w500,
+                                    //           color: white),
+                                    //     ),
+                                    //   ),
+                                    // ),
                                   ),
                                 ],
                               ),

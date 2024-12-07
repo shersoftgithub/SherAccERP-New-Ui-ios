@@ -215,6 +215,10 @@ class _OtherRegistrationState extends State<OtherRegistration> {
                 clearOnSubmit: false,
                 suggestions: nameListDisplay,
                 decoration: const InputDecoration(
+                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                   border: OutlineInputBorder(),
                 ),
                 textSubmitted: (data) {
@@ -234,12 +238,16 @@ class _OtherRegistrationState extends State<OtherRegistration> {
               ),
               headTxt: 'Name'),
           const SizedBox(
-            height: 10,
+            height: 8,
           ),
           ContainerFieldWidget(
               widget: TextField(
                 controller: descriptionControl,
                 decoration: const InputDecoration(
+                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                   border: OutlineInputBorder(),
                 ),
               ),

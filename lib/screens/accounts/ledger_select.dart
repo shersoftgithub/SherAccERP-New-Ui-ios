@@ -515,7 +515,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                   ),
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 8,
                 ),
                 Row(
                   children: [
@@ -554,7 +554,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                   ],
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 8,
                 ),
                 // Card(
                 //   elevation: 2,
@@ -587,6 +587,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                             api.getSalesListData(filter, 'sales_list/location'),
                         dropdownDecoratorProps: const DropDownDecoratorProps(
                           dropdownSearchDecoration: InputDecoration(
+                                               contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                             border: OutlineInputBorder(),
                           ),
                         ),
@@ -787,6 +791,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                               filter, 'sales_list/location'),
                           dropdownDecoratorProps: const DropDownDecoratorProps(
                             dropdownSearchDecoration: InputDecoration(
+                       contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                               border: OutlineInputBorder(),
                             ),
                           ),
@@ -1866,6 +1874,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         const DropDownDecoratorProps(
                                                       dropdownSearchDecoration:
                                                           InputDecoration(
+                                                                                   contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                                                         border:
                                                             OutlineInputBorder(),
                                                       ),
@@ -2303,6 +2315,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               const DropDownDecoratorProps(
                                                             dropdownSearchDecoration:
                                                                 InputDecoration(
+                                                                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                                                               border:
                                                                   OutlineInputBorder(),
                                                             ),
@@ -3346,6 +3362,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                               const DropDownDecoratorProps(
                                                                             dropdownSearchDecoration:
                                                                                 InputDecoration(
+                                                                                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                                                                               border: OutlineInputBorder(),
                                                                             ),
                                                                           ),
@@ -3414,6 +3434,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                               const DropDownDecoratorProps(
                                                                             dropdownSearchDecoration:
                                                                                 InputDecoration(
+                                                                                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                                                                               border: OutlineInputBorder(),
                                                                             ),
                                                                           ),
@@ -3605,6 +3629,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                               const DropDownDecoratorProps(
                                                                             dropdownSearchDecoration:
                                                                                 InputDecoration(
+                                                                                                         contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                                                                               border: OutlineInputBorder(),
                                                                             ),
                                                                           ),

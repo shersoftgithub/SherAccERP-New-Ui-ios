@@ -2734,15 +2734,18 @@ controllerNarration.text = '';
       otherAmountList = [];
       controllerCashReceived.text = '';
       cartItem.clear();
-    });
-
-    await fetchSale(context, dataDynamic[0]);
-
-    setState(() {
+    }); 
+     try {
+      await fetchSale(context, dataDynamic[0]);
+         setState(() {
       if (hasUserModifiedEntry) {
         entryNoController.text = dataDynamic[0]['EntryNo'].toString();
       }
     });
+     } catch (e) {
+       
+     }
+  
   },
             child: const Icon(Icons.arrow_forward_ios_rounded),
           ),
@@ -3250,6 +3253,9 @@ controllerNarration.text = '';
                     //   rateType = salesTypeData!.id.toString();
                     // }
                     editItem = false;
+                    isTax = taxable;
+        selectedTaxOption = isTax ? 'With Tax' : 'Without Tax';
+                    // editItem = false;
                     nextWidget = 2;
                   }
                 }
@@ -6685,7 +6691,7 @@ controllerNarration.text = '';
   int? selectedItemId;
   bool isPrateEdited = false;
   
-  late StockProduct selectedVariant;
+   StockProduct? selectedVariant;
   bool isVariantSelected = false;
   bool cantEdit = false;
   List<StockProduct> stockVariantProductList =[];
@@ -6697,6 +6703,7 @@ controllerNarration.text = '';
     if (editItem) {
       editItem = true;
       cartModel = cartItem.elementAt(position!);
+      selectedTaxOption = cartModel!.tax > 0 ? 'With Tax' : 'Without Tax';
       // uniqueCode = selectedVariant.productId!;
 
       unitValue = cartModel!.unitValue!;
@@ -6706,20 +6713,33 @@ controllerNarration.text = '';
       // _rateController.text = cartModel!.rate!.toStringAsFixed(decimal);
       _conversion = cartModel!.unitValue!;
       unit = DataJson(
-                                              id: cartModel!.unitId,
-                                              name: cartModel!.itemName!,
-                                            );
-      calculateTotal();
-    }
-    else
-      if (!enableMULTIUNIT) {
-      if (selectedVariant.unitId! > 0) {
+        id: cartModel!.unitId,
+        name: cartModel!.itemName!,
+        );
+            if (!enableMULTIUNIT) {
+    // if(selectedVariant != null){
+        if (selectedVariant!.unitId! > 0) {
         defaultUnitItem = true;
-        _dropDownUnit = selectedVariant.unitId!;
+        _dropDownUnit = selectedVariant!.unitId!;
       } else {
         defaultUnitItem = false;
         _dropDownUnit = 0;
       }
+    // }   
+    }
+      calculateTotal();
+    }
+    else
+      if (!enableMULTIUNIT) {
+    if(selectedVariant != null){
+        if (selectedVariant!.unitId! > 0) {
+        defaultUnitItem = true;
+        _dropDownUnit = selectedVariant!.unitId!;
+      } else {
+        defaultUnitItem = false;
+        _dropDownUnit = 0;
+      }
+    }   
     }
     calculateTextBatch(StockProduct product, double qty) {
       double sRate = _rateController.text.isNotEmpty
@@ -6781,6 +6801,15 @@ controllerNarration.text = '';
    }else{
     tax = 0;
    }
+   if(editItem){
+    if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+}
     if (companyTaxMode == 'INDIA') {
       kfc = isKFC ? CommonService.getRound(4, ((subTotal * kfcP) / 100)) : 0;
       double csPer = taxP / 2;
@@ -6814,6 +6843,12 @@ controllerNarration.text = '';
     ? CommonService.getRound(
         2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
     : subTotal  ;
+   if(editItem){
+       total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+    }
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
@@ -6829,7 +6864,7 @@ controllerNarration.text = '';
     unitValue = _conversion > 0 ? _conversion : 1;
   }
     calculate() {
-      uniqueCode = selectedVariant.productId!;
+      uniqueCode = selectedVariant!.productId!;
     if (enableMULTIUNIT) {
       if (saleRate > 0) {
         if (_conversion > 0) {
@@ -6845,8 +6880,8 @@ controllerNarration.text = '';
           }
           //rate = r;
           // _rateController.text = r.toStringAsFixed(decimal);
-          pRate = selectedVariant.buyingPrice! * _conversion;
-          rPRate = selectedVariant.buyingPriceReal! * _conversion;
+          pRate = selectedVariant!.buyingPrice! * _conversion;
+          rPRate = selectedVariant!.buyingPriceReal! * _conversion;
         } else {
           rate = (_rateController.text.isNotEmpty
               ? (double.tryParse(_rateController.text))
@@ -6946,6 +6981,15 @@ controllerNarration.text = '';
    }else{
     tax = 0;
    }
+if(editItem){
+    if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+}
     // if (taxP > 0) {
     //   tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
     // }
@@ -6982,18 +7026,24 @@ controllerNarration.text = '';
     ? CommonService.getRound(
         2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
     : subTotal  ;
+      if(editItem){
+       total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+    }
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
-              2, (total - (selectedVariant.buyingPrice! * _conversion * quantity)))
+              2, (total - (selectedVariant!.buyingPrice! * _conversion * quantity)))
           : CommonService.getRound(decimal,
-              (total - (selectedVariant.buyingPriceReal! * _conversion * quantity)));
+              (total - (selectedVariant!.buyingPriceReal! * _conversion * quantity)));
     } else {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
-              2, (total - (selectedVariant.buyingPrice! * quantity)))
+              2, (total - (selectedVariant!.buyingPrice! * quantity)))
           : CommonService.getRound(
-              2, (total - (selectedVariant.buyingPriceReal! * quantity)));
+              2, (total - (selectedVariant!.buyingPriceReal! * quantity)));
     }
     unitValue = _conversion > 0 ? _conversion : 1;
   }
@@ -7013,8 +7063,8 @@ controllerNarration.text = '';
           }
           //rate = r;
           // _rateController.text = r.toStringAsFixed(decimal);
-          pRate = selectedVariant.buyingPrice! * _conversion;
-          rPRate = selectedVariant.buyingPriceReal! * _conversion;
+          pRate = selectedVariant!.buyingPrice! * _conversion;
+          rPRate = selectedVariant!.buyingPriceReal! * _conversion;
         } else {
           rate = (_rateController.text.isNotEmpty
               ? (double.tryParse(_rateController.text))
@@ -7114,6 +7164,15 @@ controllerNarration.text = '';
    }else{
     tax = 0;
    }
+   if(editItem){
+    if (selectedTaxOption == 'With Tax') {
+      if (taxP > 0) {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+}
     // if (taxP > 0) {
     //   tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
     // }
@@ -7148,18 +7207,24 @@ controllerNarration.text = '';
     ? CommonService.getRound(
         2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
     : subTotal  ;
+    if(editItem){
+       total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+    }
     if (enableMULTIUNIT && _conversion > 0) {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
-              2, (total - (selectedVariant.buyingPrice! * _conversion * quantity)))
+              2, (total - (selectedVariant!.buyingPrice! * _conversion * quantity)))
           : CommonService.getRound(decimal,
-              (total - (selectedVariant.buyingPriceReal! * _conversion * quantity)));
+              (total - (selectedVariant!.buyingPriceReal! * _conversion * quantity)));
     } else {
       profitPer = pRateBasedProfitInSales
           ? CommonService.getRound(
-              2, (total - (selectedVariant.buyingPrice! * quantity)))
+              2, (total - (selectedVariant!.buyingPrice! * quantity)))
           : CommonService.getRound(
-              2, (total - (selectedVariant.buyingPriceReal! * quantity)));
+              2, (total - (selectedVariant!.buyingPriceReal! * quantity)));
     }
     unitValue = _conversion > 0 ? _conversion : 1;
         List<UnitModel> unitListData = [];
@@ -7200,28 +7265,28 @@ controllerNarration.text = '';
                     List<ProductRating> rateData =
                                   keySwitchSalesRateTypeSet
                                       ? selectedRateTypeData(
-                                          rateTypeList, selectedVariant)
+                                          rateTypeList, selectedVariant!)
                                       : [
                                           ProductRating(
                                               id: 0,
                                               name: 'MRP',
-                                              rate: selectedVariant.sellingPrice),
+                                              rate: selectedVariant!.sellingPrice),
                                           ProductRating(
                                               id: 1,
                                               name: 'Retail',
-                                              rate: selectedVariant.retailPrice),
+                                              rate: selectedVariant!.retailPrice),
                                           ProductRating(
                                               id: 2,
                                               name: 'WsRate',
-                                              rate: selectedVariant.wholeSalePrice),
+                                              rate: selectedVariant!.wholeSalePrice),
                                           ProductRating(
                                               id: 2,
                                               name: labelSpRate,
-                                              rate: selectedVariant.spRetailPrice),
+                                              rate: selectedVariant!.spRetailPrice),
                                           ProductRating(
                                               id: 3,
                                               name: 'Branch',
-                                              rate: selectedVariant.branch)
+                                              rate: selectedVariant!.branch)
                                         ];
                               showDialog(
                                   context: context,
@@ -7234,7 +7299,7 @@ controllerNarration.text = '';
                                               children: [
                                                 const Text('Select Rate'),
                                                 Text(
-                                                  'PRate : ${selectedVariant.buyingPrice} / RPRate : ${selectedVariant.buyingPriceReal}',
+                                                  'PRate : ${selectedVariant!.buyingPrice} / RPRate : ${selectedVariant!.buyingPriceReal}',
                                                   style: const TextStyle(
                                                       fontSize: 10),
                                                 ),
@@ -7301,7 +7366,7 @@ controllerNarration.text = '';
              if (value == 'Sold') {
              if (selectedItemId != null) {
                  if(productTracking){
-                productTrackingList(selectedVariant);
+                productTrackingList(selectedVariant!);
                }
                else{
                 Fluttertoast.showToast(msg: 'ENABLE PRODUCT TRACKING IN SALES');
@@ -7516,15 +7581,32 @@ controllerNarration.text = '';
                                               _discountPercentController.text = '';
                                               tax = 0;
                                               _rateController.text = '';
+                                              _serialNoController.text = '';
                                               discount = 0;
                                               discountPercent = 0;
                                               subTotal = 0;
                                               total = 0;
                                               gross = 0;
                                            var datas =api.fetchStockVariantList(selectedItemId!).then((value) {
+                                            _serialNoController.text = value[0].serialNo ?? '';
                                               if(keyItemsVariantStock){
+                                                    selectedTaxOption =
+                                                    salesTypeData!.tax ? 'With Tax' : 'Without Tax';
+                                                   isTax = selectedTaxOption == 'With Tax' ? true : false;
+                                                   
+                                                  //    salesTypeData!.tax 
+                                                  //  ?
+                                                   if(selectedTaxOption == 'With Tax'){
+                                                    taxP = selectedVariant!.tax! ?? 0;
+                                                   }
+                                                   else{
+                                                    taxValue = selectedVariant!.tax! ?? 0;
+                                                   }
+                                                  //  :taxP = 0;
+                                                 
                                                  fetchProductDetails(selectedItem.name);
                                                 showItemDialog(context, value, isSerialNoInStockVariant,selectedItem.name,selectedItem.quantity );
+                                               
     //                                                  if (isQuantityBasedSerialNo) {
     //   var itemId = selectedVariant.itemId;
     //   api
@@ -7536,7 +7618,7 @@ controllerNarration.text = '';
                                                 fetchProductDetails(selectedItem.name);
                                                 // selectedItem == value[0];
                                               }
-                                           } );                               
+                                           } );                              
                                           }
                                           else {
                                                itemNameControl.text = selectedItem.name!;
@@ -7801,7 +7883,7 @@ controllerNarration.text = '';
                                                                   cartQt = 0;
                                                               for (var element
                                                                   in cartItem) {
-                                                                if (element.uniqueCode ==selectedVariant.productId) {
+                                                                if (element.uniqueCode ==selectedVariant!.productId) {
                                                                   cartQt += element.quantity! +
                                                                       element.free!;
                                                                   cartS = element.stock!;
@@ -7816,7 +7898,7 @@ controllerNarration.text = '';
                                                             outOfStock = isLockQtyOnlyInSales
                                                                 ? (double.tryParse(value)!)  * unitValue + freeQty  > 
                                                                  (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) : 
-                                                                 selectedVariant.quantity! )
+                                                                 selectedVariant!.quantity! )
                                                                     ? true
                                                                     : cartQ
                                                                         ? true
@@ -7827,7 +7909,7 @@ controllerNarration.text = '';
                                                                         ? isStockProductOnlyInSalesQO
                                                                             ? ((double.tryParse(value)! * unitValue) + freeQty) > 
                                                                              (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                            selectedVariant.quantity!)
+                                                                            selectedVariant!.quantity!)
                                                                                 ? true
                                                                                 : cartQ
                                                                                     ? true
@@ -7835,7 +7917,7 @@ controllerNarration.text = '';
                                                                             : false
                                                                         : ((double.tryParse(value)! * unitValue) + freeQty) >
                                                                           (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                         selectedVariant.quantity!)
+                                                                         selectedVariant!.quantity!)
                                                                             ? true
                                                                             : cartQ
                                                                                 ? true
@@ -7929,7 +8011,7 @@ controllerNarration.text = '';
                                         double cartS = 0, cartQt = 0;
                                         for (var element in cartItem) {
                                           if (element.uniqueCode ==
-                                              selectedVariant.productId) {
+                                              selectedVariant!.productId) {
                                             cartQt +=
                                                 element.quantity! + element.free!;
                                             cartS = element.stock!;
@@ -7946,7 +8028,7 @@ controllerNarration.text = '';
                                       outOfStock = isLockQtyOnlyInSales
                                           ? ((quantity * unitValue) +
                                                       double.tryParse(value)!) >
-                                                  selectedVariant.quantity!
+                                                  selectedVariant!.quantity!
                                               ? true
                                               : cartQ
                                                   ? true
@@ -7960,7 +8042,7 @@ controllerNarration.text = '';
                                                       ? ((quantity * unitValue) +
                                                                   double.tryParse(
                                                                       value)!) >
-                                                              selectedVariant.quantity!
+                                                              selectedVariant!.quantity!
                                                           ? true
                                                           : cartQ
                                                               ? true
@@ -7969,7 +8051,7 @@ controllerNarration.text = '';
                                                   : ((quantity * unitValue) +
                                                               double.tryParse(
                                                                   value)!) >
-                                                          selectedVariant.quantity!
+                                                          selectedVariant!.quantity!
                                                       ? true
                                                       : cartQ
                                                           ? true
@@ -8076,23 +8158,23 @@ controllerNarration.text = '';
                                                                               UnitModel _unit = unitListData[i];
                                                                               if (_unit.unit == int.tryParse(value)) {
                                                                                 double? _rate = _unit.rate == 'MRP'
-                                                                                    ? selectedVariant.sellingPrice
+                                                                                    ? selectedVariant!.sellingPrice
                                                                                     : _unit.rate == 'WHOLESALE'
-                                                                                        ? selectedVariant.wholeSalePrice
+                                                                                        ? selectedVariant!.wholeSalePrice
                                                                                         : _unit.rate == 'RETAIL'
-                                                                                            ? selectedVariant.retailPrice
+                                                                                            ? selectedVariant!.retailPrice
                                                                                             : _unit.rate == 'SPRETAIL'
-                                                                                                ? selectedVariant.spRetailPrice
+                                                                                                ? selectedVariant!.spRetailPrice
                                                                                                 : rateTypeItem!.name == 'MRP'
-                                                                                                    ? selectedVariant.sellingPrice
+                                                                                                    ? selectedVariant!.sellingPrice
                                                                                                     : rateTypeItem!.name == 'RETAIL'
-                                                                                                        ? selectedVariant.retailPrice
+                                                                                                        ? selectedVariant!.retailPrice
                                                                                                     : rateTypeItem!.name == 'BRANCH'
-                                                                                                        ? selectedVariant.branch
+                                                                                                        ? selectedVariant!.branch
                                                                                                     : rateTypeItem!.name == 'SPRETAIL'
-                                                                                                        ? selectedVariant.spRetailPrice
+                                                                                                        ? selectedVariant!.spRetailPrice
                                                                                                         : rateTypeItem!.name == 'WHOLESALE'
-                                                                                                            ? selectedVariant.wholeSalePrice
+                                                                                                            ? selectedVariant!.wholeSalePrice
                                                                                                             : rate;
                                                                                 if (_unit.rate!.isNotEmpty) {
                                                                                   rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
@@ -8107,7 +8189,7 @@ controllerNarration.text = '';
                                                                                   if (totalItem > 0) {
                                                                                     double cartS = 0, cartQt = 0;
                                                                                     for (var element in cartItem) {
-                                                                                      if (element.uniqueCode == selectedVariant.productId) {
+                                                                                      if (element.uniqueCode == selectedVariant!.productId) {
                                                                                         cartQt += element.quantity! + element.free!;
                                                                                         cartS = element.stock!;
                                                                                       }
@@ -8121,7 +8203,7 @@ controllerNarration.text = '';
                                                                                     cartQ = false;
                                                                                   }
                                                                                   outOfStock = isLockQtyOnlyInSales
-                                                                                      ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                      ? ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                           ? true
                                                                                           : cartQ
                                                                                               ? true
@@ -8130,13 +8212,13 @@ controllerNarration.text = '';
                                                                                           ? false
                                                                                           : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
                                                                                               ? isStockProductOnlyInSalesQO
-                                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                                       ? true
                                                                                                       : cartQ
                                                                                                           ? true
                                                                                                           : false
                                                                                                   : false
-                                                                                              : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                              : ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                                   ? true
                                                                                                   : cartQ
                                                                                                       ? true
@@ -8264,7 +8346,7 @@ controllerNarration.text = '';
                                                         if (value.isNotEmpty) {
                                                           if (isMinimumRate) {
                                                             double minRate =
-                                                                selectedVariant
+                                                                selectedVariant!
                                                                         .minimumRate ??
                                                                     0;
                                                             if (double.tryParse(
@@ -8328,7 +8410,7 @@ controllerNarration.text = '';
                                                               selectedTaxOption,
                                                           items: [
                                                              DropdownMenuItem(
-                                                              enabled: editItem  ? false : true,
+                                                              enabled: editItem || oldBill ? false : true,
                                                               value: 'With Tax',
                                                               child: const Text(
                                                                   'With Tax'),
@@ -8346,7 +8428,7 @@ controllerNarration.text = '';
                                                                           :null
                                                                           :null;
                                                               },
-                                                              enabled: editItem  ? false : 
+                                                              enabled: editItem || oldBill  ? false : 
                                                               salesTypeData!
                                                                               .id ==
                                                                           1 ||
@@ -8383,7 +8465,37 @@ controllerNarration.text = '';
                                                     ),
                                                     headTxt: 'Tax')),
                                           ],
-                                        )
+                                        ),
+                                        const SizedBox(
+                                          height: 6
+                                        ),
+                                         Visibility(
+                    visible: isItemSerialNo,
+                    child: ContainerFieldWidget(
+                      widget: TextField(
+                      controller: _serialNoController,
+                      decoration: const InputDecoration(
+                         contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 8
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: 45
+                        ),
+                          border: OutlineInputBorder(),
+                          // labelText: labelSerialNo.isNotEmpty
+                          //     ? labelSerialNo
+                          //     : 'SerialNo'
+                              ),
+                      onChanged: (value) {
+                        // setState(() {
+                           // calculate(product);
+                        // });
+                      },
+                    ), headTxt: labelSerialNo.isNotEmpty
+                              ? labelSerialNo
+                              : 'SerialNo'),
+                  ),
                                       ],
                                     ),
                                   );
@@ -8501,10 +8613,10 @@ controllerNarration.text = '';
                                                                   cartQt = 0;
                                                               for (var element
                                                                   in cartItem) {
-                                                                if (element.uniqueCode ==selectedVariant.productId) {
+                                                                if (element.uniqueCode ==selectedVariant!.productId) {
                                                                   cartQt += element.quantity! +
                                                                       element.free!;
-                                                                  cartS = oldBill ? (element.quantity+selectedVariant.quantity!) : element.stock!;
+                                                                  cartS = oldBill ? (element.quantity+selectedVariant!.quantity!) : element.stock!;
                                                                 }
                                                               }
                                                               if (cartS > 0) {
@@ -8516,7 +8628,7 @@ controllerNarration.text = '';
                                                             outOfStock = isLockQtyOnlyInSales
                                                                 ? (double.tryParse(value)!)  * unitValue + freeQty  > 
                                                                  (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) : 
-                                                                 selectedVariant.quantity! )
+                                                                 selectedVariant!.quantity! )
                                                                     ? true
                                                                     : cartQ
                                                                         ? true
@@ -8527,7 +8639,7 @@ controllerNarration.text = '';
                                                                         ? isStockProductOnlyInSalesQO
                                                                             ? ((double.tryParse(value)! * unitValue) + freeQty) > 
                                                                              (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                            selectedVariant.quantity!)
+                                                                            selectedVariant!.quantity!)
                                                                                 ? true
                                                                                 : cartQ
                                                                                     ? true
@@ -8535,7 +8647,7 @@ controllerNarration.text = '';
                                                                             : false
                                                                         : ((double.tryParse(value)! * unitValue) + freeQty) >
                                                                           (_autoVariantSelect ?  stockVariantProductList.fold(0.0 ,  (a, b) => a + double.parse(b.quantity.toString())) :
-                                                                         selectedVariant.quantity!)
+                                                                         selectedVariant!.quantity!)
                                                                             ? true
                                                                             : cartQ
                                                                                 ? true
@@ -8630,7 +8742,7 @@ controllerNarration.text = '';
                                         double cartS = 0, cartQt = 0;
                                         for (var element in cartItem) {
                                           if (element.uniqueCode ==
-                                              selectedVariant.productId) {
+                                              selectedVariant!.productId) {
                                             cartQt +=
                                                 element.quantity! + element.free!;
                                             cartS = element.stock!;
@@ -8646,7 +8758,7 @@ controllerNarration.text = '';
                                       outOfStock = isLockQtyOnlyInSales
                                           ? ((quantity * unitValue) +
                                                       double.tryParse(value)!) >
-                                                  selectedVariant.quantity!
+                                                  selectedVariant!.quantity!
                                               ? true
                                               : cartQ
                                                   ? true
@@ -8660,7 +8772,7 @@ controllerNarration.text = '';
                                                       ? ((quantity * unitValue) +
                                                                   double.tryParse(
                                                                       value)!) >
-                                                              selectedVariant.quantity!
+                                                              selectedVariant!.quantity!
                                                           ? true
                                                           : cartQ
                                                               ? true
@@ -8669,7 +8781,7 @@ controllerNarration.text = '';
                                                   : ((quantity * unitValue) +
                                                               double.tryParse(
                                                                   value)!) >
-                                                          selectedVariant.quantity!
+                                                          selectedVariant!.quantity!
                                                       ? true
                                                       : cartQ
                                                           ? true
@@ -8775,23 +8887,23 @@ controllerNarration.text = '';
                                                                               UnitModel _unit = unitListData[i];
                                                                               if (_unit.unit == int.tryParse(value)) {
                                                                                 double? _rate = _unit.rate == 'MRP'
-                                                                                    ? selectedVariant.sellingPrice
+                                                                                    ? selectedVariant!.sellingPrice
                                                                                     : _unit.rate == 'WHOLESALE'
-                                                                                        ? selectedVariant.wholeSalePrice
+                                                                                        ? selectedVariant!.wholeSalePrice
                                                                                         : _unit.rate == 'RETAIL'
-                                                                                            ? selectedVariant.retailPrice
+                                                                                            ? selectedVariant!.retailPrice
                                                                                             : _unit.rate == 'SPRETAIL'
-                                                                                                ? selectedVariant.spRetailPrice
+                                                                                                ? selectedVariant!.spRetailPrice
                                                                                                 : rateTypeItem!.name == 'MRP'
-                                                                                                    ? selectedVariant.sellingPrice
+                                                                                                    ? selectedVariant!.sellingPrice
                                                                                                     : rateTypeItem!.name == 'RETAIL'
-                                                                                                        ? selectedVariant.retailPrice
+                                                                                                        ? selectedVariant!.retailPrice
                                                                                                     : rateTypeItem!.name == 'SPRETAIL'
-                                                                                                        ? selectedVariant.spRetailPrice
+                                                                                                        ? selectedVariant!.spRetailPrice
                                                                                                     : rateTypeItem!.name == 'BRANCH'
-                                                                                                        ? selectedVariant.branch
+                                                                                                        ? selectedVariant!.branch
                                                                                                         : rateTypeItem!.name == 'WHOLESALE'
-                                                                                                            ? selectedVariant.wholeSalePrice
+                                                                                                            ? selectedVariant!.wholeSalePrice
                                                                                                             : rate;
                                                                                 if (_unit.rate!.isNotEmpty) {
                                                                                   rateTypeItem = rateTypeList.firstWhere((element) => element.name == _unit.rate);
@@ -8806,7 +8918,7 @@ controllerNarration.text = '';
                                                                                   if (totalItem > 0) {
                                                                                     double cartS = 0, cartQt = 0;
                                                                                     for (var element in cartItem) {
-                                                                                      if (element.uniqueCode == selectedVariant.productId) {
+                                                                                      if (element.uniqueCode == selectedVariant!.productId) {
                                                                                         cartQt += element.quantity! + element.free!;
                                                                                         cartS = element.stock!;
                                                                                       }
@@ -8820,7 +8932,7 @@ controllerNarration.text = '';
                                                                                     cartQ = false;
                                                                                   }
                                                                                   outOfStock = isLockQtyOnlyInSales
-                                                                                      ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                      ? ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                           ? true
                                                                                           : cartQ
                                                                                               ? true
@@ -8829,13 +8941,13 @@ controllerNarration.text = '';
                                                                                           ? false
                                                                                           : salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q'
                                                                                               ? isStockProductOnlyInSalesQO
-                                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                                  ? ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                                       ? true
                                                                                                       : cartQ
                                                                                                           ? true
                                                                                                           : false
                                                                                                   : false
-                                                                                              : ((quantity * _conversion) + freeQty) > selectedVariant.quantity!
+                                                                                              : ((quantity * _conversion) + freeQty) > selectedVariant!.quantity!
                                                                                                   ? true
                                                                                                   : cartQ
                                                                                                       ? true
@@ -8897,6 +9009,63 @@ controllerNarration.text = '';
                                                           )),
                                                       headTxt: 'Unit')),
                                             ),
+                                                Visibility(
+                          visible: (!enableMULTIUNIT && defaultUnitItem),
+                          child: 
+                         Expanded(
+                           child: ContainerFieldWidget(
+                            widget:  Container( height: 45,
+                                                            margin:
+                                                                const EdgeInsets.only(
+                                                                    bottom: 2),
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                    left: 5),
+                                                            width:
+                                                                MediaQuery.of(context)
+                                                                    .size
+                                                                    .width,
+                                                            decoration: BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: grey),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(3)),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<OtherRegistrationModel>(
+                                  hint: Text(_dropDownUnit > 0
+                                      ? UnitSettings.getOtherUnitName(_dropDownUnit)
+                                      : 'Unit',
+                                      style: const TextStyle(
+                                                                                  fontSize: 12,
+                                                                                  color: black,
+                                                                                  fontFamily: 'poppins')),
+                                  items: otherRegUnitList
+                                      .map<DropdownMenuItem<OtherRegistrationModel>>(
+                                          (item) {
+                                    return DropdownMenuItem<OtherRegistrationModel>(
+                                      value: item,
+                                      child: Text(item.name,
+                                      style: const TextStyle(
+                                                                                  fontSize: 12,
+                                                                                  color: black,
+                                                                                  fontFamily: 'poppins')
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (valueData) {
+                                    setState(() {
+                                      
+                                      _dropDownUnit =
+                                          int.tryParse(valueData!.id.toString())!;
+                                    });
+                                  },
+                                ),
+                              ),
+                            )
+                           , headTxt: 'Unit'),
+                         )
+                          ),
                                           ],
                                         ),
                                         const SizedBox(
@@ -8939,7 +9108,7 @@ controllerNarration.text = '';
                                                         if (value.isNotEmpty) {
                                                           if (isMinimumRate) {
                                                             double minRate =
-                                                                selectedVariant
+                                                                selectedVariant!
                                                                         .minimumRate ??
                                                                     0;
                                                             if (double.tryParse(
@@ -9003,7 +9172,7 @@ controllerNarration.text = '';
                                                               selectedTaxOption,
                                                           items: [
                                                              DropdownMenuItem(
-                                                              enabled: editItem  ? false :true,
+                                                              enabled: editItem || oldBill ? false :true,
                                                               value: 'With Tax',
                                                               child: const Text(
                                                                   'With Tax'),
@@ -9021,7 +9190,7 @@ controllerNarration.text = '';
                                                                           :null
                                                                           :null;
                                                               },
-                                                              enabled: editItem  ? false : 
+                                                              enabled: editItem || oldBill  ? false : 
                                                               salesTypeData!
                                                                               .id ==
                                                                           1 ||
@@ -9060,7 +9229,37 @@ controllerNarration.text = '';
                                                     ),
                                                     headTxt: 'Tax')),
                                           ],
-                                        )
+                                        ),
+                                        const SizedBox(
+                                          height:6
+                                        ),
+                                         Visibility(
+                    visible: isItemSerialNo,
+                    child: ContainerFieldWidget(
+                      widget: TextField(
+                      controller: _serialNoController,
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 8
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: 45
+                        ),
+                          border: OutlineInputBorder(),
+                          // labelText: labelSerialNo.isNotEmpty
+                          //     ? labelSerialNo
+                          //     : 'SerialNo'
+                              ),
+                      onChanged: (value) {
+                        // setState(() {
+                           // calculate(product);
+                        // });
+                      },
+                    ), headTxt: labelSerialNo.isNotEmpty
+                              ? labelSerialNo
+                              : 'SerialNo'),
+                  ),
                                       ],
                                     ),
                                   );
@@ -9444,7 +9643,7 @@ controllerNarration.text = '';
                                       ],
                                     ),
                                   )
-                                    :Center(child: const Text('stock not availble'));
+                                    :Center(child: const Text('stock not available'));
                                   }
                                   final fetchedData = snapshot.data!;
                                   selectedVariant = fetchedData.firstWhere(
@@ -9898,8 +10097,8 @@ controllerNarration.text = '';
                               })
                             : setState(() {
                                 List<UnitModel> unitListData = [];
-                                print(selectedVariant.name);
-                                calculateText(selectedVariant);
+                                print(selectedVariant!.name);
+                                calculateText(selectedVariant!);
                     
                                 isVariantSelected = false;
                                 if (quantity > 0 || isFreeItem) {
@@ -10095,14 +10294,14 @@ controllerNarration.text = '';
                                           addProduct(
                                               CartItem(
                                                   id: totalItem + 1,
-                                                  itemId: selectedVariant
+                                                  itemId: selectedVariant!
                                                       .itemId!,
                                                   itemName:
-                                                      selectedVariant.name!,
+                                                      selectedVariant!.name!,
                                                   quantity: quantity,
                                                   rate: rate,
                                                   rRate: rRate,
-                                                  uniqueCode: selectedVariant
+                                                  uniqueCode: selectedVariant!
                                                       .productId!,
                                                   gross: gross,
                                                   discount: discount,
@@ -10134,10 +10333,10 @@ controllerNarration.text = '';
                                                   iGST: iGST,
                                                   cGST: csGST,
                                                   sGST: csGST,
-                                                  stock: selectedVariant
+                                                  stock: selectedVariant!
                                                       .quantity!,
                                                   minimumRate:
-                                                      selectedVariant
+                                                      selectedVariant!
                                                           .minimumRate!,
                                                           adCessPer: adCessPer,
                                                           cessPer: cessPer
@@ -10216,8 +10415,8 @@ controllerNarration.text = '';
                       splashColor: Colors.white,
                       onTap: () {
                         !editItem ? setState(() {
-                        print(selectedVariant.name);
-                        calculateText(selectedVariant);
+                        print(selectedVariant!.name);
+                        calculateText(selectedVariant!);
                         setState(() {
                           isVariantSelected = false;
                           if (quantity > 0 || isFreeItem) {
@@ -10399,7 +10598,7 @@ controllerNarration.text = '';
                                       cartItem[position!].cGST = csGST;
                                       cartItem[position!].sGST = csGST;
                                       cartItem[position!].stock =
-                                          selectedVariant.quantity!;
+                                          selectedVariant!.quantity!;
                                       editItem = false;
                                       calculateTotal();
                                     }
@@ -10427,11 +10626,11 @@ controllerNarration.text = '';
                                                       : qty;
 
                                               calculateTextBatch(
-                                                  selectedVariant, addQuantity);
+                                                  selectedVariant!, addQuantity);
                                               cartItem.add(CartItem(
                                                   id: totalItem + 1,
-                                                  itemId: selectedVariant.itemId!,
-                                                  itemName: selectedVariant.name!,
+                                                  itemId: selectedVariant!.itemId!,
+                                                  itemName: selectedVariant!.name!,
                                                   quantity: addQuantity,
                                                   rate: rate,
                                                   rRate: rRate,
@@ -10467,7 +10666,7 @@ controllerNarration.text = '';
                                                   sGST: csGST,
                                                   stock: variantProduct.quantity!,
                                                   minimumRate:
-                                                      selectedVariant.minimumRate!,
+                                                      selectedVariant!.minimumRate!,
                                                   adCessPer: adCessPer,
                                                   cessPer: cessPer
                                                   ));
@@ -10490,13 +10689,13 @@ controllerNarration.text = '';
                                           CartItem(
                                               id: totalItem + 1,
                                               itemId:
-                                                  selectedVariant.itemId!,
+                                                  selectedVariant!.itemId!,
                                               itemName:
-                                                  selectedVariant.name!,
+                                                  selectedVariant!.name!,
                                               quantity: quantity,
                                               rate: rate,
                                               rRate: rRate,
-                                              uniqueCode: selectedVariant.productId!,
+                                              uniqueCode: selectedVariant!.productId!,
                                               gross: gross,
                                               discount: discount,
                                               discountPercent:
@@ -10527,8 +10726,8 @@ controllerNarration.text = '';
                                               cGST: csGST,
                                               sGST: csGST,
                                               stock:
-                                                  selectedVariant.quantity!,
-                                              minimumRate: selectedVariant
+                                                  selectedVariant!.quantity!,
+                                              minimumRate: selectedVariant!
                                                   .minimumRate!,
                                                   adCessPer: adCessPer,
                                                   cessPer: cessPer
@@ -10585,8 +10784,8 @@ controllerNarration.text = '';
                         },):
                        setState(() {
                           // List<UnitModel> unitListData = [];
-                        print(selectedVariant.name);
-                        calculateText(selectedVariant);
+                        print(selectedVariant!.name);
+                        calculateText(selectedVariant!);
                         setState(() {
                           
                           isVariantSelected = false;
@@ -10731,6 +10930,17 @@ controllerNarration.text = '';
                                          Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
                                       }
                                      else{
+                                      // calculate();
+                                      // calculateConversion();
+                                      if (selectedTaxOption == 'Without Tax') {
+                                        tax = 0;
+                                        total = subTotal;
+                                        iGST = 0;
+                                        csGST = 0;
+                                        
+                                      }
+                                      // tax =  selectedTaxOption == 'Without Tax' ? 0 : tax;
+                                      // total = selectedTaxOption == 'Without Tax' ? subTotal : total;
                                        cartItem[position!].adCess = adCess;
                                       cartItem[position!].quantity =
                                           quantity;
@@ -10773,7 +10983,7 @@ controllerNarration.text = '';
                                       cartItem[position!].cGST = csGST;
                                       cartItem[position!].sGST = csGST;
                                       cartItem[position!].stock =
-                                          selectedVariant.quantity!;
+                                          selectedVariant!.quantity!;
                                       editItem = false;
                                       calculateTotal();
                                      }
@@ -10787,9 +10997,9 @@ controllerNarration.text = '';
                                           CartItem(
                                               id: totalItem + 1,
                                               itemId:
-                                                  selectedVariant.itemId!,
+                                                  selectedVariant!.itemId!,
                                               itemName:
-                                                  selectedVariant.name!,
+                                                  selectedVariant!.name!,
                                               quantity: quantity,
                                               rate: rate,
                                               rRate: rRate,
@@ -10824,8 +11034,8 @@ controllerNarration.text = '';
                                               cGST: csGST,
                                               sGST: csGST,
                                               stock:
-                                                  selectedVariant.quantity!,
-                                              minimumRate: selectedVariant
+                                                  selectedVariant!.quantity!,
+                                              minimumRate: selectedVariant!
                                                   .minimumRate!,
                                                   adCessPer: adCessPer,
                                                   cessPer: cessPer
@@ -10905,6 +11115,9 @@ controllerNarration.text = '';
 
  void showItemDialog(BuildContext context, List<dynamic> snapshotData, bool isSerialNoInStockVariant,String name, double quantity) {
   bool isItemSelected = false;
+  // setState(() {
+  //   isLoading = false;
+  // });
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -10926,7 +11139,7 @@ controllerNarration.text = '';
                 child: ListView.builder(
                   itemCount: snapshotData.length,
                   itemBuilder: (BuildContext context, int index) {
-                    var selectedItem = snapshotData[index];
+                    var listItem = snapshotData[index];
                     return Card(
                       elevation: 0,
                       child: ListTile(
@@ -10948,7 +11161,7 @@ controllerNarration.text = '';
                         ),
                         trailing: isSerialNoInStockVariant
                             ? Text(
-                                selectedItem.serialNo,
+                                listItem.serialNo,
                                 style: const TextStyle(fontSize: 10),
                               )
                             : const Text(''),
@@ -10956,11 +11169,12 @@ controllerNarration.text = '';
                           isItemSelected = true;
                           Navigator.pop(context);
                           setState(() {
+                            positionID = index;
                             isVariantSelected = true;
                             // selectedItem = index;
                              selectedQuantity =
-                                                  selectedItem.quantity.toString();
-                                              selectedItemId = selectedItem.itemId!;
+                                                  listItem.quantity.toString();
+                                              selectedItemId = selectedItem.id!;
                                                fetchedData = selectedItemId != null
                                                  ? salesTypeData!.type == 'SALE-0' || salesTypeData!.type == 'SALE-Q'
                                                  ? isStockProductOnlyInSalesQO
@@ -10985,34 +11199,34 @@ controllerNarration.text = '';
                                                   Future<double?> rateFuture;
                                                   if (salesTypeData!.rateType == 'MRP') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
+                                                        selectedVariant!.sellingPrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'WHOLESALE') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
+                                                        selectedVariant!.wholeSalePrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'RETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
+                                                        selectedVariant!.retailPrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'SPRETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
+                                                        selectedVariant!.spRetailPrice);
                                                   } else if (rateTypeItem!.name == 'MRP') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
+                                                        selectedVariant!.sellingPrice);
                                                   } else if (rateTypeItem!.name == 'RETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
+                                                        selectedVariant!.retailPrice);
                                                   } else if (rateTypeItem!.name == 'SPRETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
+                                                        selectedVariant!.spRetailPrice);
                                                   } else if (rateTypeItem!.name == 'BRANCH') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.branch);
+                                                        selectedVariant!.branch);
                                                   }else if (rateTypeItem!.name == 'WHOLESALE') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
+                                                        selectedVariant!.wholeSalePrice);
                                                   } else {
                                                     rateFuture = Future.value(null);
                                                   }
@@ -11023,9 +11237,24 @@ controllerNarration.text = '';
                                                        
                                                     }
                                                   });
-                                                   salesTypeData!.type != 'SALES-ES' 
-                                                   ?taxP = selectedVariant.tax! ?? 0
-                                                   :taxP = 0;
+                                                     setState(() {
+                                                    selectedTaxOption =
+                                                    salesTypeData!.tax ? 'With Tax' : 'Without Tax';
+                                                   isTax = selectedTaxOption == 'With Tax' ? true : false;
+                                                   
+                                                  //    salesTypeData!.tax 
+                                                  //  ?
+                                                   if(selectedTaxOption == 'With Tax'){
+                                                    taxP = selectedVariant!.tax! ?? 0;
+                                                   }
+                                                   else{
+                                                    taxValue = selectedVariant!.tax! ?? 0;
+                                                   }
+                                                  //  :taxP = 0;
+                                                   });
+                                                  //  salesTypeData!.type != 'SALES-ES' 
+                                                  //  ?taxP = selectedVariant!.tax! ?? 0
+                                                  //  :taxP = 0;
                                                 });
                                               }
                           });
@@ -14056,34 +14285,34 @@ itemVarianDetails(selectedItem)async{
                                                   Future<double?> rateFuture;
                                                   if (salesTypeData!.rateType == 'MRP') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
+                                                        selectedVariant!.sellingPrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'WHOLESALE') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
+                                                        selectedVariant!.wholeSalePrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'RETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
+                                                        selectedVariant!.retailPrice);
                                                   } else if (salesTypeData!.rateType ==
                                                       'SPRETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
+                                                        selectedVariant!.spRetailPrice);
                                                   } else if (rateTypeItem!.name == 'MRP') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.sellingPrice);
+                                                        selectedVariant!.sellingPrice);
                                                   } else if (rateTypeItem!.name == 'RETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.retailPrice);
+                                                        selectedVariant!.retailPrice);
                                                   } else if (rateTypeItem!.name == 'SPRETAIL') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.spRetailPrice);
+                                                        selectedVariant!.spRetailPrice);
                                                   } else if (rateTypeItem!.name == 'BRANCH') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.branch);
+                                                        selectedVariant!.branch);
                                                   }else if (rateTypeItem!.name == 'WHOLESALE') {
                                                     rateFuture = Future.value(
-                                                        selectedVariant.wholeSalePrice);
+                                                        selectedVariant!.wholeSalePrice);
                                                   } else {
                                                     rateFuture = Future.value(null);
                                                   }
@@ -14095,9 +14324,9 @@ itemVarianDetails(selectedItem)async{
                                                     }
                                                   });
                                                          if (isQuantityBasedSerialNo) {
-      var itemId = selectedVariant.itemId;
+      var itemId = selectedVariant!.itemId;
       api
-          .getSelectedItemSerialNoList(selectedVariant.productId, itemId, 'SelectSerialNo') 
+          .getSelectedItemSerialNoList(selectedVariant!.productId, itemId, 'SelectSerialNo') 
           .then((value) => selectedItemSerialNoData = value);
     }
                                                    setState(() {
@@ -14108,10 +14337,10 @@ itemVarianDetails(selectedItem)async{
                                                   //    salesTypeData!.tax 
                                                   //  ?
                                                    if(selectedTaxOption == 'With Tax'){
-                                                    taxP = selectedVariant.tax! ?? 0;
+                                                    taxP = selectedVariant!.tax! ?? 0;
                                                    }
                                                    else{
-                                                    taxValue = selectedVariant.tax! ?? 0;
+                                                    taxValue = selectedVariant!.tax! ?? 0;
                                                    }
                                                   //  :taxP = 0;
                                                    });
@@ -14387,15 +14616,19 @@ itemVarianDetails(selectedItem)async{
         } 
         userDateCheck(information['DDate'].toString());
       }
-      else{
+      else { 
         setState(() {
           // widgetID = false;
+          selectedCashCustomerId == 0;
+          selectedCustomerId == 0;
+          nameControl.text = '';
           editItem = false;
           oldBill = false;
           
           // newSale = true;
         });
-      }
+        return;
+      } 
 
       setState(() {
         widgetID = false;

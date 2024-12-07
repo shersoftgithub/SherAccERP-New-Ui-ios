@@ -130,7 +130,13 @@ class _StatementState extends State<Statement> {
           child: Column(
             children: [
               DropDownSettingsTile<int>(
-                title: 'Branch',
+                leading: const Text('Branch',
+               style: TextStyle( 
+                    fontFamily: 'poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500)
+                ),
+                title: '',
                 settingKey: 'key-dropdown-default-location-view',
                 values: locationList.isNotEmpty
                     ? {for (var e in locationList) e.key + 1: e.value}
@@ -475,7 +481,7 @@ class TableController {
           // defaultColumnWidth: FixedColumnWidth(100),
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder.all(
-              width: 2.0, color: Color.fromARGB(255, 228, 228, 228)),
+              width: .8, color: Color.fromARGB(255, 228, 228, 228)),
           children: rows),
     );
   }
@@ -485,9 +491,13 @@ class TableController {
     for (String key in keys) {
       if (key.toString() != 'id') {
         elements.add(Padding(
-          padding: const EdgeInsets.all(2.0),
+          padding: const EdgeInsets.all(1.0),
           child: DecoratedBox(
-            decoration: const BoxDecoration(color: kPrimaryColor),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(1)
+              ),
+              color: kPrimaryColor),
             child: Text(
               key.toString(),
               // overflow: TextOverflow.ellipsis,

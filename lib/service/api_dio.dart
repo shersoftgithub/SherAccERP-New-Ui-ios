@@ -4367,6 +4367,48 @@ class DioService {
     return _items;
   }
 
+  Future<List<dynamic>> fetchWarrentyItemFromSalesList(int ledgerId, int itemId) async {
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  String dataBase = 'cSharp';
+  dataBase = isEstimateDataBase
+      ? (pref.getString('DBName') ?? "cSharp")
+      : (pref.getString('DBNameT') ?? "cSharp");
+
+  dynamic _items = [];
+  
+  try {
+    final response = await dio.get(
+      '${pref.getString('api')}${apiV}WarrantyEntry/FindSales/$dataBase',
+      queryParameters: {'ledgerId': ledgerId, 'itemId': itemId},
+    );
+
+    if (response.statusCode == 200) {
+      var jsonResponse = response.data;
+      // Assuming response.data is a list of lists
+      // if (jsonResponse is List) {
+        // Flattening the list if the response is a list of lists
+        for (var sublist in jsonResponse) {
+          // if (sublist is List) {
+            for (var item in sublist) {
+              if (item is Map<String, dynamic>) {
+                _items.add(item);
+              }
+            }
+          // }
+        }
+      // }
+    } else {
+      debugPrint('Unexpected error occurred!');
+    }
+  } catch (e) {
+    final errorMessage =
+        DioExceptions.fromDioError('$e' as DioError).toString();
+    debugPrint(errorMessage.toString());
+  }
+
+  return _items;    
+}
+
   Future<dynamic> fetchPreviousBills(ledger) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     String dataBase = 'cSharp';

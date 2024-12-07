@@ -37,6 +37,7 @@ class _WarrantyState extends State<Warranty> {
   DioService api = DioService();
   Size? deviceSize;
   String? formattedDate ;
+  String? warrentyformattedDate ;
   DateTime now = DateTime.now();
   int page = 1, pageTotal = 0, totalRecords = 0;
   int lId = 0, groupId = 0, areaId = 0, routeId = 0;
@@ -47,6 +48,9 @@ class _WarrantyState extends State<Warranty> {
    WarrantyCustomerModel? customer ;
    List<WarrantyComplaintModel> complaint = [];
    Future<List<dynamic>>? _getledgerListData;
+   Future<List<dynamic>>? _getProductList;
+   late List<dynamic> itemNameList;
+    late List<String> names;
    bool isTax = true,
       otherAmountLoaded = false,
       valueMore = false,
@@ -90,6 +94,8 @@ class _WarrantyState extends State<Warranty> {
     super.initState();
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
+    warrentyformattedDate =  
+     getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);  
 
     // loadSettings();
      salesManId = ComSettings.appSettings(
@@ -103,6 +109,7 @@ class _WarrantyState extends State<Warranty> {
     // isSalesManWiseLedger =
     //  ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
     loadSettings();
+    // _fetchProductList();
     //  _getledgerListData = isSalesManWiseLedger
     //       ? api.getLedgerBySalesMan(salesManId,)
     //       : api.getLedgersAll(); 
@@ -119,13 +126,42 @@ class _WarrantyState extends State<Warranty> {
         _getledgerListData = isSalesManWiseLedger
           ? api.getLedgerBySalesMan(salesManId,)
           : api.getLedgersAll();
+        _getProductList = api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate),nameLike);
+          
    }
+  //  void _fetchProductList() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+  //   try {
+  //     final fetchedList = await api.fetchStockProductLike(
+  //       DateUtil.dateDMY2YMD(formattedDate),
+  //       itemNameLike,
+  //     );
+  //     setState(() {
+  //       itemNameList = fetchedList;
+  //       names = itemNameList
+  //           .map((e) => isSalesManWiseLedger ? e.name : e['LedName'])
+  //           .where((name) => name != null)
+  //           .cast<String>()
+  //           .toList();
+  //       _isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //     print('Error fetching product list: $e');
+  //   }
+  // }  
+  
   //  getLedger(String like){
      
   //  }
-
+String itemNameLike = 'a';
   @override
   Widget build(BuildContext context) {
+        
      return PopScope(
         canPop: false,
         onPopInvoked: (didPop) async {
@@ -685,9 +721,10 @@ class _WarrantyState extends State<Warranty> {
 
 
   final expandedHeight = 472.0;
-  final collapsedHeight =   180.0;
+  final collapsedHeight =   200.0;
   final collaps = 300.0;
  bool isExpanded = false;
+ bool editItem = false;
  final animationDuration = const Duration(milliseconds: 400);
  final entryNoController = TextEditingController();
  final customerNameController = TextEditingController();
@@ -940,7 +977,7 @@ class _WarrantyState extends State<Warranty> {
                                       .where((name) => name != null)
                                       .cast<String>()
                                       .toList();
-                                  return EasyAutocomplete(
+                                  return  ContainerFieldWidget(widget: EasyAutocomplete(
                                     progressIndicatorBuilder: isLoading == true
                                         ? const Center(
                                             child: CircularProgressIndicator())
@@ -988,8 +1025,10 @@ class _WarrantyState extends State<Warranty> {
                                         });
                                       });
                                     },
-                                  );
-                                },
+                                  )
+                               , headTxt: 'Customer');
+                                  }
+                                  ,
                               )     
                  : ContainerFieldWidget(
                     widget: TextField(
@@ -1316,9 +1355,16 @@ class _WarrantyState extends State<Warranty> {
                    ),
                    ElevatedButton(
                             onPressed: () {
+                              if(selectedSupplierId != null){
                               setState(() {
                                 nextWidget = 1;
+                                editItem = false;
                               });
+                              }else{
+                                Fluttertoast.showToast(
+                                  backgroundColor: red,
+                                  msg: 'Please Select Customer');
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
@@ -1371,6 +1417,7 @@ class _WarrantyState extends State<Warranty> {
                                     return InkWell(
                                       onTap: () {
                                         setState(() {
+                                          editItem = true;
                                           nextWidget = 1;
                                           itemNameContrroler.text = cart[index].productName!;
                                           qtyContrroler.text = cart[index].qty.toString();
@@ -1648,6 +1695,7 @@ class _WarrantyState extends State<Warranty> {
 
   final itemNameContrroler = TextEditingController();
   final qtyContrroler = TextEditingController();
+  final sRateContrroler = TextEditingController();
   String selectedStatus = 'Pending';
   String? wDate;
   int? auto;
@@ -1666,6 +1714,8 @@ class _WarrantyState extends State<Warranty> {
   int? fyId;
   int? transferStatus;
   String? productName;
+  int? selectedItemId;
+  bool _isSaleInfoLoading = false;
   itemDetailWidget(){
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -1673,6 +1723,9 @@ class _WarrantyState extends State<Warranty> {
         leading: IconButton(
           onPressed: (){
             setState(() {
+              // itemNameList.clear();
+              itemNameContrroler.text = '';
+              warrentyformattedDate = '';
               nextWidget = 0;
             }); 
           }, icon: const Icon(Icons.arrow_back)),
@@ -1693,7 +1746,402 @@ class _WarrantyState extends State<Warranty> {
               color: white,
               child:  Column(
                 children: [
-                  ContainerFieldWidget(
+                  !editItem
+                  ?FutureBuilder(
+                                future: _getProductList,
+                                builder: (context, snapshot) {
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData) {
+                                    return const Text('No data found');
+                                  }
+                                  var itemNameList = snapshot.data;
+                                  var names = itemNameList!
+                                      .map((e) =>  e.name)
+                                      .where((name) => name != null)
+                                      .cast<String>()
+                                      .toList();
+                                  return ContainerFieldWidget(widget: 
+                                  EasyAutocomplete(
+                                    progressIndicatorBuilder:  const Center(
+                                            child: CircularProgressIndicator())
+                                        ,
+                                    controller: itemNameContrroler,
+                                    inputTextStyle: const TextStyle(
+                                        fontFamily: 'poppins', fontSize: 14),
+                                    suggestionTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                    suggestions: names,
+                                    // asyncSuggestions: (searchValue) async{
+                                    //    await api.fetchStockProductLike(
+                                    //     DateUtil.dateDMY2YMD(formattedDate), searchValue).then((e) {
+                                    //       for(var items in e){
+                                    //         if(!itemNameList.any((element) => element.id == items.id)){
+                                    //           itemNameList.add(items);
+                                    //         }
+                                    //       }
+                                    //       // itemNameList.contains(e);
+                                    //       // itemNameList.addAll(e);
+                                    //       // names.add(itemNameList)
+                                    //       // names.addAll(e.);
+                                    //     } );
+                                    //     itemNameLike = searchValue.isNotEmpty
+                                    //         ? searchValue.toLowerCase()
+                                    //         : 'a';
+                                    //         // return itemNameList;
+                                    //         // setState(() {
+                                    //          var namesN = itemNameList.map((e) => e.name)
+                                    //   .where((name) => name != null)
+                                    //   .cast<String>()
+                                    //   .toList();
+                                    //         // });
+                                    //       return  name ;
+                                    // },
+                                    onChanged: (value) {
+                                      setState(() {
+                                       api.fetchStockProductLike(
+                                        DateUtil.dateDMY2YMD(formattedDate), value).then((e) {
+                                          for(var items in e){
+                                            if(!itemNameList.any((element) => element.id == items.id)){
+                                              itemNameList.add(items);
+                                            }
+                                          }
+                                        } );
+                                        itemNameLike = value.isNotEmpty
+                                            ? value.toLowerCase()
+                                            : 'a';
+                                      });
+                                    },
+                                    onSubmitted: (value) async {
+                                    setState(() {
+                                      _isSaleInfoLoading = true;
+                                    });
+                                    final selectedItem = 
+                                    itemNameList.firstWhere((element) => element.name == value);  
+
+  if (selectedItem != null) {
+    // itemNameContrroler.text = '';
+    qtyContrroler.text = '';
+    sRateContrroler.text = '';
+    selectedItemId = selectedItem.id;
+    final fetchedData = await api.fetchWarrentyItemFromSalesList(
+      selectedSupplierId!,
+      selectedItemId!,
+    );
+     setState(() {
+        _isSaleInfoLoading = false; 
+      });
+
+    if (fetchedData.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text(
+              "Warranty Items",
+              style: TextStyle(fontFamily: 'poppins'),
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.separated(
+                separatorBuilder: (context, index) {
+                  return const SizedBox(
+                    height: 6,
+                  );
+                },
+                shrinkWrap: true,
+                itemCount: fetchedData.length,
+                itemBuilder: (context, index) {
+                  final item = fetchedData[index];
+                  String wDate = item['WarrentyMonth'];
+                  String saleDate = item['DDate'];
+                  
+                  return InkWell(
+                    onTap: () {
+                           setState(() {
+                         sRateContrroler.text = item['Rate'].toString();
+                         warrentyformattedDate = item['WarrentyMonth'].toString();
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        width:
+                                            MediaQuery.of(context).size.width,
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: grey, width: .5),
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                            color:
+                                                Colors.grey.withOpacity(.1)),
+                                                child: Padding(
+                                                 padding: const EdgeInsets.all(6.0),
+                                                 child: Column(
+                                                  crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Text('SRate',
+                                                          style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),),
+                                                        Spacer(),
+                                                        Text(
+                        "${double.tryParse(item['Rate'].toString()) ?? 0.0}",
+                        style: const TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                      ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          Text('WDate',
+                                                          style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),),
+                                                        Spacer(),
+                                                        Text(
+                        "${wDate.trimRight()}",
+                        style: const TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                      ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          const Text('Supplier',
+                                                          style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),),
+                                                        const Spacer(),
+                                                        Flexible(
+                                                          flex: 5,
+                                                          child: Align(
+                                                            alignment: Alignment.centerRight,
+                                                            child: Text(
+                                                                                  "${item['supplier']}",
+                                                                                  overflow: TextOverflow.ellipsis,
+                                                                                  textAlign: TextAlign.right,
+                                                                                  style: const TextStyle(
+                                                            fontSize: 12,
+                                                                                                                ),
+                                                                                ),
+                                                          ),
+                                                        ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          const Text('Sales Date',
+                                                          style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),),
+                                                        const Spacer(),
+                                                        Text(
+                                                                              "${saleDate.trimRight()}",
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              textAlign: TextAlign.right,
+                                                                              style: const TextStyle(
+                                                        fontSize: 12,
+                                                                                                            ),
+                                                                            ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: MediaQuery.of(context).size.width,
+                                                      child: Row(
+                                                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                        children: [
+                                                          const Text('Sales Days',
+                                                          style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                              'poppins'),),
+                                                        const Spacer(),
+                                                        Flexible(
+                                                          flex: 5,
+                                                          child: Align(
+                                                            alignment: Alignment.centerRight,
+                                                            child: Text(
+                                                                                  "${item['Days']}",
+                                                                                  overflow: TextOverflow.ellipsis,
+                                                                                  textAlign: TextAlign.right,
+                                                                                  style: const TextStyle(
+                                                            fontSize: 12,
+                                                                                                                ),
+                                                                                ),
+                                                          ),
+                                                        ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                 ),
+                                                 ),
+                    ),
+                  );
+                  //  ListTile(
+                  //   title: Text(
+                  //     "Rate: ${double.tryParse(item['Rate'].toString()) ?? 0.0}",
+                  //     style: const TextStyle(fontFamily: 'poppins'),
+                  //   ),
+                  //   subtitle: Text(
+                  //     "Warranty Date: ${item['WarrentyMonth']}",
+                  //     style: const TextStyle(fontFamily: 'poppins'),
+                  //   ),
+                  //   onTap: () {
+                  //     setState(() {
+                  //       sRateContrroler.text = item['Rate'].toString();
+                  //       warrentyformattedDate = item['WarrentyMonth'].toString();
+                  //     });
+                  //     Navigator.pop(context);
+                  //   },
+                  // );
+                
+                },
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      setState(() {
+        qtyContrroler.clear();
+        warrentyformattedDate = getToDay;
+        _isSaleInfoLoading = false; 
+      });
+    showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text(
+          "No Sale",
+          style: TextStyle(fontFamily: 'poppins'),
+        ),
+        content: const Text("There are no sales data available."),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+    }
+  } else {
+    setState(() {
+      qtyContrroler.clear();
+      warrentyformattedDate = getToDay;
+      _isSaleInfoLoading = false; 
+    });
+  }
+},
+
+                                    // onSubmitted: (value) {
+                                    //   setState(() {                                    
+                                    //     final selectedItem = 
+                                    //    itemNameList.firstWhere((element) => element.name == value);                                  
+                                    //     selectedItemId =
+                                    //        selectedItem.id ;
+                                    //        var data = api.fetchWarrentyItemFromSalesList(selectedSupplierId!,selectedItemId!).then((value) {
+                                    //       debugPrint(value.toString());
+                                    //     });
+                                    //   });
+                                    // },
+                                  )
+                               , headTxt: 'Item Name');
+                                   },
+                              )  
+                 
+    //               ?  FutureBuilder(
+    //   future: _getProductList, 
+    //   builder: (context, snapshot) {
+    //     // if (_isLoading) {
+    //     //   return const Center(child: CircularProgressIndicator());
+    //     // }
+    //     if (snapshot.connectionState == ConnectionState.waiting) {
+    //       return const Center(child: CircularProgressIndicator());
+    //     }
+    //     if (snapshot.hasError) {
+    //       return Text('Error: ${snapshot.error}');
+    //     } else if (itemNameList.isEmpty) {
+    //       return const Text('No data found');
+    //     }
+    //     return ContainerFieldWidget(
+    //       widget: EasyAutocomplete(
+    //         // progressIndicatorBuilder: _isLoading
+    //         //     ? const Center(child: CircularProgressIndicator())
+    //         //     : null,
+    //         controller: itemNameContrroler,
+    //         inputTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 14),
+    //         suggestionTextStyle: const TextStyle(fontFamily: 'poppins'),
+    //         decoration: const InputDecoration(
+    //           contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+    //           border: OutlineInputBorder(),
+    //         ),
+    //         suggestions: names,
+    //         onChanged: (value) {
+    //           itemNameLike = value.isNotEmpty ? value.toLowerCase() : 'a';
+    //           _fetchProductList(); 
+    //         },
+    //         onSubmitted: (value) {
+    //           final selectedSupplier = isSalesManWiseLedger
+    //               ? itemNameList.firstWhere((element) => element.name == value)
+    //               : itemNameList.firstWhere(
+    //                   (element) => element['LedName'] == value);
+    //           selectedSupplierId = isSalesManWiseLedger
+    //               ? selectedSupplier.id
+    //               : selectedSupplier['Ledcode'];
+    //           setState(() {
+    //             _isLoading = true;
+    //           });
+    //           api.getCustomerDetail(selectedSupplierId!).then((value) {
+    //             setState(() {
+    //               mobileController.text = value.phone ?? '';
+    //               _isLoading = false;
+    //             });
+    //           });
+    //         },
+    //       ),
+    //       headTxt: 'Item Name',
+    //     );
+    //   },
+    // )
+                 
+                  : ContainerFieldWidget(
                     widget: TextField(
                       style: const TextStyle(
                         fontFamily: 'poppins',
@@ -1724,7 +2172,8 @@ class _WarrantyState extends State<Warranty> {
                     ),
                     Row(
                       children: [
-                        Expanded(child: ContainerFieldWidget(
+                        Expanded(
+                          child: ContainerFieldWidget(
                           widget: TextField(
                              style: const TextStyle(
                         fontFamily: 'poppins',
@@ -1788,10 +2237,94 @@ class _WarrantyState extends State<Warranty> {
           ),
         ), headTxt: 'Status'))
                       ],
-                    )
+                    ),
+              const SizedBox(
+                      height: 6,
+                    ),
+                           Row(
+                      children: [
+                        Expanded(
+                          child: ContainerFieldWidget(
+                          widget: TextField(
+                             style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                          controller: sRateContrroler,
+                      readOnly: true,
+                      decoration: const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 6
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        )
+                      ),
+                    ), headTxt: 'SRate')),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                        Expanded(
+                          child: ContainerFieldWidget(
+                            widget: InkWell(
+                              onTap: () {
+                                _selectWarrentyDate();
+                              },
+                              child: Container(
+                                          height: 40,
+                                          // margin: const EdgeInsets.only(
+                                          //   bottom: 15,
+                                          // ),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                              border: Border.all(color: grey)),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                warrentyformattedDate!,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 16,
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              const SizedBox(
+                                                width: 8,
+                                              ),
+                                              const Icon(
+                                                Icons.calendar_month_outlined,
+                                                color: grey,
+                                                size: 25,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                            ),
+                           headTxt: 'Warrenty Date'))
+                     
+                      ],
+                    ),
+                   const SizedBox(
+                    height: 6,
+                   )
                 ],
               ),
-            )
+            ),
           ],
         )),
         bottomNavigationBar: SizedBox(
@@ -1804,10 +2337,12 @@ class _WarrantyState extends State<Warranty> {
                   child: Container(
                                 height: 60,
                                 color: Colors.white,
-                                child:  const Center(
+                                child:   Center(
                                   child: 
                                    Text(
-                                     'Delete',
+                                    editItem
+                                    ? 'Delete'
+                                    : 'Save & New',
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 16,
@@ -1850,10 +2385,12 @@ class _WarrantyState extends State<Warranty> {
                     child: Container(
                                   height: 60,
                                   color: kPrimaryColor,
-                                  child:  const Center(
+                                  child:   Center(
                                     child: 
                                      Text(
-                                     'Edit',
+                                      editItem
+                                     ? 'Edit'
+                                     : 'Save',
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
                                         fontSize: 16,
@@ -2082,6 +2619,16 @@ void editWarranty() {
         lastDate: DateTime(2100));
     if (picked != null) {
       setState(() => {formattedDate = DateFormat('dd-MM-yyyy').format(picked)});
+    }
+  }
+  Future _selectWarrentyDate() async {
+    DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100));
+    if (picked != null) {
+      setState(() => {warrentyformattedDate = DateFormat('dd-MM-yyyy').format(picked)});
     }
   }
 }

@@ -133,6 +133,7 @@
 //   @override
 //   String toString() => "Record<$id:$amount>";
 // }
+
 import 'package:flutter/material.dart';
 import 'package:easy_pie_chart/easy_pie_chart.dart';
 import 'package:sheraccerp/service/com_service.dart';
@@ -221,7 +222,8 @@ class ChartExpense {
 
   factory ChartExpense.fromJson(Map<String, dynamic> json) {
     return ChartExpense(
-        amount: json['amount'].toString(),
+        amount: 
+         json['amount'].toString(),
         id: json['id'],
         colorVal: _getColorFromHex(json['color']),
         name: json['name']);

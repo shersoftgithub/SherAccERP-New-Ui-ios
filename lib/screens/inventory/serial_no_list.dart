@@ -203,10 +203,10 @@ class _SerialNoListState extends State<SerialNoList> {
               ),
             );
           } else {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[
+                children: <Widget>[
                   SizedBox(height: 20),
                   Text('No Data Found..')
                 ],
@@ -243,10 +243,10 @@ class _SerialNoListState extends State<SerialNoList> {
             ],
           );
         }
-        return Center(
+        return const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
+            children: <Widget>[
               CircularProgressIndicator(),
               SizedBox(height: 20),
               Text('This may take some time..')
@@ -291,7 +291,7 @@ class _SerialNoListState extends State<SerialNoList> {
                 ],
               ),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,7 +343,7 @@ class _SerialNoListState extends State<SerialNoList> {
               const SizedBox(
                 height: 8,
               ),
-              Text(' Serial No',style: TextStyle(
+              const Text(' Serial No',style: TextStyle(
                     fontFamily: 'poppins'
                   ),),
                   const SizedBox(
@@ -366,10 +366,10 @@ class _SerialNoListState extends State<SerialNoList> {
                     fontFamily: 'poppins'
                   ),),
               const SizedBox(
-                height: 3,
+                height: 4,
               ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.dialog(
+                 popupProps: const PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
                     // constraints: BoxConstraints(
                     //   maxHeight: 300,
@@ -379,6 +379,10 @@ class _SerialNoListState extends State<SerialNoList> {
                     api.getSalesListData(filter, 'sales_list/itemName'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                     border: OutlineInputBorder(),),
                               ),
               
@@ -390,14 +394,14 @@ class _SerialNoListState extends State<SerialNoList> {
               const SizedBox(
                 height: 8,
               ),
-              Text(" Select Item MFR",style: TextStyle(
+              const Text(" Select Item MFR",style: TextStyle(
                     fontFamily: 'poppins'
                   ),),
                   const SizedBox(
                     height: 3,
                   ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.dialog(
+                 popupProps: const PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
                     // constraints: BoxConstraints(
                     //   maxHeight: 300,
@@ -407,6 +411,10 @@ class _SerialNoListState extends State<SerialNoList> {
                     api.getSalesListData(filter, 'sales_list/manufacture'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                     border: OutlineInputBorder(),),
                               ),
                
@@ -418,14 +426,14 @@ class _SerialNoListState extends State<SerialNoList> {
               const SizedBox(
                 height: 8,
               ),
-              Text(" Select Category",style: TextStyle(
+              const Text(" Select Category",style: TextStyle(
                     fontFamily: 'poppins'
                   ),),
                   const SizedBox(
                     height: 3,
                   ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.dialog(
+                 popupProps: const PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
                     // constraints: BoxConstraints(
                     //   maxHeight: 300,
@@ -435,6 +443,10 @@ class _SerialNoListState extends State<SerialNoList> {
                     api.getSalesListData(filter, 'sales_list/category'),
                  dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                     border: OutlineInputBorder(), ),
                               ),
              
@@ -446,14 +458,14 @@ class _SerialNoListState extends State<SerialNoList> {
               const SizedBox(
                 height: 8,
               ),
-              Text(" Select SubCategory",style: TextStyle(
+              const Text(" Select SubCategory",style: TextStyle(
                     fontFamily: 'poppins'
                   ),),
                   const SizedBox(
                     height: 3,
                   ),
               DropdownSearch<dynamic>(
-                 popupProps: PopupPropsMultiSelection.dialog(
+                 popupProps: const PopupPropsMultiSelection.dialog(
                     showSearchBox: true,
                     // constraints: BoxConstraints(
                     //   maxHeight: 300,
@@ -463,6 +475,10 @@ class _SerialNoListState extends State<SerialNoList> {
                     api.getSalesListData(filter, 'sales_list/subCategory'),
                 dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration:InputDecoration(
+                                                     contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                     border: OutlineInputBorder(),),
                               ),
                

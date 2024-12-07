@@ -5680,7 +5680,7 @@ if (productModelPrize.length > 0) {
     );
   }
 
-  showMore(context) {
+  showMore(BuildContext context) {
     var form = 'SALES RETURN';
     var title = 'Sales Return';
     var size = "2";
@@ -5751,10 +5751,11 @@ if (productModelPrize.length > 0) {
           //   }
           // }
 
-          Navigator.of(context).pop();
+           Navigator.of(context).pop();
           // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SalesReturnPreviewShow(),));
           Navigator.pushReplacementNamed(context, '/return_preview_show',
-          arguments:{ 'title': 'Salesreturn'});
+          arguments:{'title': 'SalesReturn'});
+         
           // Navigator.pushReplacementNamed(context, '/return_preview_show',
           //     arguments: {'title': 'SalesReturn'});
           //   }

@@ -381,7 +381,13 @@ class _SalesReturnListState extends State<SalesReturnList> {
                 height: 10,
               ),
               DropDownSettingsTile<int>(
-                title: 'Branch',
+                leading: const Text('Branch',
+                style: TextStyle(
+                  fontFamily: 'poppins',
+                  fontSize: 14
+                ),
+                ),
+                title: '',
                 settingKey: 'key-dropdown-default-location-view',
                 values: locationList.isNotEmpty
                     ? {for (var e in locationList) e.key + 1: e.value}
@@ -411,7 +417,12 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         items: dropdownItemsType.map((TypeItem item) {
                           return DropdownMenuItem<int>(
                             value: item.id,
-                            child: Text(item.name),
+                            child: Text(item.name,
+                            style: const TextStyle(
+                              fontFamily: 'poppins',
+                              fontSize: 14
+                            ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (value) {
@@ -449,7 +460,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                 ),
               ),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -464,6 +475,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/ItemCode'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -473,7 +488,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Item Code'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -487,6 +502,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/itemName'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -496,7 +515,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Item Name'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -510,6 +529,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/customer'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -519,7 +542,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Customer'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -533,6 +556,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/manufacture'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -542,7 +569,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Item MFR'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -556,6 +583,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/category'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -565,7 +596,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Category'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -579,6 +610,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/subCategory'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -588,7 +623,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select SubCategory'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -602,6 +637,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/salesMan'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -611,7 +650,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Salesman'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -625,6 +664,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/project'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -634,7 +677,7 @@ class _SalesReturnListState extends State<SalesReturnList> {
                   ),
                   headTxt: 'Select Project'),
               const SizedBox(
-                height: 10,
+                height: 8,
               ),
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
@@ -648,6 +691,10 @@ class _SalesReturnListState extends State<SalesReturnList> {
                         api.getSalesListData(filter, 'sales_list/taxGroup'),
                     dropdownDecoratorProps: const DropDownDecoratorProps(
                       dropdownSearchDecoration: InputDecoration(
+                                           contentPadding: EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8
+                      ),
                         border: OutlineInputBorder(),
                       ),
                     ),

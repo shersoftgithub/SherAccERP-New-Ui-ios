@@ -150,7 +150,13 @@ class _ExpenseState extends State<Expense> {
                     fontFamily: 'poppins',
                     fontSize: 15,
                     fontWeight: FontWeight.w500),
-                  title: 'Branch',
+                  title: '',
+                  leading: const Text('Branch',
+                  style:TextStyle( 
+                    fontFamily: 'poppins',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500) ,
+                  ),
                   settingKey: 'key-dropdown-default-location-view',
                   values: locationList.isNotEmpty
                       ? Map.fromIterable(locationList,
@@ -164,6 +170,7 @@ class _ExpenseState extends State<Expense> {
                    setState(() {
                       dropDownBranchId = value - 1;
                     _expenseData.clear();
+                    lItems.clear();
                     _fetchData(dropDownBranchId);
                    });
                   },
@@ -249,8 +256,7 @@ class _ExpenseState extends State<Expense> {
               //                  fontFamily: 'poppins',
               //                  fontSize: 12,
               //                  fontWeight: FontWeight.w500),),
-              //                // Spacer(),
-                           
+              //                // Spacer(),                        
               //              ],
               //            ),
               //          SizedBox(
@@ -270,8 +276,7 @@ class _ExpenseState extends State<Expense> {
               //              style: TextStyle(
               //                fontFamily: 'poppins',
               //                fontSize: 12,
-              //                fontWeight: FontWeight.w500),),
-                          
+              //                fontWeight: FontWeight.w500),),                        
               //            ],
               //          ),
               //          SizedBox(
@@ -290,8 +295,7 @@ class _ExpenseState extends State<Expense> {
               //              style: TextStyle(
               //                fontFamily: 'poppins',
               //                fontSize: 12,
-              //                fontWeight: FontWeight.w500),),
-                          
+              //                fontWeight: FontWeight.w500),),                      
               //            ],
               //          ),
               //         SizedBox(
@@ -310,8 +314,7 @@ class _ExpenseState extends State<Expense> {
               //                style: TextStyle(
               //                  fontFamily: 'poppins',
               //                  fontSize: 12,
-              //                  fontWeight: FontWeight.w500),),
-                             
+              //                  fontWeight: FontWeight.w500),),                            
               //              ],
               //            ),
               //         ],
@@ -400,6 +403,7 @@ class _ExpenseState extends State<Expense> {
                 const SizedBox(
                   height: 10,
                 ),
+                
                 lItems.isNotEmpty
                     ? ExpenseListView(
                         listViewModels: lItems, branchId: dropDownBranchId)

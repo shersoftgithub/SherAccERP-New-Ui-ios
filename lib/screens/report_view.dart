@@ -4496,7 +4496,7 @@ _buildHeader(sDate, eDate,name) {
           crossAxisAlignment: pw.CrossAxisAlignment.center,
           children: [
             pw.Text(
-              "ACCOUNT SUMMERY",
+              "ACCOUNT SUMMARY",
               style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(
