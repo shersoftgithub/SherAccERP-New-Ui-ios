@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 import 'package:image/image.dart' as images;
 import 'package:json_table/json_table.dart';
@@ -18,6 +19,7 @@ import 'package:pdf/pdf.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/service/blue_thermal.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sunmi_printer_plus/column_maker.dart';
 import 'package:sunmi_printer_plus/enums.dart';
 import 'package:sunmi_printer_plus/sunmi_printer_plus.dart';
@@ -27,7 +29,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/rp_model.dart';
 import 'package:sheraccerp/models/sales_bill.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -190,6 +192,9 @@ class _JvPreviewShowState extends State<JvPreviewShow> {
     return Scaffold(
         appBar: AppBar(
           title: Text(title),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             IconButton(
                 icon: const Icon(Icons.picture_as_pdf),

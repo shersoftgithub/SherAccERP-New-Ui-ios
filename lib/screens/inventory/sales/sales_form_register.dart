@@ -60,7 +60,11 @@ class _SalesFormRegisterState extends State<SalesFormRegister> {
               saveData();
             },
             icon: const Icon(Icons.save)),
-      ], title: const Text('Sales Form Register')),
+      ], title: const Text('Sales Form Register'),
+      titleTextStyle: const TextStyle(
+        color: white,
+      ),
+      ),
       body: ProgressHUD(
           inAsyncCall: isLoading,
           opacity: 0.0,

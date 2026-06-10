@@ -35,6 +35,9 @@ class AddScreen extends StatelessWidget {
           title: Database.userUid == '099077055'
               ? const AppBarTitle()
               : const Text('User List'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),    
         ),
         body: SafeArea(
           child: Padding(

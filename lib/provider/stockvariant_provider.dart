@@ -14,8 +14,8 @@ class StockVariants extends _$StockVariants {
 
     try {
       // Fetch data in parallel
-      var stockItemsFuture = DioService().fetchStockVariant(selectedItemId);
-      var variantsFuture = DioService().fetchStockVariant(selectedItemId);
+      var stockItemsFuture = DioService().fetchStockVariant(selectedItemId,false,0);
+      var variantsFuture = DioService().fetchStockVariant(selectedItemId,false,0);
 
       // Wait for all requests to complete
       final results = await Future.wait([stockItemsFuture, variantsFuture]);

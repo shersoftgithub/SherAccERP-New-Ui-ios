@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
@@ -13,7 +14,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/report_view.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -21,6 +22,8 @@ import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class ProjectProfitLoss extends StatefulWidget {
   const ProjectProfitLoss({Key? key}) : super(key: key);
@@ -139,6 +142,9 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                 ))
           ],
           title: const Text('Project Profit Loss'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: loadReport ? reportView() : selectData());
   }
@@ -477,7 +483,7 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
                         value: selectedReportType,
                         onChanged: ((value) {
                           setState(() {
-                            // selectedReportType = value!;
+                            selectedReportType = value.toString();
                           });
                         }))
                     ),
@@ -806,17 +812,17 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -859,17 +865,17 @@ class _ProjectProfitLossState extends State<ProjectProfitLoss> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

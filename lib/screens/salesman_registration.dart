@@ -1,4 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -213,10 +214,10 @@ class _SalesmanRegistrationState extends State<SalesmanRegistration> {
                 height: 10,
               ),
               ContainerFieldWidget(
-                  widget: SimpleAutoCompleteTextField(
-                    key: keyName,
+                  widget: EasyAutocomplete(
+                    // key: keyName,
                     controller: nameControl,
-                    clearOnSubmit: false,
+                    // clearOnSubmit: false,
                     suggestions: nameListDisplay,
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.symmetric(
@@ -225,7 +226,7 @@ class _SalesmanRegistrationState extends State<SalesmanRegistration> {
                       ),
                       border: OutlineInputBorder(),
                     ),
-                    textSubmitted: (data) {
+                    onSubmitted: (data) {
                       lName = data;
                       if (lName.isNotEmpty) {
                         int _id = salesmanList

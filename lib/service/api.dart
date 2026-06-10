@@ -495,6 +495,7 @@ Future<List<UserSettingsModel>> getUserSettings(String userId) async {
   try {
     final response = await dio.get(
         '${pref.getString('api')}${apiV}companyUserSettingsList',
+        // 'http://192.168.0.110:8090/api/v26/companyUserSettingsList',
         queryParameters: {'Id': userId});
 
     if (response.statusCode == 200) {
@@ -521,8 +522,9 @@ Future<bool> addUserSettings(UserSettingsModel data) async {
   var dio = Dio(BaseOptions(maxRedirects: 5));
   SharedPreferences pref = await SharedPreferences.getInstance();
   try {
-    final response = await dio.put(
+    final response = await dio.post(
         '${pref.getString('api')}$apiV/companyUserSettings/add',
+        // 'http://192.168.29.207:8090/api/v26/companyUserSettings/add',
         data: json.encode([data.toMap()]),
         options: Options(headers: {'Content-Type': 'application/json'}));
 
@@ -537,6 +539,7 @@ Future<bool> addUserSettings(UserSettingsModel data) async {
   }
   return ret;
 }
+
 
 Future<bool> editUserSettings(UserSettingsModel data) async {
   bool ret = false;

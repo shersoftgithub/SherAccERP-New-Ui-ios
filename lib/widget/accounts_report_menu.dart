@@ -466,6 +466,210 @@ class AccountsReportMenu extends StatelessWidget {
                       height: 77,
                       decoration: BoxDecoration(
                          image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_payment_new.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Payment Daily',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/rvpvList',
+                arguments: {'mode': 'Payment'}, 
+              );
+              // argumentsPass = {'mode': 'Payment'};
+              // Navigator.pushNamed(
+              //   context,
+              //   '/rvpvList',
+              // );
+            },
+          ),
+         
+          GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_receipt.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Receipt Daily',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              // argumentsPass = {'mode': 'Receipt'};
+              // Navigator.pushNamed(
+              //   context,
+              //   '/rvpvList',
+              // );
+              Navigator.pushNamed(
+                context,
+                '/rvpvList',
+                arguments: {'mode': 'Receipt'}, 
+              );
+            },
+          ),
+         
+             GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_bank_payment_new.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    Center(
+                      child: const Text(
+                        'Bank Payment Report',
+                        style: TextStyle(
+                            fontFamily: 'poppins',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (BuildContext context) => const ReportView(
+              //             '0',
+              //             '1',
+              //             '2000-01-01',
+              //             '2000-01-01',
+              //             'ReceiptList',
+              //             '',
+              //             'Receipt List',
+              //             '0',
+              //             1)));
+              argumentsPass = {'mode': 'BankPaymentList'};
+              Navigator.pushNamed(
+                context,
+                '/select_ledger',
+              );
+            },
+          ),
+          GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_bank_receipt_new.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Bank Receipt Report',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (BuildContext context) => const ReportView(
+              //             '0',
+              //             '1',
+              //             '2000-01-01',
+              //             '2000-01-01',
+              //             'ReceiptList',
+              //             '',
+              //             'Receipt List',
+              //             '0',
+              //             1)));
+              argumentsPass = {'mode': 'BankReceiptList'};
+              Navigator.pushNamed(
+                context,
+                '/select_ledger',
+              );
+            },
+          ),
+          GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                         image: const DecorationImage(
                             image: AssetImage('assets/icons/ic_cashflow.png'),
                             scale: 1.9
                             ),

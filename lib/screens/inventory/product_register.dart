@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/tax_group_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -506,11 +507,12 @@ class _ProductRegisterState extends State<ProductRegister> {
                       showInSnackBar(result.toString());
                     }
                   },
-                  icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+                  icon: Icon(Icons.save, color: white)),
         ],
         title: const Text('Product Register'),
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white,
         ),
       ),
       body: ProgressHUD(
@@ -568,9 +570,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                       children: [
                         Expanded(
                             child: ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  clearOnSubmit: false,
-                                  key: keyHsn,
+                                widget: EasyAutocomplete(
+                                  // clearOnSubmit: false,
+                                  // key: keyHsn,
                                   suggestions: hsnList,
                                   decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
@@ -579,7 +581,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                                     border: OutlineInputBorder(),
                                   ),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     pHSNCode = data;
                                   },
                                   controller: hsnController,
@@ -589,11 +591,15 @@ class _ProductRegisterState extends State<ProductRegister> {
                       width: 4,
                     ),
                                 Expanded(child: ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          key: keyItemCode,
+                        widget: EasyAutocomplete(
+                          // key: keyItemCode,
                           controller: itemCodeController,
-                          clearOnSubmit: false,
+                          // clearOnSubmit: false,
                           suggestions: itemCodeList,
+                          
+                          // onFocusChanged: (value) {
+                            
+                          // },
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
                                                           horizontal: 5,
@@ -601,12 +607,20 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          // submitOnSuggestionTap: true,
+                          onSubmitted: (data) {
                             pItemCode = data;
                             if (pItemCode.isNotEmpty) {
                               findProductByCode(pItemCode);
                             }
                           },
+                          // textChanged: (data) {
+                          //      pItemCode = data;
+                          //   if (pItemCode.isNotEmpty) {
+                          //     findProductByCode(pItemCode);
+                          //   }
+                          // },
+                        
                         ),
                         headTxt: 'Item Code'),),
                         Column(
@@ -656,10 +670,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                       height: 8,
                     ),
                     ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          key: keyItemName,
+                        widget: EasyAutocomplete(
+                          // key: keyItemName,
                           controller: itemNameController,
-                          clearOnSubmit: false,
+                          // clearOnSubmit: false,
                           suggestions: itemNameList,
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -668,7 +682,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          onSubmitted: (data) {
                             pItemName = data;
                             if (pItemName.isNotEmpty) {
                               findProduct(pItemName);
@@ -727,6 +741,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                 filter, 'sales_list/taxGroup'),
                             dropdownDecoratorProps: const DropDownDecoratorProps(
                               dropdownSearchDecoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                 border: OutlineInputBorder(),
                               ),
                             ),
@@ -758,6 +776,10 @@ class _ProductRegisterState extends State<ProductRegister> {
                                     dropdownDecoratorProps:
                                         const DropDownDecoratorProps(
                                       dropdownSearchDecoration: InputDecoration(
+                                         contentPadding: EdgeInsets.symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 7
+                                                        ),
                                         border: OutlineInputBorder(),
                                       ),
                                     ),
@@ -833,9 +855,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                     //   selectedItem: mfr,
                     // ),
                     ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          clearOnSubmit: false,
-                          key: keyMFR,
+                        widget: EasyAutocomplete(
+                          // clearOnSubmit: false,
+                          // key: keyMFR,
                           suggestions: mfrList,
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -844,7 +866,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          onSubmitted: (data) {
                             mfr = mfrDataList.firstWhere(
                               (element) => element.name == data,
                               orElse: () => DataJson(id: 0, name: ''),
@@ -870,9 +892,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                     //   showSearchBox: true,
                     // ),
                     ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          clearOnSubmit: false,
-                          key: keyCategory,
+                        widget: EasyAutocomplete(
+                          // clearOnSubmit: false,
+                          // key: keyCategory,
                           suggestions: categoryList,
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -881,7 +903,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          onSubmitted: (data) {
                             category = categoryDataList.firstWhere(
                               (element) => element.name == data,
                               orElse: () => DataJson(id: 0, name: ''),
@@ -907,9 +929,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                     //   showSearchBox: true,
                     // ),
                     ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          clearOnSubmit: false,
-                          key: keySubCategory,
+                        widget: EasyAutocomplete(
+                          // clearOnSubmit: false,
+                          // key: keySubCategory,
                           suggestions: subCategoryList,
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -918,7 +940,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          onSubmitted: (data) {
                             subCategory = subCategoryDataList.firstWhere(
                               (element) => element.name == data,
                               orElse: () => DataJson(id: 0, name: ''),
@@ -931,9 +953,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                       height: 8,
                     ),
                     ContainerFieldWidget(
-                        widget: SimpleAutoCompleteTextField(
-                          clearOnSubmit: false,
-                          key: keyBrand,
+                        widget: EasyAutocomplete(
+                          // clearOnSubmit: false,
+                          // key: keyBrand,
                           suggestions: brandList,
                           decoration: const InputDecoration(
                             contentPadding: EdgeInsets.symmetric(
@@ -942,7 +964,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                             border: OutlineInputBorder(),
                           ),
-                          textSubmitted: (data) {
+                          onSubmitted: (data) {
                             brand = brandDataList.firstWhere(
                               (element) => element.name == data,
                               orElse: () => DataJson(id: 0, name: ''),
@@ -1288,9 +1310,9 @@ class _ProductRegisterState extends State<ProductRegister> {
                                 // ),
 
                                 ContainerFieldWidget(
-                                    widget: SimpleAutoCompleteTextField(
-                                      clearOnSubmit: false,
-                                      key: keyRack,
+                                    widget: EasyAutocomplete(
+                                      // clearOnSubmit: false,
+                                      // key: keyRack,
                                       suggestions: rackList,
                                       decoration: const InputDecoration(
                                         contentPadding: EdgeInsets.symmetric(
@@ -1299,7 +1321,7 @@ class _ProductRegisterState extends State<ProductRegister> {
                                                         ),
                                         border: OutlineInputBorder(),
                                       ),
-                                      textSubmitted: (data) {
+                                      onSubmitted: (data) {
                                         rack = rackDataList.firstWhere(
                                           (element) => element.name == data,
                                           orElse: () =>

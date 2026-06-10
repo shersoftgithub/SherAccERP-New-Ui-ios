@@ -15,7 +15,8 @@ class _JobcardmenuState extends State<Jobcardmenu> {
       backgroundColor: bagroundColor,
       appBar: AppBar(
         centerTitle: true,
-        titleTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 17),
+        titleTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 17,
+        color: white,),
         title: const Text('Job Card'),
       ),
       body: SafeArea(

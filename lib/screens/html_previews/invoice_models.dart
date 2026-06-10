@@ -23,6 +23,9 @@ class _InvoiceModelsState extends State<InvoiceModels> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoice model'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       body: Column(
         children: [

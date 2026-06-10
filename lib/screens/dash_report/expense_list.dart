@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sheraccerp/models/expense_list_item_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class ExpenseList extends StatefulWidget {
   final ExpenseListItemModel ledger;
@@ -48,7 +49,12 @@ class _ExpenseListState extends State<ExpenseList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ledger Report')),
+      appBar: AppBar(
+        title: const Text('Ledger Report'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
+        ),
       body: Column(
         children: [
           Card(

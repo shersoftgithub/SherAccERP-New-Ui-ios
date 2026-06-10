@@ -59,9 +59,15 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         actions: const [],
-        title: const Text('Set Secure Lock'),
+        title: const Text('Set Secure Lock',
+        style: TextStyle(
+                        fontFamily: 'poppins',
+                        color: white,
+                      ),
+        ),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -92,9 +98,28 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
                     ),
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Use Biometric Authentication'),
+                      const Text('Use Biometric Authentication',
+                      style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                      ),
                       Switch(
+                        trackOutlineWidth:
+                                          const MaterialStatePropertyAll(14),
+                                      thumbIcon:
+                                          MaterialStateProperty.all(const Icon(
+                                        Icons.circle,
+                                        color: Color.fromARGB(255, 234, 234, 234),
+                                        size: 27,
+                                      )),
+                                      trackOutlineColor:
+                                          const MaterialStatePropertyAll(white),
+                                      thumbColor:
+                                          MaterialStateProperty.all(white),
+                                      activeTrackColor: kPrimaryColor,
+                                      inactiveTrackColor: const Color.fromARGB(255, 222, 222, 222),
                         value: isBioAuthSwitched,
                         onChanged: (value) {
                           _checkBio(value);
@@ -119,9 +144,28 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
                     ),
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Use Company Login'),
+                      const Text('Use Company Login',
+                      style: TextStyle(
+                        fontFamily: 'poppins'
+                      ),
+                      ),
                       Switch(
+                        trackOutlineWidth:
+                                          const MaterialStatePropertyAll(14),
+                                      thumbIcon:
+                                          MaterialStateProperty.all(const Icon(
+                                        Icons.circle,
+                                        color: Color.fromARGB(255, 234, 234, 234),
+                                        size: 27,
+                                      )),
+                                      trackOutlineColor:
+                                          const MaterialStatePropertyAll(white),
+                                      thumbColor:
+                                          MaterialStateProperty.all(white),
+                                      activeTrackColor: kPrimaryColor,
+                                      inactiveTrackColor: const Color.fromARGB(255, 222, 222, 222),
                         value: isUserSwitched,
                         onChanged: (value) {
                           setState(() {
@@ -146,10 +190,11 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
                                 color: blueAccent,
                                 elevation: 5,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(40)),
+                                    borderRadius: BorderRadius.circular(8)),
                                 child: const Text(
                                   "UPDATE",
                                   style: TextStyle(
+                                    color: white,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 18),
                                 ),
@@ -162,10 +207,11 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
                                 color: redAccent,
                                 elevation: 5,
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(40)),
+                                    borderRadius: BorderRadius.circular(8)),
                                 child: const Text(
                                   "REMOVE",
                                   style: TextStyle(
+                                    color: white,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 18),
                                 ),
@@ -179,10 +225,11 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
                             color: indigoAccent,
                             elevation: 5,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40)),
+                                borderRadius: BorderRadius.circular(8)),
                             child: const Text(
                               "SAVE",
                               style: TextStyle(
+                                color: white,
                                   fontWeight: FontWeight.w600, fontSize: 18),
                             ),
                           ),
@@ -269,7 +316,9 @@ class _PassCodeAuthState extends State<PassCodeAuth> {
         Text(
           label,
           style: const TextStyle(
-              fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
+              fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black87,
+              fontFamily: 'poppins'
+              ),
         ),
         const SizedBox(
           height: 5,

@@ -153,6 +153,9 @@ class _EditScreenCState extends State<EditScreenC> {
           elevation: 0,
           backgroundColor: kPrimaryColor,
           title: const AppBarTitle(),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             _isDeleting
                 ? const Padding(

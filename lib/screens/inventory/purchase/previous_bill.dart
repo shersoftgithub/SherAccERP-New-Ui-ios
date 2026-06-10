@@ -4,9 +4,9 @@ import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
-class PreviousBill extends StatelessWidget {
-  String ledger;
-  PreviousBill({Key? key, required this.ledger}) : super(key: key);
+class PreviousBillP extends StatelessWidget {
+  String? ledger;
+  PreviousBillP({Key? key, required this.ledger}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,7 @@ class PreviousBill extends StatelessWidget {
                                                                 '3'
                                                             ? 'ESTIMATE'
                                                             : 'CASH SALE'
-                                                : 'SALES INVOICE',
+                                                : 'PURCHASE INVOICE',
                                             style: const TextStyle(
                                               color: Colors.deepOrange,
                                               fontSize: 12,
@@ -89,30 +89,22 @@ class PreviousBill extends StatelessWidget {
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                            DateUtil.dateDMY(information[index]
-                                                    ['DDate']) +
-                                                ' ' +
-                                                DateUtil.timeHMSA(
-                                                    information[index]
-                                                        ['BTime']),
+                                            '${DateUtil.dateDMY(information[index]['DDate']) +' ' }'
+                                                ,
                                             style: TextStyle(
                                               color: Colors.blueGrey.shade600,
                                               fontSize: 12,
                                             )),
-                                        Text(
-                                            DateUtil.getDays(
-                                                    start:
-                                                        DateUtil.dateTimeYMDHMS(
-                                                            information[index]
-                                                                ['DDate'],
-                                                            information[index]
-                                                                ['BTime']),
-                                                    end: DateTime.now())
-                                                .toString(),
-                                            style: const TextStyle(
-                                              color: Colors.cyan,
-                                              fontSize: 10,
-                                            ))
+                                        // Text(
+                                        //     DateUtil.getDaysOnlyDate(
+                                        //             startDate:
+                                        //                 DateUtil.dateYMD(
+                                        //                     information[index]
+                                        //                         ['DDate']).toString(),),
+                                        //     style: const TextStyle(
+                                        //       color: Colors.cyan,
+                                        //       fontSize: 10,
+                                        //     ))
                                       ])
                                 ]),
                             const SizedBox(height: 5),
@@ -134,7 +126,8 @@ class PreviousBill extends StatelessWidget {
                                               strutStyle: const StrutStyle(
                                                   fontSize: 12.0),
                                               text: TextSpan(
-                                                  text: "${item['itemname']}",
+                                                  text:
+                                                      "${item['ProductName']}",
                                                   style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 10,
@@ -144,28 +137,32 @@ class PreviousBill extends StatelessWidget {
                                           )
                                         ])),
                                     Flexible(
-                                        flex: 700,
-                                        child: Row(children: [
-                                          Text("${item['Qty']}",
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                              )),
-                                          const Text("X",
-                                              style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 14,
-                                              )),
-                                          Text("${item['Rate']}",
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 12,
-                                              ))
-                                        ])),
+                                        flex: 850,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text("${item['Qty']}",
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                  )),
+                                              const Text("X",
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 14,
+                                                  )),
+                                              Text("${item['PRate']}",
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 12,
+                                                  ))
+                                            ])),
                                     Flexible(
                                         flex: 0,
                                         child: Text(
                                             "${item['Total'].toStringAsFixed(2)}",
+                                            overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontSize: 12,
@@ -183,8 +180,7 @@ class PreviousBill extends StatelessWidget {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(children: [
-                                          Text(
-                                              "CashReceived:${information[index]['CashReceived'].toStringAsFixed(2)}",
+                                          Text("Cash Paid: ${information[index]['CashPaid']}",
                                               style: TextStyle(
                                                 color: Colors.green.shade900,
                                                 fontSize: 12,
@@ -271,30 +267,30 @@ class PreviousBill extends StatelessWidget {
                                                                               fontSize: 14,
                                                                             ))
                                                                       ]),
-                                                                  const SizedBox(
-                                                                      height:
-                                                                          3),
-                                                                  Row(
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        const Text(
-                                                                            'Loading Charge',
-                                                                            style:
-                                                                                TextStyle(
-                                                                              color: Colors.grey,
-                                                                              fontSize: 12,
-                                                                            )),
-                                                                        Text(
-                                                                            information[index]['loadingCharge'].toStringAsFixed(
-                                                                                2),
-                                                                            style:
-                                                                                const TextStyle(
-                                                                              color: Colors.black,
-                                                                              fontSize: 14,
-                                                                            ))
-                                                                      ]),
+                                                                  // const SizedBox(
+                                                                  //     height:
+                                                                  //         3),
+                                                                  // Row(
+                                                                  //     mainAxisAlignment:
+                                                                  //         MainAxisAlignment
+                                                                  //             .spaceBetween,
+                                                                  //     children: [
+                                                                  //       const Text(
+                                                                  //           'Loading Charge',
+                                                                  //           style:
+                                                                  //               TextStyle(
+                                                                  //             color: Colors.grey,
+                                                                  //             fontSize: 12,
+                                                                  //           )),
+                                                                  //       Text(
+                                                                  //           information[index]['loadingCharge'].toStringAsFixed(
+                                                                  //               2),
+                                                                  //           style:
+                                                                  //               const TextStyle(
+                                                                  //             color: Colors.black,
+                                                                  //             fontSize: 14,
+                                                                  //           ))
+                                                                  //     ]),
                                                                   const SizedBox(
                                                                       height:
                                                                           3),
@@ -402,7 +398,7 @@ class PreviousBill extends StatelessWidget {
                                         ])
                                       ])),
                               Flexible(
-                                  flex: 700,
+                                  flex: 400,
                                   child: Row(children: [
                                     const Text('Q:',
                                         style: TextStyle(
@@ -417,8 +413,7 @@ class PreviousBill extends StatelessWidget {
                                   ])),
                               Flexible(
                                   flex: 0,
-                                  child: Text(
-                                      "\u20B9 ${information[index]['GrandTotal'].toStringAsFixed(2)}",
+                                  child: Text("\u20B9 ${information[index]['GrandTotal']}",
                                       style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 14,
@@ -491,15 +486,16 @@ const double _kWindowMinWidth = 48.0;
 const double _kWindowVerticalPadding = 0.0;
 const double _kWindowScreenPadding = 0.0;
 Future showPopupWindow<T>({
-  required BuildContext context,
-  RelativeRect? position,
-  required Widget child,
+  @required BuildContext ?context,
+  RelativeRect ?position,
+  @required Widget ?child,
   double elevation = 8.0,
-  String? semanticLabel,
-  bool? fullWidth,
-  bool? isShowBg = false,
+  String? semanticLabel = '',
+  bool ?fullWidth,
+  bool isShowBg = false,
 }) {
-  String? label = semanticLabel!;
+  assert(context != null);
+  String label = semanticLabel!;
   switch (defaultTargetPlatform) {
     case TargetPlatform.iOS:
       label = semanticLabel;
@@ -508,7 +504,7 @@ Future showPopupWindow<T>({
       break;
     case TargetPlatform.fuchsia:
       label =
-          semanticLabel ?? MaterialLocalizations.of(context)?.popupMenuLabel;
+          semanticLabel ?? MaterialLocalizations.of(context!).popupMenuLabel;
       break;
     case TargetPlatform.linux:
       break;
@@ -518,46 +514,48 @@ Future showPopupWindow<T>({
       break;
   }
   return Navigator.push(
-      context,
+      context!,
       _PopupWindowRoute(
           context: context,
           position: position!,
-          child: child,
+          child: child!,
           elevation: elevation,
-          semanticLabel: label!,
+          semanticLabel: label,
           theme: Theme.of(context),
           barrierLabel:
               MaterialLocalizations.of(context).modalBarrierDismissLabel,
           fullWidth: fullWidth!,
-          isShowBg: isShowBg!));
+          isShowBg: isShowBg));
 }
 
 class _PopupWindowRoute<T> extends PopupRoute<T> {
   _PopupWindowRoute({
-    required BuildContext context,
+    @required BuildContext ?context,
     RouteSettings? settings,
-    required this.child,
-    required this.position,
+    @required this.child,
+    this.position,
     this.elevation = 8.0,
-    required this.theme,
-    required this.barrierLabel,
-    required this.semanticLabel,
-    required this.fullWidth,
-    required this.isShowBg,
-  }) : super(settings: settings);
-  final Widget child;
-  final RelativeRect position;
-  double elevation;
-  final ThemeData theme;
-  final String semanticLabel;
-  final bool fullWidth;
-  final bool isShowBg;
+    this.theme,
+    this.barrierLabel,
+    this.semanticLabel,
+    this.fullWidth,
+    this.isShowBg,
+  }) : super(settings: settings) {
+    assert(child != null);
+  }
+  final Widget ?child;
+  final RelativeRect? position;
+  double ?elevation;
+  final ThemeData ?theme;
+  final String ?semanticLabel;
+  final bool ?fullWidth;
+  final bool ?isShowBg;
   @override
-  Color? get barrierColor => null;
+  Color get barrierColor => Colors.transparent;
   @override
   bool get barrierDismissible => true;
   @override
-  final String barrierLabel;
+  final String ?barrierLabel;
   @override
   Duration get transitionDuration => _kWindowDuration;
   @override
@@ -573,10 +571,12 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
       Animation<double> secondaryAnimation) {
     Widget win = _PopupWindow<T>(
       route: this,
-      semanticLabel: semanticLabel,
-      fullWidth: fullWidth,
+      semanticLabel: semanticLabel!,
+      fullWidth: fullWidth!,
     );
-    win = Theme(data: theme, child: win);
+    if (theme != null) {
+      win = Theme(data: theme!, child: win);
+    }
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -595,10 +595,10 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: isShowBg ? const Color(0x99000000) : null,
+                color: isShowBg! ? const Color(0x99000000) : null,
                 child: CustomSingleChildLayout(
                   delegate: _PopupWindowLayoutDelegate(
-                      position, 0, Directionality.of(context)),
+                      position!, null, Directionality.of(context)),
                   child: win,
                 ),
               ),
@@ -612,14 +612,14 @@ class _PopupWindowRoute<T> extends PopupRoute<T> {
 
 class _PopupWindow<T> extends StatelessWidget {
   const _PopupWindow({
-    Key? key,
-    required this.route,
-    required this.semanticLabel,
+    Key ?key,
+    this.route,
+    this.semanticLabel,
     this.fullWidth = false,
   }) : super(key: key);
-  final _PopupWindowRoute<T> route;
-  final String semanticLabel;
-  final bool fullWidth;
+  final _PopupWindowRoute<T> ?route;
+  final String? semanticLabel;
+  final bool ?fullWidth;
   @override
   Widget build(BuildContext context) {
     const double length = 10.0;
@@ -633,29 +633,29 @@ class _PopupWindow<T> extends StatelessWidget {
     Size device = MediaQuery.of(context).size;
     final Widget child = ConstrainedBox(
         constraints: BoxConstraints(
-          minWidth: fullWidth ? double.infinity : _kWindowMinWidth,
-          maxWidth: fullWidth ? double.infinity : device.width / 1.15,
+          minWidth: fullWidth! ? double.infinity : _kWindowMinWidth,
+          maxWidth: fullWidth! ? double.infinity : device.width / 1.15,
         ),
         child: SingleChildScrollView(
           //padding: EdgeInsets.all(20),
           padding:
               const EdgeInsets.symmetric(vertical: _kWindowVerticalPadding),
-          child: route.child,
+          child: route!.child,
         ));
     return AnimatedBuilder(
-      animation: route.animation!,
-      builder: (BuildContext? context, Widget? child) {
+      animation: route!.animation!,
+      builder: (BuildContext context, Widget ?child) {
         return Opacity(
-          opacity: opacity.evaluate(route.animation!),
+          opacity: opacity.evaluate(route!.animation!),
           child: Material(
-            type: route.elevation == 0
+            type: route!.elevation == 0
                 ? MaterialType.transparency
                 : MaterialType.card,
-            elevation: route.elevation,
+            elevation: route!.elevation!,
             child: Align(
               alignment: AlignmentDirectional.topEnd,
-              widthFactor: width.evaluate(route.animation!),
-              heightFactor: height.evaluate(route.animation!),
+              widthFactor: width.evaluate(route!.animation!),
+              heightFactor: height.evaluate(route!.animation!),
               child: Semantics(
                 scopesRoute: true,
                 namesRoute: true,
@@ -676,23 +676,30 @@ class _PopupWindowLayoutDelegate extends SingleChildLayoutDelegate {
   _PopupWindowLayoutDelegate(
       this.position, this.selectedItemOffset, this.textDirection);
   final RelativeRect position;
-  final double selectedItemOffset;
+  final double ?selectedItemOffset;
   final TextDirection textDirection;
   @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
-      // BoxConstraints.loose(constraints.biggest -
-      //       const Offset(_kWindowScreenPadding * 2.0, _kWindowScreenPadding * 2.0));
+  // BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+  //   return BoxConstraints.loose(constraints.biggest -
+  //       const Offset(_kWindowScreenPadding * 2.0, _kWindowScreenPadding * 2.0));
+  // }
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
+  final double padding = _kWindowScreenPadding * 2.0;
+  final double newWidth = constraints.biggest.width - padding;
+  final double newHeight = constraints.biggest.height - padding;
+  return BoxConstraints.loose(Size(newWidth, newHeight));
+}
 
-      BoxConstraints.loose(constraints.biggest -
-              const Offset(
-                  _kWindowScreenPadding * 2.0, _kWindowScreenPadding * 2.0)
-          as Size);
   @override
   Offset getPositionForChild(Size size, Size childSize) {
     double y;
-    y = position.top +
-        (size.height - position.top - position.bottom) / 2.0 -
-        selectedItemOffset;
+    if (selectedItemOffset == null) {
+      y = position.top;
+    } else {
+      y = position.top +
+          (size.height - position.top - position.bottom) / 2.0 -
+          selectedItemOffset!;
+    }
     // Find the ideal horizontal position.
     double x;
     x = (size.width - childSize.width) / 2;

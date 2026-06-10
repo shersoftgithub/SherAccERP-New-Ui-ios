@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -17,7 +18,7 @@ import 'package:sheraccerp/models/company_user.dart';
 import 'package:sheraccerp/models/user_settings_model.dart';
 import 'package:sheraccerp/pos/pages/home_page.dart';
 import 'package:sheraccerp/provider/app_provider.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -43,6 +44,7 @@ class _LandingState extends State<Landing> {
   LocalAuthentication auth = LocalAuthentication();
   List<FirmModel>? data;
   DioService api = DioService();
+  bool _isLoadingFirm = false;
 
   @override
   void initState() {
@@ -67,7 +69,7 @@ class _LandingState extends State<Landing> {
           AndroidDeviceInfo deviceData = await deviceInfoPlugin.androidInfo;
           var _deviceId = deviceData.id;
           debugPrint('your Device ID : $_deviceId');
-          deviceId = _deviceId;
+          deviceId = _deviceId!;
         } else if (Platform.isIOS) {
           IosDeviceInfo deviceData = await deviceInfoPlugin.iosInfo;
           var _deviceId = deviceData.utsname.machine ?? '0';
@@ -125,13 +127,56 @@ class _LandingState extends State<Landing> {
     return Scaffold(
       appBar: AppBar(
         title: Text(nextWidget ? 'Authenticate' : 'Firm List'),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins',
+          fontSize: 18
+        ),
+        toolbarHeight: 70,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _handleLogout();
-            },
-          ),
+          Container(
+            margin: const EdgeInsets.only(right: 3, top: 10),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 12.0, 
+                  sigmaY: 11.0, 
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12), 
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2), 
+                      width: .5,
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.logout,
+                      size: 24,
+                      color: Colors.white, 
+                    ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      _handleLogout();
+                    },
+                  ),
+                ),
+              ),
+            ),
+          )
+          // IconButton(
+          //   icon: const Icon(Icons.logout),
+          //   onPressed: () {
+          //     _handleLogout();
+          //   },
+          // ),
         ],
         elevation: .1,
       ),
@@ -159,83 +204,324 @@ class _LandingState extends State<Landing> {
             body: authUser(),
           )
         : Scaffold(
-            body: Container(
+          body: Container(
             width: MediaQuery.sizeOf(context).width,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage('assets/images/baground_image.png')),
+                image: AssetImage('assets/images/baground_image.png'),
+                fit: BoxFit.cover,
+              ),
             ),
             height: MediaQuery.sizeOf(context).height,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Image.asset(
-                  'assets/logo.png',
-                  height: 100,
-                  width: 90,
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0.8, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeOutBack,
+                  builder: (context, double scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.3),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          height: 100,
+                          width: 90,
+                        ),
+                      ),
+                    );
+                  },
                 ),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: 250.0,
-                  child: Image.asset('assets/images/shername_erp_image.png'),
-                  // child: TextLiquidFill(
-                  //   text: 'SherAcc',
-                  //   waveColor: Colors.white,
-                  //   boxBackgroundColor: kPrimaryColor,
-                  //   textStyle: const TextStyle(
-                  //     fontSize: 40.0,
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  //   boxHeight: 100.0,
-                  // ),
-                ),
-                Visibility(
-                  visible: _badRequest,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Text(
-                        'Network is to slow!',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      InkWell(
-                        child: Card(
-                          elevation: 10,
-                          color: blue,
-                          child: Row(children: [
-                            const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Try agin',
-                                style: TextStyle(color: white, fontSize: 20),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.network_check_sharp),
-                              color: red,
-                            )
-                          ]),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            loadingFirmList();
-                            _loadAgin = true;
-                          });
-                        },
-                      )
-                    ],
+                  child: Image.asset(
+                    'assets/images/shername_erp_image.png',
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
-                Visibility(
-                  visible: _loadAgin,
-                  child: CircularProgressIndicator(
-                    color: _loadAgin ? red : white,
-                  ),
-                ),
+                const SizedBox(height: 30),
+                if (_badRequest) errorWidget(),
+                if (_loadAgin) loadingIndicator(),
                 widgetParent(),
               ],
             ),
-          ));
+          ),
+        )
+        // Scaffold(
+        //     body: Container(
+        //     width: MediaQuery.sizeOf(context).width,
+        //     decoration: const BoxDecoration(
+        //       image: DecorationImage(
+        //           image: AssetImage('assets/images/baground_image.png')),
+        //     ),
+        //     height: MediaQuery.sizeOf(context).height,
+        //     child: Column(
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: <Widget>[
+        //         Image.asset(
+        //           'assets/logo.png',
+        //           height: 100,
+        //           width: 90,
+        //         ),
+        //         SizedBox(
+        //           width: 250.0,
+        //           child: Image.asset('assets/images/shername_erp_image.png'),
+        //           // child: TextLiquidFill(
+        //           //   text: 'SherAcc',
+        //           //   waveColor: Colors.white,
+        //           //   boxBackgroundColor: kPrimaryColor,
+        //           //   textStyle: const TextStyle(
+        //           //     fontSize: 40.0,
+        //           //     fontWeight: FontWeight.bold,
+        //           //   ),
+        //           //   boxHeight: 100.0,
+        //           // ),
+        //         ),
+        //         Visibility(
+        //           visible: _badRequest,
+        //           child: Row(
+        //             mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //             children: [
+        //               const Text(
+        //                 'Network is to slow!',
+        //                 style: TextStyle(fontSize: 20),
+        //               ),
+        //               InkWell(
+        //                 child: Card(
+        //                   elevation: 10,
+        //                   color: blue,
+        //                   child: Row(children: [
+        //                     const Padding(
+        //                       padding: EdgeInsets.all(8.0),
+        //                       child: Text(
+        //                         'Try agin',
+        //                         style: TextStyle(color: white, fontSize: 20),
+        //                       ),
+        //                     ),
+        //                     IconButton(
+        //                       onPressed: () {},
+        //                       icon: const Icon(Icons.network_check_sharp),
+        //                       color: red,
+        //                     )
+        //                   ]),
+        //                 ),
+        //                 onTap: () {
+        //                   setState(() {
+        //                     loadingFirmList();
+        //                     _loadAgin = true;
+        //                   });
+        //                 },
+        //               )
+        //             ],
+        //           ),
+        //         ),
+        //         Visibility(
+        //           visible: _loadAgin,
+        //           child: CircularProgressIndicator(
+        //             color: _loadAgin ? red : white,
+        //           ),
+        //         ),
+        //         widgetParent(),
+        //       ],
+        //     ),
+        //   ))
+          ;
+  }
+
+   Widget errorWidget() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: ClipRRect( 
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 2),
+          child: Container(
+             padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 40,
+                    spreadRadius: -10,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+            child: Column(
+              children: [
+                TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0.9, end: 1.1),
+                  duration: const Duration(milliseconds: 1000),
+                  curve: Curves.easeInOut,
+                  builder: (context, double scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.wifi_off_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                ShaderMask(
+                  shaderCallback: (bounds) =>  LinearGradient(
+                    colors: [Colors.white,Colors.white,Colors.grey.shade100,],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: const Text(
+                    'Network Unavailable',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please check your connection',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        loadingFirmList();
+                        _loadAgin = true;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.refresh_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Try Again',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget loadingIndicator() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                _loadAgin ? Colors.red : kPrimaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [Color.fromARGB(255, 218, 218, 218), Color(0xFFCCCCCC)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ).createShader(bounds),
+            child: const Text(
+              'Connecting...',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   widgetParent() {
@@ -244,19 +530,46 @@ class _LandingState extends State<Landing> {
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
           return Visibility(
-              visible: !_isInternet,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    const Text(
-                      'No Internet try Agin !',
-                      style: TextStyle(color: white, fontSize: 20),
+            visible: !_isInternet,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                      ),
                     ),
-                    _animateRotate(),
-                  ],
-                ),
-              ));
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.signal_wifi_off_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'No Internet Connection',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // const SizedBox(height: 16),
+                  // _animateRotate(),
+                ],
+              ),
+            ),
+          );
         }
         return const Center(
           child: Loading(),
@@ -268,74 +581,316 @@ class _LandingState extends State<Landing> {
   _animateRotate() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        width: 300,
-        child: Card(
-          elevation: 40,
-          color: red,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const SizedBox(width: 20.0, height: 100.0),
-              const Text(
-                'No',
-                style: TextStyle(fontSize: 30.0, color: white),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              loadingFirmList();
+              _loadAgin = true;
+            });
+          },
+          borderRadius: BorderRadius.circular(30),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.red.withOpacity(0.8),
+                  Colors.red.withOpacity(0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 20.0, height: 100.0),
-              DefaultTextStyle(
-                style: const TextStyle(
-                  fontSize: 30.0,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
-                child: AnimatedTextKit(
-                  animatedTexts: [
-                    RotateAnimatedText('INTERNET'),
-                    RotateAnimatedText('MOBILE DATA'),
-                    RotateAnimatedText('WIFI'),
-                  ],
-                  onTap: () {
-                    debugPrint("Tap Event");
-                    setState(() {
-                      loadingFirmList();
-                      _loadAgin = true;
-                    });
-                  },
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.wifi_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                DefaultTextStyle(
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  child: AnimatedTextKit(
+                    repeatForever: true,
+                    animatedTexts: [
+                      RotateAnimatedText(
+                        'NO INTERNET',
+                        duration: const Duration(seconds: 2),
+                        textStyle: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      RotateAnimatedText(
+                        'CHECK DATA',
+                        duration: const Duration(seconds: 2),
+                        textStyle: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      RotateAnimatedText(
+                        'TRY WIFI',
+                        duration: const Duration(seconds: 2),
+                        textStyle: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.touch_app_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  firmWidget() {
+
+  // widgetParent() {
+  //   return FutureBuilder(
+  //     future: isInternet(),
+  //     builder: (BuildContext context, AsyncSnapshot snapshot) {
+  //       if (snapshot.hasData) {
+  //         return Visibility(
+  //             visible: !_isInternet,
+  //             child: Padding(
+  //               padding: const EdgeInsets.all(8.0),
+  //               child: Column(
+  //                 children: [
+  //                   const Text(
+  //                     'No Internet try Agin !',
+  //                     style: TextStyle(color: white, fontSize: 20),
+  //                   ),
+  //                   _animateRotate(),
+  //                 ],
+  //               ),
+  //             ));
+  //       }
+  //       return const Center(
+  //         child: Loading(),
+  //       );
+  //     },
+  //   );
+  // }
+
+  // _animateRotate() {
+  //   return Padding(
+  //     padding: const EdgeInsets.all(8.0),
+  //     child: SizedBox(
+  //       width: 300,
+  //       child: Card(
+  //         elevation: 40,
+  //         color: red,
+  //         child: Row(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: <Widget>[
+  //             const SizedBox(width: 20.0, height: 100.0),
+  //             const Text(
+  //               'No',
+  //               style: TextStyle(fontSize: 30.0, color: white),
+  //             ),
+  //             const SizedBox(width: 20.0, height: 100.0),
+  //             DefaultTextStyle(
+  //               style: const TextStyle(
+  //                 fontSize: 30.0,
+  //               ),
+  //               child: AnimatedTextKit(
+  //                 animatedTexts: [
+  //                   RotateAnimatedText('INTERNET'),
+  //                   RotateAnimatedText('MOBILE DATA'),
+  //                   RotateAnimatedText('WIFI'),
+  //                 ],
+  //                 onTap: () {
+  //                   debugPrint("Tap Event");
+  //                   setState(() {
+  //                     loadingFirmList();
+  //                     _loadAgin = true;
+  //                   });
+  //                 },
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+   firmWidget() {
+    if (data == null) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading firms...'),
+          ],
+        ),
+      );
+    }
+    
+    if (data!.isEmpty) {
+      return const Center(
+        child: Text('No firms available'),
+      );
+    }
+    
     return Center(
       child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            Card(
-              elevation: 5,
-              child: SizedBox(
-                height: 6,
-                width: double.infinity,
-                child: LinearProgressIndicator(
-                    backgroundColor: firebaseGrey,
-                    value: _progress,
-                    valueColor: const AlwaysStoppedAnimation(indigoAccent)),
+            if (_progress > 0 && _progress < 1)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Loading...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${(_progress * 100).toInt()}%',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: indigoAccent,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 6,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: firebaseGrey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: 6,
+                          width: MediaQuery.of(context).size.width * _progress,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                indigoAccent,
+                                Color(0xFF818CF8),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: indigoAccent.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            
             ListView.builder(
               primary: false,
               shrinkWrap: true,
-              itemCount: data!.length,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: data!.length, 
               itemBuilder: (BuildContext context, int index) {
-                return Card(
-                  elevation: 8.0,
-                  margin: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 6.0),
-                  child: Container(
-                    decoration: const BoxDecoration(color: kPrimaryDarkColor),
-                    child: makeListTile(data![index]),
+                return TweenAnimationBuilder(
+                  tween: Tween<double>(begin: 0, end: 1),
+                  duration: Duration(milliseconds: 300 + (index * 50)),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, double value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 20 * (1 - value)),
+                      child: Opacity(
+                        opacity: value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 0,
+                    margin: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            kPrimaryDarkColor,
+                            kPrimaryDarkColor.withOpacity(0.95),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: makeListTile(data![index]),
+                    ),
                   ),
                 );
               },
@@ -347,47 +902,95 @@ class _LandingState extends State<Landing> {
   }
 
   makeListTile(FirmModel data) {
-    return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      leading: Container(
-        padding: const EdgeInsets.only(right: 12.0),
-        decoration: const BoxDecoration(
-            border:
-                Border(right: BorderSide(width: 1.0, color: Colors.white24))),
-        child: const Icon(Icons.autorenew, color: Colors.white),
+  return ListTile(
+    contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20.0, vertical: 12.0),
+    leading: Container(
+      padding: const EdgeInsets.only(right: 8.0),
+      decoration: BoxDecoration(
+        border: Border(
+          right: BorderSide(
+            width: 1.0,
+            color: Colors.white.withOpacity(0.2),
+          ),
+        ),
       ),
-      title: Text(
-        data.name,
-        style:
-            const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(
+          Icons.business_center,
+          color: Colors.white,
+          size: 24,
+        ),
       ),
-      subtitle: Row(
+    ),
+    title: Text(
+      data.name,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        fontSize: 16,
+        letterSpacing: 0.3,
+      ),
+    ),
+    subtitle: Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Row(
         children: <Widget>[
-          Expanded(
-            flex: 4,
-            child: Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: Text(data.code,
-                    style: const TextStyle(color: Colors.white))),
-          )
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              data.code,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
-      trailing: const Icon(Icons.keyboard_arrow_right,
-          color: Colors.white, size: 30.0),
-      onTap: () {
+    ),
+    trailing: Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.arrow_forward_ios,
+        color: Colors.white,
+        size: 16,
+      ),
+    ),
+    onTap: _isLoadingFirm ? null : () {
         _clickedDb(data);
       },
-    );
-  }
+    // onTap: () {
+    //   _clickedDb(data);
+    // },
+  );
+}
 
-  void _clickedDb(FirmModel data) {
-    setState(() {
-      _progress = 0;
-    });
-    startTimer();
-    loadingFirm(data);
-  }
+ void _clickedDb(FirmModel data) {
+  if (_isLoadingFirm) return; 
+  setState(() {
+    _progress = 0;
+    _isLoadingFirm = true;
+  });
+  startTimer();
+  loadingFirm(data);
+}
+
 
   loadingFirm(FirmModel firm) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -399,11 +1002,17 @@ class _LandingState extends State<Landing> {
     if (secureAuth) {
       setState(() {
         nextWidget = true;
+        _isLoadingFirm = false;
       });
     } else {
-      _loadingCompanyInfo();
-      _loadUserInfo();
+      await _initializeAndLoadHome();
+      if (mounted) setState(() => _isLoadingFirm = false);
     }
+  }
+
+   Future<void> _initializeAndLoadHome() async {
+    await _loadingCompanyInfo();
+    await _loadUserInfo();
   }
 
   bool? isBioAuthSwitched = false, isUserSwitched = false, isPassSwitched;
@@ -525,6 +1134,7 @@ class _LandingState extends State<Landing> {
                         'Enter UserName',
                         style: TextStyle(
                             fontSize: 15,
+                            fontFamily: 'poppins',
                             fontWeight: FontWeight.w400,
                             color: Colors.black87),
                       ),
@@ -567,6 +1177,7 @@ class _LandingState extends State<Landing> {
                       const Text(
                         'Enter Password',
                         style: TextStyle(
+                          fontFamily: 'poppins',
                             fontSize: 15,
                             fontWeight: FontWeight.w400,
                             color: Colors.black87),
@@ -610,6 +1221,9 @@ class _LandingState extends State<Landing> {
                       // ),
                     ],
                   ),
+                  const SizedBox(
+                        height: 8,
+                      ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -618,18 +1232,29 @@ class _LandingState extends State<Landing> {
                         'Forgot Password ?',
                         style: TextStyle(color: blueAccent),
                       )),
-                      Card(
-                        child: InkWell(
-                          child: const Text(
-                            '***',
-                            style: TextStyle(color: grey),
-                          ),
-                          onDoubleTap: () {
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      InkWell(
+                        onDoubleTap: () {
                             appProvider!.isEstimate =
                                 appProvider!.isEstimate ? false : true;
                             isEstimateDataBase =
                                 isEstimateDataBase ? false : true;
                           },
+                        child: const Card(
+                          elevation: 3,
+                          margin: EdgeInsets.all(2),
+                          child: Padding(
+                            padding: EdgeInsets.all(1),
+                            child: Text(
+                              '***',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: grey),
+                            ),
+                          ),
                         ),
                       )
                     ],
@@ -901,17 +1526,19 @@ class _LandingState extends State<Landing> {
     }
   }
 
-  _loadingCompanyInfo() async {
+  Future<void> _loadingCompanyInfo() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     _regId = (pref.getString('regId') ?? "");
     if (_regId.trim().isNotEmpty) {
-      var dataBase = isEstimateDataBase
+     var dataBase = isEstimateDataBase
           ? pref.getString('DBName')
           : pref.getString('DBNameT');
-      ScopedModel.of<MainModel>(context).getCompanySettingsAll(dataBase);
+
+      await ScopedModel.of<MainModel>(context)
+          .getCompanySettingsAll(dataBase);
+
       ScopedModel.of<MainModel>(context)
           .getReportDesignByName(dataBase!, 'Ledger_Report_Qty');
-          // delayFunction();
     }
   }
 
@@ -1147,6 +1774,8 @@ class _LandingState extends State<Landing> {
           defaultCashAc = (data.cashId > 0 ? false : true);
           defaultBranch = (data.branchId > 0 ? false : true);
           defaultSalesMan = (data.salesmanId > 0 ? false : true);
+          keySalesmanSelectionInSalesList = data.salesmanSelection! > 0 ? true : false;
+          empCode = data.employeeId ?? 0;
           if (!defaultRoute) {
             Settings.setValue<int>(
                 'key-dropdown-default-route-view', data.routeId + 1);

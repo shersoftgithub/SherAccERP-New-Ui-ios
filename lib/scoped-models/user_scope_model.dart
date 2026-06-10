@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/user_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/shared/constants.dart';
 
 mixin UserScopeModel on Model {

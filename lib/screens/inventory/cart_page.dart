@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
 
@@ -21,6 +21,9 @@ class _CartPageState extends State<CartPage> {
         appBar: AppBar(
           backgroundColor: kPrimaryColor,
           title: const Text("Cart"),
+          titleTextStyle: TextStyle(
+            color: white,
+          ),
           actions: <Widget>[
             TextButton(
                 child: const Text(

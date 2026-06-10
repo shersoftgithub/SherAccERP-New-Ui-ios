@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class KSAQR extends StatefulWidget {
   const KSAQR({Key? key}) : super(key: key);
@@ -16,6 +17,9 @@ class _KSAQRState extends State<KSAQR> {
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text("Generate QR Code")),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       body: Column(
         children: [

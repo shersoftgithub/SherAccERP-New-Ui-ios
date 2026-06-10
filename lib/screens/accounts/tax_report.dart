@@ -13,7 +13,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/sales_type.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -21,6 +21,7 @@ import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'dart:html' as html;
 
 import '../inventory/sales/sales_list.dart';
 
@@ -263,7 +264,8 @@ class _TaxReportState extends State<TaxReport> {
             )
           ],
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
           title: Text(title),
         ),
@@ -842,17 +844,17 @@ class _TaxReportState extends State<TaxReport> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

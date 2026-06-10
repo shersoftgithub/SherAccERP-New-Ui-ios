@@ -1,7 +1,12 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/product_manage_model.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:intl/intl.dart';
@@ -24,11 +29,19 @@ class _ProductManagementState extends State<ProductManagement> {
   String productId = '';
   List<DataJson> productList = [];
   bool _isLoading = false, isExist = false, buttonEvent = false;
+  bool taxGroupUpdate = false;
   String ?_result;
 
   @override
   void initState() {
-    api.fetchAllProductPurchase().then((value) {
+    CompanyInformation companySettings =
+        ScopedModel.of<MainModel>(context).getCompanySettings();
+    List<CompanySettings> settings =
+        ScopedModel.of<MainModel>(context).getSettings();
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
+    
+    api.fetchAllProductPurchase(taxGroupUpdate).then((value) {
       setState(() {
         for (var data in value) {
           productList.add(DataJson(id: data.slNo, name: data.itemName));
@@ -49,7 +62,8 @@ class _ProductManagementState extends State<ProductManagement> {
           appBar: AppBar(
             title: const Text('Product Management'),
             titleTextStyle: const TextStyle(
-              fontFamily: 'poppins'
+              fontFamily: 'poppins',
+              color: white
             ),
             actions: [
             IconButton(
@@ -93,7 +107,8 @@ class _ProductManagementState extends State<ProductManagement> {
       spRetail = 0,
       wholeSale = 0,
       branch = 0;
-  int _index = 0;
+  int _index = 0,
+      rackId = 0;
 
   formWidget() {
     return nextWidget == 0
@@ -151,6 +166,7 @@ class _ProductManagementState extends State<ProductManagement> {
                             controllerBranch.text =
                                 productSingle!.branch.toStringAsFixed(2);
                             controllerOBarcode.text = productSingle!.obarcode;
+                            rackId = productSingle!.rackId;
                             nextWidget = 2;
                           });
                         },
@@ -258,6 +274,7 @@ class _ProductManagementState extends State<ProductManagement> {
                                       productSingle!.spretail = spRetail;
                                       productSingle!.wSrate = wholeSale;
                                       productSingle!.branch = branch;
+                                      productSingle!.rackId = rackId;
                                       productData.removeAt(_index);
                                       productData.insert(_index, productSingle!);
                                       setState(() {
@@ -342,7 +359,7 @@ class _ProductManagementState extends State<ProductManagement> {
                                     onChanged: (value) {
                                       setState(() {
                                         // editableMrp = true;
-                                        mrp = double.tryParse(value)!;
+                                        mrp = double.tryParse(value)?? 0.0;
                                       });
                                     },
                                   ),
@@ -388,7 +405,7 @@ class _ProductManagementState extends State<ProductManagement> {
                                   onChanged: (value) {
                                     setState(() {
                                       // editableRetail = true;
-                                      retail = double.tryParse(value)!;
+                                      retail = double.tryParse(value)?? 0.0;
                                       // calculateRate();
                                     });
                                   },
@@ -441,7 +458,7 @@ class _ProductManagementState extends State<ProductManagement> {
                                   onChanged: (value) {
                                     setState(() {
                                       // editableWSale = true;
-                                      wholeSale = double.tryParse(value)!;
+                                      wholeSale = double.tryParse(value)?? 0.0;
                                       // calculateRate();
                                     });
                                   },
@@ -490,7 +507,7 @@ class _ProductManagementState extends State<ProductManagement> {
                                   onChanged: (value) {
                                     setState(() {
                                       // editableBranch = true;
-                                      branch = double.tryParse(value)!;
+                                      branch = double.tryParse(value)?? 0.0;
                                       // calculateRate();
                                     });
                                   },
@@ -502,7 +519,60 @@ class _ProductManagementState extends State<ProductManagement> {
                               )
                             ],
                           ),
-                          
+                          const SizedBox(
+                            height: 4,
+                          ),
+                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            // mainAxisAlignment: MainAxisAlignment.end,
+                             children: [
+                               SizedBox(
+                                 width: MediaQuery.sizeOf(context).width/2.2,
+                                 child: Row(
+                                  // crossAxisAlignment: CrossAxisAlignment.start,
+                                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                           children: [
+                               const Text('SpRetail',
+                                  style: TextStyle(
+                                     fontFamily: 'poppins',
+                                     fontSize: 14,
+                                     fontWeight: FontWeight.w500
+                                   ),
+                               ),
+                               SizedBox(
+                                 height: 30,
+                                 width: 100,
+                                 child: TextField(
+                                   controller: controllerSPRetail,
+                                   decoration: const InputDecoration(
+                                       border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                         horizontal: 5,
+                                         vertical: 5
+                                       ),),
+                                   keyboardType:
+                                       const TextInputType.numberWithOptions(
+                                           decimal: true),
+                                   inputFormatters: [
+                                     FilteringTextInputFormatter(
+                                         RegExp(r'[0-9]'),
+                                         allow: true,
+                                         replacementString: '.')
+                                   ],
+                                   onChanged: (value) {
+                                     setState(() {
+                                       // editableBranch = true;
+                                       spRetail = double.tryParse(value) ?? 0.0;
+                                       // calculateRate();
+                                     });
+                                   },
+                                 ),
+                               ),
+                                                           ],
+                                                      ),
+                               ),
+                             ],
+                           )
                         ],
                       ),
                     ),
@@ -544,6 +614,7 @@ class _ProductManagementState extends State<ProductManagement> {
   }
 
   void updateData() {
+    debugPrint(json.encode(productData));
     api.updateProductDetails(productData).then((value) {
       setState(() {
         value ? nextWidget = 3 : nextWidget = 4;

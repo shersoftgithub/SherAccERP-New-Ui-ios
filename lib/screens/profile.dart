@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/bussiness_card.dart';
 import 'package:sheraccerp/screens/settings/add_logo.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -62,6 +62,9 @@ class _ProfileState extends State<Profile> {
             ),
           ],
           title: const Text('Profile'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: viewProfile ? widgetView() : editProfile());
   }

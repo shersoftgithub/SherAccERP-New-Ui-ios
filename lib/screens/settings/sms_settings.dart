@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/sms_data_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class SmsSettings extends StatefulWidget {
@@ -58,6 +59,9 @@ class _SmsSettingsState extends State<SmsSettings> {
       key: scaffoldKey,
       appBar: AppBar(
         title: const Text('SMS Settings'),
+        titleTextStyle: TextStyle(
+          color: white,
+        ),
       ),
       body: ProgressHUD(
         inAsyncCall: _isLoading,

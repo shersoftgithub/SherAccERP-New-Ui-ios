@@ -17,7 +17,7 @@ import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:pdf/widgets.dart' as pw;
 // ignore: avoid_web_libraries_in_flutter
-// import 'dart:html' as html;
+import 'dart:html' as html;
 
 class SerialNoList extends StatefulWidget {
   const SerialNoList({Key? key}) : super(key: key);
@@ -104,7 +104,8 @@ class _SerialNoListState extends State<SerialNoList> {
           ],
           title: const Text('Serial No List'),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
         ),
         body: loadReport ? reportView() : selectData());
@@ -746,17 +747,17 @@ class _SerialNoListState extends State<SerialNoList> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -799,17 +800,17 @@ class _SerialNoListState extends State<SerialNoList> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

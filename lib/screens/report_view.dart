@@ -2,15 +2,23 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sheraccerp/models/company.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/models/sales_type.dart';
+import 'package:sheraccerp/models/voucher_type_model.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
+import 'package:sheraccerp/screens/accounts/bank_voucher.dart';
+import 'package:sheraccerp/screens/accounts/r_p_voucher.dart';
+import 'package:sheraccerp/screens/inventory/purchase/purchase.dart';
+import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -22,7 +30,7 @@ import 'package:pdf/pdf.dart' as pw;
 // import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:zoom_widget/zoom_widget.dart';
 // ignore: avoid_web_libraries_in_flutter
-// import 'dart:html' as html;
+import 'dart:html' as html;
 
 class ReportView extends StatefulWidget {
   const ReportView(
@@ -64,6 +72,7 @@ class _ReportViewState extends State<ReportView> {
   DioService api = DioService();
   final controller = ScrollController();
   double offset = 0;
+  bool fullLedgerReprt = false;
   var _data;
   List<dynamic> location = [
     {'id': 0}
@@ -87,9 +96,16 @@ class _ReportViewState extends State<ReportView> {
     super.initState();
     location.removeAt(0);
     if (widget.branchId[0] == 0) {
-      for (int i = 0; i < otherRegLocationList.length; i++) {
+        if(widget.type == "Closing Report"){
+        location.add(({'id': '0'}));
+      }else{
+        for (int i = 0; i < otherRegLocationList.length; i++) {
         location.add(({'id': otherRegLocationList[i].id}));
       }
+      }
+      // for (int i = 0; i < otherRegLocationList.length; i++) {
+      //   location.add(({'id': otherRegLocationList[i].id}));
+      // }
     } else {
       for (int i = 0; i < widget.branchId.length; i++) {
         location.add(({'id': widget.branchId[i]}));
@@ -112,6 +128,7 @@ class _ReportViewState extends State<ReportView> {
         ? 'Ledger Report'
         : widget.statement; //'ReceivblesDebitOnly';
     api.getReportDesignByName(form).then((value) => reportDesign = value);
+    fullLedgerReprt = ComSettings.appSettings('bool', 'key-ledger-report-all', false);
   }
 
   @override
@@ -278,28 +295,62 @@ class _ReportViewState extends State<ReportView> {
               ) {
                 setState(() {
                   if (menuId == 1) {
-                    _createPDF('Ledger Report ' +
-                            widget.name +
-                            ' Date :' +
-                            DateUtil.dateDMY(widget.sDate) +
-                            ' - ' +
-                            DateUtil.dateDMY(widget.eDate))
-                        .then((value) =>
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => PDFScreen(
-                                      pathPDF: value,
-                                      subject: widget.name +
-                                          ' Date :' +
-                                          DateUtil.dateDMY(widget.sDate) +
-                                          ' - ' +
-                                          DateUtil.dateDMY(widget.eDate),
-                                      text: 'this is ' +
-                                          widget.name +
-                                          ' Date :' +
-                                          DateUtil.dateDMY(widget.sDate) +
-                                          ' - ' +
-                                          DateUtil.dateDMY(widget.eDate),
-                                    ))));
+                     _createPDF('Ledger Report ' +
+            widget.name +
+            ' Date :' +
+            DateUtil.dateDMY(widget.sDate) +
+            ' - ' +
+            DateUtil.dateDMY(widget.eDate))
+        .then((value) {
+      // Show a success message or dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF downloaded successfully!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      if (value.isNotEmpty && !kIsWeb) {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => PDFScreen(
+            pathPDF: value,
+            subject: widget.name +
+                ' Date :' +
+                DateUtil.dateDMY(widget.sDate) +
+                ' - ' +
+                DateUtil.dateDMY(widget.eDate),
+            text: 'this is ' +
+                widget.name +
+                ' Date :' +
+                DateUtil.dateDMY(widget.sDate) +
+                ' - ' +
+                DateUtil.dateDMY(widget.eDate),
+          ),
+        ));
+      }
+    });
+                    // _createPDF('Ledger Report ' +
+                    //         widget.name +
+                    //         ' Date :' +
+                    //         DateUtil.dateDMY(widget.sDate) +
+                    //         ' - ' +
+                    //         DateUtil.dateDMY(widget.eDate))
+                    //     .then((value) =>
+                    //         Navigator.of(context).push(MaterialPageRoute(
+                    //             builder: (_) => PDFScreen(
+                    //                   pathPDF: value,
+                    //                   subject: widget.name +
+                    //                       ' Date :' +
+                    //                       DateUtil.dateDMY(widget.sDate) +
+                    //                       ' - ' +
+                    //                       DateUtil.dateDMY(widget.eDate),
+                    //                   text: 'this is ' +
+                    //                       widget.name +
+                    //                       ' Date :' +
+                    //                       DateUtil.dateDMY(widget.sDate) +
+                    //                       ' - ' +
+                    //                       DateUtil.dateDMY(widget.eDate),
+                    //                 ))));
                   } else if (menuId == 2) {
                     Future.delayed(const Duration(milliseconds: 1000), () {
                       _createCSV(widget.name +
@@ -362,78 +413,283 @@ class _ReportViewState extends State<ReportView> {
           ],
           // title: Text(widget.type),
           title: Text(
-            (widget.type == 'ledger'? 'Ledger': widget.type),
-            style: const TextStyle(fontFamily: 'poppins'),
+            (widget.type == 'ledger'
+            ? 'Ledger': widget.type == 'ReceiptList'
+            ? 'Receipt List' 
+            : widget.type == 'PaymentList' 
+            ? 'Payment List' 
+            : widget.type == 'BankReceiptList'
+            ? 'Bank Receipt List'
+            : widget.type == 'BankPaymentList'
+            ? 'Bank Payment List'
+            : widget.type),
+            style: const TextStyle(fontFamily: 'poppins',color: white,),
           ),
         ),
         body:Align(
           alignment: Alignment.topCenter,
-          child: Zoom(
-            backgroundColor: white,
-           centerOnScale: true,
-           opacityScrollBars: .1,
-           radiusScrollBars: .1,
-            initPosition:Offset.fromDirection(10),
-            maxZoomWidth: MediaQuery.of(context).size.width,
-              maxZoomHeight: MediaQuery.of(context).size.height,
-              // maxScale: 2.5,
-              child: (widget.type == 'ledger' ||
-                      widget.type == 'Day Book' ||
-                      widget.type == 'Trial Balance' ||
-                      widget.type == 'Cash Flow' ||
-                      widget.type == 'Invoice Wise Balance Customers' ||
-                      widget.type == 'Invoice Wise Balance Suppliers'
-                  ? reportView()
-                  : widget.type == 'Fund Flow'
-                      ? reportViewFundFlow()
-                      : widget.type == 'Cheque'
-                          ? reportViewBankVouchers()
-                          : widget.type == 'User Activity'
-                              ? reportViewUserActivity()
-                              : widget.type == 'Monthly Sales'
-                                  ? reportViewMonthlySalesReport(widget.branchId)
-                                  : widget.type == 'Monthly Purchase'
-                                      ? reportViewMonthlyPurchase(widget.branchId)
-                                      : widget.type == 'Bill By Bill'
-                                          ? reportViewSalesBillByBill()
-                                          : widget.type == 'GroupList'
-                                              ? reportViewGroupList()
-                                              : widget.type == 'LedgerList'
-                                                  ? reportViewLedgerList()
+          child: (widget.type == 'ledger' ||
+                  widget.type == 'Day Book' ||
+                  widget.type == 'Trial Balance' ||
+                  widget.type == 'Cash Flow' ||
+                  widget.type == 'Invoice Wise Balance Customers' ||
+                  widget.type == 'Invoice Wise Balance Suppliers'
+              ? reportView()
+              : widget.type == 'Fund Flow'
+                  ? reportViewFundFlow()
+                  : widget.type == 'Cheque'
+                      ? reportViewBankVouchers()
+                      : widget.type == 'User Activity'
+                          ? reportViewUserActivity()
+                          : widget.type == 'Monthly Sales'
+                              ? reportViewMonthlySalesReport(widget.branchId)
+                              : widget.type == 'Monthly Purchase'
+                                  ? reportViewMonthlyPurchase(widget.branchId)
+                                  : widget.type == 'Bill By Bill'
+                                      ? reportViewSalesBillByBill()
+                                      : widget.type == 'GroupList'
+                                          ? reportViewGroupList()
+                                          : widget.type == 'LedgerList'
+                                              ? reportViewLedgerList()
+                                              : widget.type ==
+                                                      'Closing Report'
+                                                  ? reportViewClosingReport()
                                                   : widget.type ==
-                                                          'Closing Report'
-                                                      ? reportViewClosingReport()
+                                                          'EmployeeList'
+                                                      ? reportViewEmployeeList()
                                                       : widget.type ==
-                                                              'EmployeeList'
-                                                          ? reportViewEmployeeList()
+                                                              'CustomerCardList'
+                                                          ? reportViewCustomerCardList()
                                                           : widget.type ==
-                                                                  'CustomerCardList'
-                                                              ? reportViewCustomerCardList()
+                                                                  'P&L Account'
+                                                              ? reportViewProfitAndLossAccount()
                                                               : widget.type ==
-                                                                      'P&L Account'
-                                                                  ? reportViewProfitAndLossAccount()
+                                                                      'BalanceSheet'
+                                                                  ? reportViewBalanceSheet()
                                                                   : widget.type ==
-                                                                          'BalanceSheet'
-                                                                      ? reportViewBalanceSheet()
-                                                                      : widget.type ==
-                                                                                  'Payable' ||
-                                                                              widget.type ==
-                                                                                  'Receivable'
-                                                                          ? reportView()
-                                                                          : widget.type == 'PaymentList' ||
-                                                                                  widget.type == 'ReceiptList' ||
-                                                                                  widget.type == 'JournalList'
-                                                                              ? reportVoucherList()
-                                                                              : const Text('No Report'))),
+                                                                              'Payable' ||
+                                                                          widget.type ==
+                                                                              'Receivable'
+                                                                      ? reportView()
+                                                                      : widget.type == 'PaymentList' ||
+                                                                              widget.type == 'ReceiptList' ||
+                                                                              widget.type == 'JournalList'
+                                                                           ? reportVoucherList()
+                                                                          : widget.type == 'BankReceiptList' ||
+                                                                                    widget.type == 'BankPaymentList'
+                                                                                       ?  reportBankVoucherList()              
+                                                                                       : const Center(child: Text('No Report'))),
         ));
   }
 
    bool classic = false;
   final GlobalKey _globalKey = GlobalKey();
 
+    showEditDialog(context, int _id,String voucher) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          ComSettings.appSettings('bool', 'key-simple-sales', false)
+              ? Navigator.pushNamed(context, '/SimpleSale')
+              : Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const Sale(
+                        oldSale: true,
+                        thisSale: false,
+                      )));
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage: 'Do you want to edit or delete\nRefNo:$_id',
+        title: 'Update $voucher',
+        context: context);
+  }
+
+  showEditRvPvDialog(context, int _id,String voucher) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const RPVoucher(
+            oldRvPv: true,
+          ),
+          settings: RouteSettings(
+            arguments: {
+              'dataDynamic': [
+                {
+                  'RealEntryNo': int.tryParse(_id.toString() ?? '0'),
+                  'EntryNo': int.tryParse(_id.toString() ?? '0'),
+                  'Id': int.tryParse(_id.toString() ?? '0'),
+                  'Type': '0'
+                }
+              ],
+              'mode': voucher == 'RECEIPT' ? 'Receipt' : 'Payment',
+              'fromDaily':'1'
+            },
+          ),
+        ),
+      );
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage: 'Do you want to edit or delete\nRefNo:$_id',
+        title: 'Update $voucher',
+        context: context);
+  }
+
+  showEditBankRvPvDialog(context, int _id,String voucher) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const BankVoucher(
+            oldRvPv: true,
+          ),
+          settings: RouteSettings(
+            arguments: {
+              'dataDynamic': [
+                {
+                  'RealEntryNo': int.tryParse(_id.toString() ?? '0'),
+                  'EntryNo': int.tryParse(_id.toString() ?? '0'),
+                  'Id': int.tryParse(_id.toString() ?? '0'),
+                  'Type': '0'
+                }
+              ],
+              'voucher': voucher == 'BANK-RECEIPT' ? 'Receipt' : 'Payment',
+              'fromDaily':'1'
+            },
+          ),
+        ),
+      );
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage: 'Do you want to edit or delete\nRefNo:$_id',
+        title: 'Update $voucher',
+        context: context);
+  }
+
+  showEditPurchaseDialog(context, int _id,String voucher) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const Purchase(
+                    oldPurchase: true,
+                  )));
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage: 'Do you want to edit or delete\nRefNo:$_id',
+        title: 'Update $voucher',
+        context: context);
+  }
+
+  void _handleEntryNoTap(Map<String, dynamic> values, BuildContext context, int index) {
+  final voucher = values['Voucher']?.toString() ?? '';
+  
+  if (voucher.startsWith('SALES-')) {
+    try {
+      final voucherType = voucher;
+      // SalesType? sData;
+      try {
+        salesTypeData = salesTypeList.firstWhere(
+          (element) => element.type == voucherType,
+        );
+      } catch (e) {
+        salesTypeData = salesTypeList.firstWhere(
+          (element) => element.name.contains(voucherType),
+        );
+      }
+      
+      if (salesTypeData != null) {
+         dataDynamic = [
+          {
+            'RealEntryNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'EntryNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'Id': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'InvoiceNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'Type': salesTypeData!.id.toString()
+          }
+        ];
+        
+        showEditDialog(context, int.tryParse(values['EntryNo']?.toString() ?? '0') ?? 0,voucherType);
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Sales type not found for voucher: $voucher'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  } else if (voucher == 'RECEIPT' || voucher == 'PAYMENT'){
+       showEditRvPvDialog(context, int.tryParse(values['EntryNo']?.toString() ?? '0') ?? 0,voucher);
+  } else if(voucher == 'BANK-RECEIPT' || voucher == 'BANK-PAYMENT'){
+       showEditBankRvPvDialog(context, int.tryParse(values['EntryNo']?.toString() ?? '0') ?? 0,voucher);
+  } else if (voucher == 'PURCHASE'){
+   VoucherType? voucherTypeData;
+     try {
+        voucherTypeData = voucherTypeList.firstWhere(
+          (element) => element.voucher.toUpperCase() == voucher,
+        );
+      } catch (e) {
+        voucherTypeData = voucherTypeList.firstWhere(
+          (element) => element.voucher.toUpperCase().contains(voucher),
+        );
+      }
+     if (voucherTypeData != null) {
+         dataDynamic = [
+          {
+            'RealEntryNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'EntryNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'Id': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'InvoiceNo': int.tryParse(values['EntryNo']?.toString() ?? '0'),
+            'Type': voucherTypeData.id.toString()
+          }
+        ];
+        
+        showEditPurchaseDialog(context, int.tryParse(values['EntryNo']?.toString() ?? '0') ?? 0,voucher);
+      }  
+  }
+}
+
+
   reportView() {
       if (widget.type != 'ledger') {
       classic = true;
+    }else {
+       if(fullLedgerReprt){
+        classic = true;
+      } else{
+        classic = false;
+      }
     }
 
     project = [
@@ -472,7 +728,7 @@ class _ReportViewState extends State<ReportView> {
               // Map<String, dynamic> singleItem = {"type": "P"};
               // filterItems.removeWhere(
               //     (element) => element.keys. =>  == singleItem.keys.first);
-              data = filterItems;
+              data = filterItems;  
             } else {
               var filterItems = data;
               for (ReportDesign design in reportDesign!) {
@@ -519,82 +775,195 @@ class _ReportViewState extends State<ReportView> {
               _data = data;
             }
             return classic
-                ? Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      controller: controller,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                              child: Text(widget.name +
-                                  ' Date : From ' +
-                                  DateUtil.dateDMY(widget.sDate) +
-                                  ' To ' +
-                                  DateUtil.dateDMY(widget.eDate))),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: DataTable(
-                              headingRowColor: MaterialStateColor.resolveWith(
-                                  (states) => Colors.grey.shade200),
-                              border: TableBorder.all(
-                                  width: 1.0, color: Colors.black),
-                              columnSpacing: 12,
-                              dataRowHeight: 20,
-                              headingRowHeight: 30,
-                              columns: [
-                                for (int i = 0; i < tableColumn.length; i++)
-                                  DataColumn(
-                                    label: Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        tableColumn[i],
-                                        style: const TextStyle(
-                                            // color: Colors.black,
-                                            fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                      ),
+            ? Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    controller: controller,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Text(widget.name +
+                              ' Date : From ' +
+                              DateUtil.dateDMY(widget.sDate) +
+                              ' To ' +
+                              DateUtil.dateDMY(widget.eDate)),
+                        ),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: DataTable(
+                            headingRowColor: MaterialStateColor.resolveWith(
+                                (states) => kPrimaryColor),
+                            border: TableBorder.all(width: 1.0, color: grey),
+                            columnSpacing: 12,
+                            dataRowHeight: 20,
+                            headingRowHeight: 30,
+                            columns: [
+                              for (int i = 0; i < tableColumn.length; i++)
+                                DataColumn(
+                                  label: Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      tableColumn[i],
+                                      style: const TextStyle(
+                                          color: white, fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
-                              ],
-                              rows: data!
-                                  .map(
-                                    (values) => DataRow(
+                                ),
+                            ],
+                            rows: data
+                                .asMap()
+                                .entries
+                                .map(
+                                  (entry) {
+                                    final index = entry.key;
+                                    final values = entry.value;
+                                    return DataRow(
                                       cells: [
                                         for (int i = 0; i < values.length; i++)
-                                          DataCell(
-                                            Align(
-                                              alignment: ComSettings.oKNumeric(
-                                                values[tableColumn[i]] != null
-                                                    ? values[tableColumn[i]]
-                                                        .toString()
-                                                    : '',
-                                              )
-                                                  ? Alignment.centerRight
-                                                  : Alignment.centerLeft,
-                                              child: Text(
-                                                values[tableColumn[i]] != null
-                                                    ? values[tableColumn[i]]
-                                                        .toString()
-                                                    : '',
-                                                softWrap: true,
-                                                overflow: TextOverflow.ellipsis,
-                                                //style: TextStyle(fontSize: 6),
-                                              ),
-                                            ),
-                                          ),
+                                          tableColumn[i] == 'EntryNo'
+                                              ? DataCell(
+                                                  GestureDetector(
+                                                    onDoubleTap: () {
+                                                      if(companyUserData!.userType == 'Admin'){
+                                                      _handleEntryNoTap(
+                                                          values, context, index);
+                                                    }
+                                                    },
+                                                    // onLongPress: () {
+                                                    //  if(companyUserData!.userType == 'Admin'){
+                                                    //    _handleEntryNoTap(
+                                                    //       values, context, index);
+                                                    //  }
+                                                    // },
+                                                    child: Align(
+                                                      alignment: ComSettings.oKNumeric(
+                                                        values[tableColumn[i]] != null
+                                                            ? values[tableColumn[i]].toString()
+                                                            : '',
+                                                      )
+                                                          ? Alignment.centerRight
+                                                          : Alignment.centerLeft,
+                                                      child: Text(
+                                                        values[tableColumn[i]] != null
+                                                            ? values[tableColumn[i]].toString()
+                                                            : '',
+                                                        softWrap: true,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : DataCell(
+                                                  Align(
+                                                    alignment: ComSettings.oKNumeric(
+                                                      values[tableColumn[i]] != null
+                                                          ? values[tableColumn[i]].toString()
+                                                          : '',
+                                                    )
+                                                        ? Alignment.centerRight
+                                                        : Alignment.centerLeft,
+                                                    child: Text(
+                                                      values[tableColumn[i]] != null
+                                                          ? values[tableColumn[i]].toString()
+                                                          : '',
+                                                      softWrap: true,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ),
                                       ],
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
+                                    );
+                                  },
+                                )
+                                .toList(),
                           ),
-                          // SizedBox(height: 500),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  )
+                  ),
+                )
+                // ? Padding(
+                //     padding: const EdgeInsets.all(5.0),
+                //     child: SingleChildScrollView(
+                //       scrollDirection: Axis.vertical,
+                //       controller: controller,
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           Center(
+                //               child: Text(widget.name +
+                //                   ' Date : From ' +
+                //                   DateUtil.dateDMY(widget.sDate) +
+                //                   ' To ' +
+                //                   DateUtil.dateDMY(widget.eDate))),
+                //           SingleChildScrollView(
+                //             scrollDirection: Axis.horizontal,
+                //             child: DataTable(
+                //               headingTextStyle: const TextStyle(
+                //                 color: white
+                //               ),
+                //               headingRowColor: MaterialStateColor.resolveWith(
+                //                   (states) => kPrimaryColor),
+                //               border: TableBorder.all(
+                //                   width: 1.0, color: grey),
+                //               columnSpacing: 12,
+                //               dataRowHeight: 20,
+                //               headingRowHeight: 30,
+                //               columns: [
+                //                 for (int i = 0; i < tableColumn.length; i++)
+                //                   DataColumn(
+                //                     label: Align(
+                //                       alignment: Alignment.center,
+                //                       child: Text(
+                //                         tableColumn[i],
+                //                         style: const TextStyle(
+                //                             // color: Colors.black,
+                //                             fontWeight: FontWeight.bold),
+                //                         textAlign: TextAlign.center,
+                //                       ),
+                //                     ),
+                //                   ),
+                //               ],
+                //               rows: data!
+                //                   .map(
+                //                     (values) => DataRow(
+                //                       cells: [
+                //                         for (int i = 0; i < values.length; i++)
+                //                           DataCell(
+                //                             Align(
+                //                               alignment: ComSettings.oKNumeric(
+                //                                 values[tableColumn[i]] != null
+                //                                     ? values[tableColumn[i]]
+                //                                         .toString()
+                //                                     : '',
+                //                               )
+                //                                   ? Alignment.centerRight
+                //                                   : Alignment.centerLeft,
+                //                               child: Text(
+                //                                 values[tableColumn[i]] != null
+                //                                     ? values[tableColumn[i]]
+                //                                         .toString()
+                //                                     : '',
+                //                                 softWrap: true,
+                //                                 overflow: TextOverflow.ellipsis,
+                //                                 //style: TextStyle(fontSize: 6),
+                //                               ),
+                //                             ),
+                //                           ),
+                //                       ],
+                //                     ),
+                //                   )
+                //                   .toList(),
+                //             ),
+                //           ),
+                //           // SizedBox(height: 500),
+                //         ],
+                //       ),
+                //     ),
+                //   )
                 : Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: RepaintBoundary(
@@ -662,12 +1031,12 @@ class _ReportViewState extends State<ReportView> {
                                   3: FlexColumnWidth(9),
                                   4: FlexColumnWidth(8),
                                 },
-                                children: [
+                                children: const[
                                   TableRow(children: [
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      children: const [
+                                      children:  [
                                         SizedBox(
                                           height: 5,
                                         ),
@@ -683,7 +1052,7 @@ class _ReportViewState extends State<ReportView> {
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      children: const [
+                                      children:  [
                                         SizedBox(
                                           height: 5,
                                         ),
@@ -697,7 +1066,7 @@ class _ReportViewState extends State<ReportView> {
                                       ],
                                     ),
                                     Column(
-                                      children: const [
+                                      children:  [
                                         SizedBox(
                                           height: 5,
                                         ),
@@ -711,7 +1080,7 @@ class _ReportViewState extends State<ReportView> {
                                       ],
                                     ),
                                     Column(
-                                      children: const [
+                                      children:  [
                                         SizedBox(
                                           height: 5,
                                         ),
@@ -725,7 +1094,7 @@ class _ReportViewState extends State<ReportView> {
                                       ],
                                     ),
                                     Column(
-                                      children: const [
+                                      children:  [
                                         SizedBox(
                                           height: 5,
                                         ),
@@ -1154,7 +1523,8 @@ class _ReportViewState extends State<ReportView> {
           'Check_openingbalance': widget.ob ?? 0,
           'location': jsonEncode(location),
           'project': jsonEncode(project),
-          'salesMan': 0
+          'salesMan': 0,
+          'showClsStock' : widget.ob ?? 0
         }) +
         ']';
     return FutureBuilder<List<dynamic>>(
@@ -2317,7 +2687,9 @@ class _ReportViewState extends State<ReportView> {
     String sDate = widget.sDate.isNotEmpty ? widget.sDate : '2000-01-01';
     String eDate = widget.eDate.isNotEmpty ? widget.eDate : '2000-01-01';
     String where = '';
-    String cashId = '0';
+    String cashId = widget.partyId.isNotEmpty
+        ? widget.partyId
+        : '0';
     String salesman = widget.salesMan.isNotEmpty ? widget.salesMan : '0';
     String statement = widget.type == 'PaymentList'
         ? 'PvListSummery'
@@ -2328,6 +2700,9 @@ class _ReportViewState extends State<ReportView> {
                 : '';
     String areaId = widget.area.isNotEmpty ? widget.area : '0';
     String routeId = widget.route.isNotEmpty ? widget.route : '0';
+    List<dynamic> dataFirmList = [
+      {'FormId': widget.type == 'PaymentList' ? 1 : 2}
+    ];
     return FutureBuilder<List<dynamic>>(
       future: api.getVoucherList(
           ledCode,
@@ -2343,7 +2718,9 @@ class _ReportViewState extends State<ReportView> {
           salesman,
           statement,
           areaId,
-          routeId),
+          routeId,
+          dataFirmList
+          ),
       builder: (ctx, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
@@ -2496,6 +2873,194 @@ class _ReportViewState extends State<ReportView> {
       },
     );
   }
+  
+  reportBankVoucherList() {
+    String ledCode = widget.partyId;
+    String location =
+        widget.branchId.isNotEmpty ? widget.branchId[0].toString() : '1';
+    int locationId = int.parse(location);
+    String groupCode = '0';
+    String project = '0';
+    String fromDate = widget.sDate.isNotEmpty ? widget.sDate : '2000-01-01';
+    String toDate = widget.eDate.isNotEmpty ? widget.eDate : '2000-01-01';
+    String sDate = widget.sDate.isNotEmpty ? widget.sDate : '2000-01-01';
+    String eDate = widget.eDate.isNotEmpty ? widget.eDate : '2000-01-01';
+    String where = '';
+    String cashId = '0';
+    String salesman = widget.salesMan.isNotEmpty ? widget.salesMan : '0';
+    String statement = widget.statement;
+   String areaIdStr = widget.area.isNotEmpty ? widget.area : '0';
+   int areaId = int.tryParse(areaIdStr.split('-')[0]) ?? 0;
+    String routeId = widget.route.isNotEmpty ? widget.route : '0';
+    List<dynamic> dataFirmList = [
+      {'FormId': widget.type == 'PaymentList' ? 1 : 2}
+    ];
+    
+    return FutureBuilder<List<dynamic>>(
+      future: api.getBankVoucherList(
+       sDate,
+       eDate,
+       '',
+       areaId,
+       int.parse(ledCode),
+       0,
+       widget.name,
+       locationId,
+       0,
+       statement),
+      builder: (ctx, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data!.isNotEmpty) {
+            var data = snapshot.data;
+            tableColumn = data![0].keys.toList();
+            Map<String, dynamic> totalData = {};
+            for (int i = 0; i < tableColumn.length; i++) {
+              var cell = '';
+              if (tableColumn[i].toLowerCase() == ('discount') ||
+                  tableColumn[i].toLowerCase() == ('amount') ||
+                  tableColumn[i].toLowerCase() == ('total')) {
+                cell = data
+                    .fold(
+                        0.0,
+                        (a, b) =>
+                             a +
+                            (double.tryParse(b[tableColumn[i]].toString()) ??
+                                0))
+                    .toStringAsFixed(2);
+              }
+              if (i == 0) {
+                cell = 'Total';
+              }
+              totalData[tableColumn[i]] = cell;
+            }
+            if (totalData.isNotEmpty) {
+              data.add(totalData);
+            }
+            _data = data;
+            return Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                controller: controller,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor:
+                            const MaterialStatePropertyAll(kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        headingTextStyle: const TextStyle(
+                            fontFamily: 'poppins', color: white),
+                        columnSpacing: 12,
+                        dataRowHeight: 20,
+                        headingRowHeight: 30,
+                        columns: [
+                          for (int i = 0; i < tableColumn.length; i++)
+                            DataColumn(
+                              label: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  tableColumn[i],
+                                  // style: const TextStyle(
+                                  //     // color: Colors.black,
+                                  //     fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                        rows: data
+                            .map(
+                              (values) => DataRow(
+                                cells: [
+                                  for (int i = 0; i < values.length; i++)
+                                    DataCell(
+                                      Align(
+                                        alignment: ComSettings.oKNumeric(
+                                          values[tableColumn[i]] != null
+                                              ? values[tableColumn[i]]
+                                                  .toString()
+                                              : '',
+                                        )
+                                            ? Alignment.centerRight
+                                            : Alignment.centerLeft,
+                                        child: Text(
+                                          values[tableColumn[i]] != null
+                                              ? values[tableColumn[i]]
+                                                  .toString()
+                                              : '',
+                                          softWrap: true,
+                                          overflow: TextOverflow.ellipsis,
+                                          //style: TextStyle(fontSize: 6),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                    // SizedBox(height: 500),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [SizedBox(height: 20), Text('No Data Found..')],
+              ),
+            );
+          }
+        } else if (snapshot.hasError) {
+          return AlertDialog(
+            title: const Text(
+              'An Error Occurred!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
+            content: Text(
+              "${snapshot.error}",
+              style: const TextStyle(
+                color: Colors.blueAccent,
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text(
+                  'Go Back',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        }
+        // By default, show a loading spinner.
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text('This may take some time..')
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
   reportViewCustomerCardList() {
     return FutureBuilder<List<dynamic>>(
@@ -2770,7 +3335,9 @@ class _ReportViewState extends State<ReportView> {
       'statementType': widget.statement.isEmpty ? '' : widget.statement,
       'sDate': widget.sDate.isEmpty ? '' : widget.sDate,
       'eDate': widget.eDate.isEmpty ? '' : widget.eDate,
-      'location': location[0]['id'].toString()
+      'location': location[0]['id'].toString(),
+      'showSalesProfit' : int.tryParse(widget.route),
+      'showProfit' : int.tryParse(widget.area)
     };
     return FutureBuilder<List<dynamic>>(
       future: widget.statement == 'AsperMart'
@@ -4019,33 +4586,36 @@ class _ReportViewState extends State<ReportView> {
     );
   }
 
-  Future<String> savePreviewPDF(pw.Document pdf, var title) async {
-    title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
-    if (kIsWeb) {
-      try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
-        return '';
-      } catch (ex) {
-        ex.toString();
-      }
+  Future<String> savePreviewPDF(pw.Document pdf, String title) async {
+  title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
+  if (kIsWeb) {
+    try {
+      final bytes = await pdf.save();
+      
+      // Use FileSaver to properly download the file
+      final path = await FileSaver.instance.saveFile(
+        name:'$title.pdf',
+        bytes: bytes,
+        ext: 'pdf',
+        mimeType: MimeType.pdf,
+        // '$title.pdf',
+        // bytes,
+        // 'pdf',
+        // mimeType: MimeType.PDF
+      );
+      
+      return path ?? '';
+    } catch (ex) {
+      print('Error saving PDF: $ex');
       return '';
-    } else {
-      var output = await getTemporaryDirectory();
-      final file = File('${output.path}/' + title + '.pdf');
-      await file.writeAsBytes(await pdf.save());
-      return file.path.toString();
     }
+  }  else {
+    final dir = await getTemporaryDirectory();
+    final file = File('${dir.path}/$title.pdf');
+    await file.writeAsBytes(await pdf.save());
+    return file.path; // real path on mobile
   }
+}
 
   Future<String> _createCSV(String title) async {
     return _generateCsvFile(title)
@@ -4076,17 +4646,17 @@ class _ReportViewState extends State<ReportView> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

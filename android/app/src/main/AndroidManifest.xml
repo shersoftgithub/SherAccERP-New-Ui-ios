@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -22,12 +21,10 @@
 <!--#docregion android-queries-->
   <!-- Provide required visibility configuration for API level 30 and above -->
   <queries>
-    <!-- If your app checks for SMS support -->
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="sms" />
     </intent>
-    <!-- If your app checks for call support -->
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="tel" />
@@ -38,6 +35,11 @@
     <intent>
       <action android:name="android.intent.action.VIEW" />
       <data android:scheme="https" />
+    </intent>
+     <!-- Support for sending emails -->
+    <intent>
+        <action android:name="android.intent.action.VIEW" />
+        <data android:scheme="mailto" />
     </intent>
     <!--#docregion android-queries-->
   </queries>
@@ -52,7 +54,6 @@
         android:fullBackupOnly="false"
         android:networkSecurityConfig="@xml/network_security_config" >
 
-        <!-- This is required -->
        <service
            android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
            android:stopWithTask="false"

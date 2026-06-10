@@ -1,5 +1,4 @@
 // ignore: avoid_web_libraries_in_flutter
-// import 'dart:html' as html;
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -12,11 +11,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:share_plus/share_plus.dart';
-
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'package:sheraccerp/models/company.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';
+
+
 
 class BusinessCard extends StatefulWidget {
   const BusinessCard({Key? key}) : super(key: key);
@@ -101,7 +103,7 @@ class _BusinessCardState extends State<BusinessCard> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              companySettings!.name!,
+                              companySettings!.name,
                               style: TextStyle(
                                   color: currentTextColor, fontSize: 25),
                             ),
@@ -288,17 +290,17 @@ class _BusinessCardState extends State<BusinessCard> {
       if (kIsWeb) {
         try {
           /**Web only**/
-          // final bytes = byteImage;
-          // final blob = html.Blob([bytes], 'application/pdf');
-          // final url = html.Url.createObjectUrlFromBlob(blob);
-          // final anchor = html.AnchorElement()
-          //   ..href = url
-          //   ..style.display = 'none'
-          //   ..download = 'card.jpg';
-          // html.document.body.children.add(anchor);
-          // anchor.click();
-          // html.document.body.children.remove(anchor);
-          // html.Url.revokeObjectUrl(url);
+          final bytes = byteImage;
+          final blob = html.Blob([bytes], 'application/pdf');
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          final anchor = html.AnchorElement()
+            ..href = url
+            ..style.display = 'none'
+            ..download = 'card.jpg';
+          html.document.body!.children.add(anchor);
+          anchor.click();
+          html.document.body!.children.remove(anchor);
+          html.Url.revokeObjectUrl(url);
         } catch (ex) {
           ex.toString();
         }

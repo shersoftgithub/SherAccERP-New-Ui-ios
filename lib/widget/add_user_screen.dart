@@ -26,6 +26,9 @@ class _RegisterState extends State<Register> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text('Register'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,

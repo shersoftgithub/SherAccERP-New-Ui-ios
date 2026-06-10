@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class ColorPickerWidget extends StatefulWidget {
   const ColorPickerWidget({Key? key}) : super(key: key);
@@ -20,6 +21,9 @@ class ColorPickerWidgetState extends State {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Flutter Color Picker Example'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'HSV'),

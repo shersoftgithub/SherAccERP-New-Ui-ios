@@ -24,6 +24,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         backgroundColor: kPrimaryColor,
         title: const AppBarTitle(),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

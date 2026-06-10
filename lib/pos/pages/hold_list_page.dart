@@ -15,9 +15,11 @@ class HoldList extends ConsumerWidget {
     return Scaffold(
       backgroundColor: bagroundColor,
       appBar: AppBar(
-        title: const Text('Hold List'),
+        title: const Text('Hold List',),
         centerTitle: true,
-        titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+        titleTextStyle: const TextStyle(fontFamily: 'poppins',
+        color: white,
+        ),
         backgroundColor: kPrimaryColor,
       ),
       body: holdModel.isEmpty

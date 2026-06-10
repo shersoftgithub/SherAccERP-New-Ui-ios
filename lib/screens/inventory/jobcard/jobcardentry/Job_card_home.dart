@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class JobCardHome extends StatefulWidget {
   const JobCardHome({Key? key}) : super(key: key);
@@ -12,7 +13,9 @@ class _JobCardHomeState extends State<JobCardHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('JobCardHome',style: TextStyle(fontSize: 16),),
+        title: const Text('JobCardHome',style: TextStyle(fontSize: 16,
+        color: white,
+        ),),
       ),
       drawer: Drawer(
         child: ListView(

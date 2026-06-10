@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
@@ -19,6 +20,8 @@ import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sheraccerp/widget/pdf_screen.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class DamageReport extends StatefulWidget {
   const DamageReport({Key? key}) : super(key: key);
@@ -129,7 +132,9 @@ class _DamageReportState extends State<DamageReport> {
             )
           ],
           title: const Text('Damage Report'),
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
         body: loadReport ? reportView(title) : selectData());
   }
@@ -820,17 +825,17 @@ class _DamageReportState extends State<DamageReport> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -873,17 +878,17 @@ class _DamageReportState extends State<DamageReport> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

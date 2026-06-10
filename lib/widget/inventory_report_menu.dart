@@ -317,6 +317,43 @@ class InventoryReportMenu extends StatelessWidget {
               Navigator.pushNamed(context, '/serialNoList');
             },
           ),
+           GestureDetector(
+            child: Card(
+              surfaceTintColor: grey,
+              color: white,
+              elevation: 4,
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Container(
+                      width: 77,
+                      height: 77,
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                            image: AssetImage('assets/icons/ic_delivery-note.png'),
+                            scale: 1.9
+                            ),
+                          borderRadius: BorderRadius.circular(50),
+                          color: const Color(0xff0008B3)),
+                      // child: Image.asset(iconsUrl),
+                    ),
+                    const Text(
+                      'Sales Delivery Report',
+                      style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              Navigator.pushNamed(context, '/salesDeliveryReport');
+            },
+          ),
         ],
       ),
     );

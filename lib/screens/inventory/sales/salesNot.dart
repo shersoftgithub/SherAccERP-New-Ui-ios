@@ -5,7 +5,7 @@ import 'package:sheraccerp/models/cart_item.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/sales/select_product_sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -80,6 +80,9 @@ class _SalesState extends State<Sales> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales"),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body:
             customerDisplay.isNotEmpty ? selectCustomer() : fetchLedgerList());
@@ -115,6 +118,9 @@ class _SalesState extends State<Sales> {
             ),
           ],
           title: const Text('Sales'),
+          titleTextStyle: TextStyle(
+            color: white,
+          ),
         ),
         body: thisSale
             ? Container(

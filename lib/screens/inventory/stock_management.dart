@@ -10,7 +10,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/stock_product.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -59,7 +59,8 @@ class _StockManagementState extends State<StockManagement> {
       useUNIQUECODEASBARCODE = false,
       useOLDBARCODE = false,
       realPRATEBASEDPROFITPERCENTAGE = false,
-      keyItemsVariantStock = false;
+      keyItemsVariantStock = false,
+      taxGroupUpdate = false;
   int salesManId = 0, decimal = 2, locationFromId = 0, locationToId = 0;
 
   @override
@@ -133,6 +134,8 @@ class _StockManagementState extends State<StockManagement> {
         ComSettings.getStatus('KEY LOCK SALES DISCOUNT', settings);
     isItemRateEditLocked =
         ComSettings.getStatus('KEY LOCK SALES RATE', settings);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
 
     locationData.clear();
     if (locationList.isNotEmpty) {
@@ -209,7 +212,8 @@ class _StockManagementState extends State<StockManagement> {
         appBar: AppBar(
           title: const Text('Stock Management'),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
         ),
         body: Padding(
@@ -441,28 +445,29 @@ class _StockManagementState extends State<StockManagement> {
   }
 
   selectStockLedger(id) {
-    api.fetchNoStockVariant(id).then((value) {
+    api.fetchNoStockVariant(id,taxGroupUpdate,0).then((value) {
       if (value.length == 1) {
         var d = value[0];
-        StockProduct data = StockProduct(
-            adCessPer: d['adcessper'].toDouble(),
-            branch: d['Branch'].toDouble(),
-            buyingPrice: d['prate'].toDouble(),
-            buyingPriceReal: d['RealPrate'].toDouble(),
-            cess: d['cess'].toDouble(),
-            cessPer: d['cessper'].toDouble(),
-            hsnCode: d['hsncode'],
-            itemId: d['ItemId'],
-            minimumRate: d['minimumRate'].toDouble(),
-            name: d['itemname'],
-            productId: d['uniquecode'],
-            quantity: d['Qty'].toDouble(),
-            retailPrice: d['retail'].toDouble(),
-            sellingPrice: d['mrp'].toDouble(),
-            spRetailPrice: d['Spretail'].toDouble(),
-            stockValuation: d['stockvaluation'],
-            tax: d['tax'].toDouble(),
-            wholeSalePrice: d['WSrate'].toDouble());
+        StockProduct data = d;
+        // StockProduct(
+        //     adCessPer: d['adcessper'].toDouble(),
+        //     branch: d['Branch'].toDouble(),
+        //     buyingPrice: d['prate'].toDouble(),
+        //     buyingPriceReal: d['RealPrate'].toDouble(),
+        //     cess: d['cess'].toDouble(),
+        //     cessPer: d['cessper'].toDouble(),
+        //     hsnCode: d['hsncode'],
+        //     itemId: d['ItemId'],
+        //     minimumRate: d['minimumRate'].toDouble(),
+        //     name: d['itemname'],
+        //     productId: d['uniquecode'],
+        //     quantity: d['Qty'].toDouble(),
+        //     retailPrice: d['retail'].toDouble(),
+        //     sellingPrice: d['mrp'].toDouble(),
+        //     spRetailPrice: d['Spretail'].toDouble(),
+        //     stockValuation: d['stockvaluation'],
+        //     tax: d['tax'].toDouble(),
+        //     wholeSalePrice: d['WSrate'].toDouble());
         fillData(data);
       } else {
         List<StockProduct> dataS = [];

@@ -13,6 +13,7 @@ class ProductManageModel {
     required this.location,
     required this.uniquecode,
     required this.obarcode,
+    required this.rackId,
   });
 
   int itemId;
@@ -26,6 +27,7 @@ class ProductManageModel {
   int location;
   int uniquecode;
   String obarcode;
+  int rackId ;
 
   factory ProductManageModel.fromJson(String str) =>
       ProductManageModel.fromMap(json.decode(str));
@@ -45,6 +47,7 @@ class ProductManageModel {
         location: json["location"],
         uniquecode: json["uniquecode"],
         obarcode: json["obarcode"],
+        rackId: json["rack_id"]?? 0,
       );
 
   Map<String, dynamic> toMap() => {
@@ -59,5 +62,6 @@ class ProductManageModel {
         "location": location,
         "uniquecode": uniquecode,
         "obarcode": obarcode,
+        "rack_id": rackId,
       };
 }

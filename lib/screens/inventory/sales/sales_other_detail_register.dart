@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -71,21 +72,25 @@ class _SalesOtherDetailRegisterState extends State<SalesOtherDetailRegister> {
               saveData();
             },
             icon: const Icon(Icons.save)),
-      ], title: const Text('Sales OtherDetails')),
+      ], title: const Text('Sales OtherDetails'),
+      titleTextStyle: const TextStyle(
+        color: white,
+      ),
+      ),
       body: ProgressHUD(
           inAsyncCall: isLoading,
           opacity: 0.0,
           child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(children: [
-                SimpleAutoCompleteTextField(
-                  key: keyName,
+                EasyAutocomplete(
+                  // key: keyName,
                   controller: controlName,
-                  clearOnSubmit: false,
+                  // clearOnSubmit: false,
                   suggestions: nameListDisplay,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(), labelText: 'Account'),
-                  textSubmitted: (data) {
+                  onSubmitted: (data) {
                     // lName = data;
                   },
                 ),

@@ -10,7 +10,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/gst_auth_model.dart';
 import 'package:sheraccerp/models/print_settings_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/res_color.dart';

@@ -244,6 +244,9 @@ class _PurchaseNewState extends State<PurchaseNew> {
                   icon: const Icon(Icons.save)),
         ],
         title: const Text('Purchase'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       body: ProgressHUD(
           inAsyncCall: provider.isLoading,
@@ -274,6 +277,9 @@ class _PurchaseNewState extends State<PurchaseNew> {
                 }),
           ],
           title: const Text('Purchase'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: Container(
           child: previousBill(provider),

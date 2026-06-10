@@ -1,4 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/user_model.dart';
 import 'package:sheraccerp/screens/ui/user_list_screen.dart';
@@ -85,7 +86,8 @@ class _UserRegistrationState extends State<UserRegistration> {
       appBar: AppBar(
         actions: const [],
         titleTextStyle: TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white,
         ),
         centerTitle: true,
         title: const Text('User'),
@@ -301,10 +303,10 @@ class _UserRegistrationState extends State<UserRegistration> {
                                 const SizedBox(
                                   height: 8,
                                 ),
-                                SimpleAutoCompleteTextField(
-                                  key: keyName,
+                                EasyAutocomplete(
+                                  // key: keyName,
                                   controller: userNameControl,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: nameListDisplay,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
@@ -319,7 +321,7 @@ class _UserRegistrationState extends State<UserRegistration> {
                                             fontFamily: 'poppins',
                                           ),
                                       labelText: 'User name'),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     lName = data;
                                     if (lName.isNotEmpty) {
                                       int _id = userList
@@ -487,10 +489,10 @@ class _UserRegistrationState extends State<UserRegistration> {
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                SimpleAutoCompleteTextField(
-                                  key: keyGroupName,
+                                EasyAutocomplete(
+                                  // key: keyGroupName,
                                   controller: groupNameControl,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: groupListDisplay,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
@@ -505,7 +507,7 @@ class _UserRegistrationState extends State<UserRegistration> {
                                             fontFamily: 'poppins',
                                           ),
                                       labelText: 'Group name'),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     gName = data;
                                     if (gName.isNotEmpty) {
                                       findUserGroup(gName);

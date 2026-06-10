@@ -44,21 +44,21 @@ class _ExpenseState extends State<Expense> {
   String? formattedDate;
   DioService api = DioService();
   List<Color> txtColors = [
-    Color(0xff0008B3).withOpacity(1),
-    Color(0xff0008B3).withOpacity(.8),
-    Color(0xff0008B3).withOpacity(.7),
-    Color(0xff0008B3).withOpacity(.6),
-    Color(0xff0008B3).withOpacity(.5),
+    Color(0xff1434A4),
+    Color(0xff0000FF),
+    Color(0xff0096FF),
+    Color(0xff0047AB),
+    Color(0xff00008B),
     Color(0xff0008B3).withOpacity(.4),
  
   ];
   final colorValues = [
     // '0xffE33335',
-     Color(0xff0008B3).withOpacity(1),
-    Color(0xff0008B3).withOpacity(.8),
-    Color(0xff0008B3).withOpacity(.7),
-    Color(0xff0008B3).withOpacity(.6),
-    Color(0xff0008B3).withOpacity(.5),
+   Color(0xff1434A4),
+    Color(0xff0000FF),
+    Color(0xff0096FF),
+    Color(0xff0047AB),
+    Color(0xff00008B),
     Color(0xff0008B3).withOpacity(.4),
 
   ];
@@ -219,16 +219,18 @@ class _ExpenseState extends State<Expense> {
                                radius: 10,
                                backgroundColor: txtColors[index],
                              ),
-                             const SizedBox(
-                              width: 4,
-                             ),
+                            //  const SizedBox(
+                            //   width: 4,
+                            //  ),
                              SizedBox(
                               width: MediaQuery.of(context).size.width/2.5,
-                               child: Text('${lItems.length>0? lItems[index].party : ''}',
+                               child: Text(' ${lItems.length>0? lItems[index].party : ''}',
+                               overflow: TextOverflow.ellipsis,
                                style: TextStyle(
                                  fontFamily: 'poppins',
-                                 fontSize: 12,
-                                 fontWeight: FontWeight.w500),),
+                                //  fontSize: 12,
+                                //  fontWeight: FontWeight.w500
+                                 ),),
                              ),
                     ],
                   ),

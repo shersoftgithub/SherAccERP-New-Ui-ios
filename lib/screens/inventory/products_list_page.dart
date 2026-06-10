@@ -8,7 +8,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -43,7 +43,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
       enableKeralaFloodCess = false,
       useUNIQUECODEASBARCODE = false,
       useOLDBARCODE = false,
-      keyItemsVariantStock = false;
+      keyItemsVariantStock = false,
+      taxGroupUpdate = false;
 
   @override
   void initState() {
@@ -79,6 +80,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
     useOLDBARCODE = ComSettings.getStatus('USE OLD BARCODE', settings);
     keyItemsVariantStock =
         ComSettings.getStatus('KEY LOCK SALES DISCOUNT', settings);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
   }
 
   @override
@@ -86,6 +89,10 @@ class _ProductsListPageState extends State<ProductsListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Product'),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'poppins',
+          color: white
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.remove_shopping_cart, color: Colors.red[400]),
@@ -479,7 +486,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                     itemDisplay[index].name!,
                     itemDisplay[index].quantity.toString())
                 : api
-                    .fetchStockVariant(itemDisplay[index].id!)
+                    .fetchStockVariant(itemDisplay[index].id!,taxGroupUpdate,0)
                     .then((response) {
                     showAddMore(context, response[0]);
                   });
@@ -524,7 +531,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
   // double _stockVariantQuantity = 0;
   showVariantDialog(int id, String name, String quantity) {
     // _stockVariantQuantity = double.tryParse(quantity);
-    api.fetchStockVariant(id).then((response) {
+    api.fetchStockVariant(id,taxGroupUpdate,0).then((response) {
       if (response.isNotEmpty) {
         // _autoStockVariant.clear();
         // _autoStockVariant = _autoVariantSelect ? snapshot.data : [];

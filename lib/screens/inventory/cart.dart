@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/screens/inventory/cart_product.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class Cart extends StatefulWidget {
   const Cart({Key? key}) : super(key: key);
@@ -16,6 +17,9 @@ class _CartState extends State<Cart> {
         backgroundColor: Colors.orange,
         title: const Text(
           'Your Cart',
+        ),
+        titleTextStyle: const TextStyle(
+          color: white,
         ),
         centerTitle: true,
         actions: <Widget>[

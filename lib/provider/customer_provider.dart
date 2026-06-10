@@ -7,8 +7,12 @@ part 'customer_provider.g.dart';
 @riverpod
 class Customers extends _$Customers {
   @override
+  int? groupId;
+  int? areaId;
+  int? routeId;
+  int? salesmanId;
   Future<List<LedgerModel>> build() async {
-    return await fetchCustomerNames(0, 0, 0, 0);
+    return await fetchCustomerNames(groupId!, areaId!, routeId!, salesmanId!);
   }
 
   Future<List<LedgerModel>> fetchCustomerNames(int groupId, int areaId, int routeId, int salesmanId) async {

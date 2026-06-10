@@ -16,6 +16,9 @@ class MonthlyReportPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Monthly Report'),
+        titleTextStyle: TextStyle(
+          color: white,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

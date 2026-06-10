@@ -12,6 +12,9 @@ class ReportPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Attendance Report'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

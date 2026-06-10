@@ -90,6 +90,19 @@ class DateUtil {
     return DateFormat("hh:mm a").format(dateTime);
   }
 
+    static String timeHMSAN(dynamic value) {
+  DateTime dateTime;
+
+  if (value is DateTime) {
+    dateTime = value;
+  } else {
+    dateTime =
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(value.toString());
+  }
+
+  return DateFormat("hh:mm a").format(dateTime);
+}
+
   static String datedYMD(value) {
     var dateTime =
         DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").parse(value.toString());

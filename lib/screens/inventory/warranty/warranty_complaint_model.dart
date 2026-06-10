@@ -7,7 +7,7 @@ class WarrantyComplaintModel{
   });
   Map<String, dynamic> toMap() {
     return {
-      'compliant':complaint,
+      'complaint':complaint,
       'gid':gid,
     };
   }

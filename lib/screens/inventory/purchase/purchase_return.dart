@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -16,7 +17,7 @@ import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -71,7 +72,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
       enableKeralaFloodCess = false,
       useUNIQUECODEASBARCODE = false,
       useOLDBARCODE = false,
-      realPRATEBASEDPROFITPERCENTAGE = false;
+      realPRATEBASEDPROFITPERCENTAGE = false,
+      taxGroupUpdate = false;
   int locationId = 1, salesManId = 0, decimal = 2;
   VoucherType? voucherTypeData;
   Future<List<StockItem>>? _fetchStockProduct;
@@ -111,6 +113,8 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
     useOLDBARCODE = ComSettings.getStatus('USE OLD BARCODE', settings);
     realPRATEBASEDPROFITPERCENTAGE =
         ComSettings.getStatus('REAL PRATE BASED PROFIT PERCENTAGE', settings);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);      
 
     salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
@@ -321,7 +325,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                   },
                   icon:  Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
         ],
-        titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+        titleTextStyle: const TextStyle(fontFamily: 'poppins',color: white),
         title: const Text('Purchase Return'),
       ):null,
       body: ProgressHUD(
@@ -355,7 +359,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                       fontFamily: 'poppins'),
                 )),
           ],
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',color:white),
           title: const Text('Purchase Return'),
         ),
         body: Padding(
@@ -450,7 +454,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
         title: const Text("Purchase Return"),
         centerTitle: true,
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',color: white
         ),
       ),
       body: SingleChildScrollView(
@@ -1520,10 +1524,27 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
       subTotal = CommonService.getRound(decimal, (gross - rDisc));    
       // subTotal = CommonService.getRound(decimal, (rate * quantity));
       net = CommonService.getRound(decimal, (subTotal - discount));
+        if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
-      if (companyTaxMode == 'INDIA') {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+      // if (companyTaxMode == 'INDIA') {
+      //   double csPer = taxP / 2;
+      //   iGST = 0;
+      //   csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      // } else if (companyTaxMode == 'GULF') {
+      //   iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      //   csGST = 0;
+      // } else {
+      //   iGST = 0;
+      //   csGST = 0;
+      //   tax = 0;
+      // }
+       if(selectedTaxOption == 'With Tax'){
+       if (companyTaxMode == 'INDIA') {
         double csPer = taxP / 2;
         iGST = 0;
         csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
@@ -1531,6 +1552,11 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
         iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
         csGST = 0;
       } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+     }else {
         iGST = 0;
         csGST = 0;
         tax = 0;
@@ -1643,6 +1669,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
                 : 0)?? 0;
         }
       }
+      // taxMethod = 'PLUS';
       rRate = taxMethod == 'MINUS'
           ? CommonService.getRound(decimal, (100 * rate) / (100 + taxP))
           : rate;
@@ -1656,10 +1683,15 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
       subTotal = CommonService.getRound(decimal, (gross - rDisc));    
       // subTotal = CommonService.getRound(decimal, (rate * quantity));
       net = CommonService.getRound(decimal, (subTotal - discount));
+        if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
-      if (companyTaxMode == 'INDIA') {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+     if(selectedTaxOption == 'With Tax'){
+       if (companyTaxMode == 'INDIA') {
         double csPer = taxP / 2;
         iGST = 0;
         csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
@@ -1667,6 +1699,11 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
         iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
         csGST = 0;
       } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+     }else {
         iGST = 0;
         csGST = 0;
         tax = 0;
@@ -1717,6 +1754,7 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
           centerTitle: true,
           titleTextStyle: const TextStyle(
             fontFamily: 'poppins',
+            color: white
           ),
           leading: IconButton(
             onPressed: (){
@@ -1726,771 +1764,778 @@ class _PurchaseReturnState extends State<PurchaseReturn> {
               });
             }, icon: const Icon(Icons.arrow_back)),
         ),
-        body: Column(
-          children: [
-            Container(
-              padding:const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 6
-            ),
-            color: white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                 const Text(
-                  ' Item Name',
-                   style: TextStyle(
-                   fontFamily: 'poppins',
-                   fontSize: 14,
-                   fontWeight: FontWeight.w500),
-                 ),
-                 const SizedBox(
-                  height: 4,
-                 ),
-                 FutureBuilder(
-  future:_fetchStockProduct,
-  builder: (context, snapshot) {
-    if (snapshot.hasError) {
-      return Text('Error: ${snapshot.error}');
-    }  else if (snapshot.connectionState == ConnectionState.waiting){
-                                 return const Center(
-                                  child: CircularProgressIndicator(),
-                                 );
-                              }
-     else if (!snapshot.hasData) {
-      return const Text('No data found');
-    }
-
-    final purchasePr = snapshot.data;
-
-    List<String> prName = purchasePr!
-        .map((e) => e.name)
-        .where((element) => element != null)
-        .cast<String>()
-        .toList();
-
-    return EasyAutocomplete(
-      inputTextStyle: const TextStyle(
-      fontFamily: 'poppins',
-      fontSize: 14),
-      decoration: const InputDecoration(
-        contentPadding: EdgeInsets.symmetric(
-        vertical: 5, horizontal: 5),
-        border: OutlineInputBorder(),
-      ),
-      controller: productNameController,
-      suggestions: prName,
-      onChanged: (p0) {},
-      onSubmitted: (value) async {
-        clearValue();
-        selectedItem = purchasePr.firstWhere(
-        (element) => element.name == value,
-        );
-
-        productNameController.text = selectedItem.name;
-        selectedProducteId = selectedItem.id;
-        var sProducts = await dio.fetchStockVariant(selectedProducteId!);
-
-        if (sProducts != null && sProducts.isNotEmpty) {
-          var stockProduct = sProducts.first;
-          taxP = stockProduct.tax!;
-          cessPer = double.tryParse(stockProduct.cessPer.toString()) ?? 0.0;
-          taxP = double.tryParse(stockProduct.tax.toString()) ?? 0.0;
-          rate = double.tryParse(stockProduct.buyingPrice.toString()) ?? 0.0;
-          
-          if (rate > 0 && !editableRate) {
-            controllerRate.text = rate.toString();
-          }
-          currentRate = rate;
-          // rate = currentRate;
-          rRate = double.tryParse(stockProduct.buyingPriceReal.toString()) ?? 0.0;
-          mrp = double.tryParse(stockProduct.sellingPrice.toString()) ?? 0.0;
-
-          if (mrp > 0 && !editableMrp) {
-            controllerMrp.text = mrp.toString();
-          }
-
-          retail = double.tryParse(stockProduct.retailPrice.toString()) ?? 0.0;
-
-          if (retail > 0 && !editableRetail) {
-            controllerRetail.text = retail.toString();
-          }
-
-          wholeSale = double.tryParse(stockProduct.wholeSalePrice.toString()) ?? 0.0;
-
-          if (wholeSale > 0 && !editableWSale) {
-            controllerWholeSale.text = wholeSale.toString();
-          }
-
-          spRetail = double.tryParse(stockProduct.spRetailPrice.toString()) ?? 0.0;
-          branch = double.tryParse(stockProduct.branch.toString()) ?? 0.0;
-
-          if (branch > 0 && !editableBranch) {
-            controllerBranch.text = branch.toString();
-          }
-        } else {}
-      },
-    );
-  },
-),
-const SizedBox(
-  height: 4,
-),
-
-              Column(
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                padding:const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 6
+              ),
+              color: white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: 
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(' Quantity',
-                              style: TextStyle(
-                                             fontFamily: 'poppins',
-                                             fontSize: 14,
-                                             fontWeight: FontWeight.w500),),
-                                             const SizedBox(
-                                            height: 2,
-                                           ),
-                                            SizedBox(
-                                height: 40,
-                                child: TextFormField(
-                                  controller: controllerQuantity,
-                                  // focusNode: _focusNodeQuantity,
-                                  textAlign: TextAlign.right,
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                        allow: true, replacementString: '.')
-                                  ],
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 5
-                                    ),
-                                      border: OutlineInputBorder(),),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      calculateConversion();
-                                    });
-                                  },
-                                ),
-                              ),
-                        ],
-                      )
-                      ),
-                      const SizedBox(
-                        width: 4,
-                      ),
-                        Visibility(
-                        visible: enableMULTIUNIT,
-                        child: Expanded(
-                          child: FutureBuilder(
-                            future: dio.fetchUnitOf(selectedProducteId?? 0),
-                            builder: (BuildContext context,
-                                AsyncSnapshot snapshot) {
-                              if (snapshot.hasData) {
-                                unitList.clear();
-                                for (var i = 0;
-                                    i < snapshot.data.length;
-                                    i++) {
-                                  if (defaultUnitID.toString().isNotEmpty) {
-                                    if (snapshot.data[i].id ==
-                                        defaultUnitID! - 1) {
-                                      _dropDownUnit = snapshot.data[i].id;
-                                      conversion =
-                                          snapshot.data[i].conversion;
-                                    }
-                                  }
-                                  unitList.add(UnitModel(
-                                      id: snapshot.data[i].id,
-                                      itemId: snapshot.data[i].itemId,
-                                      conversion: snapshot.data[i].conversion,
-                                      name: snapshot.data[i].name,
-                                      pUnit: snapshot.data[i].pUnit,
-                                      sUnit: snapshot.data[i].sUnit,
-                                      unit: snapshot.data[i].unit,
-                                      rate: ''));
-                                }
-                              }
-                              return snapshot.hasData
-                                  ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                        const Text(' Unit',
-                                        style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),),
-                                        const SizedBox(
-                                        height: 2,
-                                        ),
-                                      Container(
-                                        height: 40,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 5
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: grey),
-                                          borderRadius: BorderRadius.circular(3)
-                                        ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            isExpanded: true,
-                                              hint: Text(_dropDownUnit > 0
-                                                  ? UnitSettings.getUnitName(
-                                                      _dropDownUnit)
-                                                  : 'SKU',
-                                                  style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),
-                                                  ),
-                                              items: snapshot.data
-                                                  .map<DropdownMenuItem<String>>(
-                                                      (item) {
-                                                return DropdownMenuItem<String>(
-                                                  value: item.id.toString(),
-                                                  child: Text(item.name,style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),),
-                                                );
-                                              }).toList(),
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _dropDownUnit =
-                                                      int.tryParse(value!)!;
-                                                  for (var i = 0;
-                                                      i < unitList.length;
-                                                      i++) {
-                                                    UnitModel _unit = unitList[i];
-                                                    if (_unit.unit ==
-                                                        int.tryParse(value)) {
-                                                      conversion = _unit.conversion!;
-                                                      break;
-                                                    }
-                                                  }
-                                                  calculate();
-                                                });
-                                              },
-                                            ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                  : Container();
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 4,
-              ),
-                Row(
-                    children: [
-                      Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                  const Text(' Price',
-                            style: TextStyle(
-                   fontFamily: 'poppins',
-                   fontSize: 14,
-                   fontWeight: FontWeight.w500),),
-                   const SizedBox(
-                    height: 2,
+                   const Text(
+                    ' Item Name',
+                     style: TextStyle(
+                     fontFamily: 'poppins',
+                     fontSize: 14,
+                     fontWeight: FontWeight.w500),
                    ),
-                                TextField(
-                                  controller: controllerRate,
-                                  focusNode: _focusNodeRate,
-                                  textAlign: TextAlign.right,
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                        allow: true, replacementString: '.')
-                                  ],
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsetsDirectional.symmetric(
-                                      horizontal: 5,
-                                      vertical: 5
-                                    ), 
-                                    constraints: BoxConstraints(
-                                      maxHeight: 40
-                                    ),
-                                      border: OutlineInputBorder(),),
-                                  onChanged: (value) {
-                                    if (value.isNotEmpty) {
-                                      rateEditted = true;
-                                    }
-                                    setState(() {
-                                      calculate();
-                                    });
-                                  },
-                                ),
-                              ],
-                            )),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Expanded(child: 
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  ' Tax Option',
-                                  style: TextStyle(
+                   const SizedBox(
+                    height: 4,
+                   ),
+                   FutureBuilder(
+            future:_fetchStockProduct,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }  else if (snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(
+                                    child: CircularProgressIndicator(),
+                                   );
+                                }
+               else if (!snapshot.hasData) {
+                return const Text('No data found');
+              }
+          
+              final purchasePr = snapshot.data;
+          
+              List<String> prName = purchasePr!
+          .map((e) => e.name)
+          .where((element) => element != null)
+          .cast<String>()
+          .toList();
+          
+              return EasyAutocomplete(
+                inputTextStyle: const TextStyle(
+                fontFamily: 'poppins',
+                fontSize: 14),
+                decoration: const InputDecoration(
+          contentPadding: EdgeInsets.symmetric(
+          vertical: 5, horizontal: 5),
+          border: OutlineInputBorder(),
+                ),
+                controller: productNameController,
+                suggestions: prName,
+                onChanged: (p0) {},
+                onSubmitted: (value) async {
+          clearValue();
+          selectedItem = purchasePr.firstWhere(
+          (element) => element.name == value,
+          );
+          
+          productNameController.text = selectedItem.name;
+          selectedProducteId = selectedItem.id;
+          var sProducts = await dio.fetchStockVariant(selectedProducteId!,taxGroupUpdate,0);
+          
+          if (sProducts != null && sProducts.isNotEmpty) {
+            var stockProduct = sProducts.first;
+            taxP = stockProduct.tax!;
+            cessPer = double.tryParse(stockProduct.cessPer.toString()) ?? 0.0;
+            taxP = double.tryParse(stockProduct.tax.toString()) ?? 0.0;
+            rate = double.tryParse(stockProduct.buyingPrice.toString()) ?? 0.0;
+            uniqueCode = stockProduct.productId!;
+            barcode = stockProduct.productId!;
+            
+            if (rate > 0 && !editableRate) {
+              controllerRate.text = rate.toString();
+            }
+            currentRate = rate;
+            // rate = currentRate;
+            rRate = double.tryParse(stockProduct.buyingPriceReal.toString()) ?? 0.0;
+            mrp = double.tryParse(stockProduct.sellingPrice.toString()) ?? 0.0;
+          
+            if (mrp > 0 && !editableMrp) {
+              controllerMrp.text = mrp.toString();
+            }
+          
+            retail = double.tryParse(stockProduct.retailPrice.toString()) ?? 0.0;
+          
+            if (retail > 0 && !editableRetail) {
+              controllerRetail.text = retail.toString();
+            }
+          
+            wholeSale = double.tryParse(stockProduct.wholeSalePrice.toString()) ?? 0.0;
+          
+            if (wholeSale > 0 && !editableWSale) {
+              controllerWholeSale.text = wholeSale.toString();
+            }
+          
+            spRetail = double.tryParse(stockProduct.spRetailPrice.toString()) ?? 0.0;
+            branch = double.tryParse(stockProduct.branch.toString()) ?? 0.0;
+          
+            if (branch > 0 && !editableBranch) {
+              controllerBranch.text = branch.toString();
+            }
+          } else {}
+                },
+              );
+            },
+          ),
+          const SizedBox(
+            height: 4,
+          ),
+          
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: 
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(' Quantity',
+                                style: TextStyle(
                                                fontFamily: 'poppins',
                                                fontSize: 14,
                                                fontWeight: FontWeight.w500),),
                                                const SizedBox(
-                                                height: 2,
-                                               ),
-                                                            Container(
-                                                              height: 40,
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 5),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3),
-                                                  ),
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                    child: DropdownButton<
-                                                        String>(
-                                                      style: const TextStyle(
-                                                          fontFamily:
-                                                              'poppins',
-                                                          color: black),
-                                                      value:
-                                                          selectedTaxOption,
-                                                      items: const [
-                                                        DropdownMenuItem(
-                                                          value: 'With Tax',
-                                                          child: Text(
-                                                              'With Tax'),
-                                                        ),
-                                                        DropdownMenuItem(
-                                                          // enabled: salesTypeData!
-                                                          //                 .id ==
-                                                          //             1 ||
-                                                          //         salesTypeData!
-                                                          //                 .id ==
-                                                          //             2
-                                                          //     ? false
-                                                          //     : true,
-                                                          value:
-                                                              'Without Tax',
-                                                          child: Text(
-                                                              'Without Tax'),
-                                                        ),
-                                                      ],
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          selectedTaxOption = value!;
-                                                          value == 'Without Tax' 
-                                                              ? isTax = false
-                                                              : isTax = true;
-                                                          calculateConversion();
-                                                        });
-                                                      },
-                                                      isExpanded: true,
-                                                    ),
-                                                  ),
-                                                ),
-                              ],
-                            )
-                            )
-                    ],
-                  )
-              ],
-            ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-             Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    color: white,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10),
-                                    child: Column(
+                                              height: 2,
+                                             ),
+                                              SizedBox(
+                                  height: 40,
+                                  child: TextFormField(
+                                    controller: controllerQuantity,
+                                    // focusNode: _focusNodeQuantity,
+                                    textAlign: TextAlign.right,
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                          allow: true, replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),
+                                        border: OutlineInputBorder(),),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        calculateConversion();
+                                      });
+                                    },
+                                  ),
+                                ),
+                          ],
+                        )
+                        ),
+                        const SizedBox(
+                          width: 4,
+                        ),
+                          Visibility(
+                          visible: enableMULTIUNIT,
+                          child: Expanded(
+                            child: FutureBuilder(
+                              future: dio.fetchUnitOf(selectedProducteId?? 0),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                if (snapshot.hasData) {
+                                  unitList.clear();
+                                  for (var i = 0;
+                                      i < snapshot.data.length;
+                                      i++) {
+                                    if (defaultUnitID.toString().isNotEmpty) {
+                                      if (snapshot.data[i].id ==
+                                          defaultUnitID! - 1) {
+                                        _dropDownUnit = snapshot.data[i].id;
+                                        conversion =
+                                            snapshot.data[i].conversion;
+                                      }
+                                    }
+                                    unitList.add(UnitModel(
+                                        id: snapshot.data[i].id,
+                                        itemId: snapshot.data[i].itemId,
+                                        conversion: snapshot.data[i].conversion,
+                                        name: snapshot.data[i].name,
+                                        pUnit: snapshot.data[i].pUnit,
+                                        sUnit: snapshot.data[i].sUnit,
+                                        unit: snapshot.data[i].unit,
+                                        rate: ''));
+                                  }
+                                }
+                                return snapshot.hasData
+                                    ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            'Totals & Taxes',
-                                            style: TextStyle(
-                                                fontFamily: 'poppins',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
+                                          const Text(' Unit',
+                                          style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500),),
+                                          const SizedBox(
+                                          height: 2,
+                                          ),
+                                        Container(
+                                          height: 40,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: grey),
+                                            borderRadius: BorderRadius.circular(3)
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                                hint: Text(_dropDownUnit > 0
+                                                    ? UnitSettings.getUnitName(
+                                                        _dropDownUnit)
+                                                    : 'SKU',
+                                                    style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500),
+                                                    ),
+                                                items: snapshot.data
+                                                    .map<DropdownMenuItem<String>>(
+                                                        (item) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: item.id.toString(),
+                                                    child: Text(item.name,style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500),),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _dropDownUnit =
+                                                        int.tryParse(value!)!;
+                                                    for (var i = 0;
+                                                        i < unitList.length;
+                                                        i++) {
+                                                      UnitModel _unit = unitList[i];
+                                                      if (_unit.unit ==
+                                                          int.tryParse(value)) {
+                                                        conversion = _unit.conversion!;
+                                                        break;
+                                                      }
+                                                    }
+                                                    calculate();
+                                                  });
+                                                },
+                                              ),
                                           ),
                                         ),
-                                        const SizedBox(
-                                          height: 2,
-                                        ),
-                                        const Divider(),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Subtotal (Rate x Qty)',
+                                      ],
+                                    )
+                                    : Container();
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                  Row(
+                      children: [
+                        Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    const Text(' Price',
+                              style: TextStyle(
+                     fontFamily: 'poppins',
+                     fontSize: 14,
+                     fontWeight: FontWeight.w500),),
+                     const SizedBox(
+                      height: 2,
+                     ),
+                                  TextField(
+                                    controller: controllerRate,
+                                    focusNode: _focusNodeRate,
+                                    textAlign: TextAlign.right,
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                          allow: true, replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      contentPadding: EdgeInsetsDirectional.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ), 
+                                      constraints: BoxConstraints(
+                                        maxHeight: 40
+                                      ),
+                                        border: OutlineInputBorder(),),
+                                    onChanged: (value) {
+                                      if (value.isNotEmpty) {
+                                        rateEditted = true;
+                                      }
+                                      setState(() {
+                                        calculate();
+                                      });
+                                    },
+                                  ),
+                                ],
+                              )),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              Expanded(child: 
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    ' Tax Option',
+                                    style: TextStyle(
+                                                 fontFamily: 'poppins',
+                                                 fontSize: 14,
+                                                 fontWeight: FontWeight.w500),),
+                                                 const SizedBox(
+                                                  height: 2,
+                                                 ),
+                                                              Container(
+                                                                height: 40,
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 5),
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3),
+                                                    ),
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                      child: DropdownButton<
+                                                          String>(
+                                                        style: const TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: black),
+                                                        value:
+                                                            selectedTaxOption,
+                                                        items: const [
+                                                          DropdownMenuItem(
+                                                            value: 'With Tax',
+                                                            child: Text(
+                                                                'With Tax'),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            // enabled: salesTypeData!
+                                                            //                 .id ==
+                                                            //             1 ||
+                                                            //         salesTypeData!
+                                                            //                 .id ==
+                                                            //             2
+                                                            //     ? false
+                                                            //     : true,
+                                                            value:
+                                                                'Without Tax',
+                                                            child: Text(
+                                                                'Without Tax'),
+                                                          ),
+                                                        ],
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            selectedTaxOption = value!;
+                                                            value == 'Without Tax' 
+                                                                ? isTax = false
+                                                                : isTax = true;
+                                                            calculateConversion();
+                                                          });
+                                                        },
+                                                        isExpanded: true,
+                                                      ),
+                                                    ),
+                                                  ),
+                                ],
+                              )
+                              )
+                      ],
+                    )
+                ],
+              ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+               Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      color: white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 10),
+                                      child: Column(
+                                        children: [
+                                          const Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              'Totals & Taxes',
                                               style: TextStyle(
-                                                  fontFamily: 'poppins'),
+                                                  fontFamily: 'poppins',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500),
                                             ),
-                                            Text(
-                                              '\u20B9 ${gross.toStringAsFixed(3)}',
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Row(
+                                          ),
+                                          const SizedBox(
+                                            height: 2,
+                                          ),
+                                          const Divider(),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               const Text(
-                                                'Discount',
+                                                'Subtotal (Rate x Qty)',
                                                 style: TextStyle(
                                                     fontFamily: 'poppins'),
                                               ),
-                                              const Spacer(),
-                                              Flexible(
-                                                flex: 2,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.orange),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3)),
-                                                  height: 35,
-                                                  child: TextField(
-                                                    controller:
-                                                        controllerDiscountPer,
-                                                    focusNode:
-                                                        _focusNodeDiscountPer,
-                                                        textAlign: TextAlign.right,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                    onSubmitted: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                    decoration: InputDecoration(
-                                                      suffixIcon: Container(
-                                                        decoration: BoxDecoration(
-                                                            color: Colors
-                                                                .orange[100],
-                                                            border: const Border(
-                                                                left: BorderSide(
-                                                                    color: Colors
-                                                                        .orange)),
-                                                            borderRadius: const BorderRadius
-                                                                .only(
-                                                                bottomRight:
-                                                                    Radius
-                                                                        .circular(
-                                                                            3),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        3))),
-                                                        width: 25,
-                                                        child: const Center(
-                                                          child: Icon(
-                                                            Icons.percent_sharp,
-                                                            color:
-                                                                Colors.orange,
-                                                            size: 15,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      contentPadding:
-                                                          const EdgeInsets
-                                                              .symmetric(
-                                                              vertical: 6,
-                                                              horizontal: 3),
-                                                      border:
-                                                          const OutlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Flexible(
-                                                flex: 2,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: grey),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              3)),
-                                                  height: 35,
-                                                  child: TextField(
-                                                    focusNode:
-                                                        _focusNodeDiscount,
-                                                    controller:
-                                                        controllerDiscount,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
-                                                    textAlign: TextAlign.right,
-                                                    decoration: InputDecoration(
-                                                      prefixIcon: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Colors.grey[100],
-                                                          border: const Border(
-                                                              right: BorderSide(
-                                                                  color: grey)),
-                                                        ),
-                                                        width: 25,
-                                                        child: const Center(
-                                                          child: Icon(
-                                                            Icons
-                                                                .currency_rupee_outlined,
-                                                            color: Colors.grey,
-                                                            size: 15,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      contentPadding:
-                                                          const EdgeInsets
-                                                              .symmetric(
-                                                              vertical: 6,
-                                                              horizontal: 3),
-                                                      border:
-                                                          const OutlineInputBorder(
-                                                              borderSide:
-                                                                  BorderSide
-                                                                      .none),
-                                                    ),
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                    onSubmitted: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
+                                              Text(
+                                                '\u20B9 ${gross.toStringAsFixed(3)}',
                                               ),
                                             ],
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Row(children: [
-                                            const Text(
-                                              'Tax %      ',
-                                              style: TextStyle(
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            const Spacer(),
-                                            Flexible(
-                                              flex: 2,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.orange),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                height: 35,
-                                                child: TextField(
-                                                  controller:
-                                                      TextEditingController(
-                                                          text:
-                                                              taxP.toString()),
-                                                  readOnly: true,
-                                                  textAlign: TextAlign.right,
-                                                  onChanged: (value) {
-                                                    calculate();
-                                                  },
-                                                  decoration: InputDecoration(
-                                                    suffixIcon: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: Colors
-                                                              .orange[100],
-                                                          border: const Border(
-                                                              left: BorderSide(
-                                                                  color: Colors
-                                                                      .orange)),
-                                                          borderRadius:
-                                                              const BorderRadius
-                                                                  .only(
-                                                                  bottomRight: Radius
-                                                                      .circular(
-                                                                          3),
-                                                                  topRight: Radius
-                                                                      .circular(
-                                                                          3))),
-                                                      width: 25,
-                                                      child: const Center(
-                                                        child: Icon(
-                                                          Icons.percent_sharp,
-                                                          color: Colors.orange,
-                                                          size: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 6,
-                                                            horizontal: 3),
-                                                    border:
-                                                        const OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide
-                                                                    .none),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Flexible(
-                                              flex: 2,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    border:
-                                                        Border.all(color: grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                height: 35,
-                                                child: TextField(
-                                                  controller:
-                                                      TextEditingController(
-                                                          text: tax
-                                                              .toStringAsFixed(
-                                                                  3)),
-                                                  textAlign: TextAlign.right,
-                                                  readOnly: true,
-                                                  decoration: InputDecoration(
-                                                    prefixIcon: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.grey[100],
-                                                        border: const Border(
-                                                            right: BorderSide(
-                                                                color: grey)),
-                                                      ),
-                                                      width: 20,
-                                                      child: const Center(
-                                                        child: Icon(
-                                                          Icons
-                                                              .currency_rupee_outlined,
-                                                          color: Colors.grey,
-                                                          size: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 6,
-                                                            horizontal: 3),
-                                                    border:
-                                                        const OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide
-                                                                    .none),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ]),
-                                        ),
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          SizedBox(
+                                            width:
+                                                MediaQuery.of(context).size.width,
                                             child: Row(
                                               children: [
                                                 const Text(
-                                                  'Total Amount',
+                                                  'Discount',
                                                   style: TextStyle(
-                                                      fontFamily: 'poppins',
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w500),
+                                                      fontFamily: 'poppins'),
                                                 ),
                                                 const Spacer(),
-                                                Container(
-                                                    decoration:
-                                                        const BoxDecoration(),
-                                                    child: Text(
-                                                      "\u20B9  ${total.toStringAsFixed(3)}",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w500),
-                                                    ))
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      controller:
+                                                          controllerDiscountPer,
+                                                      focusNode:
+                                                          _focusNodeDiscountPer,
+                                                          textAlign: TextAlign.right,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                      onSubmitted: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      focusNode:
+                                                          _focusNodeDiscount,
+                                                      controller:
+                                                          controllerDiscount,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                      onSubmitted: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
                                               ],
-                                            ))
-                                      ],
-                                    ),
-                                  ) 
-          ],
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Visibility(
+                                            visible: isTax,
+                                            child: SizedBox(
+                                              width:
+                                                  MediaQuery.of(context).size.width,
+                                              child: Row(children: [
+                                                const Text(
+                                                  'Tax %      ',
+                                                  style: TextStyle(
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                const Spacer(),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      controller:
+                                                          TextEditingController(
+                                                              text:
+                                                                  taxP.toString()),
+                                                      readOnly: true,
+                                                      textAlign: TextAlign.right,
+                                                      onChanged: (value) {
+                                                        calculate();
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius:
+                                                                  const BorderRadius
+                                                                      .only(
+                                                                      bottomRight: Radius
+                                                                          .circular(
+                                                                              3),
+                                                                      topRight: Radius
+                                                                          .circular(
+                                                                              3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color: Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border:
+                                                            Border.all(color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      controller:
+                                                          TextEditingController(
+                                                              text: tax
+                                                                  .toStringAsFixed(
+                                                                      3)),
+                                                      textAlign: TextAlign.right,
+                                                      readOnly: true,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 20,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    'Total Amount',
+                                                    style: TextStyle(
+                                                        fontFamily: 'poppins',
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                  const Spacer(),
+                                                  Container(
+                                                      decoration:
+                                                          const BoxDecoration(),
+                                                      child: Text(
+                                                        "\u20B9  ${total.toStringAsFixed(3)}",
+                                                        style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500),
+                                                      ))
+                                                ],
+                                              ))
+                                        ],
+                                      ),
+                                    ) 
+            ],
+          ),
         ),
         bottomNavigationBar: SizedBox(
           width: MediaQuery.of(context).size.width,
@@ -2701,7 +2746,7 @@ const SizedBox(
                           ? double.tryParse(controllerQuantity.text)
                           : quantity)!;
 
-                      if (selectedItem.quantity! >= quantity) {
+                      
                         if (editItem) {
                           cartItem[position!].adCess = adCess;
                           cartItem[position!].barcode = barcode;
@@ -2747,7 +2792,9 @@ const SizedBox(
                           cartItem[position!].unitValue = unitValue;
                           cartItem[position!].wholesale = wholeSale;
                           cartItem[position!].wholesalePer = wholesalePer;
-                        } else {
+                        }
+                         else {
+                          if ( selectedItem.quantity! >= quantity) {
                           cartItem.add(CartItemP(
                               adCess: adCess,
                               barcode: barcode,
@@ -2799,6 +2846,9 @@ const SizedBox(
                               size: 0,
                               color: 0,
                               expenseQty: 0));
+                            } else {
+                        showInSnackBar('Available Qty is ${selectedItem.quantity}');
+                      }
                         }
                         if (cartItem.isNotEmpty) {
                           nextWidget = 0;
@@ -2806,9 +2856,7 @@ const SizedBox(
                           clearValue();
                           calculateTotal();
                         }
-                      } else {
-                        showInSnackBar('Available Qty is ${selectedItem.quantity}');
-                      }
+                      
                     });
                     }
                   },
@@ -3661,7 +3709,7 @@ const SizedBox(
 
   selectStockLedger() {
     return FutureBuilder(
-        future: dio.fetchStockVariant(productModel!.id!),
+        future: dio.fetchStockVariant(productModel!.id!,taxGroupUpdate,0),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {
@@ -3731,7 +3779,7 @@ const SizedBox(
   int positionID = 0;
   showVariantDialog(int id, String name, String quantity) {
     return FutureBuilder<List<StockProduct>>(
-      future: dio.fetchStockVariant(id),
+      future: dio.fetchStockVariant(id,taxGroupUpdate,0),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
@@ -3933,7 +3981,15 @@ const SizedBox(
       }
       subTotal = cartItem.elementAt(position!).gross;
       net = cartItem.elementAt(position!).net;
-      if (taxP > 0) {
+  //       if (selectedTaxOption == 'With Tax') {
+  //     if (taxP > 0) {
+  //     tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+  //   }
+  //  }else{
+  //   tax = 0;
+  //  }
+    if(selectedTaxOption == 'With Tax'){
+        if (taxP > 0) {
         tax = cartItem.elementAt(position!).tax;
         iGST = cartItem.elementAt(position!).iGST;
         csGST = cartItem.elementAt(position!).cGST;
@@ -3942,6 +3998,12 @@ const SizedBox(
         csGST = 0;
         tax = 0;
       }
+    }else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+
       total = cartItem.elementAt(position!).total;
     } else {
       adCessPer = double.tryParse(product.adCessPer.toString())!;
@@ -3995,10 +4057,27 @@ const SizedBox(
           : discount;
       subTotal = CommonService.getRound(decimal, (rate * quantity));
       net = CommonService.getRound(decimal, (subTotal - discount));
+       if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
-      if (companyTaxMode == 'INDIA') {
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
+      // if (companyTaxMode == 'INDIA') {
+      //   double csPer = taxP / 2;
+      //   iGST = 0;
+      //   csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
+      // } else if (companyTaxMode == 'GULF') {
+      //   iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      //   csGST = 0;
+      // } else {
+      //   iGST = 0;
+      //   csGST = 0;
+      //   tax = 0;
+      // }
+       if(selectedTaxOption == 'With Tax'){
+       if (companyTaxMode == 'INDIA') {
         double csPer = taxP / 2;
         iGST = 0;
         csGST = CommonService.getRound(decimal, ((subTotal * csPer) / 100));
@@ -4006,6 +4085,11 @@ const SizedBox(
         iGST = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
         csGST = 0;
       } else {
+        iGST = 0;
+        csGST = 0;
+        tax = 0;
+      }
+     }else {
         iGST = 0;
         csGST = 0;
         tax = 0;

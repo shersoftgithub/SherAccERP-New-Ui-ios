@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company_user.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/dash_report/dash_page.dart';
 import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/screens/quick_search.dart';

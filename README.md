@@ -1,6 +1,6 @@
 # sheraccerp
 
-A new Flutter project.
+SherAcc ERP Web Application.
 
 ## Getting Started
 

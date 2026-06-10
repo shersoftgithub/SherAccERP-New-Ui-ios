@@ -5,6 +5,7 @@ import 'package:csv/csv.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -13,7 +14,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/option_rate_type.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/damage_report.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -21,6 +22,7 @@ import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:intl/intl.dart';
+import 'dart:html' as html;
 
 class SalesManReport extends StatefulWidget {
   const SalesManReport({Key? key}) : super(key: key);
@@ -149,7 +151,8 @@ class _SalesManReportState extends State<SalesManReport> {
             )
           ],
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
           title: const Text('Salesman Report'),
         ),
@@ -193,7 +196,7 @@ class _SalesManReportState extends State<SalesManReport> {
                 ]),
           'salesMan': salesMan,
         })}]';
-
+   
     return FutureBuilder<List<dynamic>>(
       future: api.getSalesManReport(dataJson),
       builder: (ctx, snapshot) {
@@ -713,17 +716,17 @@ class _SalesManReportState extends State<SalesManReport> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -766,17 +769,17 @@ class _SalesManReportState extends State<SalesManReport> {
     title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 const kPrimaryColor = Color(0xFF0008B3);
 const bagroundColor = Color(0xffF2F2F2);
-const white = Color(0xFFFFFFFF);
+const white = Colors.white;
 const whiteDark = Colors.white54;
-const black = Color(0xFF000000);
+const black = Colors.black;
 const blue = Colors.blue;
 const black54 = Colors.black54;
 const indigoAccent = Colors.indigoAccent;
@@ -41,5 +41,6 @@ const Color lime = Colors.lime;
 const Color pink = Colors.pink;
 const Color purple = Colors.purple;
 const Color purple1 =Color(0xFFAA90E6);
+const Color bbGreen =Color(0xFF91BA59);
 const Color tealAccent = Colors.tealAccent;
 const Color yellowAccent = Colors.yellowAccent;

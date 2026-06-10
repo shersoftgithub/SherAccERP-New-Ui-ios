@@ -20,7 +20,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -107,6 +107,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
   String labelSerialNo = 'SerialNo';
   String labelSpRate = 'SpRetail';
   bool ledgerScanner = false, productScanner = false, loadScanner = false;
+  bool taxGroupUpdate = false;
 
   Barcode? result;
   QRViewController? controller;
@@ -272,6 +273,8 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
         ComSettings.getStatus('ENABLE CUSTOMER WISE LAST S.RATE', settings!);
     isQuantityBasedSerialNo =
         ComSettings.getStatus('ENABLE QUANTITY BASED SERIAL NO', settings!);
+     taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
   }
 
   @override
@@ -353,6 +356,9 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales"),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             Visibility(
               visible: enableBarcode,
@@ -484,6 +490,9 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales"),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             Visibility(
               visible: previewData,
@@ -2730,7 +2739,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
 
   selectStockLedger() {
     return FutureBuilder(
-        future: api.fetchStockVariant(productModel!.id!),
+        future: api.fetchStockVariant(productModel!.id!,false,lId),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {
@@ -2798,7 +2807,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
 
   selectNoStockLedger() {
     return FutureBuilder(
-        future: api.fetchNoStockVariant(productModel!.code!),
+        future: api.fetchNoStockVariant(productModel!.code!,false,lId),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {
@@ -2872,7 +2881,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
   showVariantDialog(int id, String name, String quantity) {
     // _stockVariantQuantity = double.tryParse(quantity);
     return FutureBuilder<List<StockProduct>>(
-      future: api.fetchStockVariant(id),
+      future: api.fetchStockVariant(id,false,lId),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
@@ -6128,7 +6137,7 @@ class _JobCardReplacementState extends State<JobCardReplacement> {
     rateType = salesTypeData!.id.toString();
     double billTotal = 0, billCash = 0;
 
-    api.fetchSalesInvoice(data['Id'], salesTypeData!.id!).then((value) {
+    api.fetchSalesInvoice(data['Id'], salesTypeData!.id!,taxGroupUpdate).then((value) {
       if (value != null) {
         salesData = value;
         var information = value['Information'][0];

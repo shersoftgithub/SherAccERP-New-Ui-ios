@@ -319,7 +319,8 @@ class _PrintSettingsState extends State<PrintSettings> {
       appBar: AppBar(
         centerTitle: true,
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white,
         ),
         title: const Text('Test Print'),
       ),

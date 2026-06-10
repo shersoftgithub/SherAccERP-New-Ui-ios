@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:firebase_in_app_messaging/firebase_in_app_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +8,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company_user.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/dash_report/dash_page.dart';
 import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -121,33 +123,140 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
   }
 
   void _handleLogout() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Do you want to logout'),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-            child: const Text('No'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop(true);
-              pref.remove('userId');
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/login', ModalRoute.withName('/login'));
-            },
-            child: const Text('Yes'),
-          ),
-        ],
-      ),
-    );
-  }
+  SharedPreferences pref = await SharedPreferences.getInstance();
   
+  return await showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 30,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 24, bottom: 16),
+              child: Column(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.logout,
+                      color: Colors.redAccent,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              color: Colors.grey.shade200,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              child: Text(
+                'Are you sure you want to logout from your User?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade700,
+                  fontFamily: 'poppins',
+                  height: 1.5,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.grey.shade700,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        textStyle: const TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop(true);
+                        await pref.remove('userId');
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/login',
+                            ModalRoute.withName('/login'),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor, //Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                        textStyle: const TextStyle(
+                          fontFamily: 'poppins',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      child: const Text('Yes'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 
   String _regId = "", firm = "", firmCode = "", fId = "";
   load() async {
@@ -165,7 +274,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final CompanyUser args =
         ModalRoute.of(context)!.settings.arguments as CompanyUser;
-
+    debugPrint(args.toString());
     int daysLeft = 0;
     if (!isPopDone) {
       if (args.active == 'false') {
@@ -195,25 +304,58 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
       'Settings',
       'Tools',
     ];
+    
     return WillPopScope(
       onWillPop: showExitPopup,
       child: DefaultTabController(
           length: 10,
           child: Scaffold(
             appBar: AppBar(
-              titleSpacing: -30,
-              toolbarHeight: 80,
+              titleSpacing: -19,
+              toolbarHeight: 90,
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    _handleLogout();
-                  },
+                Container(
+                  margin: const EdgeInsets.only(right: 3, top: 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 12.0, 
+                        sigmaY: 11.0, 
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.12), 
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2), 
+                            width: .5,
+                          ),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.logout,
+                            size: 24,
+                            color: Colors.white, 
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            _handleLogout();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
                 )
               ],
               // elevation: .1,
               title: Padding(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 18),
                 child: TabBar(
                   dividerColor: kPrimaryColor,
                   indicator: const BoxDecoration(color: kPrimaryColor),
@@ -228,7 +370,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -243,7 +385,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -264,7 +406,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -279,7 +421,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -294,7 +436,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -309,7 +451,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -324,7 +466,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -339,7 +481,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -354,7 +496,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -369,7 +511,7 @@ class _AdminHomeState extends State<AdminHome> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),

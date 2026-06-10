@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/util/jobcard_lists.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class Complaints extends StatefulWidget {
   const Complaints({super.key});
@@ -23,7 +24,9 @@ class _ComplaintsState extends State<Complaints> {
       appBar: AppBar(
         title: const Text(
           'Complaints',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 14,
+          color: white,
+          ),
         ),
       ),
       body: Column(

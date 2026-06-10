@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,6 +11,8 @@ class AppSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final whatsappKeyController =  TextEditingController();
+     whatsappKeyController.text =  Settings.getValue('whatsappKey') ?? '';
     return SettingsScreen(
       title: 'App Settings',
       children: [
@@ -592,6 +595,44 @@ class AppSettings extends StatelessWidget {
                                       horizontal: 16),
                                   child: Column(
                                     children: [
+                                       SwitchSettingsTile(
+                                        settingKey: 'key-ledger-report-all',
+                                        title: 'Ledger Report All',
+                                        titleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                        subtitle:
+                                            'Show full ledger report like system.',
+                                        subtitleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                        enabledLabel: 'Enabled',
+                                        disabledLabel: 'Disabled',
+                                        // leading: const Icon(Icons.receipt_long),
+                                        onChange: (value) {
+                                          debugPrint(
+                                              'key-ledger-report-all: $value');
+                                        },
+                                      ),
+                                       SwitchSettingsTile(
+                                        settingKey: 'key-invoice-preview-show',
+                                        title: 'Show invoice Print',
+                                        titleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                        subtitle:
+                                            'Show invoice designer preview on sales',
+                                        subtitleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                        enabledLabel: 'Enabled',
+                                        disabledLabel: 'Disabled',
+                                        // leading: const Icon(Icons.receipt_long),
+                                        onChange: (value) {
+                                          debugPrint(
+                                              'key-invoice-preview-show: $value');
+                                        },
+                                      ),
                                       SwitchSettingsTile(
                                         settingKey: 'key-invoice-preview',
                                         title: 'Enable Invoice Preview',
@@ -893,6 +934,40 @@ class AppSettings extends StatelessWidget {
                                               'key-simple-sales: $value');
                                         },
                                       ),
+                                       SwitchSettingsTile(
+                                        settingKey: 'key-simple-field',
+                                        title: 'Enable Simple Field',
+                                        titleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                        subtitle: 'Enable Simple Field Mode',
+                                        subtitleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                        enabledLabel: 'Enabled',
+                                        disabledLabel: 'Disabled',
+                                        onChange: (value) {
+                                          debugPrint(
+                                              'key-simple-sales: $value');
+                                        },
+                                      ),
+                                       SwitchSettingsTile(
+                                        settingKey: 'key-increment-button',
+                                        title: 'Increment Decrement Button',
+                                        titleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                        subtitle: 'Increment Decrement Button in Sales',
+                                        subtitleTextStyle: const TextStyle(
+                                            fontFamily: 'poppins'),
+                                        enabledLabel: 'Enabled',
+                                        disabledLabel: 'Disabled',
+                                        onChange: (value) {
+                                          debugPrint(
+                                              'key-increment-button: $value');
+                                        },
+                                      ),
                                       const SizedBox(
                                         height: 10,
                                       ),
@@ -1090,23 +1165,23 @@ class AppSettings extends StatelessWidget {
                                     //         'key-item-serial-no: $value');
                                     //   },
                                     // ),
-                                    // SwitchSettingsTile(
-                                    //   settingKey: 'key-item-stock-all',
-                                    //   title: 'Limited Item On Stock',
-                                    //   subtitle: 'Show Limited Stock Items',
-                                    //   titleTextStyle: const TextStyle(
-                                    //       fontFamily: 'poppins',
-                                    //       fontSize: 16,
-                                    //       fontWeight: FontWeight.w500),
-                                    //   subtitleTextStyle: const TextStyle(
-                                    //       fontFamily: 'poppins'),
-                                    //   enabledLabel: 'Enabled',
-                                    //   disabledLabel: 'Disabled',
-                                    //   onChange: (value) {
-                                    //     debugPrint(
-                                    //         'key-item-stock-all: $value');
-                                    //   },
-                                    // ),
+                                    SwitchSettingsTile(
+                                      settingKey: 'key-item-stock-all',
+                                      title: 'Limited Item On Stock',
+                                      subtitle: 'Show Limited Stock Items',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                      subtitleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins'),
+                                      enabledLabel: 'Enabled',
+                                      disabledLabel: 'Disabled',
+                                      onChange: (value) {
+                                        debugPrint(
+                                            'key-item-stock-all: $value');
+                                      },
+                                    ),
                       //               DropDownSettingsTile<int>(
                       //                 title: 'Item Default Unit',
                       //                 titleTextStyle: const TextStyle(
@@ -1164,6 +1239,101 @@ class AppSettings extends StatelessWidget {
                                       onChange: (value) {
                                         debugPrint(
                                             'key-items-variant-stock: $value');
+                                      },
+                                    ),
+                                    SwitchSettingsTile(
+                                      settingKey: 'key-lock-tax-sale',
+                                      title: 'Lock Tax Option',
+                                      subtitle:
+                                          'Disable Tax Option in Sale',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                      subtitleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins'),
+                                      enabledLabel: 'Enabled',
+                                      disabledLabel: 'Disabled',
+                                      // leading: Icon(Icons.receipt_long),
+                                      onChange: (value) {
+                                        debugPrint(
+                                            'key-lock-tax-sale: $value');
+                                      },
+                                    ),
+                                    SwitchSettingsTile(
+                                      settingKey: 'key-lock-discount-field',
+                                      title: 'Disable Discount Option',
+                                      subtitle:
+                                          'Disable Discount Field ',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                      subtitleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins'),
+                                      enabledLabel: 'Enabled',
+                                      disabledLabel: 'Disabled',
+                                      // leading: Icon(Icons.receipt_long),
+                                      onChange: (value) {
+                                        debugPrint(
+                                            'key-lock-discount-field: $value');
+                                      },
+                                    ),
+                                    SwitchSettingsTile(
+                                    settingKey: 'key-show-profit-field',
+                                    title: 'Show Profit Field',
+                                    subtitle:
+                                        'Show Profit Field in Sales',
+                                    titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
+                                    subtitleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins'),
+                                    enabledLabel: 'Enabled',
+                                    disabledLabel: 'Disabled',
+                                    // leading: Icon(Icons.receipt_long),
+                                    onChange: (value) {
+                                      debugPrint(
+                                          'key-show-profit-field: $value');
+                                    },
+                                  ),
+                                    SwitchSettingsTile(
+                                      settingKey: 'key-lock-call-option',
+                                      title: 'Call to Customer',
+                                      subtitle:
+                                          'Direct call to Customer from Sales',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                      subtitleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins'),
+                                      enabledLabel: 'Enabled',
+                                      disabledLabel: 'Disabled',
+                                      // leading: Icon(Icons.receipt_long),
+                                      onChange: (value) {
+                                        debugPrint(
+                                            'key-lock-discount-field: $value');
+                                      },
+                                    ),
+                                    SwitchSettingsTile(
+                                      settingKey: 'key-gross-field-sales',
+                                      title: 'Gross Calculation',
+                                      subtitle:
+                                          'Enable Gross Field in Sales',
+                                      titleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                      subtitleTextStyle: const TextStyle(
+                                          fontFamily: 'poppins'),
+                                      enabledLabel: 'Enabled',
+                                      disabledLabel: 'Disabled',
+                                      // leading: Icon(Icons.receipt_long),
+                                      onChange: (value) {
+                                        debugPrint(
+                                            'key-gross-field-sales: $value');
                                       },
                                     ),
                                     const SizedBox(
@@ -1392,14 +1562,14 @@ class AppSettings extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: SimpleSettingsTile(
-                      title: 'Pinter Settings',
+                      title: 'Printer Settings',
                       titleTextStyle: const TextStyle(
                           fontFamily: 'poppins',
                           fontSize: 15,
                           fontWeight: FontWeight.w500),
                       // subtitle: 'Pinter Settings',
                       child: SettingsScreen(
-                        title: 'Pinter Settings',
+                        title: 'Printer Settings',
                         children: [
                           Container(
                             width: MediaQuery.sizeOf(context).width,
@@ -1519,6 +1689,11 @@ class AppSettings extends StatelessWidget {
                                       8: 'VAT3',
                                       9: 'VAT4',
                                       10: 'New Model 1',
+                                      11: 'VAT5',
+                                      12: 'VATARB',
+                                      13: 'WAFA',
+                                      14: 'BBMODEL1',
+                                      15: 'TURKISHKT',
                                     },
                                     selected: 2,
                                     onChange: (value) {
@@ -1563,6 +1738,23 @@ class AppSettings extends StatelessWidget {
                                     // leading: Icon(Icons.receipt_long),
                                     onChange: (value) {
                                       debugPrint('key-print-header-es: $value');
+                                    },
+                                  ),
+                                  SwitchSettingsTile(
+                                    settingKey: 'key-print-single-line',
+                                    title: 'Print Single Line',
+                                    subtitle: 'Print items in single line',
+                                    titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
+                                    subtitleTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    enabledLabel: 'Enabled',
+                                    disabledLabel: 'Disabled',
+                                    // leading: Icon(Icons.receipt_long),
+                                    onChange: (value) {
+                                      debugPrint('key-print-single-line: $value');
                                     },
                                   ),
                                   DropDownSettingsTile<int>(
@@ -2047,7 +2239,7 @@ class AppSettings extends StatelessWidget {
                               9: 'A4Half',
                               10: 'VatA4Half',
                               11: 'GstA4Half',
-                              12: 'NewModel1',
+                              12: 'BBMODEL1',
                             },
                             selected: 2,
                             onChange: (value) {
@@ -2127,6 +2319,26 @@ class AppSettings extends StatelessWidget {
                               debugPrint('key-dropdown-pdf-line: $value');
                             },
                           ),
+                           SwitchSettingsTile(
+                                    settingKey: 'key-pdf-header',
+                                    title: 'Remove Header On Pdf',
+                                    titleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500),
+                                    subtitle: 'Remove Company Details in Pdf',
+                                    subtitleTextStyle: const TextStyle(
+                                        fontFamily: 'poppins',
+                                        // fontSize: 16,
+                                        // fontWeight: FontWeight.w500
+                                        ),
+                                    enabledLabel: 'Enabled',
+                                    disabledLabel: 'Disabled',
+                                    // leading: Icon(Icons.receipt_long),
+                                    onChange: (value) {
+                                      debugPrint('key-pdf-header: $value');
+                                    },
+                                  ),
                           SizedBox(
                             height: MediaQuery.sizeOf(context).height,
                           )
@@ -2213,6 +2425,63 @@ class AppSettings extends StatelessWidget {
                 ),
                 const SizedBox(
                   height: 15,
+                ),
+                Column(
+                  children: [
+                    TextField(
+                      controller: whatsappKeyController,
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                       onPressed: () async {
+                            if (whatsappKeyController.text.isNotEmpty) {
+                              try {
+                                await Settings.setValue('whatsappKey', whatsappKeyController.text);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Whatsapp key saved successfully'))
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to save Whatsapp key'))
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Please enter a valid key'))
+                              );
+                            }
+                          },
+                         icon: Icon(Icons.save)),
+                        fillColor: white,
+                        filled: true,
+                        labelText: 'Set Whatsapp App Key..',
+                        labelStyle: const TextStyle(
+                          fontFamily: 'poppins',
+                          color: grey,
+                          fontSize: 15
+                        ),
+                        border: const OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey,
+                            width: .5
+                          )
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 8
+                        )
+                      ),
+                    ),
+                    // IconButton(
+                    //   onPressed: () async {
+                    //     var savedValue = await Settings.getValue('whatsappKey');
+                    //     debugPrint('Saved WhatsApp Key: $savedValue');
+                    //   }, 
+                    //   icon: Icon(Icons.abc_rounded)
+                    // )
+                  ],
+                ),
+                const SizedBox(
+                  height: 8,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

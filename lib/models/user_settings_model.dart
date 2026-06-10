@@ -6,6 +6,8 @@ class UserSettingsModel {
   int areaId;
   int groupId;
   int routeId;
+  int? salesmanSelection;
+  int? employeeId;
   UserSettingsModel({
     required this.userId,
     required this.salesmanId,
@@ -14,6 +16,8 @@ class UserSettingsModel {
     required this.areaId,
     required this.groupId,
     required this.routeId,
+    this.salesmanSelection,
+    this.employeeId,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +29,8 @@ class UserSettingsModel {
       'areaId': areaId,
       'groupId': groupId,
       'routeId': routeId,
+      'salesmanSelection':salesmanSelection,
+      'employeeId' : employeeId
     };
   }
 
@@ -37,6 +43,8 @@ class UserSettingsModel {
       areaId: map['areaId']?.toInt() ?? 0,
       groupId: map['groupId']?.toInt() ?? 0,
       routeId: map['routeId']?.toInt() ?? 0,
+      salesmanSelection: map['salesmanSelection'] ?? 0,
+      employeeId: map['employeeId'] ?? 0
     );
   }
 }

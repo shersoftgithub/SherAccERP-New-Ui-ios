@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -20,7 +21,7 @@ import 'package:sheraccerp/pos/pages/payment_details_page.dart';
 import 'package:sheraccerp/pos/pages/pos_settings_page.dart';
 import 'package:sheraccerp/pos/pages/qr_view_page.dart';
 import 'package:sheraccerp/pos/widgets/drawer_widget.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -38,6 +39,7 @@ class PosHomePage extends StatefulHookConsumerWidget {
 class _PosHomePageState extends ConsumerState<PosHomePage> {
   final TextEditingController quantityController = TextEditingController();
   List<PosCartModel> cartItem = [];
+  List<SalesType> salesTypeDisplay = [];
   dynamic salesData;
    DateTime now = DateTime.now();
   String? formattedDate;
@@ -65,7 +67,9 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   int decimal = 2,saleAccount = 0;
   var salesManId = 0;
   bool manualInvoiceNumberInSales = false,
-         sType = false;
+       sType = false,
+       taxGroupUpdate = false,
+      negativeStock = false;
    double taxP = 0,
       tax = 0,
       gross = 0,
@@ -123,6 +127,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
       ComSettings().fetchOtherData();
+
+      salesTypeDisplay =
+          ComSettings.salesFormList('key-item-sale-form-', false);
+
       loadSettings();
       // saleAccount = mainAccount.firstWhere(
       //   (element) => element['LedName'] == 'GENERAL SALES A/C')['LedCode'];
@@ -142,52 +150,50 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
   // CompanyInformation companySettings = CompanyInformation.emptyData();
   
 
-  loadSettings() {
-    companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
-    settings = ScopedModel.of<MainModel>(context).getSettings();
+ Future<void> loadSettings() async {
+  // Load company settings and other data
+  companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
+  settings = ScopedModel.of<MainModel>(context).getSettings();
 
-    companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
-    cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
-    enableKeralaFloodCess = false;
+  companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+  cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
+  enableKeralaFloodCess = false;
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!); 
 
-        salesManId = ComSettings.appSettings(
-            'int', 'key-dropdown-default-salesman-view', 1) -
-        1;
-        lId = ComSettings.appSettings(
-            'int', 'key-dropdown-default-location-view', 2) -
-        1;    
-        acId = 
-         mainAccount.firstWhere((element) => element['LedName'] == cashAc,
-            orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode']
-        ; 
+  salesManId = ComSettings.appSettings(
+      'int', 'key-dropdown-default-salesman-view', 1) - 1;
+  lId = ComSettings.appSettings(
+      'int', 'key-dropdown-default-location-view', 2) - 1;    
+  acId = mainAccount.firstWhere(
+      (element) => element['LedName'] == cashAc,
+      orElse: () => {'LedName': cashAc, 'LedCode': acId}
+  )['LedCode'];
 
-   
+  // First fetch the sales type list
+  await api.getSalesTypeList().then((value) {
+    salesTypeList.clear();
+    salesTypeList.addAll(value);
+  });
 
-      // for (var option in salesTypeList) {
-      // if (option.type.toString() == 'SALES-POS') {
-      //   salesTypeData = option;
-      //   // status = true;
-      //   break;
-      // } else {
-      //   // status = false;
-      // }
-      //  }
-      //   if(salesTypeData == null) {
-      //       var settingss  = ScopedModel.of<MainModel>(context).getSettings();
-      //      sType = ComSettings.getValue('TOOLBAR SALES', settingss)
-      //               .toString()
-      //               .isNotEmpty
-      //           ? ComSettings.selectSalesType(
-      //               ComSettings.getValue('TOOLBAR SALES', settingss))
-      //           : false;
-      // }
-
-        manualInvoiceNumberInSales =
-        ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
-   companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
-   getEntryNo(12);
-
+  // Then process the list (this will execute after the list is populated)
+  for (var option in salesTypeList) {
+    if (option.type.toString() == 'SALES-POS') {
+      salesTypeData = option;
+      break;
+    }
   }
+
+  manualInvoiceNumberInSales =
+      ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
+  negativeStock = ComSettings.getStatus('ALLOW NEGETIVE STOCK', settings!);    
+  companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+  getEntryNo(12);
+  
+  if (cartItems.isNotEmpty) {
+    ref.read(cartItemProvider.notifier).removeAllCartItem(cartItems.length);
+  }
+}
 
       getEntryNo(saleFormId) {
     api.getSalesInvoiceNo(saleFormId,'SEntryNo').then((value) {
@@ -238,11 +244,12 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
     _isLoading = true;
   });
 
-  fetchStockProducts = await api.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate));
+  fetchStockProducts = 
+   await  api.fetchStockProduct(DateUtil.dateDMY2YMD(formattedDate));
 
   fetchStockVariant = [];
   for (var product in fetchStockProducts!) {
-    var variant = await api.fetchStockVariant(product.id!);
+    var variant = await api.fetchStockVariant(product.id!,taxGroupUpdate,0);
     
     if (variant != null) {
       fetchStockVariant!.addAll(variant);
@@ -268,7 +275,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Exit App'),
-            content: const Text('Do you want to exit an App?'),
+            content: const Text('Do you want to exit App?'),
             actions: [
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -302,7 +309,7 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
       // cessPer = isTax ? _variantList.cessPer! : 0;
       // adCessPer = isTax ? _variantList.adCessPer! : 0;
 
-      double totalGrossValue = 0;
+  double totalGrossValue = 0;
   double totalDiscount = 0;
   double totalNet = 0;
   double totalCess = 0;
@@ -335,10 +342,10 @@ class _PosHomePageState extends ConsumerState<PosHomePage> {
               : 0
           : 0;
      csPer = taxP / 2;
-     debugPrint("cessPer == ${totalCess.toString()}");
-     debugPrint("tax == ${taxP.toString()}");
+    //  debugPrint("cessPer == ${totalCess.toString()}");
+    //  debugPrint("tax == ${taxP.toString()}");
    
-     debugPrint('cess = ${cess.toString()}'); 
+    //  debugPrint('cess = ${cess.toString()}'); 
     //  debugPrint(iGST.toString()); 
     // total = CommonService.getRound(
     //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
@@ -381,8 +388,8 @@ if (companyTaxMode == 'INDIA') {
 
 
 
-      debugPrint('csGST${csGST.toString()}');
-      debugPrint('igst${iGST.toString()}');
+      // debugPrint('csGST${csGST.toString()}');
+      // debugPrint('igst${iGST.toString()}');
 
 
      double grandTotal = totalAmount + totalTax;
@@ -562,6 +569,7 @@ if (companyTaxMode == 'INDIA') {
                            child: const Center(
                              child: Text('Item Name',
                              overflow: TextOverflow.ellipsis,
+                             
                              // textScaler: TextScaler.linear(.9),
                                                    style: TextStyle(
                                                      fontFamily: 'poppins',
@@ -827,19 +835,17 @@ if (companyTaxMode == 'INDIA') {
                                const Spacer(),
                                SizedBox(
                                  width: MediaQuery.of(context).size.width/4,
-                                 child:  Center(
-                                   child: Text(cartModel[index].itemName ?? '',
-                                   // textScaler: TextScaler.linear(.9),
-                                   maxLines: null,
-                                   textAlign: TextAlign.justify,
-                                   overflow: TextOverflow.ellipsis,
-                                                         style: const TextStyle(
-                                                           fontFamily: 'poppins',
-                                                           // color: grey,
-                                                           // fontSize: 13,
-                                                            fontWeight: FontWeight.w500,
-                                                         ),
-                                   ),
+                                 child:  Text('   ${cartModel[index].itemName}' ?? '',
+                                 // textScaler: TextScaler.linear(.9),
+                                 maxLines: null,
+                                 textAlign: TextAlign.left,
+                                 overflow: TextOverflow.ellipsis,
+                                                       style: const TextStyle(
+                                                         fontFamily: 'poppins',
+                                                         // color: grey,
+                                                         // fontSize: 13,
+                                                          fontWeight: FontWeight.w500,
+                                                       ),
                                  ),
                                ),
                                const Spacer(),
@@ -1131,13 +1137,24 @@ if (companyTaxMode == 'INDIA') {
                                   color: kPrimaryColor //Color(0xff0008B3),
                                   // fontSize: 13
                                 ),
+                                
                                 tabs: const[
                                 Tab(text: 'Barcode',),
                                 Tab(text: 'Quantity',),
                                 Tab(text: 'Speed Item',),
-                              ]),
+                              ],
+                              onTap: (value) {
+                                if(value == 2){
+                                  setState(() {
+                                  _fetchStockProducts();
+                                  });
+                                  // Fluttertoast.showToast(msg: 'Speed Item');
+                                }
+                              },
+                              ),
                               Expanded(
-                                child: TabBarView(children: [
+                                child: TabBarView(
+                                  children: [
                                  Container(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Column(
@@ -1257,17 +1274,17 @@ if (companyTaxMode == 'INDIA') {
         net: double.tryParse(rate!.toStringAsFixed(2))! * 1,
         fUnitId: 0,
         fUnitValue: 1,
-        taxP: product.tax ?? 0,
-        sGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
-        unitId: unitData.firstWhere((element) => element.name == 'NOS').id,
-        unit: unitData.firstWhere((element) => element.name == 'NOS').id,
+        taxP: isTax ? product.tax : 0,
+        sGST: product.tax! > 0 ? isTax ? double.tryParse(csGST.toStringAsFixed(2)) : 0 : 0,
+        unitId:unitData.isNotEmpty ?  unitData.firstWhere((element) => element.name == 'NOS').id : 0,
+        unit: unitData.isNotEmpty ? unitData.firstWhere((element) => element.name == 'NOS').id : 0,
         unitValue: 1,
-        cGST: product.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2)) ?? 0 : 0,
+        cGST: product.tax! > 0 ? isTax ? double.tryParse(csGST.toStringAsFixed(2)) : 0 : 0,
         cdPer: cdPer,
         discount: discount,
         discountPercent: discountPercent,
         gross: double.tryParse(rate.toStringAsFixed(2))! * 1,
-        iGST: product.tax! > 0 ? double.tryParse(iGST.toStringAsFixed(2)) ?? 0 : 0,
+        iGST: product.tax! > 0 ? isTax ? double.tryParse(iGST.toStringAsFixed(2)) : 0 : 0,
         itemId: product.itemId,
         realPrice: rate,
         free: 0,
@@ -1284,7 +1301,8 @@ if (companyTaxMode == 'INDIA') {
                 : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
             : rate,
         tax: product.tax! > 0
-            ? double.tryParse(product.tax!.toStringAsFixed(3))!
+            ? isTax ? double.tryParse(product.tax!.toStringAsFixed(3))!
+            : 0
             : 0,
         code: product.productId.toString(),
         id: product.itemId!,
@@ -1932,17 +1950,17 @@ if (companyTaxMode == 'INDIA') {
                                                                                       net: double.tryParse(rate!.toStringAsFixed(2))! * 1,
                                                                                       fUnitId: 0,
                                                                                       fUnitValue: 1,
-                                                                                      taxP: itemVariant.tax?? 0,
-                                                                                      sGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
-                                                                                      unitId: unitData.firstWhere((element) => element.name == 'NOS',).id,
-                                                                                      unit: unitData.firstWhere((element) => element.name == 'NOS').id,
+                                                                                      taxP: isTax ? itemVariant.tax : 0,
+                                                                                      sGST: itemVariant.tax! > 0 ? isTax ? double.tryParse(csGST.toStringAsFixed(2)) : 0 : 0,
+                                                                                      unitId: unitData.isNotEmpty ?  unitData.firstWhere((element) => element.name == 'NOS',).id : 0,
+                                                                                      unit: unitData.isNotEmpty ? unitData.firstWhere((element) => element.name == 'NOS').id : 0,
                                                                                       unitValue: 1,
-                                                                                      cGST: itemVariant.tax! > 0 ? double.tryParse(csGST.toStringAsFixed(2))?? 0 : 0,
+                                                                                      cGST: itemVariant.tax! > 0 ? isTax ? double.tryParse(csGST.toStringAsFixed(2)) : 0 : 0,
                                                                                       cdPer: cdPer,
                                                                                       discount: discount,
                                                                                       discountPercent: discountPercent,
                                                                                       gross: double.tryParse(rate.toStringAsFixed(2))! * 1,
-                                                                                      iGST: itemVariant.tax! > 0 ? double.tryParse(iGST.toStringAsFixed(2))?? 0 : 0,
+                                                                                      iGST: itemVariant.tax! > 0 ? isTax ? double.tryParse(iGST.toStringAsFixed(2)) : 0 : 0,
                                                                                       itemId: itemVariant.itemId,
                                                                                       realPrice: rate!,
                                                                                       free: 0,
@@ -1958,7 +1976,7 @@ if (companyTaxMode == 'INDIA') {
                 4, (100 * rate) / (100 + tax + kfcP + cessPer))
             : CommonService.getRound(4, (100 * rate) / (100 + tax + kfcP))
         : rate,
-                                                                                       tax: itemVariant.tax! > 0 ? double.tryParse(itemVariant.tax!.toStringAsFixed(3))!  : 0 ,
+                                                                                       tax: itemVariant.tax! > 0 ? isTax ? double.tryParse(itemVariant.tax!.toStringAsFixed(3))!  : 0 : 0,
                                                                                        code: itemVariant.productId.toString(),
                                                                                        id: item.id,
                                                                                        itemName: item.name!,
@@ -2163,7 +2181,7 @@ if (companyTaxMode == 'INDIA') {
     double billTotal = 0, billCash = 0;
 
    try {
-      api.fetchSalesInvoice(data['Id'], 12).then((value) {
+      api.fetchSalesInvoice(data['Id'], salesTypeData!.id!,taxGroupUpdate).then((value) {
       if (value != null && value['Information'].isNotEmpty) {
         salesData = value;
         var information = value['Information'][0];
@@ -2355,6 +2373,7 @@ if (companyTaxMode == 'INDIA') {
           msg: 'Entry NO not Exist',
         backgroundColor: red
         );
+        getEntryNo(12);
       }
 
       setState(() {
@@ -2444,4 +2463,7 @@ if (companyTaxMode == 'INDIA') {
   //                   ? (e['Amount'] * -1).toString()
   //                   : e['Amount'].toString()));
   // }
+ 
+ 
+
 }

@@ -17,7 +17,7 @@ import 'package:sheraccerp/models/order.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/purchase/purchase_new.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
@@ -73,7 +73,8 @@ class _DeliveryNoteState extends State<DeliveryNote> {
       isFreeQty = false,
       gstVerified = false,
       gstValidation = false,
-      taxable = true;
+      taxable = true,
+      taxGroupUpdate = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
   String? formattedDate, _narration = '';
@@ -213,6 +214,8 @@ class _DeliveryNoteState extends State<DeliveryNote> {
         ComSettings.getStatus('KEY LOCK QTY ONLY IN SALES', settings!);
     isSalesManWiseLedger =
         ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
   }
 
   @override
@@ -326,7 +329,8 @@ class _DeliveryNoteState extends State<DeliveryNote> {
         appBar: AppBar(
           title: const Text("DeliveryNote"),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           actions: [
             Visibility(
@@ -449,7 +453,8 @@ class _DeliveryNoteState extends State<DeliveryNote> {
         appBar: AppBar(
           title: const Text("Delivery Note"),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           actions: [
             Visibility(
@@ -2528,7 +2533,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
 
   selectStockLedger() {
     return FutureBuilder(
-        future: api.fetchStockVariant(productModel!.id!),
+        future: api.fetchStockVariant(productModel!.id!,taxGroupUpdate,0),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {
@@ -2596,7 +2601,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
 
   selectNoStockLedger() {
     return FutureBuilder(
-        future: api.fetchNoStockVariant(productModel!.code!),
+        future: api.fetchNoStockVariant(productModel!.code!,taxGroupUpdate,0),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {
@@ -2689,7 +2694,7 @@ class _DeliveryNoteState extends State<DeliveryNote> {
   showVariantDialog(int id, String name, String quantity) {
     // _stockVariantQuantity = double.tryParse(quantity);
     return FutureBuilder<List<StockProduct>>(
-      future: api.fetchStockVariant(id),
+      future: api.fetchStockVariant(id,taxGroupUpdate,0),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,12 +13,13 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/order.dart';
+import 'package:sheraccerp/models/other_registrations.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/sales_return_preview.dart';
 import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -71,7 +73,8 @@ class _SalesReturnState extends State<SalesReturn> {
       keyEditAndDeleteAdminOnlyDaysBefore = false,
       daysBefore = false,
       isFreeQty = false,
-      manualInvoiceNumberInSales = false;
+      manualInvoiceNumberInSales = false,
+      taxGroupUpdate = false;
   final List<TextEditingController> _controllers = [];
   DateTime now = DateTime.now();
   String? formattedDate, _narration = '';
@@ -95,6 +98,7 @@ class _SalesReturnState extends State<SalesReturn> {
   Future<List<LedgerModel>>? _getCustomerNameList;
   Future<List<ProductPurchaseModel>>? _fetchAllProductPurchase;
   final invoiceNoController = TextEditingController();
+  final TextEditingController controllerNarration = TextEditingController();
 
   @override
   void initState() {
@@ -104,7 +108,7 @@ class _SalesReturnState extends State<SalesReturn> {
 
     loadSettings();
     _getCustomerNameList = dio.getCustomerNameList();
-    _fetchAllProductPurchase = dio.fetchAllProductPurchase();
+    _fetchAllProductPurchase = dio.fetchAllProductPurchase(taxGroupUpdate);
     dio.fetchDetailAmount().then((value) {
       otherAmountList = value;
       setState(() {
@@ -199,10 +203,12 @@ class _SalesReturnState extends State<SalesReturn> {
         'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!);
     valueDaysBefore = int.tryParse(ComSettings.getValue(
             'KEY EDIT AND DELETE ADMIN ONLY DAYS BEFORE', settings!)
-        .toString())!;
+        .toString())?? 0;
     manualInvoiceNumberInSales =
         ComSettings.getStatus('MANNUAL INVOICE NUMBER IN SALES', settings!);
         salesTypeDisplay = salesReturnTypeList;
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
     loadAsset();
        userDateCheck(DateUtil.dateYMD(formattedDate!));
   }
@@ -266,7 +272,7 @@ class _SalesReturnState extends State<SalesReturn> {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Are you sure?'),
-              content: const Text('Do you want to exit Sale'),
+              content: const Text('Do you want to exit Sales Return'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
@@ -283,6 +289,7 @@ class _SalesReturnState extends State<SalesReturn> {
     }
   }
 
+  String? selectedTaxOption = 'With Tax';
   widgetPrefix(thisSale) {
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -290,7 +297,8 @@ class _SalesReturnState extends State<SalesReturn> {
         appBar: AppBar(
           title: const Text("Sales Return"),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           actions: [
             Visibility(
@@ -306,6 +314,11 @@ class _SalesReturnState extends State<SalesReturn> {
                  onPressed: () async {
                     setState(() {
                       widgetID = false;
+                      salesTypeData = salesTypeDisplay[0];
+                      saleReturnFormId = salesTypeData!.id;
+                      taxable = (salesTypeData != null ? salesTypeData!.tax : taxable);
+                      isTax= taxable;
+                      selectedTaxOption = isTax ? 'With Tax' : 'Without Tax';
                     });
                   },
                   onLongPress: () {
@@ -356,6 +369,10 @@ class _SalesReturnState extends State<SalesReturn> {
         appBar:newSalesReturn 
         ? AppBar(
           title: const Text("Sales Return"),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'poppins',
+            color: white
+          ),
           actions: [
             Visibility(
               visible: oldBill,
@@ -643,6 +660,11 @@ class _SalesReturnState extends State<SalesReturn> {
                   onPressed: () {
                     setState(() {
                       widgetID = false;
+                      salesTypeData = salesTypeDisplay[0];
+                      saleReturnFormId = salesTypeData!.id;
+                      taxable = (salesTypeData != null ? salesTypeData!.tax : taxable);
+                      isTax= taxable;
+                       selectedTaxOption = isTax ? 'With Tax' : 'Without Tax';
                     });
                   },
                   icon: const Icon(Icons.shopping_bag),
@@ -698,6 +720,13 @@ class _SalesReturnState extends State<SalesReturn> {
   @override
   void dispose() {
     _scrollController.dispose();
+        controllerNarration.dispose();
+    _rateController.dispose();
+    _discountController.dispose();
+    _quantityController.dispose();
+    // _freeQuantityController.dispose();
+    _discountPercentController.dispose();
+    // _serialNoController.dispose();
     super.dispose();
   }
 
@@ -732,13 +761,13 @@ class _SalesReturnState extends State<SalesReturn> {
         discountPer: '0',
         balanceAmount: '0',
         creditPeriod: '0',
-        narration: _narration!.isNotEmpty ? _narration! : '',
+        narration: controllerNarration.text.isNotEmpty ? controllerNarration.text : '',
         takeUser: userIdC.toString(),
         location: locationId.toString(),
         billType: companyTaxMode == 'GULF' ? '2' : '0',
         roundOff: '0',
         salesMan: salesManId.toString(),
-        sType: rateType,
+        sType: _dropDownValue.split('-').first.trim(), // rateType,
         dated: DateUtil.dateYMD(formattedDate),
         cashAC: acId.toString(),
         otherAmountData: otherAmountList);
@@ -749,7 +778,7 @@ class _SalesReturnState extends State<SalesReturn> {
       var ledger = json.encode(jsonLedger);
       var otherAmount = json.encode(order.otherAmountData);
       var taxType = isTax ? 'T' : 'NT';
-      var salesRateTypeId = rateType.isNotEmpty ? rateType : '1';
+      var salesRateTypeId = rateType.isNotEmpty ? _dropDownValue.split('-').first.trim() : '1';
       var saleAccountId = saleAccount > 0 ? saleAccount.toString() : '0';
       var checkKFC = isKFC ? '1' : '0';
       double grandTotal = double.tryParse(order.grandTotal)! > 0
@@ -876,7 +905,10 @@ class _SalesReturnState extends State<SalesReturn> {
                 'Type': saleReturnFormId
               }
             ];
-                if (salesTypeData!.accounts) {
+            debugPrint(dataDynamic.toString());
+            // debugPrint(salesTypeData.toString());
+              if(salesTypeData != null){
+                  if (salesTypeData!.accounts) {
               final bodyJsonAmount = {
                 'statement': 'SalesReturnInsert',
                 'entryNo': int.tryParse(value1.toString()),
@@ -888,8 +920,10 @@ class _SalesReturnState extends State<SalesReturn> {
                 'id': order.customerModel[0].id.toString(),
                 'fyId': currentFinancialYear!.id
               };
+               debugPrint(bodyJsonAmount.toString());
               dio.addOthersAmount(bodyJsonAmount);
             }
+              }
             // clearCart();
             widget.fromSale == true ? 
             // setState(() {
@@ -933,13 +967,13 @@ class _SalesReturnState extends State<SalesReturn> {
         discountPer: '0',
         balanceAmount: '0',
         creditPeriod: '0',
-        narration: _narration!.isNotEmpty ? _narration! : '',
+        narration:  controllerNarration.text.isNotEmpty ? controllerNarration.text : '',
         takeUser: userIdC.toString(),
         location: locationId.toString(),
         billType: companyTaxMode == 'GULF' ? '2' : '0',
         roundOff: '0',
         salesMan: salesManId.toString(),
-        sType: rateType,
+        sType: _dropDownValue.split('-').first.trim(), // rateType,
         dated: DateUtil.dateYMD(formattedDate),
         cashAC: acId.toString(),
         otherAmountData: otherAmountList);
@@ -950,7 +984,7 @@ class _SalesReturnState extends State<SalesReturn> {
       var ledger = json.encode(jsonLedger);
       var otherAmount = json.encode(order.otherAmountData);
       var taxType = isTax ? 'T' : 'NT';
-      var salesRateTypeId = rateType.isNotEmpty ? rateType : '1';
+      var salesRateTypeId = rateType.isNotEmpty ? _dropDownValue.split('-').first.trim() : '1';
       var saleAccountId = saleAccount > 0 ? saleAccount.toString() : '0';
       var checkKFC = isKFC ? '1' : '0';
       double grandTotal = double.tryParse(order.grandTotal)! > 0
@@ -1049,7 +1083,8 @@ class _SalesReturnState extends State<SalesReturn> {
                     ? grandTotal
                     : grandTotal.roundToDouble();
           }
-                    if (salesTypeData!.accounts) {
+            if(salesTypeData != null){
+                      if (salesTypeData!.accounts) {
             final bodyJsonAmount = {
               'statement': 'SalesReturnInsert',
               'entryNo': int.tryParse(dataDynamic[0]['EntryNo'].toString()),
@@ -1063,6 +1098,7 @@ class _SalesReturnState extends State<SalesReturn> {
             };
             dio.addOthersAmount(bodyJsonAmount);
           }
+            }
           // clearCart();
           showMore(context);
         }
@@ -1178,7 +1214,7 @@ class _SalesReturnState extends State<SalesReturn> {
       loading = true;
     });
     try {
-      var getProducts = await dio.fetchAllProductPurchase();
+      var getProducts = await dio.fetchAllProductPurchase(taxGroupUpdate);
       setState(() {
         productModel= getProducts;
       });
@@ -1218,6 +1254,7 @@ class _SalesReturnState extends State<SalesReturn> {
  var itemName;
  int? position;
  bool editItem = false;
+ 
   newSalesReturnWidget(newSalesReturn ){
   if(newSalesReturn){
     setState(() {
@@ -1232,7 +1269,8 @@ class _SalesReturnState extends State<SalesReturn> {
         title: const Text("Sales Return"),
         centerTitle: true,
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white,
         ),
       ),
       body: SingleChildScrollView(
@@ -1339,17 +1377,13 @@ class _SalesReturnState extends State<SalesReturn> {
                                         //         ),
                                         //       InkWell(
                                         //         onTap: () {
-                                        //              var invoiceNum = invoiceNo;
-                                                           
-                                          
+                                        //              var invoiceNum = invoiceNo;                                                                               
                                         //           setState(() {
                                         //            int invoiceNumber = int.parse(invoiceNum); 
                                         //            invoiceNumber--; 
                                         //            invoiceNum = invoiceNumber.toString(); 
-                                        //          });
-                                          
-                                        //         debugPrint(invoiceNum.toString());
-                                          
+                                        //          });                                          
+                                        //         debugPrint(invoiceNum.toString());                                          
                                         //     dataDynamic = [
                                         //      {
                                         //      'Type': saleReturnFormId,
@@ -1385,13 +1419,11 @@ class _SalesReturnState extends State<SalesReturn> {
                                         //    }
                                         //                                          }
                                         //         },
-                                        //         child: const Icon(Icons.arrow_back_ios_rounded)),
-                                               
+                                        //         child: const Icon(Icons.arrow_back_ios_rounded)),                                               
                                         //       //  Icon(Icons.keyboard_double_arrow_right_rounded),
                                         //     ],
                                         //   ),
-                                        // ),
-                                        
+                                        // ),                                       
                                         // suffixIcon: Visibility(
                                         //   visible: isAdminUser,
                                         //   child: Row(
@@ -1400,16 +1432,13 @@ class _SalesReturnState extends State<SalesReturn> {
                                         //     children: [
                                         //       InkWell(
                                         //         onTap: () {
-                                        //              var invoiceNum = invoiceNo;
-                                          
+                                        //              var invoiceNum = invoiceNo;                                         
                                         //           setState(() {
                                         //            int invoiceNumber = int.parse(invoiceNum); 
                                         //            invoiceNumber++; 
                                         //            invoiceNum = invoiceNumber.toString(); 
-                                        //          });
-                                          
+                                        //          });                      
                                         //         debugPrint(invoiceNum.toString());
-                                          
                                         //     dataDynamic = [
                                         //      {
                                         //      'Type': salesTypeData!.type,
@@ -1527,6 +1556,52 @@ class _SalesReturnState extends State<SalesReturn> {
              const SizedBox(
               height: 8,
              ),
+              Container(
+                      width: MediaQuery.sizeOf(context).width,
+                      color: white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //  Visibility(
+                          //       visible: isProjectSoftware,
+                          //       child:const Text(' Select Project',
+                          //        style: TextStyle(
+                          //           fontFamily: 'poppins',
+                          //           fontSize: 14,
+                          //           fontWeight: FontWeight.w500),
+                          //       ) ),
+                          // projectWidget(),
+                          //  Container(
+                          //       margin: const EdgeInsets.symmetric(vertical: 4),
+                          //       padding: const EdgeInsets.symmetric(horizontal: 5),
+                          //       width: MediaQuery.of(context).size.width,
+                          //       decoration: BoxDecoration(
+                          //           border: Border.all(color: grey),
+                          //           borderRadius: BorderRadius.circular(3)),
+                          //       child: projectWidget(),
+                          //     ),
+                          const Text(' Sales Rate',
+                                 style: TextStyle(
+                                    fontFamily: 'poppins',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                ) ,
+                          Container(
+                                margin: const EdgeInsets.symmetric(vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                width: MediaQuery.of(context).size.width,
+                                height: 35,
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                child: widgetRateType(),
+                              ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
              Container(
               color: white,
               padding:const EdgeInsets.symmetric(
@@ -1789,7 +1864,9 @@ class _SalesReturnState extends State<SalesReturn> {
                                                 width: MediaQuery.of(context)
                                                     .size
                                                     .width,
-                                                child: Row(children: [
+                                                child: Row(
+                                                   mainAxisSize: MainAxisSize.min,
+                                                  children: [
                                                   Container(
                                                       padding:
                                                           const EdgeInsets
@@ -1813,15 +1890,19 @@ class _SalesReturnState extends State<SalesReturn> {
                                                             const TextStyle(
                                                                 fontSize: 12),
                                                       )),
-                                                  Text(
-                                                      ' ${cartItem[index].itemName}',
-                                                      style: const TextStyle(
-                                                          color: black,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontFamily:
-                                                              'poppins')),
-                                                  const Spacer(),
+                                                  Flexible(
+                                                    child: Text(
+                                                        ' ${cartItem[index].itemName}',
+                                                        overflow: TextOverflow.ellipsis,
+                                                        textAlign: TextAlign.left,
+                                                        style: const TextStyle(
+                                                            color: black,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontFamily:
+                                                                'poppins')),
+                                                  ),
+                                                  // const Spacer(),
                                                   
                                                 ]),
                                               ),
@@ -1994,6 +2075,240 @@ class _SalesReturnState extends State<SalesReturn> {
                             ): const SizedBox(),
                             const SizedBox(
                               height: 10,
+                            ),
+                             Padding(
+                               padding: const EdgeInsets.symmetric(horizontal: 20),
+                               child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 3
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: grey
+                                  ),
+                                  borderRadius: BorderRadius.circular(3)
+                                ),
+                                child: ExpansionTile(
+                                  initiallyExpanded: valueMore,
+                                  onExpansionChanged: (expanded) {
+                                    setState(() {
+                                      valueMore = expanded;
+                                    });
+                                  },
+                                  title: const Text('Other Amounts',
+                                  style: TextStyle(fontFamily: 'poppins'),),
+                                  trailing: Icon(
+                                    valueMore
+                                        ? Icons.keyboard_double_arrow_down_outlined
+                                        : Icons.keyboard_double_arrow_up_outlined,
+                                  ),
+                                  children: [
+                                    Column(
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal:10
+                                          ),
+                                          child: TextField(
+                                            maxLines: null,
+                                            controller: controllerNarration,
+                                            decoration: const InputDecoration(
+                                              contentPadding: EdgeInsets.symmetric(
+                                                horizontal: 4,
+                                                vertical: 8
+                                              ),
+                                              border: OutlineInputBorder(),
+                                              labelText: 'Narration',
+                                              labelStyle: TextStyle(
+                                                fontFamily: 'poppins'
+                                              )
+                                            ),
+                                          ),
+                                        ),
+                                     
+                                        // const SizedBox(
+                                        //   height: 6,
+                                        // ),
+                                        // SizedBox(
+                                        //   width: MediaQuery.of(context).size.width,
+                                        //   child: Row(
+                                        //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                        //     children: [
+                                        //       Expanded(
+                                        //         flex: 2,
+                                        //         child: SizedBox(
+                                        //           height: 45,
+                                        //           child: DropdownSearch<dynamic>(
+                                        //             popupProps: const PopupPropsMultiSelection.dialog(
+                                        //               showSearchBox: true,
+                                        //             ),
+                                        //             asyncItems: (String filter) =>
+                                        //                 dio.getLedgerDataByParent(filter, 0, 0, 0, 0),
+                                        //             dropdownDecoratorProps: const DropDownDecoratorProps(
+                                        //               dropdownSearchDecoration: InputDecoration(
+                                        //                   contentPadding: EdgeInsets.symmetric(
+                                        //                                                       horizontal: 4,
+                                        //                                                       vertical: 8
+                                        //                                                     ),
+                                        //                 // labelStyle: TextStyle(
+                                        //                 //   color: black
+                                        //                 // ),
+                                        //                 border: OutlineInputBorder(),
+                                        //                 labelText: 'Select Unit',
+                                        //               ),
+                                        //             ),
+                                        //             onChanged: (dynamic data) {
+                                        //               setState(() {
+                                        //                 commissionLedgerData = data;
+                                        //               commissionAccount = data.id;
+                                        //               });
+                                        //               debugPrint(data.toString());
+                                        //             },
+                                        //             selectedItem: commissionLedgerData,
+                                        //           ),
+                                        //         ),
+                                        //       ),
+                                        //       const SizedBox(
+                                        //         width: 4,
+                                        //       ),
+                                        //       Expanded(
+                                        //         child: TextField(
+                                        //           controller: commissionAmountController,
+                                        //           decoration: const InputDecoration(
+                                        //              contentPadding: EdgeInsets.symmetric(
+                                        //                                                       horizontal: 4,
+                                        //                                                       vertical: 8
+                                        //                                                     ),
+                                        //             border: OutlineInputBorder(),
+                                        //             labelText: 'Amount',
+                                        //           ),
+                                        //           keyboardType: const TextInputType.numberWithOptions(
+                                        //             decimal: true,
+                                        //           ),
+                                        //           inputFormatters: [
+                                        //             FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                                        //           ],
+                                        //         ),
+                                        //       ),
+                                        //     ],
+                                        //   ),
+                                        // ),
+                                        const SizedBox(
+                                          height: 6,
+                                        ),
+                                        SizedBox(
+                                                   height: deviceSize!.height / 6,
+                                                   child: Container(
+                                                    //  color: white,
+                                                     child: ListView.separated(
+                                                      separatorBuilder: (context, index) {
+                                                        return const SizedBox(
+                                                          height: 6,
+                                                        );
+                                                      },
+                                                         physics: const BouncingScrollPhysics(),
+                                                         itemCount: otherAmountList.length,
+                                                         shrinkWrap: true,
+                                                         itemBuilder: (BuildContext context, int index) {
+                                                           _controllers.add(TextEditingController());
+                                                           _controllers[index].text =
+                                  otherAmountList[index]['Amount'].toString();
+                                                           return Row(
+                                                            children: <Widget>[
+                                                             expandStyle(
+                                                                 2,
+                                                                 Padding(
+                                                                   padding: const EdgeInsets.only(
+                                                                    left: 10
+                                                                   ),
+                                                                   child: Container(
+                                                                      //  margin:
+                                                                      //      const EdgeInsets.only(top: 35),
+                                                                       child: Text(otherAmountList[index]
+                                                                           ['LedName'],
+                                                                           style: TextStyle(
+                                                                            fontFamily: 'poppins'
+                                                                           ))),
+                                                                 )),
+                                                             Padding(
+                                                               padding: const EdgeInsets.only(
+                                                                    right: 10
+                                                                   ),
+                                                               child: SizedBox(
+                                                                   height: 35,
+                                                                   width: 100,
+                                                                   child: TextFormField(
+                                                                       decoration: const InputDecoration(
+                                                                        contentPadding: EdgeInsets.symmetric(
+                                                                          horizontal: 4,
+                                                                          vertical: 6
+                                                                        ),
+                                                                           border: OutlineInputBorder()),
+                                                                       controller: TextEditingController
+                                                                           .fromValue(TextEditingValue(
+                                                                               text: otherAmountList[index]
+                                                                                       ['Amount']
+                                                                                   .toString(),
+                                                                               selection:
+                                                                                   TextSelection.collapsed(
+                                                                                       offset: otherAmountList[
+                                                                                                   index]
+                                                                                               ['Amount']
+                                                                                           .toString()
+                                                                                           .length))),
+                                                                       keyboardType: const TextInputType
+                                                                           .numberWithOptions(decimal: true),
+                                                                       inputFormatters: [
+                                                                         FilteringTextInputFormatter(
+                                                                             RegExp(r'[0-9]'),
+                                                                             allow: true,
+                                                                             replacementString: '.')
+                                                                       ],
+                                                                       onFieldSubmitted: (String str) {
+                                                                         var cartTotal = totalCartValue;
+                                                                         if (str.isNotEmpty) {
+                                                                           otherAmountList[index]['Amount'] =
+                                                                               double.tryParse(str);
+                                                                           otherAmountList[index]
+                                                                                   ['Percentage'] =
+                                                                               CommonService.getRound(
+                                                                                   2,
+                                                                                   ((double.tryParse(str)! *
+                                                                                           100) /
+                                                                                       cartTotal));
+                                                                           var netTotal = cartTotal +
+                                                                               otherAmountList.fold(
+                                                                                   0.0,
+                                                                                   (t, e) =>
+                                                                                       t +
+                                                                                       double.parse(e[
+                                                                                                   'Symbol'] ==
+                                                                                               '-'
+                                                                                           ? (e['Amount'] *
+                                                                                                   -1)
+                                                                                               .toString()
+                                                                                           : e['Amount']
+                                                                                               .toString()));
+                                                                           setState(() {
+                                                                             grandTotal = netTotal;
+                                                                           });
+                                                                         }
+                                                                       })),
+                                                             )
+                                                           ]);
+                                                         }),
+                                                   ),
+                                                 ),
+                                             
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                                           ),
+                             ),
+                            const SizedBox(
+                              height: 15,
                             ),
                              Padding(
                            padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -2387,7 +2702,7 @@ dynamic productModelPrizee = [
     ];
 int? selectedProducteId;
 double minimum = 0.00;
-String? selectedTaxOption = 'With Tax';
+
 var fetchedPrice;
 bool isPrateEdited = false;
   addItemWidget(){
@@ -2556,11 +2871,14 @@ if (productModelPrize.length > 0) {
       discount = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountController.text)
           : 0)!;
+      double? sRate = _rateController.text.isNotEmpty
+        ? double.tryParse(_rateController.text)
+        : 0;    
               if (_focusNodeDiscountPer.hasFocus) {
         _discountController.text = _discountPercentController.text.isNotEmpty
         && selectedTaxOption == 'With Tax'
-            ? (((quantity * rRate) * discountPercent) / 100).toStringAsFixed(2)
-            : (((quantity * rate) * discountPercent) / 100).toStringAsFixed(2);
+            ? (((quantity * sRate!) * discountPercent) / 100).toStringAsFixed(2)
+            : (((quantity * sRate!) * discountPercent) / 100).toStringAsFixed(2);
         discount = (_discountController.text.isNotEmpty
             ? double.tryParse(_discountController.text)
             : 0)!;
@@ -2569,8 +2887,8 @@ if (productModelPrize.length > 0) {
       if (_focusNodeDiscount.hasFocus) {
         _discountPercentController.text = _discountController.text.isNotEmpty
         && selectedTaxOption == 'With Tax'
-            ? ((discount * 100) / (quantity * rRate)).toStringAsFixed(2)
-            : ((discount * 100) / (quantity * rate)).toStringAsFixed(2);
+            ? ((discount * 100) / (quantity * sRate!)).toStringAsFixed(2)
+            : ((discount * 100) / (quantity * sRate!)).toStringAsFixed(2);
         discountPercent = (_discountController.text.isNotEmpty
             ? double.tryParse(_discountPercentController.text)
             : 0)!;
@@ -2586,9 +2904,13 @@ if (productModelPrize.length > 0) {
       // gross = CommonService.getRound(decimal, ((rRate * quantity)));
       subTotal = CommonService.getRound(decimal, (gross - rDisc));
       
+       if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
       if (companyTaxMode == 'INDIA') {
         kfc = isKFC
             ? CommonService.getRound(decimal, ((subTotal * kfcP) / 100))
@@ -2618,8 +2940,18 @@ if (productModelPrize.length > 0) {
         cess = 0;
         adCess = 0;
       }
-      total = CommonService.getRound(
-          2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+      // total = CommonService.getRound(
+      //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+          total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+   if(editItem){
+       total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+    }
       if (enableMULTIUNIT && _conversion > 0) {
         profitPer = pRateBasedProfitInSales
             ? CommonService.getRound(2,
@@ -2687,11 +3019,14 @@ if (productModelPrize.length > 0) {
       discount = (_discountController.text.isNotEmpty
           ? double.tryParse(_discountController.text)
           : 0)!;
+      double? sRate = _rateController.text.isNotEmpty
+        ? double.tryParse(_rateController.text)
+        : 0;    
               if (_focusNodeDiscountPer.hasFocus) {
         _discountController.text = _discountPercentController.text.isNotEmpty
         && selectedTaxOption == 'With Tax'
-            ? (((quantity * rRate) * discountPercent) / 100).toStringAsFixed(2)
-            : (((quantity * rate) * discountPercent) / 100).toStringAsFixed(2);
+            ? (((quantity * sRate!) * discountPercent) / 100).toStringAsFixed(2)
+            : (((quantity * sRate!) * discountPercent) / 100).toStringAsFixed(2);
         discount = (_discountController.text.isNotEmpty
             ? double.tryParse(_discountController.text)
             : 0)!;
@@ -2700,16 +3035,21 @@ if (productModelPrize.length > 0) {
       if (_focusNodeDiscount.hasFocus) {
         _discountPercentController.text = _discountController.text.isNotEmpty
         && selectedTaxOption == 'With Tax'
-            ? ((discount * 100) / (quantity * rRate)).toStringAsFixed(2)
-            : ((discount * 100) / (quantity * rate)).toStringAsFixed(2);
+            ? ((discount * 100) / (quantity * sRate!)).toStringAsFixed(2)
+            : ((discount * 100) / (quantity * sRate!)).toStringAsFixed(2);
         discountPercent = (_discountController.text.isNotEmpty
             ? double.tryParse(_discountPercentController.text)
             : 0)!;
         double.tryParse(_discountController.text);
         
       }
-      rDisc = taxMethod == 'MINUS'
-          ? CommonService.getRound(4, ((discount * 100) / (taxP + 100)))
+     rDisc = taxMethod == 'MINUS'
+          ? CommonService.getRound(
+              4,
+              ((discount * 100) /
+                  (cessOnNetAmount
+                      ? (taxP + 100 + cessPer + kfcP)
+                      : (taxP + 100 + kfcP))))
           : discount;
       gross = selectedTaxOption == 'With Tax'
         ? CommonService.getRound(decimal, ((rRate * quantity)))
@@ -2717,9 +3057,16 @@ if (productModelPrize.length > 0) {
       // gross = CommonService.getRound(decimal, ((rRate * quantity)));
       subTotal = CommonService.getRound(decimal, (gross - rDisc));
       
+      // if (taxP > 0) {
+      //   tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
+      // }
+       if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
       if (companyTaxMode == 'INDIA') {
         kfc = isKFC
             ? CommonService.getRound(decimal, ((subTotal * kfcP) / 100))
@@ -2749,8 +3096,18 @@ if (productModelPrize.length > 0) {
         cess = 0;
         adCess = 0;
       }
-      total = CommonService.getRound(
-          2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+      // total = CommonService.getRound(
+      //     2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess));
+          total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+   if(editItem){
+       total = selectedTaxOption == 'With Tax'
+    ? CommonService.getRound(
+        2, (subTotal + csGST + csGST + iGST + cess + kfc + adCess))
+    : subTotal  ;
+    }
       if (enableMULTIUNIT && _conversion > 0) {
         profitPer = pRateBasedProfitInSales
             ? CommonService.getRound(2,
@@ -2777,6 +3134,7 @@ if (productModelPrize.length > 0) {
         centerTitle: true,
         titleTextStyle: const TextStyle(
           fontFamily: 'poppins',
+          color: white
         ),
         leading: IconButton(
           onPressed: (){
@@ -2786,497 +3144,724 @@ if (productModelPrize.length > 0) {
             });
           }, icon: const Icon(Icons.arrow_back)),
       ),
-      body: Column(
-        children: [
-           Container(
-            padding:const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 6
-            ),
-            color: white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                 const Text(
-                  ' Item Name',
-                   style: TextStyle(
-                   fontFamily: 'poppins',
-                   fontSize: 14,
-                   fontWeight: FontWeight.w500),
-                 ),
-                 const SizedBox(
-                  height: 4,
-                 ),
-                 FutureBuilder(
-                            future: _fetchAllProductPurchase,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              }
-                               else if (snapshot.connectionState == ConnectionState.waiting){
-                                 return const Center(
-                                  child: CircularProgressIndicator(),
-                                 );
-                              }
-                              else if (!snapshot.hasData) {
-                                return const Text('No data found');
-                              }
-                             
-                              final purchasePr = snapshot.data;
-                          
-                              List<String> prName =
-                                  purchasePr!
-                                  .map((e) => e.itemName)
-                                  .where((element) => element != null)
-                                  .cast<String>()
-                                  .toList();
-                          
-                              return EasyAutocomplete(
-                                inputTextStyle: const TextStyle(
-                                          fontFamily: 'poppins', fontSize: 14),
-                                decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                    vertical: 5, horizontal: 5),
-                                    border: OutlineInputBorder(),
-                                    ),
-                                controller: productNameController,
-                                suggestions: prName,
-                                onChanged: (p0) {
-                                 
-                                },
-                                onSubmitted: (value) async {
-                                  clearValue();
-                                  selectedItem =purchasePr.firstWhere(
-                                    (element) => element.itemName == value,
-                                  );
-                                  productNameController.text = selectedItem.itemName;
-                                 taxP = selectedItem.tax;
-                                  selectedProducteId = selectedItem.slNo;
-                                   fetchedPrice = await dio
-                                  .fetchProductPrizeStock(selectedProducteId!, locationId);
-                                 if (fetchedPrice.length > 0) {
-                                    if (fetchedPrice.length <= 1 ) {
-                                     productModelPrize = fetchedPrice;
-                                 pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
-                                //  if (pRate > 0 && !_focusNodeRate.hasFocus) {
-                                //   _rateController.text = pRate.toString();
-                                //    }
-                                //    else {
-                                //     _rateController.text = '';
-                                //   }
-                                rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
-                                 isTax = taxable;
-                                 taxP = (isTax ? double.tryParse(selectedItem.tax.toString()) : 0)!;
-                                  cess = (isTax ? double.tryParse(selectedItem.cess.toString()) : 0)!;
-                                  cessPer = (isTax ? double.tryParse(selectedItem.cessPer.toString()) : 0)!;
-                                 adCessPer =
-                                 (isTax ? double.tryParse(selectedItem.adCessPer.toString()) : 0)!;
-                                  kfcP = isTax
-                                ? enableKeralaFloodCess
-                                 ? kfcPer
-                                 : 0
-                                 : 0;
-                                 if (rateType == 'RETAIL') {
-                                 saleRate = double.tryParse(productModelPrize[0]['retail'].toString())!;
-                                 } else if (rateType == 'WHOLESALE') {
-                                 saleRate = double.tryParse(productModelPrize[0]['wsrate'].toString())!;
-                                 } else {
-                                 saleRate = double.tryParse(productModelPrize[0]['mrp'].toString())!;
-                                 }
-                                  if (saleRate > 0 &&
-                                 !_focusNodeRate.hasFocus &&
-                                 _rateController.text.isEmpty) {
-                                _rateController.text = saleRate.toStringAsFixed(decimal);
-                                rate = saleRate;
-                                 }
-                                 uniqueCode = productModelPrize[0]['uniquecode'];
-                                  }
-                                else{
-                                  setState(() {
-                                    fetchedPrice = productModelPrizee;
-                                  });
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+             Container(
+              padding:const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 6
+              ),
+              color: white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   const Text(
+                    ' Item Name',
+                     style: TextStyle(
+                     fontFamily: 'poppins',
+                     fontSize: 14,
+                     fontWeight: FontWeight.w500),
+                   ),
+                   const SizedBox(
+                    height: 4,
+                   ),
+                   FutureBuilder(
+                              future: _fetchAllProductPurchase,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
                                 }
-                                 }
-                                },
-                              );
-                            },
-                          ),
-                
-                 const SizedBox(
-                  height: 4,
-                 ),
-                 selectedProducteId != null 
-                       ?
-                        Column(
-                          children: [
-                             Row(
-                  children: [
-                    Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(' Quantity',
-                              style: TextStyle(
-                                             fontFamily: 'poppins',
-                                             fontSize: 14,
-                                             fontWeight: FontWeight.w500),),
-                                             const SizedBox(
-                                            height: 2,
-                                           ),
-                              SizedBox(
-                                height: 40,
-                                child: TextFormField(
-                                  controller: _quantityController,
-                                  focusNode: _focusNodeQuantity,
-                                  textAlign: TextAlign.right,
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                        allow: true, replacementString: '.')
-                                  ],
+                                 else if (snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(
+                                    child: CircularProgressIndicator(),
+                                   );
+                                }
+                                else if (!snapshot.hasData) {
+                                  return const Text('No data found');
+                                }
+                               
+                                final purchasePr = snapshot.data;
+                            
+                                List<String> prName =
+                                    purchasePr!
+                                    .map((e) => e.itemName)
+                                    .where((element) => element != null)
+                                    .cast<String>()
+                                    .toList();
+                            
+                                return EasyAutocomplete(
+                                  inputTextStyle: const TextStyle(
+                                            fontFamily: 'poppins', fontSize: 14),
                                   decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 5,
-                                      vertical: 5
-                                    ),
-                                      border: OutlineInputBorder(),),
-                                  onChanged: (value) {
-                                    setState(() {
-                                      calculateConversion();
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          )),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                       Visibility(
-                        visible: enableMULTIUNIT,
-                        child: Expanded(
-                          child: FutureBuilder(
-                            future: dio.fetchUnitOf(selectedProducteId?? 0),
-                            builder: (BuildContext context,
-                                AsyncSnapshot snapshot) {
-                              if (snapshot.hasData) {
-                                unitList.clear();
-                                for (var i = 0;
-                                    i < snapshot.data.length;
-                                    i++) {
-                                  if (defaultUnitID.toString().isNotEmpty) {
-                                    if (snapshot.data[i].id ==
-                                        defaultUnitID! - 1) {
-                                      _dropDownUnit = snapshot.data[i].id;
-                                      _conversion =
-                                          snapshot.data[i].conversion;
-                                    }
-                                  }
-                                  unitList.add(UnitModel(
-                                      id: snapshot.data[i].id,
-                                      itemId: snapshot.data[i].itemId,
-                                      conversion: snapshot.data[i].conversion,
-                                      name: snapshot.data[i].name,
-                                      pUnit: snapshot.data[i].pUnit,
-                                      sUnit: snapshot.data[i].sUnit,
-                                      unit: snapshot.data[i].unit,
-                                      rate: ''));
-                                }
-                              }
-                              return snapshot.hasData
-                                  ? Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                        const Text(' Unit',
-                                        style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500),),
-                                        const SizedBox(
-                                        height: 2,
-                                        ),
-                                      Container(
-                                        height: 40,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 5
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: grey),
-                                          borderRadius: BorderRadius.circular(3)
-                                        ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: DropdownButton<String>(
-                                            isExpanded: true,
-                                              hint: Text(_dropDownUnit > 0
-                                                  ? UnitSettings.getUnitName(
-                                                      _dropDownUnit)
-                                                  : 'SKU',
-                                                    style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500)
-                                                  ),
-                                              items: snapshot.data
-                                                  .map<DropdownMenuItem<String>>(
-                                                      (item) {
-                                                return DropdownMenuItem<String>(
-                                                  value: item.id.toString(),
-                                                  child: Text(item.name,  style: const TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 14,
-                                        color: black,
-                                        fontWeight: FontWeight.w500)),
-                                                );
-                                              }).toList(),
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  _dropDownUnit =
-                                                      int.tryParse(value!)!;
-                                                  for (var i = 0;
-                                                      i < unitList.length;
-                                                      i++) {
-                                                    UnitModel _unit = unitList[i];
-                                                    if (_unit.unit ==
-                                                        int.tryParse(value)) {
-                                                      _conversion = _unit.conversion!;
-                                                      break;
-                                                    }
-                                                  }
-                                                  calculate();
-                                                });
-                                              },
-                                            ),
-                                        ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 5),
+                                      border: OutlineInputBorder(),
                                       ),
-                                    ],
-                                  )
-                                                                     : DropdownButton<String>(
-                                        hint: Text(_dropDownUnit > 0
-                                            ? UnitSettings.getUnitName(
-                                                _dropDownUnit)
-                                            : 'Unit'),
-                                        items: unitListSettings
-                                            .map<DropdownMenuItem<String>>(
-                                                (item) {
-                                          return DropdownMenuItem<String>(
-                                            value: item.key.toString(),
-                                            child: Text(item.value),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _dropDownUnit = int.tryParse(value!)!;
-                                            for (var i = 0;
-                                                i < unitList.length;
-                                                i++) {
-                                              UnitModel _unit = unitList[i];
-                                              if (_unit.unit ==
-                                                  int.tryParse(value)) {
-                                                _conversion = _unit.conversion!;
-                                                break;
-                                              }
-                                            }
-                                            // calculate();
-                                          });
-                                        },
-                                      );
-                            },
-                          ),
-                        ),
-                      ),
-                  ],
-                 ),
-                 const SizedBox(
-                        height: 4,
-                      ),
-                  Row(
+                                  controller: productNameController,
+                                  suggestions: prName,
+                                  onChanged: (p0) {
+                                   
+                                  },
+                                  onSubmitted: (value) async {
+                                    clearValue();
+                                    selectedItem =purchasePr.firstWhere(
+                                      (element) => element.itemName == value,
+                                    );
+                                    productNameController.text = selectedItem.itemName;
+                                   taxP = selectedItem.tax;
+                                    selectedProducteId = selectedItem.slNo;
+                                     fetchedPrice = await dio
+                                    .fetchProductPrizeStock(selectedProducteId!, locationId);
+                                   if (fetchedPrice.length > 0) {
+                                      if (fetchedPrice.length <= 1 ) {
+                                       productModelPrize = fetchedPrice;
+                                   pRate = double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
+                                  //  if (pRate > 0 && !_focusNodeRate.hasFocus) {
+                                  //   _rateController.text = pRate.toString();
+                                  //    }
+                                  //    else {
+                                  //     _rateController.text = '';
+                                  //   }
+                                  rPRate = double.tryParse(productModelPrize[0]['realprate'].toString())!;
+                                   isTax = taxable;
+                                   taxP = (isTax ? double.tryParse(selectedItem.tax.toString()) : 0)!;
+                                    cess = (isTax ? double.tryParse(selectedItem.cess.toString()) : 0)!;
+                                    cessPer = (isTax ? double.tryParse(selectedItem.cessPer.toString()) : 0)!;
+                                   adCessPer =
+                                   (isTax ? double.tryParse(selectedItem.adCessPer.toString()) : 0)!;
+                                    kfcP = isTax
+                                  ? enableKeralaFloodCess
+                                   ? kfcPer
+                                   : 0
+                                   : 0;
+                                   if (rateType == 'RETAIL') {
+                                   saleRate = double.tryParse(productModelPrize[0]['retail'].toString())!;
+                                   } else if (rateType == 'WHOLESALE') {
+                                   saleRate = double.tryParse(productModelPrize[0]['wsrate'].toString())!;
+                                   } else if(rateType == 'SPRETAIL') {
+                                      saleRate = double.tryParse(productModelPrize[0]['spretail'].toString())!;
+                                   }else if(rateType == 'BRANCH'){
+                                    saleRate = double.tryParse(productModelPrize[0]['branch'].toString())!;
+                                   }else {
+                                   saleRate = double.tryParse(productModelPrize[0]['mrp'].toString())!;
+                                   }
+                                    if (saleRate > 0 &&
+                                   !_focusNodeRate.hasFocus &&
+                                   _rateController.text.isEmpty) {
+                                  _rateController.text = saleRate.toStringAsFixed(decimal);
+                                  rate = saleRate;
+                                   }
+                                   uniqueCode = productModelPrize[0]['uniquecode'];
+                                    }
+                                  else{
+                                    setState(() {
+                                      fetchedPrice = productModelPrizee;
+                                    });
+                                  }
+                                   }
+                                  },
+                                );
+                              },
+                            ),
+                   const SizedBox(
+                    height: 4,
+                   ),
+                   selectedProducteId != null 
+                         ?
+                          Column(
+                            children: [
+                               Row(
                     children: [
                       Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                  const Text(' Price',
-                            style: TextStyle(
-                   fontFamily: 'poppins',
-                   fontSize: 14,
-                   fontWeight: FontWeight.w500),),
-                   const SizedBox(
-                    height: 2,
-                   ),
-                                TextField(
-                                  controller: _rateController,
-                                  focusNode: _focusNodeRate,
-                                  textAlign: TextAlign.right,
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                      decimal: true),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                        allow: true, replacementString: '.')
-                                  ],
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsetsDirectional.symmetric(
-                                      horizontal: 5,
-                                      vertical: 5
-                                    ), 
-                                    constraints: BoxConstraints(
-                                      maxHeight: 40
-                                    ),
-                                      border: OutlineInputBorder(),),
-                                  onChanged: (value) {
-                                     if (value.isNotEmpty) {
-                                        isPrateEdited = true;
-                                      }
-                                    setState(() {
-                                      calculate();
-                                    });
-                                  },
+                                const Text(' Quantity',
+                                style: TextStyle(
+                                               fontFamily: 'poppins',
+                                               fontSize: 14,
+                                               fontWeight: FontWeight.w500),),
+                                               const SizedBox(
+                                              height: 2,
+                                             ),
+                                SizedBox(
+                                  height: 40,
+                                  child: TextFormField(
+                                    controller: _quantityController,
+                                    focusNode: _focusNodeQuantity,
+                                    textAlign: TextAlign.right,
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                          allow: true, replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ),
+                                        border: OutlineInputBorder(),),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        calculateConversion();
+                                      });
+                                    },
+                                  ),
                                 ),
                               ],
                             )),
                             const SizedBox(
                               width: 4,
                             ),
-                            Expanded(child: 
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  ' Tax Option',
-                                  style: TextStyle(
-                                               fontFamily: 'poppins',
-                                               fontSize: 14,
-                                               fontWeight: FontWeight.w500),),
-                                               const SizedBox(
-                                                height: 2,
-                                               ),
-                                                            Container(
-                                                              height: 40,
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 5),
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3),
-                                                  ),
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                    child: DropdownButton<
-                                                        String>(
+                         Visibility(
+                          visible: enableMULTIUNIT,
+                          child: Expanded(
+                            child: FutureBuilder(
+                              future: dio.fetchUnitOf(selectedProducteId?? 0),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot snapshot) {
+                                if (snapshot.hasData) {
+                                  unitList.clear();
+                                  for (var i = 0;
+                                      i < snapshot.data.length;
+                                      i++) {
+                                    if (defaultUnitID.toString().isNotEmpty) {
+                                      if (snapshot.data[i].id ==
+                                          defaultUnitID! - 1) {
+                                        _dropDownUnit = snapshot.data[i].id;
+                                        _conversion =
+                                            snapshot.data[i].conversion;
+                                      }
+                                    }
+                                    unitList.add(UnitModel(
+                                        id: snapshot.data[i].id,
+                                        itemId: snapshot.data[i].itemId,
+                                        conversion: snapshot.data[i].conversion,
+                                        name: snapshot.data[i].name,
+                                        pUnit: snapshot.data[i].pUnit,
+                                        sUnit: snapshot.data[i].sUnit,
+                                        unit: snapshot.data[i].unit,
+                                        rate: ''));
+                                  }
+                                }
+                                return snapshot.hasData
+                                    ? unitList.isNotEmpty
+                                    ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                          const Text(' Unit',
+                                          style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500),),
+                                          const SizedBox(
+                                          height: 2,
+                                          ),
+                                        Container(
+                                          height: 40,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: grey),
+                                            borderRadius: BorderRadius.circular(3)
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              isExpanded: true,
+                                                hint: Text(_dropDownUnit > 0
+                                                    ? UnitSettings.getUnitName(
+                                                        _dropDownUnit)
+                                                    : 'SKU',
                                                       style: const TextStyle(
-                                                          fontFamily:
-                                                              'poppins',
-                                                          color: black),
-                                                      value:
-                                                          selectedTaxOption,
-                                                      items: const [
-                                                        DropdownMenuItem(
-                                                          value: 'With Tax',
-                                                          child: Text(
-                                                              'With Tax'),
-                                                        ),
-                                                        DropdownMenuItem(
-                                                          // enabled: salesTypeData!
-                                                          //                 .id ==
-                                                          //             1 ||
-                                                          //         salesTypeData!
-                                                          //                 .id ==
-                                                          //             2
-                                                          //     ? false
-                                                          //     : true,
-                                                          value:
-                                                              'Without Tax',
-                                                          child: Text(
-                                                              'Without Tax'),
-                                                        ),
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500)
+                                                    ),
+                                                items: snapshot.data
+                                                    .map<DropdownMenuItem<String>>(
+                                                        (item) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: item.id.toString(),
+                                                    child: Text(item.name,  style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500)),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    _dropDownUnit =
+                                                        int.tryParse(value!)!;
+                                                    for (var i = 0;
+                                                        i < unitList.length;
+                                                        i++) {
+                                                      UnitModel _unit = unitList[i];
+                                                      if (_unit.unit ==
+                                                          int.tryParse(value)) {
+                                                        _conversion = _unit.conversion!;
+                                                        break;
+                                                      }
+                                                    }
+                                                    calculate();
+                                                  });
+                                                },
+                                              ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                         const Text(' Unit',
+                                          style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500),),
+                                          const SizedBox(
+                                          height: 2,
+                                          ),
+                                        Container(
+                                            height: 40,
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 5
+                                              ),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius: BorderRadius.circular(3)
+                                              ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<OtherRegistrationModel>(
+                                              isExpanded: true,
+                                                                        hint: Text(_dropDownUnit > 0
+                                                                            ? UnitSettings.getOtherUnitName(_dropDownUnit)
+                                                                            : 'Unit',
+                                                                             style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500)),
+                                                                        items: otherRegUnitList
+                                                                            .map<DropdownMenuItem<OtherRegistrationModel>>(
+                                            (item) {
+                                                                          return DropdownMenuItem<OtherRegistrationModel>(
+                                                                            value: item,
+                                                                            child: Text(item.name,
+                                                                             style: const TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 14,
+                                          color: black,
+                                          fontWeight: FontWeight.w500)),
+                                                                          );
+                                                                        }).toList(),
+                                                                        onChanged: (valueData) {
+                                                                          setState(() {
+                                                                            _dropDownUnit =
+                                            int.tryParse(valueData!.id.toString())!;
+                                                                          });
+                                                                        },
+                                                                      ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                                                       : DropdownButton<String>(
+                                          hint: Text(_dropDownUnit > 0
+                                              ? UnitSettings.getUnitName(
+                                                  _dropDownUnit)
+                                              : 'Unit'),
+                                          items: unitListSettings
+                                              .map<DropdownMenuItem<String>>(
+                                                  (item) {
+                                            return DropdownMenuItem<String>(
+                                              value: item.key.toString(),
+                                              child: Text(item.value),
+                                            );
+                                          }).toList(),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _dropDownUnit = int.tryParse(value!)!;
+                                              for (var i = 0;
+                                                  i < unitList.length;
+                                                  i++) {
+                                                UnitModel _unit = unitList[i];
+                                                if (_unit.unit ==
+                                                    int.tryParse(value)) {
+                                                  _conversion = _unit.conversion!;
+                                                  break;
+                                                }
+                                              }
+                                              // calculate();
+                                            });
+                                          },
+                                        );
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                   ),
+                   const SizedBox(
+                          height: 4,
+                        ),
+                    Row(
+                      children: [
+                        Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    const Text(' Price',
+                              style: TextStyle(
+                     fontFamily: 'poppins',
+                     fontSize: 14,
+                     fontWeight: FontWeight.w500),),
+                     const SizedBox(
+                      height: 2,
+                     ),
+                                  TextField(
+                                    controller: _rateController,
+                                    focusNode: _focusNodeRate,
+                                    textAlign: TextAlign.right,
+                                    keyboardType: const TextInputType.numberWithOptions(
+                                        decimal: true),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                          allow: true, replacementString: '.')
+                                    ],
+                                    decoration: const InputDecoration(
+                                      contentPadding: EdgeInsetsDirectional.symmetric(
+                                        horizontal: 5,
+                                        vertical: 5
+                                      ), 
+                                      constraints: BoxConstraints(
+                                        maxHeight: 40
+                                      ),
+                                        border: OutlineInputBorder(),),
+                                    onChanged: (value) {
+                                       if (value.isNotEmpty) {
+                                          isPrateEdited = true;
+                                        }
+                                      setState(() {
+                                        calculate();
+                                      });
+                                    },
+                                  ),
+                                ],
+                              )),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              Expanded(child: 
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    ' Tax Option',
+                                    style: TextStyle(
+                                                 fontFamily: 'poppins',
+                                                 fontSize: 14,
+                                                 fontWeight: FontWeight.w500),),
+                                                 const SizedBox(
+                                                  height: 2,
+                                                 ),
+                                                              Container(
+                                                                height: 40,
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 5),
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                          color: Colors.grey),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              3),
+                                                    ),
+                                                    child:
+                                                        DropdownButtonHideUnderline(
+                                                      child: DropdownButton<
+                                                          String>(
+                                                        style: const TextStyle(
+                                                            fontFamily:
+                                                                'poppins',
+                                                            color: black),
+                                                        value:
+                                                            selectedTaxOption,
+                                                        items: const [
+                                                          DropdownMenuItem(
+                                                            value: 'With Tax',
+                                                            child: Text(
+                                                                'With Tax'),
+                                                          ),
+                                                          DropdownMenuItem(
+                                                            // enabled: salesTypeData!
+                                                            //                 .id ==
+                                                            //             1 ||
+                                                            //         salesTypeData!
+                                                            //                 .id ==
+                                                            //             2
+                                                            //     ? false
+                                                            //     : true,
+                                                            value:
+                                                                'Without Tax',
+                                                            child: Text(
+                                                                'Without Tax'),
+                                                          ),
+                                                        ],
+                                                        onChanged: (value) {
+                                                          setState(() {
+                                                            selectedTaxOption = value!;
+                                                            value == 'Without Tax' 
+                                                                ? isTax = false
+                                                                : isTax = true;
+                                                            calculateConversion();
+                                                          });
+                                                        },
+                                                        isExpanded: true,
+                                                      ),
+                                                    ),
+                                                  ),
+                                ],
+                              )
+                              )
+                      ],
+                    )
+                            ],
+                          ) : const Center(
+                            child: Text(
+                              'Select a Item',
+                              style: TextStyle(
+                                fontFamily: 'poppins'
+                              ),
+                              ))
+                ],
+              ),
+             ),
+             const SizedBox(
+              height: 8,
+             ),
+             selectedProducteId != null 
+             ? Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      color: white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 10),
+                                      child: Column(
+                                        children: [
+                                          const Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Text(
+                                              'Totals & Taxes',
+                                              style: TextStyle(
+                                                  fontFamily: 'poppins',
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 2,
+                                          ),
+                                          const Divider(),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              const Text(
+                                                'Subtotal (Rate x Qty)',
+                                                style: TextStyle(
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              Text(
+                                                '\u20B9 ${gross.toStringAsFixed(3)}',
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          SizedBox(
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            child: Row(
+                                              children: [
+                                                const Text(
+                                                  'Discount',
+                                                  style: TextStyle(
+                                                      fontFamily: 'poppins'),
+                                                ),
+                                                const Spacer(),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Colors.orange),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      controller:
+                                                          _discountPercentController,
+                                                      focusNode:
+                                                          _focusNodeDiscountPer,
+                                                          textAlign: TextAlign.right,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
                                                       ],
                                                       onChanged: (value) {
                                                         setState(() {
-                                                          selectedTaxOption = value!;
-                                                          value == 'Without Tax' 
-                                                              ? isTax = false
-                                                              : isTax = true;
                                                           calculateConversion();
                                                         });
                                                       },
-                                                      isExpanded: true,
+                                                      onSubmitted: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                      decoration: InputDecoration(
+                                                        suffixIcon: Container(
+                                                          decoration: BoxDecoration(
+                                                              color: Colors
+                                                                  .orange[100],
+                                                              border: const Border(
+                                                                  left: BorderSide(
+                                                                      color: Colors
+                                                                          .orange)),
+                                                              borderRadius: const BorderRadius
+                                                                  .only(
+                                                                  bottomRight:
+                                                                      Radius
+                                                                          .circular(
+                                                                              3),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          3))),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons.percent_sharp,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
-                              ],
-                            )
-                            )
-                    ],
-                  )
-                          ],
-                        ) : const Center(
-                          child: Text(
-                            'Select a Item',
-                            style: TextStyle(
-                              fontFamily: 'poppins'
-                            ),
-                            ))
-              ],
-            ),
-            
-           ),
-           const SizedBox(
-            height: 8,
-           ),
-           selectedProducteId != null 
-           ? Container(
-                                    width: MediaQuery.of(context).size.width,
-                                    color: white,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 10),
-                                    child: Column(
-                                      children: [
-                                        const Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Text(
-                                            'Totals & Taxes',
-                                            style: TextStyle(
-                                                fontFamily: 'poppins',
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w500),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  flex: 2,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: grey),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                3)),
+                                                    height: 35,
+                                                    child: TextField(
+                                                      focusNode:
+                                                          _focusNodeDiscount,
+                                                      controller:
+                                                          _discountController,
+                                                      keyboardType:
+                                                          const TextInputType
+                                                              .numberWithOptions(
+                                                              decimal: true),
+                                                      inputFormatters: [
+                                                        FilteringTextInputFormatter(
+                                                            RegExp(r'[0-9]'),
+                                                            allow: true,
+                                                            replacementString:
+                                                                '.')
+                                                      ],
+                                                      textAlign: TextAlign.right,
+                                                      decoration: InputDecoration(
+                                                        prefixIcon: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color:
+                                                                Colors.grey[100],
+                                                            border: const Border(
+                                                                right: BorderSide(
+                                                                    color: grey)),
+                                                          ),
+                                                          width: 25,
+                                                          child: const Center(
+                                                            child: Icon(
+                                                              Icons
+                                                                  .currency_rupee_outlined,
+                                                              color: Colors.grey,
+                                                              size: 15,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        contentPadding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6,
+                                                                horizontal: 3),
+                                                        border:
+                                                            const OutlineInputBorder(
+                                                                borderSide:
+                                                                    BorderSide
+                                                                        .none),
+                                                      ),
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                      onSubmitted: (value) {
+                                                        setState(() {
+                                                          calculateConversion();
+                                                        });
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          height: 2,
-                                        ),
-                                        const Divider(),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Subtotal (Rate x Qty)',
-                                              style: TextStyle(
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            Text(
-                                              '\u20B9 ${gross.toStringAsFixed(3)}',
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Row(
-                                            children: [
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          SizedBox(
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            child: Row(children: [
                                               const Text(
-                                                'Discount',
+                                                'Tax %      ',
                                                 style: TextStyle(
                                                     fontFamily: 'poppins'),
                                               ),
@@ -3293,31 +3878,11 @@ if (productModelPrize.length > 0) {
                                                   height: 35,
                                                   child: TextField(
                                                     controller:
-                                                        _discountPercentController,
-                                                    focusNode:
-                                                        _focusNodeDiscountPer,
-                                                        textAlign: TextAlign.right,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                    onSubmitted: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
+                                                        TextEditingController(
+                                                            text:
+                                                                taxP.toString()),
+                                                    readOnly: true,
+                                                    textAlign: TextAlign.right,
                                                     decoration: InputDecoration(
                                                       suffixIcon: Container(
                                                         decoration: BoxDecoration(
@@ -3327,21 +3892,20 @@ if (productModelPrize.length > 0) {
                                                                 left: BorderSide(
                                                                     color: Colors
                                                                         .orange)),
-                                                            borderRadius: const BorderRadius
-                                                                .only(
-                                                                bottomRight:
-                                                                    Radius
+                                                            borderRadius:
+                                                                const BorderRadius
+                                                                    .only(
+                                                                    bottomRight: Radius
                                                                         .circular(
                                                                             3),
-                                                                topRight: Radius
-                                                                    .circular(
-                                                                        3))),
+                                                                    topRight: Radius
+                                                                        .circular(
+                                                                            3))),
                                                         width: 25,
                                                         child: const Center(
                                                           child: Icon(
                                                             Icons.percent_sharp,
-                                                            color:
-                                                                Colors.orange,
+                                                            color: Colors.orange,
                                                             size: 15,
                                                           ),
                                                         ),
@@ -3365,40 +3929,29 @@ if (productModelPrize.length > 0) {
                                                 flex: 2,
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: grey),
+                                                      border:
+                                                          Border.all(color: grey),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               3)),
                                                   height: 35,
                                                   child: TextField(
-                                                    focusNode:
-                                                        _focusNodeDiscount,
                                                     controller:
-                                                        _discountController,
-                                                    keyboardType:
-                                                        const TextInputType
-                                                            .numberWithOptions(
-                                                            decimal: true),
-                                                    inputFormatters: [
-                                                      FilteringTextInputFormatter(
-                                                          RegExp(r'[0-9]'),
-                                                          allow: true,
-                                                          replacementString:
-                                                              '.')
-                                                    ],
+                                                        TextEditingController(
+                                                            text: tax
+                                                                .toStringAsFixed(
+                                                                    3)),
                                                     textAlign: TextAlign.right,
+                                                    readOnly: true,
                                                     decoration: InputDecoration(
                                                       prefixIcon: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color:
-                                                              Colors.grey[100],
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.grey[100],
                                                           border: const Border(
                                                               right: BorderSide(
                                                                   color: grey)),
                                                         ),
-                                                        width: 25,
+                                                        width: 20,
                                                         child: const Center(
                                                           child: Icon(
                                                             Icons
@@ -3419,180 +3972,47 @@ if (productModelPrize.length > 0) {
                                                                   BorderSide
                                                                       .none),
                                                     ),
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
-                                                    onSubmitted: (value) {
-                                                      setState(() {
-                                                        calculateConversion();
-                                                      });
-                                                    },
                                                   ),
                                                 ),
                                               ),
-                                            ],
+                                            ]),
                                           ),
-                                        ),
-                                        const SizedBox(
-                                          height: 10,
-                                        ),
-                                        SizedBox(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: Row(children: [
-                                            const Text(
-                                              'Tax %      ',
-                                              style: TextStyle(
-                                                  fontFamily: 'poppins'),
-                                            ),
-                                            const Spacer(),
-                                            Flexible(
-                                              flex: 2,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.orange),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                height: 35,
-                                                child: TextField(
-                                                  controller:
-                                                      TextEditingController(
-                                                          text:
-                                                              taxP.toString()),
-                                                  readOnly: true,
-                                                  textAlign: TextAlign.right,
-                                                  decoration: InputDecoration(
-                                                    suffixIcon: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: Colors
-                                                              .orange[100],
-                                                          border: const Border(
-                                                              left: BorderSide(
-                                                                  color: Colors
-                                                                      .orange)),
-                                                          borderRadius:
-                                                              const BorderRadius
-                                                                  .only(
-                                                                  bottomRight: Radius
-                                                                      .circular(
-                                                                          3),
-                                                                  topRight: Radius
-                                                                      .circular(
-                                                                          3))),
-                                                      width: 25,
-                                                      child: const Center(
-                                                        child: Icon(
-                                                          Icons.percent_sharp,
-                                                          color: Colors.orange,
-                                                          size: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 6,
-                                                            horizontal: 3),
-                                                    border:
-                                                        const OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide
-                                                                    .none),
+                                          const SizedBox(
+                                            height: 15,
+                                          ),
+                                          SizedBox(
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Row(
+                                                children: [
+                                                  const Text(
+                                                    'Total Amount',
+                                                    style: TextStyle(
+                                                        fontFamily: 'poppins',
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w500),
                                                   ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Flexible(
-                                              flex: 2,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    border:
-                                                        Border.all(color: grey),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            3)),
-                                                height: 35,
-                                                child: TextField(
-                                                  controller:
-                                                      TextEditingController(
-                                                          text: tax
-                                                              .toStringAsFixed(
-                                                                  3)),
-                                                  textAlign: TextAlign.right,
-                                                  readOnly: true,
-                                                  decoration: InputDecoration(
-                                                    prefixIcon: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.grey[100],
-                                                        border: const Border(
-                                                            right: BorderSide(
-                                                                color: grey)),
-                                                      ),
-                                                      width: 20,
-                                                      child: const Center(
-                                                        child: Icon(
-                                                          Icons
-                                                              .currency_rupee_outlined,
-                                                          color: Colors.grey,
-                                                          size: 15,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                            vertical: 6,
-                                                            horizontal: 3),
-                                                    border:
-                                                        const OutlineInputBorder(
-                                                            borderSide:
-                                                                BorderSide
-                                                                    .none),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ]),
-                                        ),
-                                        const SizedBox(
-                                          height: 15,
-                                        ),
-                                        SizedBox(
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Row(
-                                              children: [
-                                                const Text(
-                                                  'Total Amount',
-                                                  style: TextStyle(
-                                                      fontFamily: 'poppins',
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                ),
-                                                const Spacer(),
-                                                Container(
-                                                    decoration:
-                                                        const BoxDecoration(),
-                                                    child: Text(
-                                                      "\u20B9  ${total.toStringAsFixed(3)}",
-                                                      style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w500),
-                                                    ))
-                                              ],
-                                            ))
-                                      ],
-                                    ),
-                                  ) : const SizedBox()
-        ],
+                                                  const Spacer(),
+                                                  Container(
+                                                      decoration:
+                                                          const BoxDecoration(),
+                                                      child: Text(
+                                                        "\u20B9  ${total.toStringAsFixed(3)}",
+                                                        style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500),
+                                                      ))
+                                                ],
+                                              ))
+                                        ],
+                                      ),
+                                    ) 
+             : const SizedBox()
+          ],
+        ),
       ),
       bottomNavigationBar: SizedBox(
         width: MediaQuery.of(context).size.width,
@@ -4093,33 +4513,74 @@ if (productModelPrize.length > 0) {
     // );
   }
 
-  String _dropDownValue = '2-RETAIL';
-  widgetRateType() {
-    return FutureBuilder(
-      future: dio.getRateTypeList(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return snapshot.hasData
-            ? DropdownButton<String>(
-                hint: Text(_dropDownValue.isNotEmpty
-                    ? _dropDownValue.split('-')[1]
-                    : 'select rate type'),
-                items: snapshot.data.map<DropdownMenuItem<String>>((item) {
-                  return DropdownMenuItem<String>(
-                    value: item.id.toString() + "-" + item.name,
-                    child: Text(item.name),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _dropDownValue = value!;
-                    rateType = value.split('-')[0];
-                  });
-                },
-              )
-            : Container();
-      },
-    );
-  }
+ String _dropDownValue = '2-RETAIL';
+
+widgetRateType() {
+  return FutureBuilder(
+    future: dio.getRateTypeList(),
+    builder: (BuildContext context, AsyncSnapshot snapshot) {
+       if (rateType.isEmpty) {
+        rateType = _dropDownValue.split('-')[1];
+      }
+      if (!snapshot.hasData || snapshot.data.isEmpty) {
+        // Return dropdown with only the default value when no data
+        return DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _dropDownValue, // Force the default value
+            style: const TextStyle(fontFamily: 'poppins', color: black, fontSize: 15),
+            items: [
+              DropdownMenuItem<String>(
+                value: _dropDownValue,
+                child: Text(
+                  _dropDownValue.split('-')[1],
+                  style: const TextStyle(
+                    fontFamily: 'poppins',
+                    color: black,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+            onChanged: null, // Disable changes when no data
+          ),
+        );
+      }
+
+      // Normal case when we have data
+      return DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _dropDownValue, // Current selected value
+          hint: Text(
+            _dropDownValue.isNotEmpty
+                ? _dropDownValue.split('-')[1]
+                : 'select rate type',
+          ),
+          style: const TextStyle(fontFamily: 'poppins', color: black, fontSize: 15),
+          items: snapshot.data.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: item.id.toString() + "-" + item.name,
+              child: Text(
+                item.name,
+                style: const TextStyle(
+                  fontFamily: 'poppins',
+                  color: black,
+                  fontSize: 13,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _dropDownValue = value!;
+              rateType = value.split('-')[1];
+              //  rateType = value.split('-').first.trim();
+            });
+          },
+        ),
+      );
+    },
+  );
+}
 
 //declare
   bool enableMULTIUNIT = false,
@@ -4137,7 +4598,7 @@ if (productModelPrize.length > 0) {
       if (items.isNotEmpty) isItemData = true;
     });
     return FutureBuilder<List<ProductPurchaseModel>>(
-      future: dio.fetchAllProductPurchase(),
+      future: dio.fetchAllProductPurchase(taxGroupUpdate),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
@@ -4488,9 +4949,13 @@ if (productModelPrize.length > 0) {
           : discount;
       gross = CommonService.getRound(decimal, ((rRate * quantity)));
       subTotal = CommonService.getRound(decimal, (gross - rDisc));
+      if (selectedTaxOption == 'With Tax') {
       if (taxP > 0) {
-        tax = CommonService.getRound(decimal, ((subTotal * taxP) / 100));
-      }
+      tax = CommonService.getRound(4, ((subTotal * taxP) / 100));
+    }
+   }else{
+    tax = 0;
+   }
       if (companyTaxMode == 'INDIA') {
         kfc = isKFC
             ? CommonService.getRound(decimal, ((subTotal * kfcP) / 100))
@@ -5838,7 +6303,7 @@ if (productModelPrize.length > 0) {
           }
         ];
         billTotal = double.tryParse(information['GrandTotal'].toString())!;
-        narration = information['Narration'];
+         controllerNarration.text = information['Narration'];
         CustomerModel cModel = CustomerModel(
             id: information['Customer'],
             name: information['ToName'],
@@ -5945,7 +6410,7 @@ if (productModelPrize.length > 0) {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (_) => BlueThermalPrint(dataAll, byteImage)));
+            builder: (_) => BlueThermalPrint(dataAll, byteImage,)));
   }
 
   Future<dynamic> printBluetooth(
@@ -6129,7 +6594,7 @@ if (productModelPrize.length > 0) {
         )
       ],
     );
-  }
+  }       
 
   void getEntryNo(saleReturnFormId) {
     dio.getSalesInvoiceNo(saleReturnFormId, 'SREntryNo').then((value) {

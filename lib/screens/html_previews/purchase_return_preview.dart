@@ -23,7 +23,7 @@ import 'package:sheraccerp/models/sales_bill.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/sales_preview.dart';
 import 'package:sheraccerp/screens/html_previews/sales_return_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -33,6 +33,7 @@ import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/invoice.dart';
 import 'package:sheraccerp/util/number_to_word.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 
@@ -45,7 +46,7 @@ import 'package:sunmi_printer_plus/sunmi_style.dart';
 // import 'package:sunmi_printer_service/sunmi_printer_service.dart';
 import 'dart:ui' as ui;
 // ignore: avoid_web_libraries_in_flutter
-// import 'dart:html' as html;
+import 'dart:html' as html;
 // import 'package:sunmi_printer_service/sunmi_printer_service.dart' as sum_mi;
 
 import 'package:webview_flutter/webview_flutter.dart';
@@ -270,6 +271,9 @@ class _PurchaseReturnPreviewShowState extends State<PurchaseReturnPreviewShow> {
             },
           ),
           title: const Text('Purchase Return View'),
+          titleTextStyle: TextStyle(
+            color: white,
+          ),
           actions: [
             IconButton(
                 icon: const Icon(Icons.picture_as_pdf),
@@ -5064,17 +5068,17 @@ Future<String> savePreviewPDF(pw.Document pdf, var title) async {
   title = title.replaceAll(RegExp(r'[^\w\s]+'), '');
   if (kIsWeb) {
     try {
-      // final bytes = await pdf.save();
-      // final blob = html.Blob([bytes], 'application/pdf');
-      // final url = html.Url.createObjectUrlFromBlob(blob);
-      // final anchor = html.AnchorElement()
-      //   ..href = url
-      //   ..style.display = 'none'
-      //   ..download = '$title.pdf';
-      // html.document.body.children.add(anchor);
-      // anchor.click();
-      // html.document.body.children.remove(anchor);
-      // html.Url.revokeObjectUrl(url);
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement()
+        ..href = url
+        ..style.display = 'none'
+        ..download = '$title.pdf';
+      html.document.body!.children.add(anchor);
+      anchor.click();
+      html.document.body!.children.remove(anchor);
+      html.Url.revokeObjectUrl(url);
       return '';
     } catch (ex) {
       ex.toString();

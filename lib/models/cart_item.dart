@@ -1,3 +1,5 @@
+import 'package:sheraccerp/models/stock_product.dart';
+
 class CartItem {
   String itemName, serialNo, expDate;
   double quantity,
@@ -30,6 +32,19 @@ class CartItem {
       cessPer,
       adCessPer;
   int id, itemId, fUnitId, unitId, barcode, uniqueCode;
+  String? remark,scBarcode;
+  List<String>? colorN;
+
+  // Fields added from StockProduct
+  String? hsnCode, taxType, oBarcode, locked;
+  double? buyingPrice,
+      sellingPrice,
+      buyingPriceReal,
+      retailPrice,
+      wholeSalePrice,
+      spRetailPrice;
+  int? branch, size, supplierId, locationId, categoryId, mfrId, subcategoryId, rackId, brand, company, color;
+
   CartItem(
       {required this.id,
       required this.itemId,
@@ -68,7 +83,32 @@ class CartItem {
       required this.stock,
       required this.minimumRate,
       required this.cessPer,
-      required this.adCessPer});
+      required this.adCessPer,
+      this.hsnCode,
+      this.taxType,
+      this.oBarcode,
+      this.locked,
+      this.buyingPrice,
+      this.sellingPrice,
+      this.buyingPriceReal,
+      this.retailPrice,
+      this.wholeSalePrice,
+      this.spRetailPrice,
+      this.branch,
+      this.size,
+      this.supplierId,
+      this.locationId,
+      this.categoryId,
+      this.mfrId,
+      this.subcategoryId,
+      this.rackId,
+      this.brand,
+      this.company,
+      this.color,
+      this.remark,
+      this.scBarcode,
+      this.colorN,
+      });
 
   Map<String, dynamic> toCartJson() {
     return {
@@ -109,7 +149,30 @@ class CartItem {
       'stock': stock,
       'minimumRate': minimumRate,
       'cessPer': cessPer,
-      'adCessPer': adCessPer
+      'adCessPer': adCessPer,
+      'hsnCode': hsnCode,
+      'taxType': taxType,
+      'oBarcode': oBarcode,
+      'locked': locked,
+      'buyingPrice': buyingPrice,
+      'sellingPrice': sellingPrice,
+      'buyingPriceReal': buyingPriceReal,
+      'retailPrice': retailPrice,
+      'wholeSalePrice': wholeSalePrice,
+      'spRetailPrice': spRetailPrice,
+      'branch': branch,
+      'size': size,
+      'supplierId': supplierId,
+      'locationId': locationId,
+      'categoryId': categoryId,
+      'mfrId': mfrId,
+      'subcategoryId': subcategoryId,
+      'rackId': rackId,
+      'brand': brand,
+      'company': company,
+      'color': color,
+      'remark': remark,
+      'scBarcode':scBarcode
     };
   }
 
@@ -159,9 +222,154 @@ class CartItem {
     map['minimumRate'] = minimumRate;
     map['cessPer'] = cessPer;
     map['adCessPer'] = adCessPer;
+    map['hsnCode'] = hsnCode;
+    map['taxType'] = taxType;
+    map['oBarcode'] = oBarcode;
+    map['locked'] = locked;
+    map['buyingPrice'] = buyingPrice;
+    map['sellingPrice'] = sellingPrice;
+    map['buyingPriceReal'] = buyingPriceReal;
+    map['retailPrice'] = retailPrice;
+    map['wholeSalePrice'] = wholeSalePrice;
+    map['spRetailPrice'] = spRetailPrice;
+    map['branch'] = branch;
+    map['size'] = size;
+    map['supplierId'] = supplierId;
+    map['locationId'] = locationId;
+    map['categoryId'] = categoryId;
+    map['mfrId'] = mfrId;
+    map['subcategoryId'] = subcategoryId;
+    map['rackId'] = rackId;
+    map['brand'] = brand;
+    map['company'] = company;
+    map['color'] = color;
+    map['remark'] = remark;
+    map['scBarcode'] = scBarcode;
     return map;
   }
+   CartItem copyWith({
+   String? itemName,
+    serialNo, expDate,
+  double? quantity,
+      stock,
+      rate,
+      rRate,
+      gross,
+      fCess,
+      discount,
+      discountPercent,
+      rDiscount,
+      tax,
+      taxP,
+      pRate,
+      rPRate,
+      unitValue,
+      free,
+      cdPer,
+      cDisc,
+      net,
+      cess,
+      total,
+      profitPer,
+      fUnitValue,
+      adCess,
+      iGST,
+      cGST,
+      sGST,
+      minimumRate,
+      cessPer,
+      adCessPer,
+  int? id, itemId, fUnitId, unitId, barcode, uniqueCode,color,
+  String? remark,scBarcode,
+  List<String>?  colorN,
+
+  }) {
+    return CartItem(
+      id: id ?? this.id,
+      itemId: itemId ?? this.itemId,
+      itemName: itemName ?? this.itemName,
+      quantity: quantity ?? this.quantity,
+      rate: rate ?? this.rate,
+      uniqueCode: uniqueCode ?? this.uniqueCode,
+      serialNo: serialNo ?? this.serialNo,
+      fCess: fCess ?? this.fCess,
+      unitId: unitId ?? this.unitId,
+      rRate: rRate ?? this.rRate,
+      gross: gross ?? this.gross,
+      discount: discount ?? this.discount,
+      discountPercent: discountPercent ?? this.discountPercent,
+      rDiscount: rDiscount ?? this.rDiscount,
+      tax: tax ?? this.tax,
+      taxP: taxP ?? this.taxP,
+      unitValue: unitValue ?? this.unitValue,
+      pRate: profitPer ?? this.pRate,
+      rPRate: rPRate ?? this.rPRate,
+      barcode: barcode ?? this.barcode,
+      expDate: expDate ?? this.expDate,
+      free: free ?? this.free,
+      fUnitId: fUnitId ?? this.fUnitId,
+      cdPer: cdPer ?? this.cdPer,
+      cDisc: cDisc ?? this.cDisc,
+      net: net ?? this.net,
+      cess: cess ?? this.cess,
+      total: total ?? this.total,
+      profitPer: profitPer ?? this.profitPer,
+      fUnitValue: fUnitValue ?? this.fUnitValue,
+      adCess: adCess ?? this.adCess,
+      iGST: iGST ?? this.iGST,
+      cGST: cGST ?? this.cGST,
+      sGST: sGST ?? this.sGST,
+      stock: stock ?? this.stock,
+      minimumRate: minimumRate ?? this.minimumRate,
+      cessPer: cessPer ?? this.cessPer,
+      adCessPer: adCessPer ?? this.adCessPer,
+      color: color ?? this.color,
+      colorN: colorN ?? this.colorN
+    );
+  }
+
+    StockProduct toStockProduct() {
+    return StockProduct(
+      name: itemName,
+      itemId: itemId,
+      productId: uniqueCode,
+      quantity: quantity,
+      buyingPrice: buyingPrice,
+      buyingPriceReal: buyingPriceReal,
+      sellingPrice: sellingPrice,
+      retailPrice: retailPrice,
+      wholeSalePrice: wholeSalePrice,
+      hsnCode: hsnCode,
+      stockValuation: null, 
+      tax: tax,
+      cess: cess,
+      cessPer: cessPer,
+      adCessPer: adCessPer,
+      spRetailPrice: spRetailPrice,
+      branch: branch?.toDouble(),
+      minimumRate: minimumRate,
+      serialNo: serialNo,
+      oBarcode: oBarcode,
+      supplierId: supplierId,
+      locationId: locationId,
+      categoryId: categoryId,
+      unitId: unitId,
+      mfrId: mfrId,
+      subcategoryId: subcategoryId,
+      rackId: rackId,
+      free: free,
+      taxType: taxType,
+      estUniqueCode: uniqueCode,
+      expDate: expDate,
+      locked: locked,
+      brand: brand,
+      company: company,
+      size: size?.toDouble(),
+      color: color,
+    );
+  }
 }
+
 
 class CartItemP {
   String itemName, serialNo, expDate, unitName;
@@ -574,7 +782,7 @@ class CartItemOP {
 }
 
 class CartItemST {
-  String itemName, serialNo, unitName;
+  String itemName, serialNo, unitName,cBarcode;
   double quantity,
       rate,
       rRate,
@@ -607,7 +815,8 @@ class CartItemST {
       required this.branch,
       required this.unitName,
       required this.stUniqueCode,
-      required this.stock});
+      required this.stock,
+      required this.cBarcode});
 
   Map<String, dynamic> toCartJson() {
     return {
@@ -630,7 +839,8 @@ class CartItemST {
       'branch': branch,
       'unitName': unitName,
       'stUniqueCode': stUniqueCode,
-      'stock': stock
+      'stock': stock,
+      'cBarcode': cBarcode
     };
   }
 
@@ -662,9 +872,11 @@ class CartItemST {
     map['unitName'] = unitName;
     map['stock'] = unitName;
     map['stUniqueCode'] = stUniqueCode;
+    map['cBarcode'] = cBarcode;
     return map;
   }
 }
+
 class CartJobCartItem {
   int id;
   int itemid;

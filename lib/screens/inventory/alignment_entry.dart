@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:intl/intl.dart';
@@ -153,6 +153,9 @@ class _AlignmentEntryState extends State<AlignmentEntry> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("Sales"),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             Visibility(
               visible: enableBarcode,
@@ -276,6 +279,9 @@ class _AlignmentEntryState extends State<AlignmentEntry> {
         key: _scaffoldKey,
         appBar: AppBar(
           title: const Text("AlignmentEntry"),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
           actions: [
             Visibility(
               visible: previewData,

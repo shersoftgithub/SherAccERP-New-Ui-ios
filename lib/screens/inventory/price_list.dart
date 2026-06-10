@@ -94,7 +94,8 @@ class _PriceListState extends State<PriceList> {
                 }),
           ],
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
           title: const Text('Price List'),
         ),

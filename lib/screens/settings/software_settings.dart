@@ -1,10 +1,11 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/sales_type.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_form_register.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_other_detail_register.dart';
 import 'package:sheraccerp/screens/settings/sms_settings.dart';
@@ -345,10 +346,10 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                             //   ),
                             // ),
                             ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  key: keyCashAc,
+                                widget: EasyAutocomplete(
+                                  // key: keyCashAc,
                                   controller: controllerCashAc,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: cashListDisplay,
                                   decoration: const InputDecoration(
                                     hintText: 'Select Cash A/C',
@@ -356,7 +357,7 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                         fontFamily: 'poppins', color: grey),
                                     border: OutlineInputBorder(),
                                   ),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     setState(() {
                                       cashAC = data;
                                     });
@@ -382,10 +383,10 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                               height: 10,
                             ),
                             ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  key: keySalesType,
+                                widget: EasyAutocomplete(
+                                  // key: keySalesType,
                                   controller: controllerToolBarSales,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions:
                                       salesTypeList.map((e) => e.type).toList(),
                                   decoration: const InputDecoration(
@@ -393,7 +394,7 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                                       hintStyle: TextStyle(
                                           fontFamily: 'poppins', color: grey),
                                       hintText: 'Select Sale'),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     setState(() {
                                       toolBarSale = data;
                                       toolBarSaleId = salesTypeList
@@ -412,17 +413,17 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                               height: 10,
                             ),
                             ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  key: keyStockType,
+                                widget: EasyAutocomplete(
+                                  // key: keyStockType,
                                   controller: controllerStockValuation,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: stockValuationData,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
                                       hintStyle: TextStyle(
                                           fontFamily: 'poppins', color: grey),
                                       hintText: 'Select Stock Value'),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     setState(() {
                                       stockValue = data;
                                     });
@@ -433,17 +434,17 @@ class _SoftwareSettingsState extends State<SoftwareSettings> {
                               height: 10,
                             ),
                             ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  key: keyLocationType,
+                                widget: EasyAutocomplete(
+                                  // key: keyLocationType,
                                   controller: controllerDefaultLocation,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: locationListDisplay,
                                   decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
                                       hintStyle: TextStyle(
                                           fontFamily: 'poppins', color: grey),
                                       hintText: 'Select Location'),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     setState(() {
                                       defaultLocation = data;
                                     });

@@ -66,15 +66,19 @@ class AboutSherSoft extends StatelessWidget {
     }
   }
 
-  sentMail() async {
-    const url = "mailto:Shersoftware@gmail.com?subject=New&body=New%20plugin";
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
+Future<void> sentMail() async {
+  final Uri emailUri = Uri(
+    scheme: 'mailto',
+    path: 'Shersoftware@gmail.com',
+    query: Uri.encodeQueryComponent('subject=New&body=New plugin'),
+  );
 
+  if (await canLaunchUrl(emailUri)) {
+    await launchUrl(emailUri);
+  } else {
+    throw 'Could not launch $emailUri';
+  }
+}
   List gridListTxts = [
     'SherAcc',
     'SherPharma',
@@ -196,9 +200,9 @@ class AboutSherSoft extends StatelessWidget {
                             borderRadius: BorderRadius.circular(50),
                             color: const Color(0xff0008B3),
                           ),
-                          child:  Icon(
+                          child:  const Icon(
                             Icons.phone_outlined,
-                            color: Colors.white.withOpacity(.8),
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -233,9 +237,9 @@ class AboutSherSoft extends StatelessWidget {
                               borderRadius: BorderRadius.circular(50),
                               color: const Color(0xff0008B3),
                             ),
-                            child:  Icon(
+                            child:  const Icon(
                               Icons.web_rounded,
-                              color: Colors.white.withOpacity(.8),
+                              color: Colors.white,
                             )),
                       ),
                       const Text(
@@ -267,9 +271,9 @@ class AboutSherSoft extends StatelessWidget {
                             borderRadius: BorderRadius.circular(50),
                             color: const Color(0xff0008B3),
                           ),
-                          child:  Icon(
+                          child:  const Icon(
                             Icons.mail_outline,
-                            color: Colors.white.withOpacity(.8),
+                            color: Colors.white,
                           ),
                         ),
                       ),

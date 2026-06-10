@@ -12,7 +12,7 @@ import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/screens/html_previews/jv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -208,7 +208,9 @@ class _JournalState extends State<Journal> {
                     icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: const Text('Journal'),
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -456,7 +458,9 @@ class _JournalState extends State<Journal> {
                 }),
           ],
           title: const Text('Journal'),
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
         body: Container(
           child: previousBill(),

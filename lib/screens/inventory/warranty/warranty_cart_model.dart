@@ -6,8 +6,8 @@ class WarrantyCart{
   int? itemId;
   String? serialNo;
   int? qty;
-  int? sRate;
-  int? total;
+  double? sRate;
+  double? total;
   String? narration;
   String? eType;
   String? status;

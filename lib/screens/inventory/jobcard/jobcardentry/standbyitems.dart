@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/util/jobcard_lists.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class StandByItems extends StatefulWidget {
   const StandByItems({super.key});
@@ -23,7 +24,9 @@ class _StandByItemsState extends State<StandByItems> {
       appBar: AppBar(
         title: const Text(
           'Stand By Items',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 14,
+          color: white,
+          ),
         ),
       ),
       body: 

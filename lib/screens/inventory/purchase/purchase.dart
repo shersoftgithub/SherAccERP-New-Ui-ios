@@ -9,21 +9,27 @@ import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/cart_item.dart';
 import 'package:sheraccerp/models/cash_customer_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
+import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/purchase_preview.dart';
+import 'package:sheraccerp/screens/html_previews/sales_preview.dart';
+import 'package:sheraccerp/screens/inventory/purchase/previous_bill.dart';
 import 'package:sheraccerp/service/api_dio.dart';
+import 'package:sheraccerp/service/blue_thermal.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
@@ -61,8 +67,11 @@ class _PurchaseState extends ConsumerState<Purchase> {
   VoucherType? voucherTypeData;
   Future<List<dynamic>>? _getSupplierListData;
   Future<List<ProductPurchaseModel>>? _fetchAllProductPurchase;
+  CompanyInformation? companySettings;
+   List<CompanySettings>? settings;
+   LedgerModel? ledData;
 
-  bool isTax = true,
+  bool isTax = false,
       _isCashBill = false,
       otherAmountLoaded = false,
       valueMore = false,
@@ -86,7 +95,11 @@ class _PurchaseState extends ConsumerState<Purchase> {
       itemCodeViseChek = false,
       isAdminUser = false,
       isAccountLedger = false,
-      isAllowWithOutSerialNo = false;
+      isAllowWithOutSerialNo = false,
+      taxGroupUpdate = false,
+      isSalesManWiseLedger = false,
+      isSelected = false,
+      keySimplePurchase = false;
   List<CartItemP> cartItem = [];
   int page = 1,
       pageTotal = 0,
@@ -97,6 +110,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
   List<ProductPurchaseModel> itemDisplay = [];
   List<ProductPurchaseModel> items = [];
   List<SerialNOModel> serialNoData = [];
+  // List<CostCenterTransactionModel> costCenterData = [];
   bool enableMULTIUNIT = false,
       cessOnNetAmount = false,
       supplierOnly = false,
@@ -104,8 +118,24 @@ class _PurchaseState extends ConsumerState<Purchase> {
       useUniqueCodeAaBarcode = false,
       useOldBarcode = false,
       buttonEvent = false,
-      enableBarcode = false;
-  int locationId = 1, salesManId = 0, decimal = 2;
+      enableBarcode = false,
+      directPrintOnSave = false,
+      previewData = false,
+      productTracking = false;
+dynamic dataW;
+  var dataInformationW,
+      dataParticularsAllW = [],
+      dataParticularsW = [];
+  var customerBalanceW = '0';
+  List<dynamic> purchaseTypeList = []; 
+   Uint8List? byteImage;
+  // int locationId = 1, salesManId = 0, decimal = 2;
+  int locationId = 1,
+      salesManId = 0,
+      decimal = 2,
+      groupId = 0,
+      areaId = 0,
+      routeId = 0;
   String labelSerialNo = 'SerialNo',projectId = '-1';
   String cashAc = '';
   Barcode? result;
@@ -113,6 +143,8 @@ class _PurchaseState extends ConsumerState<Purchase> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   bool ledgerScanner = false, productScanner = false, serialNoScanner = false;
   TextEditingController supplierController = TextEditingController();
+  TextEditingController costLedgerController = TextEditingController();
+  TextEditingController costAmountController = TextEditingController();
   final invoiceNoController = TextEditingController();
   final productNameController = TextEditingController();
   final billingNameController = TextEditingController();
@@ -120,8 +152,9 @@ class _PurchaseState extends ConsumerState<Purchase> {
   @override
   void initState() {
     super.initState();
-    
-    _fetchAllProductPurchase = api.fetchAllProductPurchase();
+    loadSettings();
+
+    _fetchAllProductPurchase = api.fetchAllProductPurchase(taxGroupUpdate);
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
 
@@ -133,18 +166,24 @@ class _PurchaseState extends ConsumerState<Purchase> {
     });
        isAdminUser =
         companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
-    loadSettings();
+    
      _getSupplierListData = 
     supplierOnly 
     ? api.getLedgerListByType('SelectSupplierOnly')
+    : isSalesManWiseLedger
+    ? api.getLedgerBySalesManLike(salesManId, nameLike)
     : api.getLedgersAll();
     setCursorPosition();
+    directPrintOnSave =
+        ComSettings.appSettings('bool', 'key-direct-print', false);   
+    printType = ComSettings.appSettings('int', "key-dropdown-printer-type-view", 0);
+    printDevice = ComSettings.appSettings('int', "key-dropdown-printer-device-view", 0);      
   }
   
   loadSettings() {
-    CompanyInformation companySettings =
+   companySettings =
         ScopedModel.of<MainModel>(context).getCompanySettings();
-    List<CompanySettings> settings =
+  settings =
         ScopedModel.of<MainModel>(context).getSettings();
 
     cashAc =
@@ -153,24 +192,24 @@ class _PurchaseState extends ConsumerState<Purchase> {
         ComSettings.appSettings('int', 'key-dropdown-default-cash-ac', 0) - 1;
     acId = mainAccount.firstWhere((element) => element['LedName'] == cashAc,
         orElse: () => {'LedName': cashAc, 'LedCode': acId})['LedCode'];
-    supplierOnly = ComSettings.getStatus('PURCHASE ENTRY SUPPLIER ONLY', settings);
-    taxMethod = companySettings.taxCalculation!;
-    enableMULTIUNIT = ComSettings.getStatus('ENABLE MULTI-UNIT', settings);
-    companyTaxMode = ComSettings.getValue('PACKAGE', settings);
-    cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings);
+    supplierOnly = ComSettings.getStatus('PURCHASE ENTRY SUPPLIER ONLY', settings!);
+    taxMethod = companySettings!.taxCalculation!;
+    enableMULTIUNIT = ComSettings.getStatus('ENABLE MULTI-UNIT', settings!);
+    companyTaxMode = ComSettings.getValue('PACKAGE', settings!);
+    cessOnNetAmount = ComSettings.getStatus('CESS ON NET AMOUNT', settings!);
     itemCodeVise = ComSettings.appSettings('bool', 'key-item-by-code', false);
     itemCodeViseChek = itemCodeVise;
     enableKeralaFloodCess = false;
     useUniqueCodeAaBarcode =
-        ComSettings.getStatus('USE UNIQUECODE AS BARCODE', settings);
-    useOldBarcode = ComSettings.getStatus('USE OLD BARCODE', settings);
+        ComSettings.getStatus('USE UNIQUECODE AS BARCODE', settings!);
+    useOldBarcode = ComSettings.getStatus('USE OLD BARCODE', settings!);
     realPRateBasedProfitPercentage =
-        ComSettings.getStatus('REAL PRATE BASED PROFIT PERCENTAGE', settings);
-    mrpBasedProfit = ComSettings.getStatus('ENABLE MRP BASED PROFIT', settings);
-    enableBarcode = ComSettings.getStatus('ENABLE BARCODE OPTION', settings);
-    isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings);
+        ComSettings.getStatus('REAL PRATE BASED PROFIT PERCENTAGE', settings!);
+    mrpBasedProfit = ComSettings.getStatus('ENABLE MRP BASED PROFIT', settings!);
+    enableBarcode = ComSettings.getStatus('ENABLE BARCODE OPTION', settings!);
+    isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings!);
     labelSerialNo =
-        ComSettings.getValue('KEY ITEM SERIAL NO', settings).toString();
+        ComSettings.getValue('KEY ITEM SERIAL NO', settings!).toString();
     labelSerialNo = labelSerialNo.isEmpty ? 'Remark' : labelSerialNo;
     salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
@@ -178,32 +217,68 @@ class _PurchaseState extends ConsumerState<Purchase> {
     locationId = ComSettings.appSettings(
             'int', 'key-dropdown-default-location-view', 2) -
         1;
-    decimal = (ComSettings.getValue('DECIMAL', settings).toString().isNotEmpty
-        ? int.tryParse(ComSettings.getValue('DECIMAL', settings).toString())
+    decimal = (ComSettings.getValue('DECIMAL', settings!).toString().isNotEmpty
+        ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())
         : 2)!;
+    groupId =
+        ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
+            1;
+    areaId =
+        ComSettings.appSettings('int', 'key-dropdown-default-area-view', 0) - 1;
+    routeId =
+        ComSettings.appSettings('int', 'key-dropdown-default-route-view', 0) -
+            1;    
 
-    isFreeItem = ComSettings.getStatus('KEY FREE ITEM', settings);
-    isFreeQty = ComSettings.getStatus('KEY FREE QTY IN PURCHASE', settings);
+    isFreeItem = ComSettings.getStatus('KEY FREE ITEM', settings!);
+    isFreeQty = ComSettings.getStatus('KEY FREE QTY IN PURCHASE', settings!);
      isAllowWithOutSerialNo =
-        ComSettings.getStatus('ALLOW WITHOUT SERIAL NO', settings);
+        ComSettings.getStatus('ALLOW WITHOUT SERIAL NO', settings!);
     isQuantityBasedSerialNo =
-        ComSettings.getStatus('ENABLE QUANTITY BASED SERIAL NO', settings);
-    if (widget.oldPurchase) {
-      _isLoading = true;
-      fetchPurchase(context, dataDynamic[0]);
-      _isLoading = false;
-    }
-        isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings);
+        ComSettings.getStatus('ENABLE QUANTITY BASED SERIAL NO', settings!);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!); 
+    isSalesManWiseLedger =
+        ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);        
+    keySimplePurchase =
+        ComSettings.getStatus('KEY SIMPLE PURCHASE', settings!); 
+    productTracking =
+        ComSettings.getStatus('ENABLE PRODUCT TRACKING IN PURCHASE', settings!);           
+    isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings!);
+    
     if (isProjectSoftware) {
       api.getProject().then((value) {
         projectList = value;
       });
     }
 
-    voucherTypeData = voucherTypeList.firstWhere(
-  (element) => element.voucher.toLowerCase() == 'purchase',
-  orElse: () => VoucherType.emptyData(), // Provide a fallback if no element is found
-);
+    for(var item in voucherTypeList){
+      if(item.voucher.toLowerCase() == 'purchase'){
+        purchaseTypeList.add(item);
+        isTax = item.tax == 1 ? true : false;
+        // break;
+      }
+    }
+    if(purchaseTypeList.length == 1){
+      voucherTypeData = purchaseTypeList[0];
+      previewData = true;
+    }
+      if (widget.oldPurchase) {
+        if(voucherTypeData == null){
+          for(var item in purchaseTypeList){
+            if(item.id == int.tryParse(dataDynamic[0]['Type'])){
+              voucherTypeData = item;
+            }
+          }
+        }
+      _isLoading = true;
+      fetchPurchase(context, dataDynamic[0]);
+      _isLoading = false;
+    }
+
+//     voucherTypeData = voucherTypeList.firstWhere(
+//   (element) => element.voucher.toLowerCase() == 'purchase',
+//   orElse: () => VoucherType.emptyData(), // Provide a fallback if no element is found
+// );
 
   }
 
@@ -225,6 +300,13 @@ class _PurchaseState extends ConsumerState<Purchase> {
 
   @override
   Widget build(BuildContext context) {
+         bool thisPurchase = true;
+    if (purchaseTypeList.length > 1) {
+      thisPurchase = false;
+    } else {
+      previewData = true;
+    }
+    debugPrint('dataDynamic : ${dataDynamic.toString()}');
     return PopScope(
         canPop: false,
         onPopInvoked: (didPop) async {
@@ -237,7 +319,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
             navigator.pop();
           }
         },
-        child: widgetID ? widgetPrefix() : widgetSuffix());
+        child: widgetID ? widgetPrefix(thisPurchase) : widgetSuffix());
   }
 
   _onWillPop() async {
@@ -345,6 +427,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
                                     })}]';
                                 var jsonItem =
                                     CartItemP.encodeCartToJson(cartItem);
+                                    debugPrint(cartItem.toString());
                                 var items = json.encode(jsonItem);
                                 var stType = 'P_Update';
                                 var data = '[${json.encode({
@@ -515,6 +598,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
                         icon: const Icon(Icons.save)),
               ],
               title: const Text('Purchase'),
+              titleTextStyle: const TextStyle(color: white),
             )
           : null,
       body: ProgressHUD(
@@ -524,13 +608,13 @@ class _PurchaseState extends ConsumerState<Purchase> {
 
   final bool _showBottomSheet = false;
 
-  widgetPrefix() {
+  widgetPrefix(thisPurchase) {
     return Scaffold(
         backgroundColor: bagroundColor,
         key: _scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
-          titleTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 16),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins', fontSize: 16,color: white),
           actions: [
             TextButton(
                 style: TextButton.styleFrom(
@@ -555,7 +639,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
           ],
           title: const Text('Purchase'),
         ),
-        body: Padding(
+        body: thisPurchase ? Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 8
@@ -563,12 +647,78 @@ class _PurchaseState extends ConsumerState<Purchase> {
           child: Container(
             child: previousBill(),
           ),
-        ));
+        )
+        : previewData
+        ? Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child: Container(
+            child: previousBill(),
+          ),
+        )
+        : 
+        Container(
+                      padding: const EdgeInsets.symmetric(
+                horizontal: 16,vertical: 8
+              ),
+                        child: Container(
+                            color: white,
+                            padding: const EdgeInsets.all(8),
+                            child: selectSalesType()),
+                      )
+        );
   }
 
   final ScrollController _scrollController = ScrollController();
   bool isLoadingData = false;
+
   List dataDisplay = [];
+     selectSalesType() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: purchaseTypeList.length,
+      itemBuilder: (context, index) {
+        return _listSalesTypItem(index);
+      },
+    );
+  }
+   _listSalesTypItem(index) {
+    return Column(
+      children: [
+        InkWell(
+          child: Container(
+            decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: grey)),
+            child: ListTile(title: Text(purchaseTypeList[index].name,
+                style: const TextStyle(
+                    fontFamily: 'poppins',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500))),
+          ),
+          onTap: () {
+            setState(() {
+              voucherTypeData = purchaseTypeList[index];
+              // salesTypeData = salesTypeDisplay[index];
+              // saleReturnFormId = salesTypeData!.id;
+              previewData = true;
+              // taxable = (salesTypeData != null ? salesTypeData!.tax : taxable);
+              // // rateTypeItem = rateTypeList.isEmpty
+              // //     ? null
+              // //     : rateTypeList.firstWhere((element) =>
+              // //         element.name == salesTypeData.rateType.toUpperCase());
+              // getEntryNo(salesTypeData!.id);
+            });
+          },
+        ),
+         const SizedBox(
+          height: 10,
+        )
+      ],
+    );
+  } 
 
   void _getMoreData() async {
     if (!lastRecord) {
@@ -583,7 +733,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
         var statement = 'PurchaseList';
 
         api
-            .getPaginationList(statement, page, '1', '0',
+            .getPaginationList(statement, page, '1', voucherTypeData!.id.toString(),
                 DateUtil.dateYMD(formattedDate), salesManId.toString())
             .then((value) {
           if (value.isEmpty) {
@@ -662,7 +812,12 @@ class _PurchaseState extends ConsumerState<Purchase> {
                             ? baseWidget()
                             : nextWidget == 10
                                 ? serialNoWidget()
-                                : Container(
+                                : nextWidget == 15
+                                 ? Container(
+                                    padding: const EdgeInsets.all(2.0),
+                                    child: const Text('No Widget'),
+                                  )// costCenterWidget()
+                                 : Container(
                                     padding: const EdgeInsets.all(2.0),
                                     child: const Text('No Widget'),
                                   );
@@ -860,6 +1015,20 @@ class _PurchaseState extends ConsumerState<Purchase> {
             ],
           ));
   }
+  _selectBtThermalPrint(
+    BuildContext context,
+    String title,
+    CompanyInformation companySettings,
+    List<CompanySettings> settings,
+    data,
+    byteImage,
+    size,
+    var customerModel) async {
+  var dataAll = [companySettings, settings, data, size, "PURCHASE",customerModel];
+  // dataAll.add('Settings[' + settings + ']');b
+  Navigator.push(context,
+      MaterialPageRoute(builder: (_) => BlueThermalPrint(dataAll, byteImage)));
+}
 
   var nameLike = "a";
   selectLedgerWidget() {
@@ -1142,6 +1311,7 @@ class _PurchaseState extends ConsumerState<Purchase> {
   int? selectedCashSupplierId;
   int selectedTabIndex = 0;
   bool cashCustomer = false;
+  bool costCenter = false;
   TabController? tabController;
   var filterCashAccount;
   var filteredName;
@@ -1169,6 +1339,7 @@ void _onTabTapped(WidgetRef ref, int index) {
      csDetails.then((value) {
       if (!mounted) return;
       setState(() {
+        isExpanded = false;
         cashLedgerModel = value;
         filterCashAccount = cashAccount.where((element) {
           return element.key == selectedCashSupplierId;
@@ -1185,6 +1356,7 @@ void _onTabTapped(WidgetRef ref, int index) {
     // setState(() {
     //   selectedCustomerId = selectedCustomerId;
     // });
+    isExpanded = false;
     cashCustomer = false;
     ref.read(cashCustomerProvider.notifier).state = false;
     ref.read(selectedCustomerIdProvider.notifier).state = selectedSupplierId?? 0;
@@ -1211,10 +1383,12 @@ void _onTabTapped(WidgetRef ref, int index) {
           appBar: AppBar(
             centerTitle: !oldBill ? false : true,
             toolbarHeight: 60,
-            title: const Text(
-              'Purchase',
-              style: TextStyle(
+            title:  Text(
+              voucherTypeData != null ? voucherTypeData!.abbr : 'Purchase',
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
                 fontFamily: 'poppins',
+                color: white
               ),
             ),
             actions: [
@@ -1257,18 +1431,52 @@ void _onTabTapped(WidgetRef ref, int index) {
                           ]),
                     )
                   : const SizedBox(),
+              // const SizedBox(
+              //   width: 10,
+              // ),
+              // IconButton(
+              //     onPressed: () {},
+              //     icon: const Icon(
+              //       Icons.settings,
+              //       color: white,
+              //     )),
               const SizedBox(
                 width: 10,
               ),
-              IconButton(
-                  onPressed: () {},
-                  icon: const Icon(
-                    Icons.settings,
-                    color: white,
-                  )),
-              const SizedBox(
-                width: 10,
-              )
+               PopupMenuButton<String>(
+              icon: const Icon(Icons.settings, color: white),
+              onSelected: (value) async{
+             if (value == 'Show Previous Bill') {
+                  if (selectedCashSupplierId != null || selectedSupplierId != null) {
+                   Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PreviousBillP(
+                                        ledger: selectedTabIndex == 0 ? selectedSupplierId!.toString() : selectedCashSupplierId!.toString(),
+                                      )),
+                            );
+                }else{
+                  Fluttertoast.showToast(msg: 'Please Select Customer');
+                }
+             }
+            
+              },
+              itemBuilder: (BuildContext context) => [
+               
+                const PopupMenuItem<String>(
+                  value: 'Show Previous Bill',
+                  child: Text('Show Previous Bill'),
+                ),
+                // const PopupMenuItem<String>(
+                //   value: 'Import From Sales Order',
+                //   child: Text('Import From Sales Order'),
+                // ),
+                // const PopupMenuItem<String>(
+                //   value: 'Import From Sales Quatation',
+                //   child: Text('Import From Sales Quatation'),
+                // ),
+              ],
+            ),
             ],
           ),
           body: TabBarView(
@@ -1286,185 +1494,186 @@ void _onTabTapped(WidgetRef ref, int index) {
                               horizontal: 20, vertical: 5),
                           child: Column(
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        ' Bill No',
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                     TextField(
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 14
-                                      ),
-                                      controller: invoiceNoController,
-                                      decoration:  InputDecoration(
-                                        //  prefixIcon: Visibility(
-                                        //   visible: isAdminUser,
-                                        //    child: Row(
-                                        //     mainAxisSize: MainAxisSize.min,
-                                        //     children: [
-                                        //       // Icon(Icons.keyboard_double_arrow_left_rounded),
-                                        //       const SizedBox(
-                                        //         width: 4,
-                                        //       ),
-                                        //      InkWell(
-                                        //           onTap: () {
-                                        //            var invoiceNum = 'invoiceNo';
-                                        //           setState(() {
-                                        //            int invoiceNumber = int.parse(invoiceNum); 
-                                        //            invoiceNumber--; 
-                                        //            invoiceNum = invoiceNumber.toString(); 
-                                        //          });
-                                        //         debugPrint(invoiceNum.toString());
-                                        //     dataDynamic = [
-                                        //      {
-                                        //      'Type': 0,
-                                        //      'InvoiceNo': invoiceNum,
-                                        //      'EntryNo': int.parse(invoiceNum) ?? 0,
-                                        //      'Id': int.parse(invoiceNum) ?? 0
-                                        //      }
-                                        //                                            ];
-                                        //                                            cartItem.clear();
-                                        //                                           fetchPurchase(context, dataDynamic[0]);
-                                        //                                          },
-                                        //                                           child: const Icon(
-                                        //    Icons.arrow_back_ios_rounded,
-                                        //    // size: 16, 
-                                        //                                         ),
-                                        //                                      ),
-                                        //     ],
-                                        //                                            ),
-                                        //  ),
-                                        // suffixIcon: Visibility(
-                                        //   visible: isAdminUser,
-                                        //   child: Row(
-                                        //     mainAxisAlignment: MainAxisAlignment.end,
-                                        //     mainAxisSize: MainAxisSize.min,
-                                        //     children: [
-                                        //       InkWell(
-                                        //         onTap: () {
-                                        //              var invoiceNum = 'invoiceNo';
-                                        //           setState(() {
-                                        //            int invoiceNumber = int.parse(invoiceNum); 
-                                        //            invoiceNumber++; 
-                                        //            invoiceNum = invoiceNumber.toString(); 
-                                        //          });
-                                          
-                                        //         debugPrint(invoiceNum.toString());
-                                          
-                                        //     dataDynamic = [
-                                        //      {
-                                        //      'Type': 0,
-                                        //      'InvoiceNo': invoiceNum,
-                                        //      'EntryNo': int.parse(invoiceNum) ?? 0,
-                                        //      'Id': int.parse(invoiceNum) ?? 0
-                                        //      }
-                                        //   ];
-                                        //                                          cartItem.clear();
-                                        //                                          try {
-                                        //    fetchPurchase(context, dataDynamic[0]);
-                                        //                                          } catch (e) {
-                                        //    if (e is RangeError) {
-                                        //       showDialog(
-                                        //            context: context,
-                                        //            builder: (BuildContext context) {
-                                        //             return AlertDialog(
-                                        //                    title: const Text("Error"),
-                                        //                    content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
-                                        //                    actions: [
-                                        //                     TextButton(
-                                        //                      child: const Text("OK"),
-                                        //                      onPressed: () {
-                                        //                      Navigator.of(context).pop(); 
-                                        //                   },
-                                        //                 ),
-                                        //               ],
-                                        //            );
-                                        //          },
-                                        //       );
-                                        //    }else {
-                                        //       debugPrint("An unexpected error occurred: $e");
-                                        //    }
-                                        //                                          }
-                                        //         },
-                                        //         child: const Icon(Icons.arrow_forward_ios_rounded)),
-                                        //         const SizedBox(
-                                        //           width: 4,
-                                        //         )
-                                        //       //  Icon(Icons.keyboard_double_arrow_right_rounded),
-                                        //     ],
-                                        //   ),
-                                        // ),
-                                       
-                                        constraints: const BoxConstraints(
-                                          maxHeight: 34
+                              Visibility(
+                                visible: !keySimplePurchase,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill No',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 8),
-                                          border: const OutlineInputBorder()),
-                                    ),
-                                    ],
-                                  )),
-                                  const SizedBox(
-                                    width: 4,
-                                  ),
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        ' Bill Date',
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      InkWell(
-                                        onTap: () => _selectDate('f'),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 5),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          height: 35,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(color: grey),
-                                              borderRadius:
-                                                  BorderRadius.circular(3)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                formattedDate!,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 13),
-                                              ),
-                                              const Icon(
-                                                Icons.calendar_month,
-                                                size: 18,
-                                                color: grey,
-                                              )
-                                            ],
+                                       TextField(
+                                        readOnly: true,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 14
+                                        ),
+                                        controller: invoiceNoController,
+                                        decoration:  InputDecoration(
+                                          //  prefixIcon: Visibility(
+                                          //   visible: isAdminUser,
+                                          //    child: Row(
+                                          //     mainAxisSize: MainAxisSize.min,
+                                          //     children: [
+                                          //       // Icon(Icons.keyboard_double_arrow_left_rounded),
+                                          //       const SizedBox(
+                                          //         width: 4,
+                                          //       ),
+                                          //      InkWell(
+                                          //           onTap: () {
+                                          //            var invoiceNum = 'invoiceNo';
+                                          //           setState(() {
+                                          //            int invoiceNumber = int.parse(invoiceNum); 
+                                          //            invoiceNumber--; 
+                                          //            invoiceNum = invoiceNumber.toString(); 
+                                          //          });
+                                          //         debugPrint(invoiceNum.toString());
+                                          //     dataDynamic = [
+                                          //      {
+                                          //      'Type': 0,
+                                          //      'InvoiceNo': invoiceNum,
+                                          //      'EntryNo': int.parse(invoiceNum) ?? 0,
+                                          //      'Id': int.parse(invoiceNum) ?? 0
+                                          //      }
+                                          //                                            ];
+                                          //                                            cartItem.clear();
+                                          //                                           fetchPurchase(context, dataDynamic[0]);
+                                          //                                          },
+                                          //                                           child: const Icon(
+                                          //    Icons.arrow_back_ios_rounded,
+                                          //    // size: 16, 
+                                          //                                         ),
+                                          //                                      ),
+                                          //     ],
+                                          //                                            ),
+                                          //  ),
+                                          // suffixIcon: Visibility(
+                                          //   visible: isAdminUser,
+                                          //   child: Row(
+                                          //     mainAxisAlignment: MainAxisAlignment.end,
+                                          //     mainAxisSize: MainAxisSize.min,
+                                          //     children: [
+                                          //       InkWell(
+                                          //         onTap: () {
+                                          //              var invoiceNum = 'invoiceNo';
+                                          //           setState(() {
+                                          //            int invoiceNumber = int.parse(invoiceNum); 
+                                          //            invoiceNumber++; 
+                                          //            invoiceNum = invoiceNumber.toString(); 
+                                          //          });                                          
+                                          //         debugPrint(invoiceNum.toString());                                          
+                                          //     dataDynamic = [
+                                          //      {
+                                          //      'Type': 0,
+                                          //      'InvoiceNo': invoiceNum,
+                                          //      'EntryNo': int.parse(invoiceNum) ?? 0,
+                                          //      'Id': int.parse(invoiceNum) ?? 0
+                                          //      }
+                                          //   ];
+                                          //                                          cartItem.clear();
+                                          //                                          try {
+                                          //    fetchPurchase(context, dataDynamic[0]);
+                                          //                                          } catch (e) {
+                                          //    if (e is RangeError) {
+                                          //       showDialog(
+                                          //            context: context,
+                                          //            builder: (BuildContext context) {
+                                          //             return AlertDialog(
+                                          //                    title: const Text("Error"),
+                                          //                    content: const Text("An error occurred while fetching the Sale Bill Invalid value."),
+                                          //                    actions: [
+                                          //                     TextButton(
+                                          //                      child: const Text("OK"),
+                                          //                      onPressed: () {
+                                          //                      Navigator.of(context).pop(); 
+                                          //                   },
+                                          //                 ),
+                                          //               ],
+                                          //            );
+                                          //          },
+                                          //       );
+                                          //    }else {
+                                          //       debugPrint("An unexpected error occurred: $e");
+                                          //    }
+                                          //                                          }
+                                          //         },
+                                          //         child: const Icon(Icons.arrow_forward_ios_rounded)),
+                                          //         const SizedBox(
+                                          //           width: 4,
+                                          //         )
+                                          //       //  Icon(Icons.keyboard_double_arrow_right_rounded),
+                                          //     ],
+                                          //   ),
+                                          // ),                                      
+                                          constraints: const BoxConstraints(
+                                            maxHeight: 34
                                           ),
+                                            contentPadding: const EdgeInsets.symmetric(
+                                                vertical: 5, horizontal: 8),
+                                            border: const OutlineInputBorder()),
+                                      ),
+                                      ],
+                                    )),
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill Date',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                      )
-                                    ],
-                                  )),
-                                ],
+                                        InkWell(
+                                          onTap: () => _selectDate('f'),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            height: 35,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  formattedDate!,
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 13),
+                                                ),
+                                                const Icon(
+                                                  Icons.calendar_month,
+                                                  size: 18,
+                                                  color: grey,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ],
+                                ),
                               ),
                               const SizedBox(
                                 height: 3,
@@ -1623,91 +1832,94 @@ void _onTabTapped(WidgetRef ref, int index) {
                         const SizedBox(
                           height: 8,
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          color: white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Visibility(
-                                visible: isProjectSoftware,
-                                child:const Text(' Select Project',
-                                 style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
-                                ) ),
-                               projectWidget(),
-                              const Text(
-                                ' Type',
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 5),
-                                width: MediaQuery.of(context).size.width,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    style: const TextStyle(
-                                        fontFamily: 'poppins', color: black),
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    items: [
-                                      "Purchase",
-                                      "InterState",
-                                      "Composite",
-                                      "UnRegistered Dealer",
-                                      "Branch Transfer",
-                                      "Imports"
-                                    ].map((String items) {
-                                      return DropdownMenuItem(
-                                        value: items,
-                                        child: Text(items),
-                                      );
-                                    }).toList(),
-                                    value: dropDownType,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        dropDownType = value!;
-                                      });
-                                    },
+                        Visibility(
+                          visible: !keySimplePurchase,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            color: white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Visibility(
+                                  visible: isProjectSoftware,
+                                  child:const Text(' Select Project',
+                                   style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                  ) ),
+                                 projectWidget(),
+                                const Text(
+                                  ' Type',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      style: const TextStyle(
+                                          fontFamily: 'poppins', color: black),
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      items: [
+                                        "Purchase",
+                                        "InterState",
+                                        "Composite",
+                                        "UnRegistered Dealer",
+                                        "Branch Transfer",
+                                        "Imports"
+                                      ].map((String items) {
+                                        return DropdownMenuItem(
+                                          value: items,
+                                          child: Text(items),
+                                        );
+                                      }).toList(),
+                                      value: dropDownType,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          dropDownType = value!;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Tax',
-                                    style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  Checkbox(
-                                    checkColor: white,
-                                    activeColor: kPrimaryColor,
-                                    value: isTax,
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        isTax = value!;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              )
-                            ],
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      'Tax',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Checkbox(
+                                      checkColor: white,
+                                      activeColor: kPrimaryColor,
+                                      value: isTax,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          isTax = value!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(
@@ -1793,6 +2005,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                              element['LedName'] == value);
                                         selectedSupplierId =
                                             selectedSupplier['Ledcode'];
+                                            costCenter = selectedSupplier['CostCenter'] == 1 ? true : false;
 
                                         _isLoading = true;
                                         api
@@ -1913,6 +2126,35 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                                       CrossAxisAlignment
                                                                           .start,
                                                                   children: [
+                                                                    Visibility(
+                                                                      visible: selectedSupplierId != null,
+                                                                      child: Column(
+                                                                        children: [
+                                                                          Row(
+                                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                            children:[
+                                                                              const Text(' Balance',
+                                                                              style: TextStyle(
+                                                                                fontFamily: 'poppins',
+                                                                                fontSize: 15,
+                                                                                fontWeight: FontWeight.w500
+                                                                              ),
+                                                                              ),
+                                                                              Text('${ledgerModel!.balance.toString()} ',
+                                                                               style: const TextStyle(
+                                                                                fontFamily: 'poppins',
+                                                                                fontSize: 15,
+                                                                                fontWeight: FontWeight.w500
+                                                                              ),
+                                                                              )
+                                                                            ]
+                                                                          ),
+                                                                          const SizedBox(
+                                                                            height: 6,
+                                                                          )
+                                                                        ],
+                                                                      ),
+                                                                    ),
                                                                     const Text(
                                                                       ' Address',
                                                                       style: TextStyle(
@@ -2088,6 +2330,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                             BorderRadius.circular(3))),
                                 onPressed: () {
                                   setState(() {
+                                    isExpanded = false;
                                     editItem = false;
                                     nextWidget = 1;
                                   });
@@ -2243,15 +2486,16 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                               const TextStyle(
                                                                   fontSize: 12),
                                                         )),
-                                                    Text(
-                                                        ' ${cartItem[index].itemName}',
-                                                        style: const TextStyle(
-                                                            color: black,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontFamily:
-                                                                'poppins')),
-                                                    const Spacer(),
+                                                    Flexible(
+                                                  child: Text(' ${cartItem[index].itemName}',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.left,
+                                                      style: const TextStyle(
+                                                          color: black,
+                                                          fontWeight:FontWeight.w500,
+                                                          fontFamily:'poppins')),
+                                                ),
+                                                    // const Spacer(),
                                                   ]),
                                                 ),
                                                 SizedBox(
@@ -2463,63 +2707,69 @@ void _onTabTapped(WidgetRef ref, int index) {
                                 ),
                                  children: [
                                    const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _otherDiscountController,
-                          focusNode: _focusNodeOtherDiscount,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(
-                                                contentPadding: EdgeInsets.symmetric(
-                                                  horizontal: 4,
-                                                  vertical: 8
+                  Visibility(
+                    visible: !keySimplePurchase,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _otherDiscountController,
+                            focusNode: _focusNodeOtherDiscount,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(decimal: true),
+                            decoration: const InputDecoration(
+                                                  contentPadding: EdgeInsets.symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 8
+                                                  ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Other Discount',
+                                                   labelStyle: TextStyle(
+                                                    fontFamily: 'poppins'
+                                                  )
                                                 ),
-                                                border: OutlineInputBorder(),
-                                                labelText: 'Other Discount',
-                                                 labelStyle: TextStyle(
-                                                  fontFamily: 'poppins'
-                                                )
-                                              ),
-                                              onChanged: (value) {
-                                                 setState(() {
-                              calculateGrandTotal();
-                            });
-                                              },
+                                                onChanged: (value) {
+                                                   setState(() {
+                                calculateGrandTotal();
+                              });
+                                                },
+                          ),
                         ),
-                      ),
-                      const SizedBox(
-                        width: 4,
-                      ),
-                       Expanded(
-                         child: TextField(
-                                             controller: _otherChargesController,
-                                             focusNode: _focusNodeOtherCharges,
-                                             keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                                          decoration: const InputDecoration(
-                                                contentPadding: EdgeInsets.symmetric(
-                                                  horizontal: 4,
-                                                  vertical: 8
+                        const SizedBox(
+                          width: 4,
+                        ),
+                         Expanded(
+                           child: TextField(
+                                               controller: _otherChargesController,
+                                               focusNode: _focusNodeOtherCharges,
+                                               keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                                            decoration: const InputDecoration(
+                                                  contentPadding: EdgeInsets.symmetric(
+                                                    horizontal: 4,
+                                                    vertical: 8
+                                                  ),
+                                                  border: OutlineInputBorder(),
+                                                  labelText: 'Other Charges',
+                                                   labelStyle: TextStyle(
+                                                    fontFamily: 'poppins'
+                                                  )
                                                 ),
-                                                border: OutlineInputBorder(),
-                                                labelText: 'Other Charges',
-                                                 labelStyle: TextStyle(
-                                                  fontFamily: 'poppins'
-                                                )
-                                              ),
-                                               onChanged: (value) {
-                                                 setState(() {
-                              calculateGrandTotal();
-                            });
-                                              },
-                                           ),
-                       ),
-                    ],
+                                                 onChanged: (value) {
+                                                   setState(() {
+                                calculateGrandTotal();
+                              });
+                                                },
+                                             ),
+                         ),
+                      ],
+                    ),
                   ),
-                 const SizedBox(
-                  height: 6,
+                 Visibility(
+                  visible: !keySimplePurchase,
+                   child: const SizedBox(
+                    height: 6,
+                   ),
                  ),
                   TextField(
                     controller: _narrationController,
@@ -2836,7 +3086,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                   'fyId':
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id,
-                                                  'projectId':projectId
+                                                  'projectId':projectId,
+                                                  'cashAC':acId
                                                 }) +
                                                 ']';
 
@@ -2947,6 +3198,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                             var jsonItem =
                                                 CartItemP.encodeCartToJson(
                                                     cartItem);
+                                                    debugPrint(cartItem.toString());
                                             var items = json.encode(jsonItem);
                                             var stType = 'P_Update';
                                             var data = '[${json.encode({
@@ -2996,7 +3248,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                   'fyId':
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id,
-                                                  'projectId':projectId
+                                                  'projectId':projectId,
+                                                  'cashAC':acId
                                                 })}]';
 
                                             final body = {
@@ -3066,6 +3319,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                             var jsonItem =
                                                 CartItemP.encodeCartToJson(
                                                     cartItem);
+                                                    // debugPrint(cartItem.toString());
                                             var items = json.encode(jsonItem);
                                             var stType = 'P_Insert';
                                             var data = '[${json.encode({
@@ -3113,7 +3367,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                   'fyId':
                                                       currentFinancialYear!.id,
                                                   'frmId': voucherTypeData!.id,
-                                                  'projectId':projectId
+                                                  'projectId':projectId,
+                                                  'cashAC':acId
                                                 })}]';
 
                                             final body = {
@@ -3124,7 +3379,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                                                   SerialNOModel.encodedToJson(
                                                       serialNoData)),
                                             };
-                                            debugPrint(body.toString());
+                                            debugPrint(data.toString());
+                                            // debugPrint(items.toString());
                                             bool _state =
                                                 await api.addPurchase(body);
 
@@ -3132,7 +3388,75 @@ void _onTabTapped(WidgetRef ref, int index) {
                                               _isLoading = false;
                                             });
                                             if (_state) {
-                                              cartItem.clear();
+                                             if(directPrintOnSave){
+                                               if(printType == 2 && printDevice == 6){
+                                                  if(dataInformationW == null){
+                                                    api.fetchPurchaseInvoice(dataDynamic[0]['EntryNo'], '1', voucherTypeData!.id).then((value) {
+                                                      setState(() {
+                                                          dataW = value;
+                                                          dataInformationW = value['Information'][0];
+                                                          // if (companySettings!.sType == "SherTex ERP") {
+                                                          //   isFreeItem = true;
+                                                          // }
+                                                          customerBalanceW = dataInformationW['Balance'].toString();
+                                                          dataParticularsAllW =  value['Particulars'];
+
+                                                          // AppSettingsMap mapCash = cashAccount.firstWhere(
+                                                          //   (element) => element.key.toString() == dataInformationW['Customer'].toString(),
+                                                          //   orElse: () => AppSettingsMap(key: 0, value: ''),
+                                                          // );
+
+                                                          // isCashBill = mapCash.key.toString() == dataInformationW['Customer'].toString() ? true : false;
+
+                                                          dataParticularsW.addAll(dataParticularsAllW);
+                                                          dataW['Particulars'] = dataParticularsW;
+                                                          
+                                                          // Create PDF
+                                                          // _createPDF(
+                                                          //     isLogo,
+                                                          //     pdfModel,
+                                                          //     'Sale_ref_${dataInformationW['RealEntryNo']}',
+                                                          //     companySettings!,
+                                                          //     settings!,
+                                                          //     dataW,
+                                                          //     customerBalanceW,
+                                                          //     isCashBill
+                                                          // ).then((pdfPath) {
+                                                            
+                                                          // });
+                                                        //  if(defaultPrinter.isEmpty){
+                                                            _selectBtThermalPrint(
+                                                      context,
+                                                      'purchase_ref_${dataInformationW['RealEntryNo']}',
+                                                      companySettings!,
+                                                      settings!, 
+                                                      dataW,
+                                                      byteImage ?? Uint8List.fromList([0]),  
+                                                      paperSize.toString(),
+                                                      '0');
+                                                        //  }else{
+                                                        //    var dataAll = [companySettings, settings, dataW, paperSize.toString(), "SALE"];
+                                                        //   // printData(dataAll);
+                                                        //    _device =
+                                                        // _devices.firstWhere((element) => element.name == defaultPrinter);
+                                                        // _connected ? printData(dataAll) : _connect();
+                                                        //  } 
+                                                        
+                                                        });
+                                                    });
+                                                  }else{
+                                                    _selectBtThermalPrint(
+                                                      context,
+                                                      'sale_ref_${dataInformationW['RealEntryNo']}',
+                                                      companySettings!,
+                                                      settings!, 
+                                                      dataW,
+                                                      byteImage ?? Uint8List.fromList([0]),  
+                                                      paperSize.toString(),
+                                                      '0');
+                                                  }
+                                                }else{
+                                                  cartItem.clear();
                                               // showDialog(
                                               //   context: context,
                                               //   builder:
@@ -3159,8 +3483,41 @@ void _onTabTapped(WidgetRef ref, int index) {
                                               //   },
                                               // );
                                               // showMore(context, 'Saved');
+                                              voucherTypeData != null ? dataDynamic[0]['Type'] = voucherTypeData!.id.toString() : '0';
                                               showMoreN(context, true);
-                                              
+                                                }
+                                             }else{
+                                               cartItem.clear();
+                                              // showDialog(
+                                              //   context: context,
+                                              //   builder:
+                                              //       (BuildContext context) {
+                                              //     return AlertDialog(
+                                              //       title: const Text(
+                                              //           'Purchase Saved'),
+                                              //       actions: [
+                                              //         TextButton(
+                                              //           onPressed: () {
+                                              //             Navigator.of(
+                                              //                     context)
+                                              //                 .pop();
+                                              //             Navigator
+                                              //                 .pushReplacementNamed(
+                                              //                     context,
+                                              //                     '/purchase');
+                                              //           },
+                                              //           child:
+                                              //               const Text('Ok'),
+                                              //         )
+                                              //       ],
+                                              //     );
+                                              //   },
+                                              // );
+                                              // showMore(context, 'Saved');
+                                              // debugPrint(dataDynamic.toString());
+                                              voucherTypeData != null ? dataDynamic[0]['Type'] = voucherTypeData!.id.toString() : '0';
+                                              showMoreN(context, true);
+                                             }
                                               // Fluttertoast.showToast(
                                               //   backgroundColor: green,
                                               //   msg: 'Purchase Bill Saved');
@@ -3222,71 +3579,24 @@ void _onTabTapped(WidgetRef ref, int index) {
                               horizontal: 20, vertical: 5),
                           child: Column(
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        ' Bill No',
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5),
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        height: 35,
-                                        decoration: BoxDecoration(
-                                            border: Border.all(color: grey),
-                                            borderRadius:
-                                                BorderRadius.circular(3)),
-                                        child: entryNo.isEmpty
-                                            ? const Align(
-                                                alignment:
-                                                    Alignment.centerRight,
-                                                child: Icon(
-                                                  Icons.arrow_drop_down_rounded,
-                                                  color: grey,
-                                                ))
-                                            : Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Text(
-                                                  entryNo,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: 13),
-                                                ),
-                                              ),
-                                      )
-                                    ],
-                                  )),
-                                  const SizedBox(
-                                    width: 4,
-                                  ),
-                                  Expanded(
-                                      child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        ' Bill Date',
-                                        style: TextStyle(
-                                            fontFamily: 'poppins',
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      InkWell(
-                                        onTap: () => _selectDate('f'),
-                                        child: Container(
+                              Visibility(
+                                visible: !keySimplePurchase,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill No',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        Container(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 5),
                                           width:
@@ -3296,28 +3606,78 @@ void _onTabTapped(WidgetRef ref, int index) {
                                               border: Border.all(color: grey),
                                               borderRadius:
                                                   BorderRadius.circular(3)),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                formattedDate!,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 13),
-                                              ),
-                                              const Icon(
-                                                Icons.calendar_month,
-                                                size: 18,
-                                                color: grey,
-                                              )
-                                            ],
-                                          ),
+                                          child: entryNo.isEmpty
+                                              ? const Align(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down_rounded,
+                                                    color: grey,
+                                                  ))
+                                              : Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Text(
+                                                    entryNo,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        fontSize: 13),
+                                                  ),
+                                                ),
+                                        )
+                                      ],
+                                    )),
+                                    const SizedBox(
+                                      width: 4,
+                                    ),
+                                    Expanded(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          ' Bill Date',
+                                          style: TextStyle(
+                                              fontFamily: 'poppins',
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
                                         ),
-                                      )
-                                    ],
-                                  )),
-                                ],
+                                        InkWell(
+                                          onTap: () => _selectDate('f'),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 5),
+                                            width:
+                                                MediaQuery.of(context).size.width,
+                                            height: 35,
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(3)),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  formattedDate!,
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 13),
+                                                ),
+                                                const Icon(
+                                                  Icons.calendar_month,
+                                                  size: 18,
+                                                  color: grey,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )),
+                                  ],
+                                ),
                               ),
                               const SizedBox(
                                 height: 3,
@@ -3475,91 +3835,94 @@ void _onTabTapped(WidgetRef ref, int index) {
                         const SizedBox(
                           height: 8,
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          color: white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 5),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                               Visibility(
-                                visible: isProjectSoftware,
-                                child:const Text(' Select Project',
-                                 style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
-                                ) ),
-                               projectWidget(),
-                              const Text(
-                                ' Type',
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                              Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 5),
-                                width: MediaQuery.of(context).size.width,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                    border: Border.all(color: grey),
-                                    borderRadius: BorderRadius.circular(3)),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    style: const TextStyle(
-                                        fontFamily: 'poppins', color: black),
-                                    icon: const Icon(Icons.arrow_drop_down),
-                                    items: [
-                                      "Purchase",
-                                      "InterState",
-                                      "Composite",
-                                      "UnRegistered Dealer",
-                                      "Branch Transfer",
-                                      "Imports"
-                                    ].map((String items) {
-                                      return DropdownMenuItem(
-                                        value: items,
-                                        child: Text(items),
-                                      );
-                                    }).toList(),
-                                    value: dropDownType,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        dropDownType = value!;
-                                      });
-                                    },
+                        Visibility(
+                          visible: !keySimplePurchase,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            color: white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                 Visibility(
+                                  visible: isProjectSoftware,
+                                  child:const Text(' Select Project',
+                                   style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                  ) ),
+                                 projectWidget(),
+                                const Text(
+                                  ' Type',
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 5),
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: grey),
+                                      borderRadius: BorderRadius.circular(3)),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      style: const TextStyle(
+                                          fontFamily: 'poppins', color: black),
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      items: [
+                                        "Purchase",
+                                        "InterState",
+                                        "Composite",
+                                        "UnRegistered Dealer",
+                                        "Branch Transfer",
+                                        "Imports"
+                                      ].map((String items) {
+                                        return DropdownMenuItem(
+                                          value: items,
+                                          child: Text(items),
+                                        );
+                                      }).toList(),
+                                      value: dropDownType,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          dropDownType = value!;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  const Text(
-                                    'Tax',
-                                    style: TextStyle(
-                                        fontFamily: 'poppins',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                  Checkbox(
-                                    checkColor: white,
-                                    activeColor: kPrimaryColor,
-                                    value: isTax,
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        isTax = value!;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              )
-                            ],
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      'Tax',
+                                      style: TextStyle(
+                                          fontFamily: 'poppins',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Checkbox(
+                                      checkColor: white,
+                                      activeColor: kPrimaryColor,
+                                      value: isTax,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          isTax = value!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(
@@ -4142,6 +4505,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                           ']';
                                       var jsonItem =
                                           CartItemP.encodeCartToJson(cartItem);
+                                          debugPrint(cartItem.toString());
                                       var items = json.encode(jsonItem);
                                       var stType = 'P_Insert';
                                       var data = '[' +
@@ -4204,38 +4568,141 @@ void _onTabTapped(WidgetRef ref, int index) {
                                       setState(() {
                                         _isLoading = false;
                                       });
-                                      if (_state) {
-                                        cartItem.clear();
-                                        // showDialog(
-                                        //   context: context,
-                                        //   builder: (BuildContext context) {
-                                        //     return Expanded(
-                                        //       child: AlertDialog(
-                                        //         title: const Text(
-                                        //             'Purchase Saved'),
-                                        //         actions: [
-                                        //           TextButton(
-                                        //             onPressed: () {
-                                        //               Navigator.of(context)
-                                        //                   .pop();
-                                        //               Navigator
-                                        //                   .pushReplacementNamed(
-                                        //                       context,
-                                        //                       '/purchase');
-                                        //             },
-                                        //             child: const Text('Ok'),
-                                        //           )
-                                        //         ],
-                                        //       ),
-                                        //     );
-                                        //   },
-                                        // );
-                                        Fluttertoast.showToast(
-                                                backgroundColor: green,
-                                                msg: 'Purchase Bill Saved');
-                                              Navigator.pushReplacementNamed(context, '/purchase');
-                                        // showMore(context, 'Saved');
-                                      } else {
+                                     if (_state) {
+                                             if(directPrintOnSave){
+                                               if(printType == 2 && printDevice == 6){
+                                                  if(dataInformationW == null){
+                                                    api.fetchPurchaseInvoice(dataDynamic[0]['EntryNo'], '1', voucherTypeData!.id).then((value) {
+                                                      setState(() {
+                                                          dataW = value;
+                                                          dataInformationW = value['Information'][0];
+                                                          // if (companySettings!.sType == "SherTex ERP") {
+                                                          //   isFreeItem = true;
+                                                          // }
+                                                          customerBalanceW = dataInformationW['Balance'].toString();
+                                                          dataParticularsAllW =  value['Particulars'];
+
+                                                          // AppSettingsMap mapCash = cashAccount.firstWhere(
+                                                          //   (element) => element.key.toString() == dataInformationW['Customer'].toString(),
+                                                          //   orElse: () => AppSettingsMap(key: 0, value: ''),
+                                                          // );
+
+                                                          // isCashBill = mapCash.key.toString() == dataInformationW['Customer'].toString() ? true : false;
+
+                                                          dataParticularsW.addAll(dataParticularsAllW);
+                                                          dataW['Particulars'] = dataParticularsW;
+                                                          
+                                                          // Create PDF
+                                                          // _createPDF(
+                                                          //     isLogo,
+                                                          //     pdfModel,
+                                                          //     'Sale_ref_${dataInformationW['RealEntryNo']}',
+                                                          //     companySettings!,
+                                                          //     settings!,
+                                                          //     dataW,
+                                                          //     customerBalanceW,
+                                                          //     isCashBill
+                                                          // ).then((pdfPath) {
+                                                            
+                                                          // });
+                                                        //  if(defaultPrinter.isEmpty){
+                                                            _selectBtThermalPrint(
+                                                      context,
+                                                      'purchase_ref_${dataInformationW['RealEntryNo']}',
+                                                      companySettings!,
+                                                      settings!, 
+                                                      dataW,
+                                                      byteImage ?? Uint8List.fromList([0]),  
+                                                      paperSize.toString(),
+                                                      '0');
+                                                        //  }else{
+                                                        //    var dataAll = [companySettings, settings, dataW, paperSize.toString(), "SALE"];
+                                                        //   // printData(dataAll);
+                                                        //    _device =
+                                                        // _devices.firstWhere((element) => element.name == defaultPrinter);
+                                                        // _connected ? printData(dataAll) : _connect();
+                                                        //  } 
+                                                        
+                                                        });
+                                                    });
+                                                  }else{
+                                                    _selectBtThermalPrint(
+                                                      context,
+                                                      'sale_ref_${dataInformationW['RealEntryNo']}',
+                                                      companySettings!,
+                                                      settings!, 
+                                                      dataW,
+                                                      byteImage ?? Uint8List.fromList([0]),  
+                                                      paperSize.toString(),
+                                                      '0');
+                                                  }
+                                                }else{
+                                                  cartItem.clear();
+                                              // showDialog(
+                                              //   context: context,
+                                              //   builder:
+                                              //       (BuildContext context) {
+                                              //     return AlertDialog(
+                                              //       title: const Text(
+                                              //           'Purchase Saved'),
+                                              //       actions: [
+                                              //         TextButton(
+                                              //           onPressed: () {
+                                              //             Navigator.of(
+                                              //                     context)
+                                              //                 .pop();
+                                              //             Navigator
+                                              //                 .pushReplacementNamed(
+                                              //                     context,
+                                              //                     '/purchase');
+                                              //           },
+                                              //           child:
+                                              //               const Text('Ok'),
+                                              //         )
+                                              //       ],
+                                              //     );
+                                              //   },
+                                              // );
+                                              // showMore(context, 'Saved');
+                                             voucherTypeData != null ? dataDynamic[0]['Type'] = voucherTypeData!.id.toString() : '0';
+                                              showMoreN(context, true);
+                                                }
+                                             }else{
+                                               cartItem.clear();
+                                              // showDialog(
+                                              //   context: context,
+                                              //   builder:
+                                              //       (BuildContext context) {
+                                              //     return AlertDialog(
+                                              //       title: const Text(
+                                              //           'Purchase Saved'),
+                                              //       actions: [
+                                              //         TextButton(
+                                              //           onPressed: () {
+                                              //             Navigator.of(
+                                              //                     context)
+                                              //                 .pop();
+                                              //             Navigator
+                                              //                 .pushReplacementNamed(
+                                              //                     context,
+                                              //                     '/purchase');
+                                              //           },
+                                              //           child:
+                                              //               const Text('Ok'),
+                                              //         )
+                                              //       ],
+                                              //     );
+                                              //   },
+                                              // );
+                                              // showMore(context, 'Saved');
+                                              voucherTypeData != null ? dataDynamic[0]['Type'] = voucherTypeData!.id.toString() : '0';
+                                              showMoreN(context, true);
+                                             }
+                                              // Fluttertoast.showToast(
+                                              //   backgroundColor: green,
+                                              //   msg: 'Purchase Bill Saved');
+                                              // Navigator.pushReplacementNamed(context, '/purchase');
+                                            } else {
                                         showInSnackBar(
                                             'Error enter data correctly');
                                         setState(() {
@@ -4513,6 +4980,18 @@ void _onTabTapped(WidgetRef ref, int index) {
         csGST = 0;
         tax = 0;
       }
+  if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((net * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
       total = CommonService.getRound(
           decimal, (net + csGST + csGST + iGST + cess + adCess));
       if (mrp > 0) {
@@ -4666,6 +5145,18 @@ void _onTabTapped(WidgetRef ref, int index) {
         csGST = 0;
         tax = 0;
       }
+   if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((net * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
       total = CommonService.getRound(
           decimal, (net + csGST + csGST + iGST + cess + adCess));
       if (mrp > 0) {
@@ -4961,7 +5452,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                   });
                 },
                 icon: const Icon(Icons.arrow_back)),
-            titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+            titleTextStyle: const TextStyle(fontFamily: 'poppins',color: white),
             title: const Text('Add Item to Purchase')),
         body: SingleChildScrollView(
           child: Column(
@@ -5019,8 +5510,16 @@ void _onTabTapped(WidgetRef ref, int index) {
                           
                               return EasyAutocomplete(
                                 inputTextStyle: const TextStyle(fontSize: 13),
-                                decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(
+                                decoration:  InputDecoration(
+                                  suffixIcon: !editItem ?  Visibility(
+                                      visible: enableBarcode,
+                                      child: IconButton(
+                                        icon: Image.asset('assets/icons/ic_barcode_scanner_new.png',scale: 2.6,),
+                                        onPressed: () {
+                                          searchProductBarcode();
+                                        },
+                                      )) : SizedBox(),
+                                   contentPadding: EdgeInsets.symmetric(
                                     vertical: 5, horizontal: 5),
                                     border: OutlineInputBorder(),
                                     ),
@@ -5031,6 +5530,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                                 },
                                 onSubmitted: (value) async {
                                   
+                                    
                                   selectedItem =
                                   itemCodeViseChek 
                                   ? purchasePr.firstWhere(
@@ -5063,12 +5563,12 @@ void _onTabTapped(WidgetRef ref, int index) {
                                   selectedProducteId = selectedItem.slNo;
                                   print(selectedProducteId);
                                   final fetchedPrice = await api
-                                      .fetchProductPrize(selectedProducteId!);
-                                 
+                                      .fetchProductPrize(selectedProducteId!,selectedSupplierId ?? 0);
+                                 setState(() {
                                   productModelPrize = fetchedPrice.toList();
                           
                                 
-                                    currentRate =
+                                  currentRate =
                                   double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
                                   pRate = currentRate;
                                   if (pRate > 0 && !focusNodeRate.hasFocus) {
@@ -5148,7 +5648,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                                     controllerBranch.text = '';
                                   }
                           
-                                  taxP = selectedItem.tax ?? 0;
+                                  taxP = isTax ? selectedItem.tax ?? 0 : 0;
+                                  });
                                 
                                 },
                               );
@@ -5513,6 +6014,13 @@ void _onTabTapped(WidgetRef ref, int index) {
                                       calculate();
                                     });
                                   },
+                                  onSubmitted: (value){
+                                    if(value.isNotEmpty && costCenter){
+                                      setState(() {
+                                        nextWidget = 15;
+                                      });
+                                    }
+                                  },
                                   
                                 ),
                               ),
@@ -5613,196 +6121,208 @@ void _onTabTapped(WidgetRef ref, int index) {
                     const SizedBox(
                       height: 6,
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                           SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                             child: const Text('Discount',
-                                                       textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                           ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                controller: controllerDiscountPer,
-                                focusNode: focusNodeDiscountPer,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    discountPer = double.tryParse(value) ?? 0;
-                                    calculateConversion();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                             SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                               child: const Text('Discount',
+                                                         textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                             ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  controller: controllerDiscountPer,
+                                  focusNode: focusNodeDiscountPer,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      discountPer = double.tryParse(value) ?? 0;
+                                      calculateConversion();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  focusNode: focusNodeDiscount,
+                                  controller: controllerDiscount,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
                                         border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
                                       ),
                                     ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      discount = double.tryParse(value) ?? 0;
+                                      calculateConversion();
+                                    });
+                                  },
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                focusNode: focusNodeDiscount,
-                                controller: controllerDiscount,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    discount = double.tryParse(value) ?? 0;
-                                    calculateConversion();
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('Net',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                          ),
-                          // const Spacer(),
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                controller: TextEditingController(
-                                    text: net.toStringAsFixed(decimal)),
-                                readOnly: true,
-                                // keyboardType:
-                                //     const TextInputType
-                                //         .numberWithOptions(
-                                //         decimal: true),
-                                // inputFormatters: [
-                                //   FilteringTextInputFormatter(
-                                //       RegExp(r'[0-9]'),
-                                //       allow: true,
-                                //       replacementString:
-                                //           '.')
-                                // ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('Net',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: TextEditingController(
+                                      text: net.toStringAsFixed(decimal)),
+                                  readOnly: true,
+                                  // keyboardType:
+                                  //     const TextInputType
+                                  //         .numberWithOptions(
+                                  //         decimal: true),
+                                  // inputFormatters: [
+                                  //   FilteringTextInputFormatter(
+                                  //       RegExp(r'[0-9]'),
+                                  //       allow: true,
+                                  //       replacementString:
+                                  //           '.')
+                                  // ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        border: const Border(
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
+                      ),
                     ),
                     Visibility(
                       visible: isTax,
@@ -5936,9 +6456,150 @@ void _onTabTapped(WidgetRef ref, int index) {
                         ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
+                    Visibility(
+                      visible: isTax,
+                      child: const SizedBox(
+                        height: 6,
+                      ),
                     ),
+                    Visibility(
+                      visible: cessOnNetAmount && cessPer > 0,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: Text(
+                                  'Cess',
+                                  style: const TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(fontSize: 13),
+                                  readOnly: true,
+                                  controller: TextEditingController(
+                                      text: cessPer.toStringAsFixed(decimal)),
+                                  // focusNode: focusNodeDiscount,
+                                  //   keyboardType:
+                                  //       const TextInputType
+                                  //           .numberWithOptions(
+                                  //           decimal: true),
+                                  //   inputFormatters: [
+                                  //     FilteringTextInputFormatter(
+                                  //         RegExp(r'[0-9]'),
+                                  //         allow: true,
+                                  //         replacementString:
+                                  //             '.')
+                                  //   ],
+                                  //                   onChanged: (value) {
+                                  //                     setState(() {
+                                  //   editableDiscountP = true;
+                                  //   discountPer = double.tryParse(value)!;
+                                  //   // calculate();
+                                  // });
+                                  //                   },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  readOnly: true,
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: TextEditingController(
+                                      text: cess.toStringAsFixed(decimal)),
+                                  // focusNode:
+                                  //     focusNodeDiscountPer,
+                                  // controller:
+                                  //     controllerDiscountPer,
+                                  // keyboardType:
+                                  //     const TextInputType
+                                  //         .numberWithOptions(
+                                  //         decimal: true),
+                                  // inputFormatters: [
+                                  //   FilteringTextInputFormatter(
+                                  //       RegExp(r'[0-9]'),
+                                  //       allow: true,
+                                  //       replacementString:
+                                  //           '.')
+                                  // ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        border: const Border(
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                        visible: cessOnNetAmount && cessPer > 0,
+                         child: const SizedBox(
+                                               height: 6,
+                                             ),
+                       ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -6068,608 +6729,635 @@ void _onTabTapped(WidgetRef ref, int index) {
                     const SizedBox(
                       height: 6,
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('MRP',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                          ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 14),
-                                controller: controllerMrpPercentage,
-                                focusNode: focusNodeMrpPercentage,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    mrpPercentage = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('MRP',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 14),
+                                  controller: controllerMrpPercentage,
+                                  focusNode: focusNodeMrpPercentage,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      mrpPercentage = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  focusNode: focusNodeMrp,
+                                  controller: controllerMrp,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
                                         border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
                                       ),
                                     ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      mrp = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                focusNode: focusNodeMrp,
-                                controller: controllerMrp,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    mrp = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('Retail',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                          ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                controller: controllerRetailPercentage,
-                                focusNode: focusNodeRetailPercentage,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    retailPercentage = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
-                                        border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                focusNode: focusNodeRetail,
-                                controller: controllerRetail,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    retail = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('Wholesale',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 12.5,
-                                    fontWeight: FontWeight.w300)),
-                          ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                controller: controllerWholeSalePercentage,
-                                focusNode: focusNodeWholeSalePercentage,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    wholeSalePercentage =
-                                        double.tryParse(value) ?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('Retail',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: controllerRetailPercentage,
+                                  focusNode: focusNodeRetailPercentage,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      retailPercentage = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  focusNode: focusNodeRetail,
+                                  controller: controllerRetail,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
                                         border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
                                       ),
                                     ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      retail = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                focusNode: focusNodeWholeSale,
-                                controller: controllerWholeSale,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    wholeSale = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('Branch',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                          ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                controller: controllerBranchPercentage,
-                                focusNode: focusNodeBranchPercentage,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    branchPercentage = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
-                                        border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                focusNode: focusNodeBranch,
-                                controller: controllerBranch,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
-                                      ),
-                                    ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    branch = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
                       ),
                     ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.sizeOf(context).width/3.5,
-                            child: const Text('SP Retail',
-                            textScaler: TextScaler.linear(1),
-                                style: TextStyle(
-                                    fontFamily: 'poppins',
-                                    // fontSize: 13,
-                                    fontWeight: FontWeight.w400)),
-                          ),
-                          // const Spacer(),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.orange),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                controller: controllerSPRetailPercentage,
-                                focusNode: focusNodeSPRetailPercentage,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                onChanged: (value) {
-                                  setState(() {
-                                    spRetailPercentage =
-                                        double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  suffixIcon: Container(
-                                    decoration: BoxDecoration(
-                                        color: Colors.orange[100],
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('Wholesale',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 12.5,
+                                      fontWeight: FontWeight.w300)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: controllerWholeSalePercentage,
+                                  focusNode: focusNodeWholeSalePercentage,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      wholeSalePercentage =
+                                          double.tryParse(value) ?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  focusNode: focusNodeWholeSale,
+                                  controller: controllerWholeSale,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
                                         border: const Border(
-                                            left: BorderSide(
-                                                color: Colors.orange)),
-                                        borderRadius: const BorderRadius.only(
-                                            bottomRight: Radius.circular(3),
-                                            topRight: Radius.circular(3))),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.percent_sharp,
-                                        color: Colors.orange,
-                                        size: 15,
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
                                       ),
                                     ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      wholeSale = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            flex: 2,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: grey),
-                                  borderRadius: BorderRadius.circular(3)),
-                              height: 35,
-                              child: TextField(
-                                style: const TextStyle(fontSize: 13),
-                                focusNode: focusNodeSPRetail,
-                                controller: controllerSPRetail,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                        decimal: true),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter(RegExp(r'[0-9]'),
-                                      allow: true, replacementString: '.')
-                                ],
-                                textAlign: TextAlign.right,
-                                decoration: InputDecoration(
-                                  prefixIcon: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      border: const Border(
-                                          right: BorderSide(color: grey)),
-                                    ),
-                                    width: 25,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.currency_rupee_outlined,
-                                        color: Colors.grey,
-                                        size: 15,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
+                      ),
+                    ),
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('Branch',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: controllerBranchPercentage,
+                                  focusNode: focusNodeBranchPercentage,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      branchPercentage = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
                                       ),
                                     ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      vertical: 6, horizontal: 3),
-                                  border: const OutlineInputBorder(
-                                      borderSide: BorderSide.none),
                                 ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    spRetail = double.tryParse(value)?? 0;
-                                    calculateRate();
-                                  });
-                                },
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  focusNode: focusNodeBranch,
+                                  controller: controllerBranch,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        border: const Border(
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      branch = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: const SizedBox(
+                        height: 6,
+                      ),
+                    ),
+                    Visibility(
+                      visible: !keySimplePurchase,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: const Text('SP Retail',
+                              textScaler: TextScaler.linear(1),
+                                  style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: controllerSPRetailPercentage,
+                                  focusNode: focusNodeSPRetailPercentage,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      spRetailPercentage =
+                                          double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  style: const TextStyle(fontSize: 13),
+                                  focusNode: focusNodeSPRetail,
+                                  controller: controllerSPRetail,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter(RegExp(r'[0-9]'),
+                                        allow: true, replacementString: '.')
+                                  ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        border: const Border(
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      spRetail = double.tryParse(value)?? 0;
+                                      calculateRate();
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -6740,10 +7428,9 @@ void _onTabTapped(WidgetRef ref, int index) {
                                             ? double.tryParse(
                                                 controllerFreeQuantity.text)
                                             : freeQuantity)!;
-                                    serialNo =
-                                        controllerSerialNo.text.isNotEmpty
-                                            ? controllerFreeQuantity.text
-                                            : '';
+                                    serialNo = controllerSerialNo.text.isNotEmpty
+                                                ? controllerSerialNo.text
+                                                : '';
 
                                     if (quantity<= 0) {
                                      Fluttertoast.showToast(msg: '0 Quantity Not Allowed');
@@ -6839,6 +7526,9 @@ void _onTabTapped(WidgetRef ref, int index) {
                                             ? double.tryParse(
                                                 controllerFreeQuantity.text)
                                             : freeQuantity)!;
+                                    serialNo = controllerSerialNo.text.isNotEmpty
+                                                ? controllerSerialNo.text
+                                                : '';        
 
                                     if (editItem) {
                                       cartItem[position!].adCess = adCess;
@@ -7034,8 +7724,8 @@ void _onTabTapped(WidgetRef ref, int index) {
                               ? double.tryParse(controllerFreeQuantity.text)
                               : freeQuantity)!;
                           serialNo = controllerSerialNo.text.isNotEmpty
-                              ? controllerFreeQuantity.text
-                              : '';
+                                                ? controllerSerialNo.text
+                                                : '';
 
                           if (editItem) {
                             cartItem[position!].adCess = adCess;
@@ -7184,6 +7874,9 @@ void _onTabTapped(WidgetRef ref, int index) {
                           freeQuantity = (controllerFreeQuantity.text.isNotEmpty
                               ? double.tryParse(controllerFreeQuantity.text)
                               : freeQuantity)!;
+                          serialNo = controllerSerialNo.text.isNotEmpty
+                                                ? controllerSerialNo.text
+                                                : '';    
 
                           if (editItem) {
                             cartItem[position!].adCess = adCess;
@@ -7619,7 +8312,7 @@ void _onTabTapped(WidgetRef ref, int index) {
     return isBarcodePicker
         ? showBarcodeProduct()
         : FutureBuilder<List<ProductPurchaseModel>>(
-            future: api.fetchAllProductPurchase(),
+            future: api.fetchAllProductPurchase(taxGroupUpdate),
             builder: (ctx, snapshot) {
               if (snapshot.hasData) {
                 if (snapshot.data!.isNotEmpty) {
@@ -7794,7 +8487,7 @@ void _onTabTapped(WidgetRef ref, int index) {
     return lockItemDetails
         ? itemDetailWidget()
         : FutureBuilder(
-            future: api.fetchProductPrize(id),
+            future: api.fetchProductPrize(id,selectedSupplierId ?? 0),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 if (snapshot.connectionState == ConnectionState.done) {
@@ -10586,7 +11279,7 @@ void _onTabTapped(WidgetRef ref, int index) {
         'RealEntryNo': data['Id'],
         'EntryNo': data['Id'],
         'InvoiceNo': data['Id'],
-        'Type': '0'
+        'Type': voucherTypeData!.id != null ? voucherTypeData!.id : 0
       }
     ];
   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PurchasePreviewShow(),));
@@ -10609,10 +11302,11 @@ void _onTabTapped(WidgetRef ref, int index) {
         if (value['otherAmount'] != null) {
           otherAmountList = value['otherAmount'];
         }
-
+        isTax = information['TaxType'] == "N.T" ? false : true;
         formattedDate = DateUtil.dateDMY(information['DDate']);
         invDate = DateUtil.dateDMY(information['InvDate']);
         entryNo = information['EntryNo'].toString();
+        invoiceNoController.text = entryNo;
         invNoController.text = information['Sup_Inv'].toString();
         projectId = information['Project'].toString();
 
@@ -10683,7 +11377,7 @@ void _onTabTapped(WidgetRef ref, int index) {
             net: double.tryParse(product['Net'].toString())!,
             profitPer: double.tryParse(product['Profit'].toString())!,
             quantity: double.tryParse(product['Qty'].toString())!,
-            rRate: double.tryParse(product['RealPrate'].toString())!,
+            rRate: double.tryParse(product['RealPrate'].toString())?? 0.0,
             rate: double.tryParse(product['PRate'].toString())!,
             retail: double.tryParse(product['Retail'].toString())!,
             retailPer: double.tryParse(product['retailp'].toString()) ?? 0,
@@ -11018,6 +11712,394 @@ void _onTabTapped(WidgetRef ref, int index) {
         );
   }
 
+  // costCenterWidget(){
+  //   int gId = 0;
+  //   if (editItem) {
+  //     gId = cartItem[position!].id;
+  //   } else {
+  //     gId = cartItem.length + 1;
+  //   }
+  //   return GestureDetector(
+  //     onTap: () => FocusScope.of(context).unfocus(),
+  //     child: Scaffold(
+  //       backgroundColor: bagroundColor,
+  //           appBar: AppBar(
+  //             centerTitle: true,
+  //             leading: IconButton(onPressed: (){
+  //               setState(() {
+  //                 nextWidget = 1;
+  //               });
+  //             }, icon: const Icon(Icons.arrow_back_rounded)),
+  //             title: const Text('Add Cost Center'),
+  //             titleTextStyle: const TextStyle(
+  //               fontFamily: 'poppins'
+  //             ),
+  //           ),
+  //           body: Padding(
+  //             padding: const EdgeInsets.symmetric(
+  //               vertical: 6,
+  //               horizontal: 10
+  //             ),
+  //             child: Column(children: [
+  //               // const Text(
+  //               //   'Cost Center List',
+  //               //   style: TextStyle(fontWeight: FontWeight.bold,fontFamily: 'poppins'),
+  //               // ),
+  //               //  Row(
+  //               //   children: [
+  //               //   ],
+  //               // ),
+  //               //               const Divider(),
+  //                 const SizedBox(
+  //                   height: 8,
+  //                 ),
+  //                 TypeAheadField<LedgerModel>(
+  //                                           suggestionsCallback: (String pattern) async {
+  //                       nameLike = pattern.isNotEmpty ? pattern : 'a';
+  //                       return isSalesManWiseLedger
+  //                           ? await api.getLedgerBySalesManLike(salesManId, nameLike)
+  //                           : await api.getCustomerNameListLike(
+  //                                       groupId, areaId, routeId, salesManId, nameLike);
+  //                                           },
+  //                                           itemBuilder: (context, LedgerModel suggestion) {
+  //                       return ListTile(
+  //                         title: Text(suggestion.name ?? ""),
+  //                         // subtitle: suggestion.balance != null
+  //                         //     ? Text("Balance: ${suggestion.balance}")
+  //                         //     : null,
+  //                       );
+  //                                           },
+  //                                           onSelected: (LedgerModel suggestion) {
+  //                       ledData = suggestion;
+  //                       costLedgerController.text = ledData!.name;
+  //                       // setState(() {
+  //                       //   isSelected = true;
+  //                       // });
+  //                                           },
+  //                                           controller: costLedgerController, //TextEditingController(text: ledData?.name ?? ""),
+  //                                           builder: (context, controller, focusNode) {
+  //                       return TextField(
+  //                         controller: costLedgerController,
+  //                         focusNode: focusNode,
+  //                         decoration: const InputDecoration(
+  //                           prefixIcon: Icon(Icons.account_box_outlined),
+  //                                                       prefixIconColor: black,
+  //                                                       hintText: 'Account',
+  //                                                       hintStyle: TextStyle(
+  //                                                         color: black,
+  //                                                         fontFamily: 'poppins',
+  //                                                         fontSize: 12,
+  //                                                         fontStyle: FontStyle.normal
+  //                                                       ),
+  //                           contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+  //                           border: OutlineInputBorder(),
+  //                         ),
+  //                       );
+  //                                           },
+  //                       ),
+  //                   const SizedBox(
+  //                     height: 8,
+  //                   ),
+  //               Row(
+  //                 children: [
+  //                   Expanded(
+  //                     flex: 3,
+  //                                               child: TextField(
+  //                                                     controller: costAmountController,
+  //                                                     // focusNode: _focusNodeRate,
+  //                                                     // readOnly: isItemRateEditLocked,
+  //                                                     keyboardType:
+  //                                                         const TextInputType.numberWithOptions(decimal: true),
+  //                                                     inputFormatters: [
+  //                                                       FilteringTextInputFormatter(
+  //                                                           RegExp(r'[0-9]'),
+  //                                                           allow: true,
+  //                                                           replacementString:
+  //                                                               '.')
+  //                                                     ],
+  //                                                     decoration:  const InputDecoration(
+  //                                                       prefixIcon: Icon(Icons.money_rounded),
+  //                                                       prefixIconColor: black,
+  //                                                       hintText: 'Amount',
+  //                                                       hintStyle: TextStyle(
+  //                                                         color: black,
+  //                                                         fontFamily: 'poppins',
+  //                                                         fontSize: 12,
+  //                                                         fontStyle: FontStyle.normal
+  //                                                       ),
+  //                                                       constraints: BoxConstraints(
+  //                                                         maxHeight: 45
+  //                                                       ),
+  //                                                         contentPadding:
+  //                                                             EdgeInsets
+  //                                                                 .symmetric(
+  //                                                                     vertical:
+  //                                                                         10,
+  //                                                                     horizontal:
+  //                                                                         5),
+  //                                                         border:
+  //                                                             OutlineInputBorder()),                                                
+  //                                                   ),),
+  //                                                   const SizedBox(
+  //                                                     width: 6,
+  //                                                   ),
+  //                     Expanded(
+  //                       flex: 1,
+  //                       child: InkWell(
+  //                         onTap: () {
+  //                           if(costLedgerController.text.isNotEmpty && costAmountController.text.isNotEmpty){
+  //                             setState(() {
+  //                               costCenterData.add(CostCenterTransactionModel(
+  //                                   costId: 0,
+  //                                   cDate: DateTime.tryParse(DateUtil.dateYMD(formattedDate)),
+  //                                   cEntryNo: int.tryParse(entryNo),
+  //                                   cDebit: double.tryParse(costAmountController.text),
+  //                                   cCredit: 0,
+  //                                   cVoucher: costLedgerController.text,
+  //                                   cNarration: '',
+  //                                   cLedId:ledData!.id,
+  //                                   cGridId:gId,));
+  //                                ledData = null;
+  //                                costLedgerController.text = '';
+  //                                costAmountController.text = '';
+  //                             });                             
+  //                           }
+  //                         },
+  //                         child: Container(
+  //                           height:44,
+  //                           decoration: BoxDecoration(
+  //                             border: Border.all(
+  //                               width: .7,
+  //                               color: kPrimaryColor
+  //                             ),
+  //                             borderRadius: BorderRadius.circular(4)
+  //                           ),
+  //                           child: Center(child: Text('ADD',
+  //                           style: TextStyle(
+  //                             color: kPrimaryColor
+  //                           ),
+  //                           )),
+  //                         ),
+  //                       ))
+  //                   // Expanded(
+  //                   //   child: TextField(
+  //                   //       controller: newSerialNoController,
+  //                   //       decoration: InputDecoration(
+  //                   //         suffixIcon: IconButton(
+  //                   //           icon: const Icon(Icons.document_scanner),
+  //                   //           onPressed: () {
+  //                   //             setState(() {
+  //                   //               isSerialNoScanner = true;
+  //                   //             });
+  //                   //           },
+  //                   //         ),
+  //                   //         label: const Text('Type SerialNo'),
+  //                   //         border: const OutlineInputBorder(),
+  //                   //       )),
+  //                   // ),
+  //                   // IconButton(
+  //                   //     onPressed: () {
+  //                   //       int qtyTotal =
+  //                   //           int.parse(controllerQuantity.text.split('.')[0]);
+  //                   //       if (qtyTotal == serialNoData.length) {
+  //                   //         showInSnackBar('qty already full');
+  //                   //       } else {
+  //                   //         if (newSerialNoController.text.isNotEmpty) {
+  //                   //           bool serialNoIn = false;
+  //                   //           serialNoIn = serialNoData
+  //                   //                   .firstWhere(
+  //                   //                     (element) =>
+  //                   //                         element.serialNo
+  //                   //                             .toString()
+  //                   //                             .trim()
+  //                   //                             .toLowerCase() ==
+  //                   //                         newSerialNoController.text
+  //                   //                             .trim()
+  //                   //                             .toLowerCase(),
+  //                   //                     orElse: () => SerialNOModel.emptyData(),
+  //                   //                   )
+  //                   //                   .serialNo!
+  //                   //                   .isNotEmpty
+  //                   //               ? true
+  //                   //               : false;
+  //                   //           if (!serialNoIn) {
+  //                   //             setState(() {
+  //                   //               serialNoData.add(SerialNOModel(
+  //                   //                   entryNo: 0,
+  //                   //                   gId: gId,
+  //                   //                   itemName: editItem
+  //                   //                       ? cartItem[position!].itemId
+  //                   //                       : selectedItem!.slNo,
+  //                   //                   serialNo: newSerialNoController.text,
+  //                   //                   slNo: serialNoData.length + 1,
+  //                   //                   tType: 'P',
+  //                   //                   uniqueCode: editItem
+  //                   //                       ? cartItem[position!].uniqueCode
+  //                   //                       : 0));
+  //                   //             });
+  //                   //           } else {
+  //                   //             showInSnackBar('already exists');
+  //                   //           }
+  //                   //         }
+  //                   //       }
+  //                   //     },
+  //                   //     icon: const Icon(Icons.add))
+  //                 ],
+  //               ),
+  //               const Divider(),
+  //               Expanded(
+  //                   child: ListView.builder(
+  //                       itemCount: costCenterData.length,
+  //                       itemBuilder: (context, index) {
+  //                         return Container(
+  //                            width:
+  //                                       MediaQuery.of(context).size.width,
+  //                                   decoration: BoxDecoration(
+  //                                       // boxShadow: [
+  //                                       //   BoxShadow(
+  //                                       //     color: Colors.grey.shade400,
+  //                                       //     blurRadius: 5,
+  //                                       //     spreadRadius: .8,
+  //                                       //   )
+  //                                       // ],
+  //                                       border: Border.all(
+  //                                           color: grey, width: .5),
+  //                                       borderRadius:
+  //                                           BorderRadius.circular(3),
+  //                                       color:
+  //                                           Colors.grey.withOpacity(.1)),
+  //                           child: Padding(
+  //                             padding: const EdgeInsets.all(8.0),
+  //                             child: Column(
+  //                               crossAxisAlignment: CrossAxisAlignment.start,
+  //                               children: [
+  //                                 Row(
+  //                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                                   children: [
+  //                                     Container(
+  //                                                     padding:const EdgeInsets.symmetric(horizontal: 5),
+  //                                                     decoration:BoxDecoration(
+  //                                                             color: white,
+  //                                                             borderRadius:BorderRadius.circular(3),
+  //                                                             border: Border.all(
+  //                                                               width: .3,
+  //                                                               color: grey,
+  //                                                             )),
+  //                                                     child: Text('# ${index + 1}',
+  //                                                       style: const TextStyle( fontSize: 12),
+  //                                                     )),
+  //                                                      InkWell(
+  //                                                       onTap: () {
+  //                                                         setState(() {
+  //                                                           // costCenterData.removeAt(index);
+  //                                                         });
+  //                                                       },
+  //                                                       child: const Icon(Icons.delete))
+  //                                   ],
+  //                                 ),
+  //                                               Row(
+  //                                               children: [
+  //                                                 // Wrap your column inside Expanded to prevent overflow
+  //                                                 Expanded(
+  //                                                   child: Column(
+  //                                                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                                                     children: [
+  //                                                       Text(
+  //                                                         'Account: ${costCenterData[index].cVoucher!}',
+  //                                                         overflow: TextOverflow.ellipsis,
+  //                                                         textAlign: TextAlign.left,
+  //                                                         maxLines: 1, // important
+  //                                                         style: const TextStyle(
+  //                                                           color: black,
+  //                                                           fontWeight: FontWeight.w500,
+  //                                                           fontFamily: 'poppins',
+  //                                                         ),
+  //                                                       ),
+  //                                                       Text(
+  //                                                         'Amount: ${costCenterData[index].cDebit!}',
+  //                                                         overflow: TextOverflow.ellipsis,
+  //                                                         textAlign: TextAlign.left,
+  //                                                         maxLines: 1,
+  //                                                         style: const TextStyle(
+  //                                                           color: black,
+  //                                                           fontWeight: FontWeight.w500,
+  //                                                           fontFamily: 'poppins',
+  //                                                         ),
+  //                                                       ),
+  //                                                     ],
+  //                                                   ),
+  //                                                 ),
+  //                                               ],
+  //                                             ),                         
+  //                                 // Row(
+  //                                 //   children: [
+  //                                 //     // Text('${index + 1} )   '),
+  //                                 //     Text(costCenterData[index].cVoucher!),
+  //                                 //   ],
+  //                                 // ),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                         );
+  //                       }))
+  //             ]),
+  //           ),
+  //           bottomNavigationBar: Padding(
+  //             padding: const EdgeInsets.all(10.0),
+  //             child: Container(
+  //               padding: const EdgeInsets.symmetric(
+  //                 vertical: 12.0,
+  //               ),
+  //               decoration: BoxDecoration(
+  //                 borderRadius: BorderRadius.circular(8),
+  //                 color: kPrimaryColor,
+  //                 boxShadow: [
+  //                   BoxShadow(
+  //                     color: Colors.black.withOpacity(0.3), 
+  //                     blurRadius: 6, 
+  //                     spreadRadius: 2, 
+  //                     offset: const Offset(2, 3), 
+  //                   )
+  //                 ]
+  //               ),
+  //               child: const Row(
+  //                 // crossAxisAlignment: CrossAxisAlignment.center,
+  //                 mainAxisAlignment: MainAxisAlignment.center,
+  //                 children: [
+  //                   Text('Save',
+  //                           style: TextStyle(
+  //                             fontFamily: 'poppins',
+  //                             color: white
+  //                           ),),
+  //                 ],
+  //               ),
+  //             ),
+  //           )
+  //           // Expanded(
+  //           //             child: MaterialButton(
+  //           //           onPressed: () {
+  //           //             int qtyTotal =
+  //           //                 int.parse(controllerQuantity.text.split('.')[0]);      
+  //           //             if (qtyTotal == serialNoData.length) {
+  //           //               setState(() {
+  //           //                 nextWidget = 1;
+  //           //               });
+  //           //             } else {
+  //           //               showInSnackBar('Quantity not equal\nAdd more serialNo');
+  //           //             }
+  //           //           },
+  //           //           color: kPrimaryColor,
+  //           //           child: const Text("Add",
+  //           //           style: TextStyle(
+  //           //             fontFamily: 'poppins',
+  //           //             color: white
+  //           //           ),
+  //           //           ),
+  //           //         )),
+  //         ),
+  //   );
+  // }
+
   callNumber(number) async {
     try {
       await FlutterPhoneDirectCaller.callNumber(number);
@@ -11226,7 +12308,7 @@ void _onTabTapped(WidgetRef ref, int index) {
                     color: kPrimaryColor,
                   ),
                   onPressed: () {
-                    scanBarcode();
+                    // scanBarcode();
                   },
                 )),
             const SizedBox(
@@ -11344,92 +12426,452 @@ void _onTabTapped(WidgetRef ref, int index) {
     );
   }
 
-  scanBarcode() {
-    return Column(
-      children: <Widget>[
-        Expanded(flex: 4, child: _buildQrViewProduct(context)),
-        Expanded(
-          flex: 1,
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                if (result != null)
+    String barcodeValueText = '0';
+  String errorMessage = "";
+
+ searchProductBarcode() {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, StateSetter setDialogState) {
+          return AlertDialog(
+            title: const Text('Type Barcode',
+            style: TextStyle(
+              fontFamily: 'poppins'
+            ),),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      barcodeValueText = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          contentPadding: EdgeInsets.zero, 
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: scannerProductWidget(),
+          ),
+        );
+      },
+    );
+  },
+  icon: Image.asset('assets/icons/ic_barcode_scanner_new.png', scale: 2.6),
+),
+
+                   
+                    border: const OutlineInputBorder(),
+                    labelText: "barcode..",
+                    labelStyle:  TextStyle(
+              fontFamily: 'poppins'
+            ),
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter(RegExp(r'[0-9]'), allow: true),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (errorMessage.isNotEmpty)
                   Text(
-                      'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                else
-                  const Text('Scan a code'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: const EdgeInsets.all(8),
-                      child: ElevatedButton(
-                          onPressed: () async {
-                            await controller?.toggleFlash();
-                            setState(() {});
-                          },
-                          child: FutureBuilder(
-                            future: controller?.getFlashStatus(),
-                            builder: (context, snapshot) {
-                              return Text('Flash: ${snapshot.data}');
-                            },
-                          )),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(8),
-                      child: ElevatedButton(
-                          onPressed: () async {
-                            await controller?.flipCamera();
-                            setState(() {});
-                          },
-                          child: FutureBuilder(
-                            future: controller?.getCameraInfo(),
-                            builder: (context, snapshot) {
-                              if (snapshot.data != null) {
-                                return Text(
-                                    'Camera facing ${describeEnum(snapshot.data!)}');
-                              } else {
-                                return const Text('loading');
-                              }
-                            },
-                          )),
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: const EdgeInsets.all(8),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await controller?.pauseCamera();
-                        },
-                        child:
-                            const Text('pause', style: TextStyle(fontSize: 20)),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.all(8),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          await controller?.resumeCamera();
-                        },
-                        child: const Text('resume',
-                            style: TextStyle(fontSize: 20)),
-                      ),
-                    )
-                  ],
-                ),
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
               ],
             ),
-          ),
-        )
-      ],
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  // foregroundColor: redAccent,
+                  // backgroundColor: Colors.red,
+                ),
+                child: const Text('CANCEL',
+                style: TextStyle(
+              fontFamily: 'poppins'
+            ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+             TextButton(
+  style: TextButton.styleFrom(
+    foregroundColor: kPrimaryColor,
+  ),
+  child: const Text(
+    'OK',
+    style: TextStyle(fontFamily: 'poppins'),
+  ),
+  onPressed: () async {
+    try {
+      if(useOldBarcode){
+         String negativeStockValue =  'yes';
+      // final bResult = await api.fetchBarcodePos(barcodeValueText,selectedCustomerId!,negativeStockValue,'Itemcode');
+      final barcodeResult = await api.fetchBarcodePos(barcodeValueText,selectedSupplierId!,negativeStockValue,'Stockwindow');
+      if (barcodeResult.isNotEmpty) {
+        
+        //  selectedVariant!.name = barcodeResult; // Get the first matching product
+        String itemName = barcodeResult; // Extract item name
+        // final selectedVariant = barcodeResult.first; 
+        // String itemName = selectedVariant!.name!; 
+        // Step 2: Fetch additional data using the product name
+        // final result = await ((salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q')
+        //     ? !isStockProductOnlyInSalesQO
+        //         ? api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+        //         : api.fetchNoStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+        //     : api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName));
+        // if (result.isNotEmpty) {
+        //   final matchingItem = result.first; 
+        //   selectedItemCode = matchingItem.code.toString();
+        //   selectedItemId = matchingItem.id; 
+        //  var results = await ((salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q')
+        //                            ? isStockProductOnlyInSalesQO
+        //                             ? api.fetchNoStockVariants(selectedItemCode!)
+        //                             : api.fetchStockVariant(selectedItemId!)
+        //                             // : api.fetchStockVariants(0)
+        //                             :api.fetchStockVariant(selectedItemId!));
+        //  if(results.isNotEmpty){
+        //            selectedVariant = results.first;           
+        //   // Step 3: Update UI
+        //   if (context.mounted) {
+        //     setDialogState(() {
+        //       isQrCode = true;
+        //       if(sherTex){
+        //         selectedVariantTex = [selectedVariant!];
+        //       }
+        //       selectedQuantity = selectedVariant!.quantity!.toString();
+        //       selectedItemId = selectedVariant!.itemId;
+        //       itemNameControl.text = selectedVariant!.name!;
+        //       selectedColors.add(selectedVariant!.color!);
+        //       selectedSize = selectedVariant!.size;
+        //       // Fetch rate based on rate type
+        //       Future<double?> rateFuture;
+        //       switch (rateTypeItem!.name) {
+        //         case 'MRP':
+        //           rateFuture = Future.value(selectedVariant!.sellingPrice);
+        //           break;
+        //         case 'WHOLESALE':
+        //           rateFuture = Future.value(selectedVariant!.wholeSalePrice);
+        //           break;
+        //         case 'RETAIL':
+        //           rateFuture = Future.value(selectedVariant!.retailPrice);
+        //           break;
+        //         case 'SPRETAIL':
+        //           rateFuture = Future.value(selectedVariant!.spRetailPrice);
+        //           break;
+        //         case 'BRANCH':
+        //           rateFuture = Future.value(selectedVariant!.branch);
+        //           break;
+        //         default:
+        //           rateFuture = Future.value(null);
+        //           break;
+        //       }
+        //       rateFuture.then((rate) {
+        //         if (rate != null) {
+        //           _rateController.text = rate.toStringAsFixed(2);
+        //         }
+        //       });
+        //       taxP = salesTypeData!.type != 'SALES-ES' ? (selectedVariant!.tax ?? 0) : 0;
+        //       _serialNoController.text = selectedSize != null
+        //           ? otherRegSizeList.firstWhere(
+        //               (e) => e.id == selectedSize,
+        //               orElse: () => OtherRegistrationModel(
+        //                 id: -1,
+        //                 name: '',
+        //                 description: '',
+        //                 type: '',
+        //                 add1: '',
+        //                 add2: '',
+        //                 add3: '',
+        //                 email: '',
+        //               ),
+        //             ).name ?? ''
+        //           : '';
+        //       errorMessage = "";
+        //     });
+        //     Navigator.pop(context);
+        //   }else {
+        //   setDialogState(() {
+        //     errorMessage = "No product found";
+        //   });
+        // }
+        //  }
+        // } else {
+        //   setDialogState(() {
+        //     errorMessage = "No product found with this item name.";
+        //   });
+        // }
+      } else {
+        setDialogState(() {
+          errorMessage = "No product found with this barcode.";
+        });
+      }
+      
+      }
+    //   else{
+    //  String negativeStockValue =  negativeStock == true ? 'yes' : 'no';
+    //   // final bResult = await api.fetchBarcodePos(barcodeValueText,selectedCustomerId!,negativeStockValue,'Itemcode');
+    //   final barcodeResult = await api.fetchStockProductByBarcode(barcodeValueText);
+    //   if (barcodeResult.isNotEmpty) {
+    //      selectedVariant = barcodeResult.first; 
+    //     String itemName = selectedVariant!.name!; 
+    //     final result = await ((salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q')
+    //         ? !isStockProductOnlyInSalesQO
+    //             ? api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+    //             : api.fetchNoStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+    //         : api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName));
+    //     if (result.isNotEmpty) {
+    //       final matchingItem = result.first; 
+    //       selectedItemCode = matchingItem.code.toString(); 
+    //       if (context.mounted) {
+    //         setDialogState(() {
+    //           isQrCode = true;
+    //           if(sherTex){
+    //             selectedVariantTex = [selectedVariant!];
+    //           }
+    //           selectedQuantity = selectedVariant!.quantity!.toString();
+    //           selectedItemId = selectedVariant!.itemId;
+    //           itemNameControl.text = selectedVariant!.name!;
+    //           selectedColors.add(selectedVariant!.color!);
+    //           selectedSize = selectedVariant!.size;
+    //           Future<double?> rateFuture;
+    //           switch (rateTypeItem!.name) {
+    //             case 'MRP':
+    //               rateFuture = Future.value(selectedVariant!.sellingPrice);
+    //               break;
+    //             case 'WHOLESALE':
+    //               rateFuture = Future.value(selectedVariant!.wholeSalePrice);
+    //               break;
+    //             case 'RETAIL':
+    //               rateFuture = Future.value(selectedVariant!.retailPrice);
+    //               break;
+    //             case 'SPRETAIL':
+    //               rateFuture = Future.value(selectedVariant!.spRetailPrice);
+    //               break;
+    //             case 'BRANCH':
+    //               rateFuture = Future.value(selectedVariant!.branch);
+    //               break;
+    //             default:
+    //               rateFuture = Future.value(null);
+    //               break;
+    //           }
+    //           rateFuture.then((rate) {
+    //             if (rate != null) {
+    //               _rateController.text = rate.toStringAsFixed(2);
+    //             }
+    //           });
+    //           taxP = salesTypeData!.type != 'SALES-ES' ? (selectedVariant!.tax ?? 0) : 0;
+    //           _serialNoController.text = selectedSize != null
+    //               ? otherRegSizeList.firstWhere(
+    //                   (e) => e.id == selectedSize,
+    //                   orElse: () => OtherRegistrationModel(
+    //                     id: -1,
+    //                     name: '',
+    //                     description: '',
+    //                     type: '',
+    //                     add1: '',
+    //                     add2: '',
+    //                     add3: '',
+    //                     email: '',
+    //                   ),
+    //                 ).name ?? ''
+    //               : '';
+    //           errorMessage = "";
+    //         });
+    //         Navigator.pop(context);
+    //       }
+    //     } else {
+    //       setDialogState(() {
+    //         errorMessage = "No product found with this item name.";
+    //       });
+    //     }
+    //   } else {
+    //     setDialogState(() {
+    //       errorMessage = "No product found with this barcode.";
+    //     });
+    //   }
+    //   }
+    
+    } catch (error) {
+      debugPrint('Error: $error');
+      if (context.mounted) {
+        setDialogState(() {
+          errorMessage = "Error fetching data.";
+        });
+      }
+    }
+  },
+),
+
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+
+ scannerProductWidget() {
+    return Scaffold(
+      body: Column(
+        children: <Widget>[
+          Expanded(flex: 4, child: _buildQrViewProduct(context)),
+          Expanded(
+            flex: 1,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  if (result != null)
+                    Text(
+                        'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
+                  else
+                    const Text('Scan a code'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        margin: const EdgeInsets.all(4),
+                        child:
+                       FutureBuilder(
+                        future: controller?.getFlashStatus(),
+                        builder: (context,snapshot){
+                          return  IconButton(onPressed: ()async{
+                         await controller?.toggleFlash();
+                              setState(() {});
+                        }, icon:  Icon(snapshot.data == false ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                        size: 30,
+                        ));
+                        }
+                       )
+                        //  ElevatedButton(
+                        //     style: ElevatedButton.styleFrom(
+                        //       elevation: 1,
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(3)
+                        //       )
+                        //     ),
+                        //     onPressed: () async {
+                        //       await controller?.toggleFlash();
+                        //       setState(() {});
+                        //     },
+                        //     child: FutureBuilder(
+                        //       future: controller?.getFlashStatus(),
+                        //       builder: (context, snapshot) {
+                        //         return Text('Flash: ${snapshot.data == false ? 'Off' :  ''}',
+                        //          style: const TextStyle(
+                        //                 fontFamily: 'poppins'
+                        //               ),);
+                        //       },
+                        //     )),
+                      ),
+                      Container(
+                        margin: const EdgeInsets.all(4),
+                        child: IconButton(onPressed: ()async{
+                          await controller?.flipCamera();
+                              setState(() {});
+                        }, icon: const Icon(Icons.cameraswitch_rounded,
+                        size: 30,
+                        )),
+                        //  ElevatedButton(
+                        //    style: ElevatedButton.styleFrom(
+                        //     elevation: 1,
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(3)
+                        //       )
+                        //     ),
+                        //     onPressed: () async {
+                        //       await controller?.flipCamera();
+                        //       setState(() {});
+                        //     },
+                        //     child: FutureBuilder(
+                        //       future: controller?.getCameraInfo(),
+                        //       builder: (context, snapshot) {
+                        //         if (snapshot.data != null) {
+                        //           return Icon(Icons.cameraswitch_rounded);
+                        //           // Text(
+                        //           //     'Camera facing ${describeEnum(snapshot.data!)}',
+                        //           //     style: const TextStyle(
+                        //           //       fontFamily: 'poppins'
+                        //           //     ),
+                        //           //     );
+                        //         } else {
+                        //           return Icon(Icons.cameraswitch_rounded);
+                        //           // const Text('loading',
+                        //           // style: TextStyle(
+                        //           //   fontFamily: 'poppins'
+                        //           // ),
+                        //           // );
+                        //         }
+                        //       },
+                        //     )),
+                      )
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        width:110,
+                        margin: const EdgeInsets.all(4),
+                        child: ElevatedButton(
+                           style: ElevatedButton.styleFrom(
+                            elevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3)
+                              )
+                            ),
+                          onPressed: () async {
+                            await controller?.pauseCamera();
+                          },
+                          child:
+                              const Text('Pause', style: TextStyle(
+                                color:kPrimaryColor,
+                                fontSize: 15,fontFamily: 'poppins')),
+                        ),
+                      ),
+                      Container(
+                        width:110,
+                        margin: const EdgeInsets.all(4),
+                        child: ElevatedButton(
+                           style: ElevatedButton.styleFrom(
+                            elevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3)
+                              )
+                            ),
+                          onPressed: () async {
+                            await controller?.resumeCamera();
+                          },
+                          child: const Text('Resume',
+                              style: TextStyle(fontSize: 15,
+                              fontFamily: 'poppins',
+                              color:kPrimaryColor,
+                              )),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -11594,24 +13036,283 @@ void _onTabTapped(WidgetRef ref, int index) {
     );
   }
 
-  String barcodeValueText = '0';
-  void _onQRViewCreatedProduct(QRViewController controller) {
+void _onQRViewCreatedProduct(QRViewController controller) {
+  setState(() {
+    this.controller = controller;
+  });
+
+  controller.scannedDataStream.listen((scanData) {
     setState(() {
-      this.controller = controller;
+      result = scanData;
+
+      // Stop scanning
+      controller.pauseCamera();
+      productScanner = false;
+
+      var _id = result!.code!.isNotEmpty
+          ? int.tryParse(result!.code!.replaceAll('http://', ''))
+          : 0;
+      barcodeValueText = _id.toString();
+      isBarcodePicker = true;
+      if (useOldBarcode) {
+          String negativeStockValue =  'yes';
+          
+          // Add await since this appears to be an async call
+          api.fetchBarcodePos(barcodeValueText, selectedSupplierId!, negativeStockValue, '').then((barcodeResult) async {
+            if (barcodeResult.isNotEmpty) {
+              
+              String itemName = barcodeResult; // Extract item name
+        //       final selectedVariant = barcodeResult.first; 
+        // String itemName = selectedVariant!.name!; 
+              // // Add await for the API call
+              final result = await api.fetchProductPurchaseListLike(itemName);
+              
+              if (result.isNotEmpty) {
+                 quantity = 0;
+                                  controllerQuantity.text = '';
+                                  controllerDiscountPer.text = '';
+                                  controllerDiscount.text = '';
+                                  unitValue = 1;
+                                  _dropDownUnit = 0;
+                                  pRate = 0;
+                                  currentRate = 0;
+                                  rPRate = 0;
+                                  mrp = 0;
+                                  retail = 0;
+                                  wholeSale = 0;
+                                  spRetail = 0;
+                                  branch = 0;
+                                  grossTotal = 0;
+                                  net = 0;
+                                  tax = 0 ;
+                                  total = 0;
+                                  discountPer = 0;
+                                  discount = 0;
+                                  _conversion = 0;
+                 final matchingItems = result.map((item) => ProductPurchaseModel.fromMap(item)).toList();
+                 selectedItem = matchingItems.first; // Get the first item
+                 selectedProducteId = selectedItem.slNo;
+                 productNameController.text = selectedItem.itemName;
+                
+                // Add await for this API call
+                final results = await api.fetchProductPrize(selectedProducteId!,selectedSupplierId ?? 0);
+                
+                if (results.isNotEmpty) {
+                  // fetchedPrice = results.first;
+                  
+                  // Step 3: Update UI
+                  if (context.mounted) {
+                    setState(() {
+                       productModelPrize = results.toList();
+                          
+                                
+                                    currentRate =
+                                  double.tryParse(productModelPrize[0]['prate'].toString()) ?? 0;
+                                  pRate = currentRate;
+                                  if (pRate > 0 && !focusNodeRate.hasFocus) {
+                                  controllerRate.text = pRate.toString();
+                                   }
+                                   else {
+                                    controllerRate.text = '';
+                                  }
+                                   if (currentRate > 0 && !focusNodeRate.hasFocus &&
+                                   controllerRate.text.isEmpty) {
+                                   controllerRate.text = _conversion > 0
+                                   ? (pRate * _conversion).toStringAsFixed(decimal)
+                                   : pRate.toStringAsFixed(decimal);
+                                   pRate = _conversion > 0 ? pRate * _conversion : pRate;
+                                 }
+                                 
+                                 
+                                   double.tryParse(productModelPrize[0]['realprate'].toString()) == 0
+                                   ? 0
+                                   : rPRate =
+                                   double.tryParse(productModelPrize[0]['realprate'].toString()) ??
+                                   0;
+                          
+                                  // pRate = double.tryParse(
+                                  //         productModelPrize[0]['prate'].toString()) ??
+                                  //     0;
+                                  // if (pRate > 0 && !focusNodeRate.hasFocus) {
+                                  //   controllerRate.text = pRate.toString();
+                                  // } else {
+                                  //   controllerRate.text = '';
+                                  // }
+                          
+                                  // rPRate = double.tryParse(productModelPrize[0]
+                                  //             ['realprate']
+                                  //         .toString()) ??
+                                  //     0;
+                                  mrp = double.tryParse(
+                                          productModelPrize[0]['mrp'].toString()) ??
+                                      0;
+                                  if (mrp > 0 && !focusNodeMrp.hasFocus) {
+                                    controllerMrp.text = mrp.toString();
+                                  } else {
+                                    controllerMrp.text = '';
+                                  }
+                          
+                                  retail = double.tryParse(productModelPrize[0]
+                                              ['retail']
+                                          .toString()) ??
+                                      0;
+                                  if (retail > 0 && !focusNodeRetail.hasFocus) {
+                                    controllerRetail.text = retail.toString();
+                                  } else {
+                                    controllerRetail.text = '';
+                                  }
+                          
+                                  wholeSale = double.tryParse(productModelPrize[0]
+                                              ['wsrate']
+                                          .toString()) ??
+                                      0;
+                                  if (wholeSale > 0 && !focusNodeWholeSale.hasFocus) {
+                                    controllerWholeSale.text = wholeSale.toString();
+                                  } else {
+                                    controllerWholeSale.text = '';
+                                  }
+                          
+                                  spRetail = double.tryParse(productModelPrize[0]
+                                              ['spretail']
+                                          .toString()) ??
+                                      0;
+                                  branch = double.tryParse(productModelPrize[0]
+                                              ['branch']
+                                          .toString()) ??
+                                      0;
+                                  if (branch > 0 && !focusNodeBranch.hasFocus) {
+                                    controllerBranch.text = branch.toString();
+                                  } else {
+                                    controllerBranch.text = '';
+                                  }
+                          
+                                  taxP = selectedItem.tax.toDouble() ?? 0;
+                    });
+                    
+                    // Close scanner and pop dialog
+                    controller.stopCamera();
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  }
+                } else {
+                  _handleError(controller, "No variants found for this product.");
+                }
+              } else {
+                _handleError(controller, "No product found with this item name.");
+              }
+            } else {
+              _handleError(controller, "No product found with this barcode.");
+            }
+          }).catchError((error) {
+            debugPrint('Error: $error');
+            _handleError(controller, "Error fetching data: ${error.toString()}");
+          });
+        }
+    //   else{
+    //   api.fetchStockProductByBarcode(barcodeValueText).then((barcodeResult) async {
+    //     debugPrint('API Response: $barcodeResult');
+    //     if (barcodeResult.isNotEmpty) {
+    //       final selectedVariant = barcodeResult.first; // Get first matching product
+    //       String itemName = selectedVariant.name!; // Extract item name
+    //       if (context.mounted) {
+    //         setState(() {
+    //           isQrCode = true;
+    //           selectedVariantTex = [selectedVariant];
+    //           selectedItemId = selectedVariant.itemId;
+    //           itemNameControl.text = selectedVariant.name!;
+    //           selectedColors.add(selectedVariant.color!);
+    //           selectedSize = selectedVariant.size;
+    //           _serialNoController.text = selectedSize != null
+    //               ? otherRegSizeList.firstWhere(
+    //                   (e) => e.id == selectedSize,
+    //                   orElse: () => OtherRegistrationModel(
+    //                     id: -1,
+    //                     name: '',
+    //                     description: '',
+    //                     type: '',
+    //                     add1: '',
+    //                     add2: '',
+    //                     add3: '',
+    //                     email: '',
+    //                   ),
+    //                 ).name ?? ''
+    //               : '';
+    //           errorMessage = "";
+    //         });
+    //       }
+    //       // Fetch item details using item name
+    //       final itemDetails = await ((salesTypeData!.type == 'SALES-O' || salesTypeData!.type == 'SALES-Q')
+    //           ? !isStockProductOnlyInSalesQO
+    //               ? api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+    //               : api.fetchNoStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName)
+    //           : api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate), itemName));
+    //       if (itemDetails.isNotEmpty) {
+    //         final matchingItem = itemDetails.first;
+    //         selectedItemCode = matchingItem.code.toString(); // Get item code
+    //         if (context.mounted) {
+    //           setState(() {
+    //             _rateController.text = _getRate(selectedVariant!);
+    //             taxP = salesTypeData!.type != 'SALES-ES' ? (selectedVariant.tax ?? 0) : 0;
+    //             nextWidget = 2;
+    //           });
+    //           // Close scanner and pop dialogs
+    //           Future.delayed(const Duration(milliseconds: 300), () {
+    //             if (context.mounted) {
+    //               controller.stopCamera();
+    //               Navigator.pop(context);
+    //               Navigator.pop(context);
+    //             }
+    //           });
+    //         }
+    //       } else {
+    //         _handleError(controller, "No product found with this item name.");
+    //       }
+    //     } else {
+    //       _handleError(controller, "No product found with this barcode.");
+    //     }
+    //   }).catchError((error) {
+    //     debugPrint('Error: $error');
+    //     _handleError(controller, "Error fetching data.");
+    //   });
+    // }
     });
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-        productScanner = false;
-        var _id = result!.code!.isNotEmpty
-            ? int.tryParse(result!.code!.replaceAll('http://', ''))
-            : 0;
-        barcodeValueText = _id.toString();
-        isBarcodePicker = true;
-        nextWidget = 3;
-      });
+  });
+}
+
+/// Helper function to get the rate based on rate type
+// String _getRate(StockProduct selectedVariant) {
+//   switch (rateTypeItem!.name) {
+//     case 'MRP':
+//       return selectedVariant.sellingPrice!.toStringAsFixed(2);
+//     case 'WHOLESALE':
+//       return selectedVariant.wholeSalePrice!.toStringAsFixed(2);
+//     case 'RETAIL':
+//       return selectedVariant.retailPrice!.toStringAsFixed(2);
+//     case 'SPRETAIL':
+//       return selectedVariant.spRetailPrice!.toStringAsFixed(2);
+//     case 'BRANCH':
+//       return selectedVariant.branch!.toStringAsFixed(2);
+//     default:
+//       return "0.00";
+//   }
+// }
+
+
+void _handleError(QRViewController controller, String message) {
+  if (context.mounted) {
+    setState(() {
+      errorMessage = message;
+      Fluttertoast.showToast(msg: errorMessage);
+      controller.stopCamera();
+    });
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
     });
   }
+}
 
   showBarcodeProduct() {
     return FutureBuilder(

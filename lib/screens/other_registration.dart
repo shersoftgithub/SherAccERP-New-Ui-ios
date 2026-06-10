@@ -1,4 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -209,10 +210,10 @@ class _OtherRegistrationState extends State<OtherRegistration> {
             height: 10,
           ),
           ContainerFieldWidget(
-              widget: SimpleAutoCompleteTextField(
-                key: keyName,
+              widget: EasyAutocomplete(
+                // key: keyName,
                 controller: nameControl,
-                clearOnSubmit: false,
+                // clearOnSubmit: false,
                 suggestions: nameListDisplay,
                 decoration: const InputDecoration(
                                          contentPadding: EdgeInsets.symmetric(
@@ -221,7 +222,7 @@ class _OtherRegistrationState extends State<OtherRegistration> {
                       ),
                   border: OutlineInputBorder(),
                 ),
-                textSubmitted: (data) {
+                onSubmitted : (data) {
                   lName = data;
                   if (lName.isNotEmpty) {
                     int _id = otherList

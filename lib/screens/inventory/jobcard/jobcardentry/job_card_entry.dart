@@ -21,7 +21,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/sales/previous_bill.dart';
 import 'package:sheraccerp/screens/inventory/sales/salesNot.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_return.dart';
@@ -576,7 +576,9 @@ class _JobcardentryState extends State<Jobcardentry> {
         appBar: AppBar(
           title: const Text(
             "Job Card Entry",
-            style: TextStyle(fontSize: 16, fontFamily: 'poppins'),
+            style: TextStyle(fontSize: 16, fontFamily: 'poppins',
+            color: white,
+            ),
           ),
           actions: [
             Visibility(
@@ -696,7 +698,9 @@ class _JobcardentryState extends State<Jobcardentry> {
         appBar: AppBar(
           title: const Text(
             "Job Card Entry",
-            style: TextStyle(fontSize: 16, fontFamily: 'poppins'),
+            style: TextStyle(fontSize: 16, fontFamily: 'poppins',
+            color: white,
+            ),
           ),
           actions: [
             Visibility(

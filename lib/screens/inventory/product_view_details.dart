@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sheraccerp/screens/inventory/cart_product.dart';
 import 'package:sheraccerp/screens/home/home.dart';
 import 'package:sheraccerp/service/cartproduct.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class ProductViewDetail extends StatefulWidget {
   final product_detail_name;
@@ -53,6 +54,9 @@ class _ProductViewDetailState extends State<ProductViewDetail> {
                     MaterialPageRoute(builder: (context) => const Home()));
               },
               child: const Text('Place Order')),
+              titleTextStyle: const TextStyle(
+                color: white,
+              ),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.search, color: Colors.black),

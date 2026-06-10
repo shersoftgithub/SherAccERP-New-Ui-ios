@@ -11,7 +11,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/stock_item.dart';
 import 'package:sheraccerp/models/stock_product.dart';
 import 'package:sheraccerp/models/unit_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -55,7 +55,8 @@ class _DamageEntryState extends State<DamageEntry> {
       useOLDBARCODE = false,
       widgetID = true,
       lastRecord = false,
-      keyItemsVariantStock = false;
+      keyItemsVariantStock = false,
+      taxGroupUpdate = false;
   int page = 1, pageTotal = 0, totalRecords = 0;
   List<dynamic> ledgerDisplay = [];
   List<dynamic> _ledger = [];
@@ -93,6 +94,8 @@ class _DamageEntryState extends State<DamageEntry> {
     useOLDBARCODE = ComSettings.getStatus('USE OLD BARCODE', settings);
     keyItemsVariantStock =
         ComSettings.getStatus('KEY LOCK SALES DISCOUNT', settings);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
   }
 
   @override
@@ -108,7 +111,8 @@ class _DamageEntryState extends State<DamageEntry> {
         key: _scaffoldKey,
         appBar: AppBar(
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           title: const Text("Damage"),
           actions: [
@@ -144,7 +148,8 @@ class _DamageEntryState extends State<DamageEntry> {
         key: _scaffoldKey,
         appBar: AppBar(
            titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           title: const Text("Damage"),
           actions: [
@@ -493,6 +498,7 @@ class _DamageEntryState extends State<DamageEntry> {
   selectWidget() {
     return nextWidget == 0
         ? selectLedgerWidget()
+        //newDamageWidget()
         : nextWidget == 1
             ? selectProductWidget()
             : nextWidget == 2
@@ -515,6 +521,110 @@ class _DamageEntryState extends State<DamageEntry> {
   }
 
   bool isData = false;
+ 
+ newDamageWidget(){
+    return Column(
+      children: [
+        Container(
+          width: deviceSize!.width,
+          color: white,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8
+          ),
+          child:  Row(
+            // mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                         const Text(
+                  ' Entry No',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15),
+                ),
+                    TextField(
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (text) {
+                      
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                width: 6,
+              ),
+             
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     const Text(
+                  ' Date',
+                  style: TextStyle(
+                    fontFamily: 'poppins',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15),
+                ),
+                    InkWell(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: grey
+                          ),
+                          borderRadius: BorderRadius.circular(3)
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              formattedDate!,
+                               style: const TextStyle(
+                            fontFamily: 'poppins',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                            ),
+                            const Icon(Icons.calendar_month,
+                            color: grey,
+                            size: 18,
+                            )
+                          ],
+                        ),
+                      ),
+                      onTap: () => _selectDate(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+          width: MediaQuery.of(context).size.width,
+        )
+      ],
+    );
+ }
 
   selectLedgerWidget() {
   setState(() {
@@ -907,7 +1017,7 @@ class _DamageEntryState extends State<DamageEntry> {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
+          children: const <Widget>[  
             CircularProgressIndicator(),
             SizedBox(height: 20),
             Text('This may take some time..'),
@@ -1046,7 +1156,7 @@ class _DamageEntryState extends State<DamageEntry> {
 
   selectStockLedger() {
     return FutureBuilder(
-        future: dio.fetchStockVariant(productModel!.id!),
+        future: dio.fetchStockVariant(productModel!.id!,taxGroupUpdate,0),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             if (snapshot.data!.length > 0) {

@@ -1,4 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/tax_group_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -91,7 +92,7 @@ class _TaxRegistrationState extends State<TaxRegistration> {
               },
               icon: isExist ? const Icon(Icons.edit) : 
                Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
-        ], titleTextStyle: TextStyle(fontFamily: 'poppins'),
+        ], titleTextStyle: TextStyle(fontFamily: 'poppins',color: white,),
         title: const Text('Tax Group Register')),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
@@ -101,10 +102,10 @@ class _TaxRegistrationState extends State<TaxRegistration> {
               child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 16),
                   child: Column(children: [
-                    SimpleAutoCompleteTextField(
-                      key: keyName,
+                    EasyAutocomplete(
+                      // key: keyName,
                       controller: nameControl,
-                      clearOnSubmit: false,
+                      // clearOnSubmit: false,
                       suggestions: groupNameListDisplay,
                       decoration: const InputDecoration(
                         // constraints: BoxConstraints(
@@ -118,7 +119,7 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                           fontFamily: 'poppins'
                         ),
                           border: OutlineInputBorder(), labelText: 'Group Name'),
-                      textSubmitted: (data) {
+                      onSubmitted: (data) {
                         var lName = data;
                         if (lName.isNotEmpty) {
                           findTaxData();
@@ -128,10 +129,10 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                     const SizedBox(
                       height: 8,
                     ),
-                    SimpleAutoCompleteTextField(
-                      key: keySchedule,
+                    EasyAutocomplete(
+                      // key: keySchedule,
                       controller: scheduleControl,
-                      clearOnSubmit: false,
+                      // clearOnSubmit: false,
                       suggestions: taxScheduleListDisplay,
                       decoration: const InputDecoration(
                           border: OutlineInputBorder(),
@@ -139,7 +140,7 @@ class _TaxRegistrationState extends State<TaxRegistration> {
                           fontFamily: 'poppins'
                         ),
                           labelText: 'Schedule Name'),
-                      textSubmitted: (data) {
+                      onSubmitted: (data) {
                         var lName = data;
                         if (lName.isNotEmpty) {
                           findTaxData();

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sheraccerp/util/jobcard_lists.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class UploadPhotos extends StatefulWidget {
   const UploadPhotos({super.key});
@@ -102,7 +103,9 @@ class _UploadPhotosState extends State<UploadPhotos> {
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(title:  const Text(
           "Upload Photos",
-          style: TextStyle(fontSize: 15),
+          style: TextStyle(fontSize: 15,
+          color: white,
+          ),
                 ),),
         body: Padding(
           padding: const EdgeInsets.all(8.0),

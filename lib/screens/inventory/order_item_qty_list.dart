@@ -103,6 +103,9 @@ class _OrderItemListState extends State<OrderItemList> {
           ],
           // ignore: prefer_const_constructors
           title: const Text('Order Item Report'),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: loadReport
             ? reportView('Order Item Report', _infoKey)

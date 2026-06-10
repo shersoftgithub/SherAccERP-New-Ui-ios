@@ -14,7 +14,7 @@ Future<List<StockItem>> productsProviderss(ProductsProviderssRef ref, String dat
 @riverpod
 Future<List<StockProduct>> stockVariantsProvider(StockVariantsProviderRef ref, int productId) async {
   final dioService = ref.watch(dioServiceProvider);
-  return dioService.fetchStockVariant(productId);
+  return dioService.fetchStockVariant(productId,false,0);
 }
 
 @riverpod

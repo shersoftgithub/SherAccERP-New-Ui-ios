@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/order.dart';
 import 'package:sheraccerp/models/sales_type.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -80,6 +80,9 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
             key: _scaffoldKey,
             backgroundColor: kPrimaryColor,
             title: const Text("Confirm"),
+            titleTextStyle: const TextStyle(
+              color: white,
+            ),
             leading: Container(),
             actions: <Widget>[
               TextButton(

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class TestPage extends StatelessWidget {
   const TestPage({Key? key}) : super(key: key);
@@ -11,6 +12,9 @@ class TestPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Popup Window"),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
         backgroundColor: Colors.pink,
       ),
       backgroundColor: Colors.blueGrey,

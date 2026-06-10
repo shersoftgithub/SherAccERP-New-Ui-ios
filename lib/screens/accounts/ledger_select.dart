@@ -5,9 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
+import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/ledger_parent.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/screens/report_view.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -55,6 +56,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
   List<CompanySettings> settings = [];
   List<OtherRegistrationModel> otherRegAreaDataList = [];
   List<OtherRegistrationModel> otherRegRouteDataList = [];
+   List<LedgerModel> cashBankACList = [];
+   List<LedgerModel> cashBankACListAll = [];
+   var accountId = '', accountName = '';
+  List<String> statusType = ['', 'PENDING', 'CLEARED', 'BOUNCED', 'CANCELLED'];
+  String dropDownType = '', dropDownStatusType = '';
+  bool showProfit = false;
+  bool showSalesProfit = false;
 
   @override
   void initState() {
@@ -69,6 +77,22 @@ var _ledger, _id, locationId, _dropDownBranchId;
           .map((e) => e.key)
           .first;
     }
+       api.getLedgerListByType('SelectbankOnly').then((value) {
+      List<LedgerModel> _dataTemp = [];
+      for (var ledger in value) {
+        _dataTemp
+            .add(LedgerModel(id: ledger['ledcode'], name: ledger['LedName']));
+      }
+      setState(() {
+        cashBankACList.addAll(_dataTemp);
+        
+      });
+    }); 
+           api.getCashBankAc().then((value) {
+      setState(() {
+        cashBankACListAll.addAll(value);
+      });
+    });
    groupId =
         ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
             1;
@@ -131,6 +155,19 @@ var _ledger, _id, locationId, _dropDownBranchId;
         _loading = false;
         _ledger = 'CASH';
         _id = 0;
+      }else if(mode == "BankReceiptList" ||
+       mode == "BankPaymentList"){
+        statement = mode;
+        _loading = false;
+         api.getLedgerGroupAll().then((value) {
+          setState(() {
+            itemDisplay.addAll(value);
+            selectedItem = itemDisplay.firstWhere(
+                (element) => element.name == '',
+                orElse: (() => {'id': 0, 'name': ''}));
+            selectedStockValue = selectedItem.name;
+          });
+        });
       } else if (mode == "ReceiptList" ||
           mode == 'PaymentList' ||
           mode == 'JournalList') {
@@ -340,6 +377,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
         ],
         titleTextStyle:
             const TextStyle(fontFamily: 'poppins', 
+            color: white,
             fontWeight: FontWeight.w500),
         title: Text(mode == 'ledger'
             ? 'Ledger Report'
@@ -380,7 +418,11 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             ? 'Payment List'
                                                                             : mode == 'JournalList'
                                                                                 ? 'Journal List'
-                                                                                : 'Select'),
+                                                                                : mode == 'BankPaymentList'
+                                                                                   ? 'Bank Payment List'
+                                                                                   : mode == 'BankReceiptList'
+                                                                                     ? 'Bank Receipt List'
+                                                                                     : 'Select'),
       ),
       body: _loading ? _loadLedger() : _loadWidget(),
     );
@@ -415,7 +457,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
   }
 
   var stmtType = 'Closing Report';
-
+  var _dropDownValue = '';
   _loadWidget() {
     return mode == "ledger"
         ? Container(
@@ -600,6 +642,27 @@ var _ledger, _id, locationId, _dropDownBranchId;
                       ),
                       headTxt: 'Select Branch'),
                 ),
+                 Visibility(
+                    visible: !isAdminUser,
+                    child: Row(
+                      children: [
+                        const Text('Default Branch',
+                         style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          fontFamily: 'poppins'),
+                        ),
+                        Checkbox(
+                          value: locationId == null,
+                          activeColor: kPrimaryColor,
+                          onChanged: (value) {
+                            setState(() {
+                              locationId = null;
+                            });
+                          },
+                        )
+                      ],
+                    )),
                 const SizedBox(
                   height: 10,
                 ),
@@ -1259,19 +1322,23 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                // Row(
-                                //   children: [
-                                //     Text('Opening Balance'),
-                                //     Checkbox(
-                                //       value: _ob,
-                                //       onChanged: (value) {
-                                //         setState(() {
-                                //           _ob = value;
-                                //         });
-                                //       },
-                                //     ),
-                                //   ],
-                                // ),
+                                Row(
+                                  children: [
+                                     const Text('Show Closing Stock',
+                                    style: TextStyle(
+                                      fontFamily: 'poppins'
+                                    ),),
+                                    Checkbox(
+                                      value: _ob,
+                                      activeColor: kPrimaryColor,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _ob = value!;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
                                 // Card(
                                 //   elevation: 2,
                                 //   child: DropDownSettingsTile<int>(
@@ -2272,6 +2339,9 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                             'Closing Report',
                                                             'Style1',
                                                             'Style2',
+                                                            'Style4',
+                                                            'Style5',
+                                                            'Daily Sheet',
                                                             'Daily / Monthly',
                                                             'AsperMart'
                                                           ].map((String items) {
@@ -2315,10 +2385,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               const DropDownDecoratorProps(
                                                             dropdownSearchDecoration:
                                                                 InputDecoration(
-                                                                                         contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
-                      ),
+                                                                  contentPadding: EdgeInsets.symmetric(
+                                                                  horizontal: 4,
+                                                                  vertical: 8
+                                                                  ),
                                                               border:
                                                                   OutlineInputBorder(),
                                                             ),
@@ -2333,6 +2403,113 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     const SizedBox(
                                                       height: 10,
                                                     ),
+                                                    Container(
+                                                      margin: const EdgeInsets.only(bottom: 16),
+                                                      padding: const EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey.shade50,
+                                                        borderRadius: BorderRadius.circular(16),
+                                                        border: Border.all(color: Colors.grey.shade200),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          // Container(
+                                                          //   padding: const EdgeInsets.all(8),
+                                                          //   decoration: BoxDecoration(
+                                                          //     color: kPrimaryColor.withOpacity(0.1),
+                                                          //     borderRadius: BorderRadius.circular(12),
+                                                          //   ),
+                                                          //   child: const Icon(
+                                                          //     Icons.person_2_rounded,
+                                                          //     size: 20,
+                                                          //     color: kPrimaryColor,
+                                                          //   ),
+                                                          // ),
+                                                          const SizedBox(width: 12),
+                                                          Expanded(
+                                                            child: const Text(
+                                                              'Show Profit',
+                                                              overflow: TextOverflow.ellipsis,
+                                                              style: TextStyle(
+                                                                fontFamily: 'poppins',
+                                                                fontSize: 14,
+                                                                // fontWeight: FontWeight.w600,
+                                                                color: Colors.black87,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Switch(
+                                                            value: showProfit,
+                                                            onChanged: (value) {
+                                                              setState(() {
+                                                                showProfit = value;
+                                                                // defaultChanges = true;
+                                                              });
+                                                            },
+                                                            activeColor: kPrimaryColor,
+                                                            activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                                            inactiveThumbColor: Colors.grey.shade400,
+                                                            inactiveTrackColor: Colors.grey.shade200,
+                                                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                    Container(
+                                                      margin: const EdgeInsets.only(bottom: 16),
+                                                      padding: const EdgeInsets.all(12),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey.shade50,
+                                                        borderRadius: BorderRadius.circular(16),
+                                                        border: Border.all(color: Colors.grey.shade200),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          // Container(
+                                                          //   padding: const EdgeInsets.all(8),
+                                                          //   decoration: BoxDecoration(
+                                                          //     color: kPrimaryColor.withOpacity(0.1),
+                                                          //     borderRadius: BorderRadius.circular(12),
+                                                          //   ),
+                                                          //   child: const Icon(
+                                                          //     Icons.person_2_rounded,
+                                                          //     size: 20,
+                                                          //     color: kPrimaryColor,
+                                                          //   ),
+                                                          // ),
+                                                          const SizedBox(width: 12),
+                                                          Expanded(
+                                                            child: const Text(
+                                                              'Show Sales Profit',
+                                                              overflow: TextOverflow.ellipsis,
+                                                              style: TextStyle(
+                                                                fontFamily: 'poppins',
+                                                                fontSize: 14,
+                                                                // fontWeight: FontWeight.w600,
+                                                                color: Colors.black87,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Switch(
+                                                            value: showSalesProfit,
+                                                            onChanged: (value) {
+                                                              setState(() {
+                                                                showSalesProfit = value;
+                                                                // defaultChanges = true;
+                                                              });
+                                                            },
+                                                            activeColor: kPrimaryColor,
+                                                            activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                                            inactiveThumbColor: Colors.grey.shade400,
+                                                            inactiveTrackColor: Colors.grey.shade200,
+                                                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
                                                     TextButton(
                                                       onPressed: () {
                                                         Navigator.push(
@@ -2346,7 +2523,9 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     DateUtil.dateDMY2YMD(
                                                                         toDate),
                                                                     'Closing Report',
-                                                                    '',
+                                                                    locationId != null
+                                                                      ? locationId.name
+                                                                      :'',
                                                                     statement,
                                                                     salesMan,
                                                                     locationId !=
@@ -2355,10 +2534,10 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                             locationId.id
                                                                           ]
                                                                         : [
-                                                                            _dropDownBranchId
+                                                                            0
                                                                           ],
-                                                                    area!,
-                                                                    route!,
+                                                                    showProfit ? '1' : '0', // area
+                                                                    showSalesProfit ? '1' : '0', // route!,
                                                                     '0')));
                                                       },
                                                       style: ButtonStyle(
@@ -3346,42 +3525,131 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                       height:
                                                                           10,
                                                                     ),
-                                                                    ContainerFieldWidget(
-                                                                        widget: DropdownSearch<
-                                                                            dynamic>(
-                                                                          popupProps: const PopupPropsMultiSelection
-                                                                              .modalBottomSheet(
-                                                                              showSearchBox: true,
-                                                                              constraints: BoxConstraints(
-                                                                                maxHeight: 300,
-                                                                              )),
-                                                                          asyncItems: (String filter) => api.getSalesListData(
-                                                                              filter,
-                                                                              'sales_list/location'),
-                                                                          dropdownDecoratorProps:
-                                                                              const DropDownDecoratorProps(
-                                                                            dropdownSearchDecoration:
-                                                                                InputDecoration(
-                                                                                                         contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
-                      ),
-                                                                              border: OutlineInputBorder(),
-                                                                            ),
-                                                                          ),
-                                                                          onChanged:
-                                                                              (dynamic data) {
-                                                                            locationId =
-                                                                                data;
-                                                                          },
-                                                                        ),
-                                                                        headTxt:
-                                                                            'Select Branch'),
-                                                                    const SizedBox(
+                                                                    Visibility(
+                                                                      visible: true,//isAdminUser,
+                                                                      child:ContainerFieldWidget(
+                                                                        widget:  widgetAccount(), 
+                                                                      headTxt: 'Select Account'),),
+                                                                     const SizedBox(
                                                                       height:
                                                                           10,
                                                                     ),
-                                                                    ContainerFieldWidget(
+                                                                     ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getLedgerAll(),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              _ledger =
+                                                                                  data;
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Ledger'),
+                                                                              const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+                                                                      //   ContainerFieldWidget(
+                                                                      //     widget: Container(
+                                                                      //       width: MediaQuery.sizeOf(context).width,
+                                                                      //       padding: const EdgeInsets.symmetric(horizontal: 3),
+                                                                      //       decoration: BoxDecoration(
+                                                                      //         border: Border.all(color: grey),
+                                                                      //         borderRadius: BorderRadius.circular(3),
+                                                                      //       ),
+                                                                      //       child: DropdownButtonHideUnderline(
+                                                                      //         child: DropdownButton<dynamic>(
+                                                                      //           isExpanded: true,
+                                                                      //           hint: const Text('Select a group',
+                                                                      //           style: TextStyle(
+                                                                      //             color: black,
+                                                                      //             fontFamily: 'poppins'
+                                                                      //           ),
+                                                                      //           ), 
+                                                                      //           items: itemDisplay.map((dynamic item) {
+                                                                      //             return DropdownMenuItem(
+                                                                      //               value: item,
+                                                                      //               child: Text(item.name.toString()),
+                                                                      //             );
+                                                                      //           }).toList(),
+                                                                      //           value: itemDisplay.contains(selectedItem) ? selectedItem : null,
+                                                                      //           onChanged: (value) {
+                                                                      //             setState(() {
+                                                                      //               selectedItem = value; 
+                                                                      //             });
+                                                                      //           },
+                                                                      //         ),
+                                                                      //       ),
+                                                                      //     ),
+                                                                      //     headTxt: 'Group',
+                                                                      //   ),
+                                                                      //         const SizedBox(
+                                                                      //   height:
+                                                                      //       10,
+                                                                      // ),
+                                                                    Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getSalesListData(
+                                                                                filter,
+                                                                                'sales_list/location'),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              locationId =
+                                                                                  data;
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Branch'),
+                                                                    ),
+                                                                    Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+                                                                    ),
+                                                                    otherRegAreaDataList.isNotEmpty
+                                                                    ? ContainerFieldWidget(
                                                                         widget:
                                                                             Container(
                                                                           width:
@@ -3415,40 +3683,47 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                           ),
                                                                         ),
                                                                         headTxt:
-                                                                            'Select Area'),
-                                                                    const SizedBox(
+                                                                            'Select Area')
+                                                                        : const SizedBox(),
+                                                                   otherRegAreaDataList.isNotEmpty
+                                                                   ? const SizedBox(
                                                                       height:
                                                                           10,
-                                                                    ),
-                                                                    ContainerFieldWidget(
-                                                                        widget: DropdownSearch<
-                                                                            dynamic>(
-                                                                          popupProps: const PopupPropsMultiSelection
-                                                                              .modalBottomSheet(
-                                                                              showSearchBox: true,
-                                                                              constraints: BoxConstraints(maxHeight: 300)),
-                                                                          asyncItems: (String filter) => api.getSalesListData(
-                                                                              filter,
-                                                                              'sales_list/salesMan'),
-                                                                          dropdownDecoratorProps:
-                                                                              const DropDownDecoratorProps(
-                                                                            dropdownSearchDecoration:
-                                                                                InputDecoration(
-                                                                                                         contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
-                      ),
-                                                                              border: OutlineInputBorder(),
+                                                                    )
+                                                                   : const SizedBox(),
+                                                                    Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(maxHeight: 300)
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getSalesListData(
+                                                                                filter,
+                                                                                'sales_list/salesMan'),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
                                                                             ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              salesMan =
+                                                                                  data.id.toString();
+                                                                            },
                                                                           ),
-                                                                          onChanged:
-                                                                              (dynamic data) {
-                                                                            salesMan =
-                                                                                data.id.toString();
-                                                                          },
-                                                                        ),
-                                                                        headTxt:
-                                                                            'Select Salesman'),
+                                                                          headTxt:
+                                                                              'Select Salesman'),
+                                                                    ),
                                                                     const SizedBox(
                                                                       height:
                                                                           10,
@@ -3459,11 +3734,11 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         Navigator.push(
                                                                             context,
                                                                           MaterialPageRoute(builder: (BuildContext context) =>
-                                                                           ReportView('0', (_ob ? '1' : '0'),
+                                                                           ReportView((_ledger != null && _ledger is! String) ? _ledger.id.toString() : '0', (_ob ? '1' : '0'),
                                                                             DateUtil.dateDMY2YMD(fromDate),
                                                                             DateUtil.dateDMY2YMD(toDate), statement, '', 
                                                                           statement, salesMan, locationId != null ?
-                                                                           [locationId.id] : [_dropDownBranchId], area!, route!,'0')));
+                                                                           [locationId.id] : [_dropDownBranchId], area!, route!,accountId)));
                                                                       },
                                                                       style:
                                                                           ButtonStyle(
@@ -3490,6 +3765,428 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                   ],
                                                                 ),
                                                               )
+                                                             : mode == 'BankReceiptList' || 
+                                                               mode == 'BankPaymentList' 
+                                                             ? Container(
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        16),
+                                                                child: Column(
+                                                                  children: [
+                                                                    SizedBox(
+                                                                       width: MediaQuery.of(context).size.width,
+                                                                      child: Row(
+                                                                        children: [
+                                                                          const Text(
+                                                                            'From ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 14,
+                                                                                fontFamily: 'poppins'),
+                                                                          ),
+                                                                          InkWell(
+                                                                            child:
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    fromDate!,
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15,
+                                                                                        fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 2,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () =>
+                                                                                _selectDate('f'),
+                                                                          ),
+                                                                          const Spacer(),
+                                                                          const Text(
+                                                                            'To ',
+                                                                            style: TextStyle(
+                                                                                fontWeight: FontWeight.w500,
+                                                                                fontSize: 14,
+                                                                                fontFamily: 'poppins'),
+                                                                          ),
+                                                                          InkWell(
+                                                                            child:
+                                                                                Container(
+                                                                              padding:
+                                                                                  const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                                                              decoration:
+                                                                                  BoxDecoration(border: Border.all(color: grey), borderRadius: BorderRadius.circular(3)),
+                                                                              child:
+                                                                                  Row(
+                                                                                children: [
+                                                                                  Text(
+                                                                                    toDate!,
+                                                                                    style: const TextStyle(
+                                                                                      // fontWeight: FontWeight.w500,
+                                                                                      //  fontSize: 15, 
+                                                                                       fontFamily: 'poppins'),
+                                                                                  ),
+                                                                                  const SizedBox(
+                                                                                    width: 2,
+                                                                                  ),
+                                                                                  const Icon(
+                                                                                    Icons.calendar_month_outlined,
+                                                                                    color: grey,
+                                                                                    size: 20,
+                                                                                  )
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () =>
+                                                                                _selectDate('t'),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
+                                                                    ),
+                                                                    ContainerFieldWidget(
+                                                                          widget: Container(
+                                                                          padding: const EdgeInsets.symmetric(
+                                                                            horizontal: 5
+                                                                          ),
+                                                                          decoration: BoxDecoration(
+                                                                            border: Border.all(color: grey),
+                                                                            borderRadius: BorderRadius.circular(3)
+                                                                          ),
+                                                                          child: DropdownButtonHideUnderline(
+                                                                            child: DropdownButton<String>(
+                                                                              isExpanded: true,
+                                                                              hint: Text(_dropDownValue.isNotEmpty
+                                                                                  ? _dropDownValue.split('-')[1]
+                                                                                  : 'Select bank account',
+                                                                                  style: const TextStyle(
+                                                                                    fontFamily: 'poppins',
+                                                                                    color: black
+                                                                                  ),
+                                                                                  ),
+                                                                              items: cashBankACList.map<DropdownMenuItem<String>>((item) {
+                                                                                return DropdownMenuItem<String>(
+                                                                                  value: item.id.toString() + "-" + item.name,
+                                                                                  child: Text(item.name,
+                                                                                  style: const TextStyle(
+                                                                                    fontFamily: 'poppins',
+                                                                                    color: black
+                                                                                  ),
+                                                                                  ),
+                                                                                );
+                                                                              }).toList(),
+                                                                              onChanged: (value) {
+                                                                                setState(() {
+                                                                                  _dropDownValue = value!;
+                                                                                  accountId = value.split('-')[0];
+                                                                                  accountName = value.split('-')[1];
+                                                                                });
+                                                                              },
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                          headTxt:
+                                                                              'Bank Account'),
+                                                                                      const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+                                                                               TextButton(
+                                                                      onPressed:
+                                                                          () {
+                                                                             statement = mode ==
+                                                                            'BankReceiptList'
+                                                                            ? 'BankReceipt_Report'
+                                                                            : 'BankPayment_Report';
+                                                                            // String ledCode = _ledger.id?.toString() ?? (_ledger.id != null ? _ledger.id.toString() : '');
+                                                                        Navigator.push(
+                                                                            context,
+                                                                          MaterialPageRoute(builder: (BuildContext context) =>
+                                                                           ReportView('0', (_ob ? '1' : '0'),
+                                                                            DateUtil.dateDMY2YMD(fromDate),
+                                                                            DateUtil.dateDMY2YMD(toDate),mode, dropDownStatusType, 
+                                                                          statement, salesMan, locationId != null ?
+                                                                           [locationId.id] : [_dropDownBranchId], _dropDownValue!, route!,'0')));
+                                                                      },
+                                                                      style:
+                                                                          ButtonStyle(
+                                                                        shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                                                                            borderRadius:
+                                                                                BorderRadius.circular(5))),
+                                                                        backgroundColor:
+                                                                            MaterialStateProperty.all<Color>(kPrimaryColor),
+                                                                        foregroundColor:
+                                                                            MaterialStateProperty.all<Color>(Colors.white),
+                                                                      ),
+                                                                      child:
+                                                                          const Text(
+                                                                        'Show',
+                                                                        style: TextStyle(
+                                                                            fontWeight: FontWeight
+                                                                                .w500,
+                                                                            fontSize:
+                                                                                15,
+                                                                            fontFamily:
+                                                                                'poppins'),
+                                                                      ),
+                                                                    ),
+                                                                              const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+                                                                      ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getLedgerAll(),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              _ledger =
+                                                                                  data;
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Ledger'),
+                                                                              const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+//                                                                       ContainerFieldWidget(
+//                                                                           widget:  Container(
+//             padding: const EdgeInsets.symmetric(
+//               horizontal: 5
+//             ),
+//             decoration: BoxDecoration(
+//               border: Border.all(color: grey),
+//               borderRadius: BorderRadius.circular(3)
+//             ),
+//             child: DropdownButtonHideUnderline(
+//               child: DropdownButton<String>(
+//                 isExpanded: true,
+//                 hint: const Text('Status'),
+//                 value: dropDownStatusType,
+//                 items: statusType.map<DropdownMenuItem<String>>((value) {
+//                   return DropdownMenuItem<String>(
+//                     value: value,
+//                     child: Text(value),
+//                   );
+//                 }).toList(),
+//                 onChanged: (value) {
+//                   setState(() {
+//                     dropDownStatusType = value!;
+//                   });
+//                 },
+//               ),
+//             ),
+//           ),
+//                                                                           headTxt:
+//                                                                               'Status'),
+//                                                                               const SizedBox(
+//                                                                         height:
+//                                                                             10,
+//                                                                       ),
+//                                                                     Visibility(
+//                                                                       visible: isAdminUser,
+//                                                                       child: ContainerFieldWidget(
+//                                                                           widget: DropdownSearch<
+//                                                                               dynamic>(
+//                                                                             popupProps: const PopupPropsMultiSelection
+//                                                                                 .dialog(
+//                                                                                 showSearchBox: true,
+//                                                                                 // constraints: BoxConstraints(
+//                                                                                 //   maxHeight: 300,
+//                                                                                 // )
+//                                                                                 ),
+//                                                                             asyncItems: (String filter) => api.getSalesListData(
+//                                                                                 filter,
+//                                                                                 'sales_list/location'),
+//                                                                             dropdownDecoratorProps:
+//                                                                                 const DropDownDecoratorProps(
+//                                                                               dropdownSearchDecoration:
+//                                                                                   InputDecoration(
+//                                                                                                            contentPadding: EdgeInsets.symmetric(
+//                                                                                             horizontal: 4,
+//                                                                                             vertical: 8
+//                                                                                             ),
+//                                                                                 border: OutlineInputBorder(),
+//                                                                               ),
+//                                                                             ),
+//                                                                             onChanged:
+//                                                                                 (dynamic data) {
+//                                                                               locationId =
+//                                                                                   data;
+//                                                                             },
+//                                                                           ),
+//                                                                           headTxt:
+//                                                                               'Select Branch'),
+//                                                                     ),
+//                                                                     const SizedBox(
+//                                                                         height:
+//                                                                             10,
+//                                                                       ),
+//                                                                     ContainerFieldWidget(
+//   widget: Container(
+//     width: MediaQuery.sizeOf(context).width,
+//     padding: const EdgeInsets.symmetric(horizontal: 3),
+//     decoration: BoxDecoration(
+//       border: Border.all(color: grey),
+//       borderRadius: BorderRadius.circular(3),
+//     ),
+//     child: DropdownButtonHideUnderline(
+//       child: DropdownButton<dynamic>(
+//         isExpanded: true,
+//         hint: const Text('Select a group',
+//         style: TextStyle(
+//           color: black,
+//           fontFamily: 'poppins'
+//         ),
+//         ), 
+//         items: itemDisplay.map((dynamic item) {
+//           return DropdownMenuItem(
+//             value: item,
+//             child: Text(item.name.toString()),
+//           );
+//         }).toList(),
+//         value: itemDisplay.contains(selectedItem) ? selectedItem : null,
+//         onChanged: (value) {
+//           setState(() {
+//             selectedItem = value; 
+//           });
+//         },
+//       ),
+//     ),
+//   ),
+//   headTxt: 'Group',
+// ),
+//                                                                               const SizedBox(
+//                                                                         height:
+//                                                                             10,
+//                                                                       ),
+                                                                    Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: const SizedBox(
+                                                                        height:
+                                                                            10,
+                                                                      ),
+                                                                    ),
+                                                                    // ContainerFieldWidget(
+                                                                    //     widget:
+                                                                    //         Container(
+                                                                    //       width:
+                                                                    //           MediaQuery.sizeOf(context).width,
+                                                                    //       padding: const EdgeInsets
+                                                                    //           .symmetric(
+                                                                    //           horizontal: 5),
+                                                                    //       decoration: BoxDecoration(
+                                                                    //           border: Border.all(color: grey),
+                                                                    //           borderRadius: BorderRadius.circular(3)),
+                                                                    //       child:
+                                                                    //           DropdownButtonHideUnderline(
+                                                                    //         child:
+                                                                    //             DropdownButton<OtherRegistrationModel>(
+                                                                    //           isExpanded: true,
+                                                                    //           icon: const Icon(Icons.keyboard_arrow_down),
+                                                                    //           items: otherRegAreaDataList.map((OtherRegistrationModel items) {
+                                                                    //             return DropdownMenuItem<OtherRegistrationModel>(
+                                                                    //               value: items,
+                                                                    //               child: Text(items.name),
+                                                                    //             );
+                                                                    //           }).toList(),
+                                                                    //           value: areaModel,
+                                                                    //           onChanged: (value) {
+                                                                    //             setState(() {
+                                                                    //               areaModel = value;
+                                                                    //               area = value!.id.toString();
+                                                                    //             });
+                                                                    //           },
+                                                                    //         ),
+                                                                    //       ),
+                                                                    //     ),
+                                                                    //     headTxt:
+                                                                    //         'Select Area'),
+                                                                    // const SizedBox(
+                                                                    //   height:
+                                                                    //       10,
+                                                                    // ),
+                                                                    // Visibility(
+                                                                    //   visible: isAdminUser,
+                                                                    //   child: ContainerFieldWidget(
+                                                                    //       widget: DropdownSearch<
+                                                                    //           dynamic>(
+                                                                    //         popupProps: const PopupPropsMultiSelection
+                                                                    //             .dialog(
+                                                                    //             showSearchBox: true,
+                                                                    //             // constraints: BoxConstraints(maxHeight: 300)
+                                                                    //             ),
+                                                                    //         asyncItems: (String filter) => api.getSalesListData(
+                                                                    //             filter,
+                                                                    //             'sales_list/salesMan'),
+                                                                    //         dropdownDecoratorProps:
+                                                                    //             const DropDownDecoratorProps(
+                                                                    //           dropdownSearchDecoration:
+                                                                    //               InputDecoration(
+                                                                    //                                        contentPadding: EdgeInsets.symmetric(
+                                                                    //                         horizontal: 4,
+                                                                    //                         vertical: 8
+                                                                    //                         ),
+                                                                    //             border: OutlineInputBorder(),
+                                                                    //           ),
+                                                                    //         ),
+                                                                    //         onChanged:
+                                                                    //             (dynamic data) {
+                                                                    //           salesMan =
+                                                                    //               data.id.toString();
+                                                                    //         },
+                                                                    //       ),
+                                                                    //       headTxt:
+                                                                    //           'Select Salesman'),
+                                                                    // ),
+                                                                    // const SizedBox(
+                                                                    //   height:
+                                                                    //       10,
+                                                                    // ),
+                                                                   
+                                                                  ],
+                                                                ),
+                                                              )
+                                                            
                                                             : Container(
                                                                 padding: const EdgeInsets
                                                                     .symmetric(
@@ -3685,6 +4382,59 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 ),
                                                               );
   }
+
+   var _dropDownValueAcc = '';
+  widgetAccount() {
+    return Container(
+      // height: 35,
+      padding: const EdgeInsets.only(left: 3),
+      width: MediaQuery.sizeOf(context).width,
+      decoration: BoxDecoration(
+          border: Border.all(color: grey),
+          borderRadius: BorderRadius.circular(3)),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          hint: Center(
+            child: Text(
+              _dropDownValueAcc.isNotEmpty
+                  ? _dropDownValueAcc.split('-')[1]
+                  : 'Select Account',
+              style: const TextStyle(
+              fontFamily: 'poppins', 
+              color: black,
+              fontSize: 13,
+              fontWeight: FontWeight.w500
+              ),
+            ),
+          ),
+          items: cashBankACListAll.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: "${item.id}-${item.name}",
+              child: Text(item.name,
+               style: const TextStyle(
+              fontFamily: 'poppins', 
+              color: black,
+              fontSize: 13,
+              fontWeight: FontWeight.w500
+              ),
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            //  if (!keyLockCashAccount) {
+          // if (cashId <= 0) {
+          setState(() {
+            _dropDownValueAcc = value!;
+            accountId = value.split('-')[0];
+            accountName = value.split('-')[1];
+          });
+        // }
+          },
+        ),
+      ),
+    );
+  }
+
 
   _listItem(index) {
     return Container(

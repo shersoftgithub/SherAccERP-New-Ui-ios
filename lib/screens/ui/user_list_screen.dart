@@ -24,6 +24,9 @@ class _UserListState extends State<UserList> {
         elevation: 0,
         backgroundColor: kPrimaryColor,
         title: const AppBarTitle(),
+        titleTextStyle: TextStyle(
+          color: white,
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

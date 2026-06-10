@@ -12,7 +12,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/inv_pr_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_list.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -230,7 +230,9 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
                     icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: Text(title),
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -396,7 +398,8 @@ class _InvRPVoucherState extends State<InvRPVoucher> {
           ],
           title: Text(mode),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
         ),
         body: Container(

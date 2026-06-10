@@ -14,7 +14,7 @@ import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/rp_model.dart';
 import 'package:sheraccerp/models/sms_data_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -352,7 +352,9 @@ String cashAc = '';
                     icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
           ],
           title: Text(title),
-          titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+          titleTextStyle: const TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
         body: ProgressHUD(
           inAsyncCall: _isLoading,
@@ -398,6 +400,9 @@ String cashAc = '';
                 )),
           ],
           title: Text(mode),
+          titleTextStyle: const TextStyle(
+            color: white,
+          ),
         ),
         body: Container(
           child: previousBill(mode),

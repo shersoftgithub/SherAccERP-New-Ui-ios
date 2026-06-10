@@ -7,10 +7,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/models/stock_product.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
+import 'package:sheraccerp/screens/html_previews/purchase_return_preview.dart';
+import 'package:sheraccerp/screens/inventory/cart.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_cart_model.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_complaint_model.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_customer_model.dart';
@@ -22,7 +26,10 @@ import 'package:sheraccerp/util/color_palette.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/container_textfield_widget.dart';
+import 'package:sheraccerp/widget/pdf_screen.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart' as pw;
 
 class Warranty extends StatefulWidget {
   const Warranty({super.key});
@@ -49,6 +56,7 @@ class _WarrantyState extends State<Warranty> {
    List<WarrantyComplaintModel> complaint = [];
    Future<List<dynamic>>? _getledgerListData;
    Future<List<dynamic>>? _getProductList;
+   Future<List<dynamic>>? _getAllProductList;
    late List<dynamic> itemNameList;
     late List<String> names;
    bool isTax = true,
@@ -76,16 +84,18 @@ class _WarrantyState extends State<Warranty> {
       gstVerified = false,
       gstValidation = false,
       isAdminUser = false,
-      taxable = true;
+      taxable = true,
+      taxGroupUpdate = false;
 
   bool isLoading = false; 
+  bool isPrLoading = false; 
     final List<String> statusOptions = [
     'Pending',
-    'Repair',
-    'Replace',
-    'Reject',
-    'Transfer To Mfr',
-    'Sales Return',
+    // 'Repair',
+    // 'Replace',
+    // 'Reject',
+    // 'Transfer To Mfr',
+    // 'Sales Return',
   ];  
   var nameLike = "a"; 
   
@@ -121,12 +131,15 @@ class _WarrantyState extends State<Warranty> {
    loadSettings() {
         companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
-    isSalesManWiseLedger = true;
-        // ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    isSalesManWiseLedger = 
+        ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
         _getledgerListData = isSalesManWiseLedger
           ? api.getLedgerBySalesMan(salesManId,)
           : api.getLedgersAll();
         _getProductList = api.fetchStockProductLike(DateUtil.dateDMY2YMD(formattedDate),nameLike);
+        _getAllProductList = api.fetchNoStockProductLike(DateUtil.dateDMY2YMD(formattedDate),nameLike);
           
    }
   //  void _fetchProductList() async {
@@ -253,10 +266,11 @@ String itemNameLike = 'a';
       child: Scaffold(
         backgroundColor: bagroundColor,
           key: _scaffoldKey,
-          appBar: nextWidget != 1? AppBar(
+          appBar: (nextWidget != 1 && nextWidget != 2) ? AppBar(
             title: const Text("Warranty"),
             titleTextStyle: const TextStyle(
-              fontFamily: 'poppins'
+              fontFamily: 'poppins',
+              color: white
             ),
             // actions: [
             //   Visibility(
@@ -378,7 +392,8 @@ String itemNameLike = 'a';
         appBar: AppBar(
           title: const Text("Warranty "),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
           actions: [
             TextButton(
@@ -430,7 +445,7 @@ String itemNameLike = 'a';
                 horizontal: 16,vertical: 8
               ),
           child: Container(
-            child: previousBill(),
+            child: isPrLoading ? const Center(child: CircularProgressIndicator()) : previousBill(),
           ),
         ));
   }
@@ -521,7 +536,7 @@ String itemNameLike = 'a';
                 return InkWell(
                   onTap: () {
                     debugPrint(dataDisplay.toString());
-                    showEditDialog(context, dataDisplay[index]['Id']);
+                    // showEditDialog(context, dataDisplay[index]['Id']);
                   },
                   child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 2),
@@ -599,33 +614,33 @@ String itemNameLike = 'a';
                                 ],
                               ),
                             ),
-                            // Expanded(
-                            //   flex: 2,
-                            //   child: InkWell(
-                            //     child: Column(
-                            //       crossAxisAlignment: CrossAxisAlignment.end,
-                            //       children: [
-                            //         const Text(
-                            //           'Total',
-                            //           style: TextStyle(
-                            //             fontSize: 14,
-                            //             color: ColorPalette.nileBlue,
-                            //           ),
-                            //         ),
-                            //         Expanded(
-                            //           child: Align(
-                            //             alignment: Alignment.centerRight,
-                            //             child: Text(
-                            //                 '${dataDisplay[index]['Total'].toStringAsFixed(decimal)}'),
-                            //           ),
-                            //         ),
-                            //       ],
-                            //     ),
-                            //     onTap: () {
-                            //       // showDetails(context, dataDisplay[index]);
-                            //     },
-                            //   ),
-                            // ), 
+                            Expanded(
+                              flex: 2,
+                              child: InkWell(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    const Text(
+                                      '',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: ColorPalette.nileBlue,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                            ''),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () {
+                                  showPreview(context, dataDisplay[index]['Id']);
+                                },
+                              ),
+                            ), 
                           ],
                         ),
                       )),
@@ -716,7 +731,9 @@ String itemNameLike = 'a';
         // selectLedgerWidget()
         : nextWidget == 1
             ? itemDetailWidget()
-            : const Text('No Widget') ;
+            : nextWidget == 2
+              ? warrantyPreview()
+              : const Text('No Widget') ;
   }
 
 
@@ -732,6 +749,7 @@ String itemNameLike = 'a';
  String entryNo = '';
  var query = 'a';
   var selectedSupplier;
+ int? position;  
   int? selectedSupplierId;
   warrantyWidget(){
     return Scaffold(
@@ -866,6 +884,12 @@ String itemNameLike = 'a';
             contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
             border: OutlineInputBorder(),
           ),
+          onSubmitted: (value) async{
+            cart.clear();
+            replacementCart.clear();
+            complaint.clear();
+            await fetchWarranty(context, entryNoController.text);
+          },
           //  onSubmitted: (value) async{
           //                                           setState(() {
           //                                             hasUserModifiedEntry = true;  
@@ -1125,23 +1149,73 @@ String itemNameLike = 'a';
                                                                       border:
                                                                           OutlineInputBorder()),
                                                                 ), headTxt: 'Mobile'),
+                                    //                               DropDownSettingsTile<int>(
+                                    //   enabled: defaultBranch,
+                                    //   leading: const Text('Default Branch',
+                                    //   style: TextStyle(
+                                    //       fontFamily: 'poppins',
+                                    //       fontWeight: FontWeight.w500,
+                                    //       fontSize: 15),
+                                    //   ),
+                                    //   title: '',
+                                    //   settingKey:
+                                    //       'key-dropdown-default-location-view',
+                                    //   values: locationList.isNotEmpty
+                                    //       ? {
+                                    //           for (var e in locationList)
+                                    //             e.key + 1: e.value
+                                    //         }
+                                    //       : {
+                                    //           2: '',
+                                    //         },
+                                    //   selected: locationList.isNotEmpty
+                                    //       ? locationList[0].key + 1
+                                    //       : 2,
+                                    //   onChange: (value) {
+                                    //     debugPrint(
+                                    //         'key-dropdown-default-location-view: $value');
+                                    //   },
+                                    // ),
                                                                     const SizedBox(
                                                                       height: 4,
                                                                     ),
-                                                                    const ContainerFieldWidget(
-                                                                      widget: TextField(
-                                                                  maxLines: null,
-                                                                  // controller:
-                                                                  readOnly: true,
-                                                                  decoration: InputDecoration(
-                                                                      contentPadding: EdgeInsets.symmetric(
-                                                                          vertical:
-                                                                              10,
-                                                                          horizontal:
-                                                                              5),
-                                                                      border:
-                                                                          OutlineInputBorder()),
-                                                                ), headTxt: 'Warranty Location'),
+//                                                                ContainerFieldWidget(
+//   widget: DropdownButtonFormField<int>(
+//     value: locationList.isNotEmpty
+//         ? locationList.first.key + 1 // Default value must match the calculated item value
+//         : null, // Handle empty list
+//     items: locationList.map<DropdownMenuItem<int>>((location) {
+//       final itemValue = location.key + 1; // Match this with the default value
+//       return DropdownMenuItem<int>(
+//         value: itemValue, // Use the unique value
+//         child: Text(
+//           location.value, // Display the value as text
+//           style: const TextStyle(
+//             fontFamily: 'poppins',
+//             fontSize: 14,
+//           ),
+//         ),
+//       );
+//     }).toList(),
+//     onChanged: (value) {
+//       setState(() {
+//         selectedWlocation = value!;
+//       });
+//     },
+//     decoration: const InputDecoration(
+//       constraints: BoxConstraints(maxHeight: 40),
+//       contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 6),
+//       focusedBorder: OutlineInputBorder(
+//         borderSide: BorderSide(color: Colors.grey),
+//       ),
+//       border: OutlineInputBorder(
+//         borderSide: BorderSide(color: Colors.grey),
+//       ),
+//     ),
+//   ),
+//   headTxt: 'Warrenty Location',
+// ),
+
                                                                     const SizedBox(
                                                                       height: 4,
                                                                     ),
@@ -1358,6 +1432,7 @@ String itemNameLike = 'a';
                               if(selectedSupplierId != null){
                               setState(() {
                                 nextWidget = 1;
+                                warrentyformattedDate = getToDay;
                                 editItem = false;
                               });
                               }else{
@@ -1390,14 +1465,14 @@ String itemNameLike = 'a';
                                 ),
                               ],
                             ),
-                          ),
-                          
+                          ),  
                 ],
               )
             ),
             const SizedBox(
               height: 8,
             ),
+            if(cart.isNotEmpty || replacementCart.isNotEmpty)
                  Container(
                                constraints: const BoxConstraints(maxHeight: 300),
                             // height: 250,
@@ -1418,8 +1493,10 @@ String itemNameLike = 'a';
                                       onTap: () {
                                         setState(() {
                                           editItem = true;
+                                          position = index;
                                           nextWidget = 1;
-                                          itemNameContrroler.text = cart[index].productName!;
+                                          if(cart.isNotEmpty && position == index && position! < cart.length){
+                                             itemNameContrroler.text = cart[index].productName!;
                                           qtyContrroler.text = cart[index].qty.toString();
                                           selectedStatus = cart[index].status!;
                                           entryNo = cart[index].entryNo.toString();
@@ -1430,16 +1507,44 @@ String itemNameLike = 'a';
                                           serialNo = cart[index].serialNo!;
                                           qty = cart[index].qty!;
                                           sRate = cart[index].sRate!;
+                                          sRateContrroler.text = cart[index].sRate.toString();
                                           total = cart[index].total!;
                                           narration = cart[index].narration!;
                                           eType = cart[index].eType!;
                                           gid = cart[index].gid!;
                                           location = cart[index].location!;
-                                          warrantyDate = cart[index].warrantyDate!;
+                                          warrentyformattedDate = DateUtil.dateDMY(cart[index].warrantyDate!);
                                           fyId = cart[index].fyId!;
                                           transferStatus = cart[index].transferStatus!;
                                           productName = cart[index].productName!;
-
+                                          }
+                                          if(replacementCart.isNotEmpty && position == index && position! < replacementCart.length ){
+                                          reItemNameContrroler.text = replacementCart[index].productName!;
+                                          reQtyContrroler.text = replacementCart[index].qty.toString();
+                                          // selectedStatus = replacementCart[index].status!;
+                                          reEntryNo = replacementCart[index].entryNo.toString();
+                                          reWDate = replacementCart[index].wDate!;
+                                          reAauto = cart[index].auto!;
+                                          reBarcode = replacementCart[index].barcode!;
+                                          reSelectedItemId = replacementCart[index].itemId!;
+                                          reSerialNo = replacementCart[index].serialNo!;
+                                          reQty = replacementCart[index].qty!;
+                                          reSrate = replacementCart[index].sRate! ?? 0;
+                                          reSrateContrroler.text = replacementCart[index].sRate.toString();
+                                          reTotal = replacementCart[index].total!;
+                                          narration = replacementCart[index].narration!;
+                                          narrationContrroler.text = replacementCart[index].narration!;
+                                          reEtype = replacementCart[index].eType!;
+                                          reGid = replacementCart[index].gid!;
+                                          reLocation = replacementCart[index].location!;
+                                          reWarrantyDate = replacementCart[index].warrantyDate!;
+                                          reFyId = replacementCart[index].fyId!;
+                                          reTransferStatus = replacementCart[index].transferStatus!;
+                                          reItemNameContrroler.text = replacementCart[index].productName!;
+                                          }
+                                          if(complaint.isNotEmpty && position == index && position! < complaint.length){
+                                            complaintsContrroler.text = complaint[index].complaint!.toString();
+                                          } 
                                         });
                                       },
                                       child: Container(
@@ -1488,7 +1593,7 @@ String itemNameLike = 'a';
                                                                 color: grey,
                                                               )),
                                                       child: Text(
-                                                         '# ${cart[index].auto}',
+                                                         '# ${index + 1}',
                                                         style:
                                                             const TextStyle(
                                                                 fontSize: 12),
@@ -1617,7 +1722,7 @@ String itemNameLike = 'a';
                                                   ),
                                                   const Spacer(),
                                                   Text(
-                                                   '₹ ${cart[index].sRate!.toStringAsFixed(2)}',
+                                                   '₹ ${double.tryParse(cart[index].sRate.toString())}',
                                                     style: const TextStyle(
                                                         fontSize: 12,),
                                                   ),
@@ -1646,10 +1751,12 @@ String itemNameLike = 'a';
                   child: Container(
                                 height: 60,
                                 color: Colors.white,
-                                child:  const Center(
+                                child:   Center(
                                   child: 
                                    Text(
-                                     'Delete',
+                                    oldBill
+                                     ? 'Delete'
+                                     : 'Save & New',
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 16,
@@ -1664,17 +1771,33 @@ String itemNameLike = 'a';
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                    setState(() {
+                      oldBill
+                    ? setState(() {
                       editWarranty();
-                    });
+                    })
+                    : setState(() {
+                      if(buttonEvent){
+                        return;
+                      }
+                      else{
+                      if(cart.isNotEmpty || replacementCart.isNotEmpty){
+                        isLoading = true;
+                      saveWarranty();
+                      }else{
+                        Fluttertoast.showToast(msg: 'Atleast Add 1 Item');
+                      }
+                      }
+                    }); 
                     },
                     child: Container(
                                   height: 60,
                                   color: kPrimaryColor,
-                                  child:  const Center(
+                                  child:   Center(
                                     child: 
                                      Text(
-                                     'Edit',
+                                      oldBill
+                                     ? 'Edit'
+                                     : 'Save',
                                       style: TextStyle(
                                         fontFamily: 'Poppins',
                                         fontSize: 16,
@@ -1694,17 +1817,25 @@ String itemNameLike = 'a';
 
 
   final itemNameContrroler = TextEditingController();
+  final reItemNameContrroler = TextEditingController();
   final qtyContrroler = TextEditingController();
+  final reQtyContrroler = TextEditingController();
   final sRateContrroler = TextEditingController();
+  final reSrateContrroler = TextEditingController();
+  final narrationContrroler = TextEditingController();
+  final complaintsContrroler = TextEditingController();
   String selectedStatus = 'Pending';
+  int selectedWlocation  = 1;
   String? wDate;
   int? auto;
   int? barcode;
   int? itemId;
   String? serialNo;
+  String? reSerialNo;
   int? qty;
-  int? sRate;
-  int? total;
+  int? reUniquecode;
+  double? sRate;
+  double? total;
   String? narration;
   String? eType;
   String? status;
@@ -1714,8 +1845,27 @@ String itemNameLike = 'a';
   int? fyId;
   int? transferStatus;
   String? productName;
+  String? reProductName;
   int? selectedItemId;
+  int? reSelectedItemId;
+  String? reEtype;
+  String? reStatus;
+  String? reWDate;
+  String? reWarrantyDate;
+  String?  reEntryNo;
+  int?  reAauto;
+  int?  reBarcode;
+  int?  reQty;
+  int?  reGid;
+  int?  reLocation;
+  int?  reFyId;
+  int?  reTransferStatus;
+  double?  reSrate ;
+  double? reTotal;
   bool _isSaleInfoLoading = false;
+  var selectedItem;
+  var fetchedData;
+  StockProduct? selectedVariant;
   itemDetailWidget(){
     return Scaffold(
       backgroundColor: bagroundColor,
@@ -1726,12 +1876,14 @@ String itemNameLike = 'a';
               // itemNameList.clear();
               itemNameContrroler.text = '';
               warrentyformattedDate = '';
+              clearValue();
               nextWidget = 0;
             }); 
           }, icon: const Icon(Icons.arrow_back)),
          title: const Text("Item Details"),
             titleTextStyle: const TextStyle(
-              fontFamily: 'poppins'
+              fontFamily: 'poppins',
+              color: white
             ),
       ),
       body: SingleChildScrollView(
@@ -1746,6 +1898,16 @@ String itemNameLike = 'a';
               color: white,
               child:  Column(
                 children: [
+                   const Text('Damaged',
+                                                style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500
+                                                ),
+                                                ),
+                        const SizedBox(
+                          height: 4,
+                        ),
                   !editItem
                   ?FutureBuilder(
                                 future: _getProductList,
@@ -1821,6 +1983,7 @@ String itemNameLike = 'a';
                                     },
                                     onSubmitted: (value) async {
                                     setState(() {
+                                      _isLoading = true;
                                       _isSaleInfoLoading = true;
                                     });
                                     final selectedItem = 
@@ -1837,6 +2000,7 @@ String itemNameLike = 'a';
     );
      setState(() {
         _isSaleInfoLoading = false; 
+        _isLoading = false;
       });
 
     if (fetchedData.isNotEmpty) {
@@ -1863,11 +2027,13 @@ String itemNameLike = 'a';
                   String wDate = item['WarrentyMonth'];
                   String saleDate = item['DDate'];
                   
+                  
                   return InkWell(
                     onTap: () {
                            setState(() {
                          sRateContrroler.text = item['Rate'].toString();
                          warrentyformattedDate = item['WarrentyMonth'].toString();
+                         barcode = item['UniqueCode'];
                       });
                       Navigator.pop(context);
                     },
@@ -2175,12 +2341,13 @@ String itemNameLike = 'a';
                         Expanded(
                           child: ContainerFieldWidget(
                           widget: TextField(
+                            keyboardType: TextInputType.number,
                              style: const TextStyle(
                         fontFamily: 'poppins',
                         fontSize: 14
                       ),
                           controller: qtyContrroler,
-                      readOnly: true,
+                      // readOnly: true,
                       decoration: const InputDecoration(
                         constraints: BoxConstraints(
                           maxHeight: 40
@@ -2321,10 +2488,293 @@ String itemNameLike = 'a';
                     ),
                    const SizedBox(
                     height: 6,
-                   )
+                   ),
                 ],
               ),
             ),
+            const SizedBox(
+              height: 8,
+            ),
+            Container(
+                     padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4
+              ),
+                    width: MediaQuery.of(context).size.width,
+                    color: white,
+                    child: Column(
+                      children: [
+                        const Text('Complaint',
+                                                style: TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500
+                                                ),
+                                                ),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        TextField(
+                          maxLines: null,
+                          controller: complaintsContrroler,
+                          decoration: const InputDecoration(
+                            labelText: 'Complaint..',
+                            labelStyle: TextStyle(
+                              fontFamily: 'poppins',
+                              color: grey,
+                              fontSize: 13
+                            ),
+                            constraints: BoxConstraints(
+                              maxHeight: 45
+                            ),
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 5
+                            )
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 6,
+                        )        
+                      ],
+                    ),
+                   ),
+                   const SizedBox(
+                    height: 8,
+                   ),
+                Container(
+                        padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4
+              ),
+                    width: MediaQuery.of(context).size.width,
+                    color: white,
+                    child: Column(
+                      children: [
+                        const Text('Replacement',
+                        style: TextStyle(
+                          fontFamily: 'poppins',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500
+                        ),
+                        ) ,
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        FutureBuilder(
+                                future: _getProductList,
+                                builder: (context, snapshot) {
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                   return const Center(child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return Text('Error: ${snapshot.error}');
+                                  } else if (!snapshot.hasData) {
+                                    return const Text('No data found');
+                                  }
+                                  var itemNameList = snapshot.data;
+                                  var names = itemNameList!
+                                      .map((e) =>  e.name)
+                                      .where((name) => name != null)
+                                      .cast<String>()
+                                      .toList();
+                                  return ContainerFieldWidget(widget: 
+                                  EasyAutocomplete(
+                                    progressIndicatorBuilder:  const Center(
+                                            child: CircularProgressIndicator())
+                                        ,
+                                    controller: reItemNameContrroler,
+                                    inputTextStyle: const TextStyle(
+                                        fontFamily: 'poppins', fontSize: 14),
+                                    suggestionTextStyle:
+                                        const TextStyle(fontFamily: 'poppins'),
+                                    decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            vertical: 5, horizontal: 5),
+                                        border: OutlineInputBorder()),
+                                    suggestions: names,
+                                    // asyncSuggestions: (searchValue) async{
+                                    //    await api.fetchStockProductLike(
+                                    //     DateUtil.dateDMY2YMD(formattedDate), searchValue).then((e) {
+                                    //       for(var items in e){
+                                    //         if(!itemNameList.any((element) => element.id == items.id)){
+                                    //           itemNameList.add(items);
+                                    //         }
+                                    //       }
+                                    //       // itemNameList.contains(e);
+                                    //       // itemNameList.addAll(e);
+                                    //       // names.add(itemNameList)
+                                    //       // names.addAll(e.);
+                                    //     } );
+                                    //     itemNameLike = searchValue.isNotEmpty
+                                    //         ? searchValue.toLowerCase()
+                                    //         : 'a';
+                                    //         // return itemNameList;
+                                    //         // setState(() {
+                                    //          var namesN = itemNameList.map((e) => e.name)
+                                    //   .where((name) => name != null)
+                                    //   .cast<String>()
+                                    //   .toList();
+                                    //         // });
+                                    //       return  name ;
+                                    // },
+                                    onChanged: (value) {
+                                      setState(() {
+                                       api.fetchNoStockProductLike(
+                                        DateUtil.dateDMY2YMD(formattedDate), value).then((e) {
+                                          for(var items in e){
+                                            if(!itemNameList.any((element) => element.id == items.id)){
+                                              itemNameList.add(items);
+                                            }
+                                          }
+                                        } );
+                                        itemNameLike = value.isNotEmpty
+                                            ? value.toLowerCase()
+                                            : 'a';
+                                      });
+                                    },
+                                    onSubmitted: (value) async{
+                                      // setState(() {
+                                      //   _isLoading = true;
+                                      // });
+                                        selectedItem =  snapshot.data!.firstWhere(
+                                                (element) => element.name == value, 
+                                              );
+                                              setState(() {
+                                                reSelectedItemId = selectedItem.id;
+                                              });
+                                              // setState(() {
+                                              //   _isLoading = true;
+                                              // });
+                                       var fetchedData = 
+                                       await api.fetchNoStockVariant(reSelectedItemId.toString(),taxGroupUpdate,0); 
+                                        // setState(() {
+                                        //         _isLoading = false;
+                                        //       });  
+                                              if(fetchedData != null){
+                                                for(var item in fetchedData){
+                                                 setState(() {
+                                                    reSrateContrroler.text = item['mrp'].toString();
+                                                  reSerialNo = item['serialno'].toString();
+                                                  reUniquecode = item['uniquecode'];
+                                                  // _isLoading = false;
+                                                 });
+                                                }
+                                                // selectedVariant = fetchedData.first;
+                                                // reSrateContrroler.text = selectedVariant!.sellingPrice!.toString();
+                                              }  
+                                      //         setState(() {
+                                      //   _isLoading = false;
+                                      // });  
+                                    },
+                                    
+                                  )
+                               , headTxt: 'Item Name');
+                                   },
+                              )  ,
+                               const SizedBox(
+                      height: 6,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ContainerFieldWidget(
+                          widget: TextField(
+                            keyboardType: TextInputType.number,
+                             style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                          controller: reQtyContrroler,
+                      // readOnly: true,
+                      decoration: const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 6
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        )
+                      ),
+                    ), headTxt: 'Qty')),
+                    const SizedBox(
+                      width: 4,
+                    ),
+                        Expanded(child: ContainerFieldWidget(widget:
+                         TextField(
+                             style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                          controller: reSrateContrroler,
+                      // readOnly: true,
+                      decoration: const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 6
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        )
+                      ),
+                    ), headTxt: 'SRate'))
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 6,
+                    ),
+                    ContainerFieldWidget(widget:
+                         TextField(
+                             style: const TextStyle(
+                        fontFamily: 'poppins',
+                        fontSize: 14
+                      ),
+                          controller: narrationContrroler,
+                      // readOnly: true,
+                      decoration: const InputDecoration(
+                        constraints: BoxConstraints(
+                          maxHeight: 40
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 6
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: grey
+                          )
+                        )
+                      ),
+                    ), headTxt: 'Narration')
+                      ],
+                    ),
+                )
           ],
         )),
         bottomNavigationBar: SizedBox(
@@ -2357,7 +2807,13 @@ String itemNameLike = 'a';
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      setState(() {
+                      editItem            
+                      ? setState(() {
+                        reWDate = DateUtil.dateYMD(formattedDate);
+                          reEtype = 'R';
+                          reStatus = '';
+                          reProductName = reItemNameContrroler.text;
+                          
                         updateProduct(WarrantyCart(
                           entryNo: int.parse(entryNo),
                           wDate: wDate,
@@ -2366,7 +2822,7 @@ String itemNameLike = 'a';
                           itemId: itemId,
                           serialNo: serialNo,
                           qty: qty,
-                          sRate: sRate,
+                          sRate: double.tryParse(sRateContrroler.text),
                           total: total,
                           narration: narration,
                           eType: eType,
@@ -2374,13 +2830,146 @@ String itemNameLike = 'a';
                           gid: gid,
                           location: location,
                           warrantyDate: warrantyDate,
-                          fyId: fyId,
+                          fyId: currentFinancialYear!.id,
                           transferStatus: transferStatus,
                           productName: productName,
                       ), 0);
+                      if(reItemNameContrroler.text.isNotEmpty){
+                        updateReplacement(WarrantyRepalceModel(
+                          auto: reAauto,
+                          barcode: reBarcode,
+                          eType: reEtype ,
+                          entryNo: int.parse(reEntryNo!),
+                          fyId: currentFinancialYear!.id,
+                          gid: reGid,
+                          itemId: reSelectedItemId,
+                          location: reLocation,
+                          narration: narration,
+                          productName: reProductName,
+                          qty: reQty,
+                          sRate: reSrate,
+                          serialNo: reSerialNo,
+                          status: reStatus,
+                          total: reTotal,
+                          transferStatus: reTransferStatus,
+                          wDate: reWDate,
+                          warrantyDate: reWarrantyDate,
+                        ), -1);
+    //                      replacementCart[index].entryNo = int.parse(reEntryNo!);
+    // replacementCart[index].wDate = reWDate;
+    // replacementCart[index].auto = reAauto;
+    // replacementCart[index].barcode = reBarcode;
+    // replacementCart[index].itemId = reSelectedItemId;
+    // replacementCart[index].serialNo = reSerialNo;
+    // replacementCart[index].qty = reQty;
+    // replacementCart[index].sRate = reSrate;
+    // replacementCart[index].total = reTotal?.toDouble();
+    // replacementCart[index].narration = narration;
+    // replacementCart[index].eType = reEtype;
+    // replacementCart[index].status = reStatus;
+    // replacementCart[index].gid = reGid;
+    // replacementCart[index].location = reLocation;
+    // replacementCart[index].warrantyDate = reWarrantyDate;
+    // replacementCart[index].transferStatus = reTransferStatus;
+    // replacementCart[index].productName = reProductName;
+                      }
+    //                   if(reItemNameContrroler.text.isNotEmpty){
+    //                         cart[index].entryNo = int.parse(entryNo);
+    // cart[index].wDate = wDate;
+    // cart[index].auto = auto;
+    // cart[index].barcode = barcode;
+    // cart[index].itemId = itemId;
+    // cart[index].serialNo = serialNo;
+    // cart[index].qty = qty;
+    // cart[index].sRate = sRate;
+    // cart[index].total = total?.toDouble();
+    // cart[index].narration = narration;
+    // cart[index].eType = eType;
+    // cart[index].status = selectedStatus;
+    // cart[index].gid = gid;
+    // cart[index].location = location;
+    // cart[index].warrantyDate = warrantyDate;
+    // cart[index].transferStatus = transferStatus;
+    // cart[index].productName = productName;
+    //                   }
                       nextWidget = 0;
+                      clearValue();
                       debugPrint(cart.toList().toString());
-                      });
+                      })
+                      : setState(() {
+                         qty = (qtyContrroler.text.isNotEmpty
+          ? int.tryParse(qtyContrroler.text)
+          : 0);
+                         sRate = (sRateContrroler.text.isNotEmpty
+          ? double.tryParse(sRateContrroler.text)
+          : 0);
+                      int?   reQty = (reQtyContrroler.text.isNotEmpty
+          ? int.tryParse(reQtyContrroler.text)
+          : 0);
+                      double?  reSrate = (reSrateContrroler.text.isNotEmpty
+          ? double.tryParse(reSrateContrroler.text)
+          : 0);
+                        sRate = double.tryParse(sRateContrroler.text);
+                         total = (qty ?? 0) * (sRate ?? 0);
+                       double?  reTotal = (reQty ?? 0) * (reSrate ?? 0);
+                       if (itemNameContrroler.text.isNotEmpty && qtyContrroler.text.isNotEmpty) {
+                          addProduct(WarrantyCart(
+                          entryNo: int.parse(entryNo),
+                          wDate: DateUtil.dateYMD(formattedDate),
+                          auto: 0,
+                          barcode: barcode,
+                          itemId: selectedItemId,
+                          serialNo: '',
+                          qty: int.tryParse(qtyContrroler.text),
+                          sRate: double.tryParse(sRateContrroler.text),
+                          total: total,
+                          narration: '',
+                          eType: 'D',
+                          status: selectedStatus,
+                          gid: 0,
+                          location: lId,
+                          warrantyDate: DateUtil.dateYMD1(warrentyformattedDate),
+                          fyId: currentFinancialYear!.id,
+                          transferStatus: 0,
+                          productName: itemNameContrroler.text,
+                        ), -1);
+                       }
+                        if(reItemNameContrroler.text.isNotEmpty){
+                          
+                           addReplacement(
+            WarrantyRepalceModel(
+              entryNo: int.parse(entryNo),
+          wDate: DateUtil.dateYMD(formattedDate),
+          auto: 0,
+          barcode: reUniquecode,
+          itemId: reSelectedItemId,
+          serialNo: reSerialNo,
+          qty: reQty,
+          sRate: reSrate,
+          total: reTotal,
+          narration: narrationContrroler.text,
+          eType: 'R',
+          status: '',
+          gid: 0,
+          location: lId,
+          warrantyDate: DateUtil.dateYMD(formattedDate),
+          fyId: currentFinancialYear!.id,
+          transferStatus: 0,
+          productName: reItemNameContrroler.text
+            ), -1);
+                        }
+                    if(complaintsContrroler.text.isNotEmpty){
+                       addComplaints(
+            WarrantyComplaintModel(
+            complaint: complaintsContrroler.text,
+            gid: 0,
+          ), -1);
+                    }    
+                         debugPrint(cart.toList().toString());
+                         nextWidget = 0;
+                         clearValue();
+                        //  cart.clear();
+                      }); 
                     },
                     child: Container(
                                   height: 60,
@@ -2408,6 +2997,55 @@ String itemNameLike = 'a';
     );
   }
 
+void saveWarranty()  {
+  setState(() {
+    _isLoading = true;
+     isLoading = true; 
+     buttonEvent = true;
+  });
+  final cartList = cart.map((item) => item.toMap()).toList();
+  final replacementCartList = replacementCart.map((item) => item.toMap()).toList();
+  final combinedList = cartList + replacementCartList;
+
+  final complaintList = complaint.map((item) => item.toMap()).toList();
+  
+  var mapValue = json.encode({
+    "entryNo": entryNo, 
+    'date': DateUtil.dateYMD(formattedDate),
+    'customer':selectedSupplierId,
+    'location':lId,
+    'mobile':mobileController.text,
+    'userId':lId,
+    'warrantyLocation':lId,
+    'salesman':salesManId,
+  });
+  final body = {
+    'information': mapValue,
+    'particular': json.encode(combinedList),
+    'complaints': json.encode(complaintList),
+  };
+  
+  
+  debugPrint(json.encode(body).toString());
+  api.addWarranty(body).then((value) async{
+    if (CommonService().isNumeric(value) && int.tryParse(value)! > 0) {
+      Fluttertoast.showToast(
+        backgroundColor: green,
+        msg: 'Warranty Saved');
+        showMore(context, true);
+         setState(() {
+          _isLoading = false;
+          isLoading = false; 
+          buttonEvent = false;
+        });
+       
+    }else {
+        showErrorDialog(context, value.toString());
+      }
+  });
+}
+   
+
 void editWarranty() {
   final cartList = cart.map((item) => item.toMap()).toList();
   final replacementCartList = replacementCart.map((item) => item.toMap()).toList();
@@ -2426,7 +3064,7 @@ void editWarranty() {
     'salesman':customer!.customer,
   });
   final body = {
-    'information':mapValue,
+    'information': mapValue,
     'particular': json.encode(combinedList),
     'complaints': json.encode(complaintList),
   };
@@ -2438,11 +3076,1774 @@ void editWarranty() {
       Fluttertoast.showToast(
         backgroundColor: green,
         msg: 'Warranty Updated');
+        showMore(context, false);
     }else {
         showErrorDialog(context, value.toString());
       }
   });
 }
+ 
+  warrantyPreview(){
+ 
+    _createPDF('${'Warranty'}_ref_${entryNo}').then((value) => pdfPath = value);
+    // var cInformation = customer;
+  
+    var dParticulars  = cart;
+    var rParticulars = replacementCart;
+    var complaints = complaint;
+    double totalQuantity = dParticulars.fold(
+        0, (total, particular) => total + particular.qty!);
+        double lineTotal = dParticulars.fold(
+        0, (total, particular) => total + particular.total!);
+
+   return Scaffold(
+        appBar: AppBar(
+          title: Text('Warranty Preview'),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.picture_as_pdf),
+                onPressed: () {
+                  setState(
+                    () {
+                      Future.delayed(const Duration(milliseconds: 0), () {
+                      _createPDF(
+                        '',
+                        )
+                          .then((value) =>
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => PDFScreen(
+                                pathPDF: pdfPath,
+                                subject: 'Warranty',
+                                text: 'this is Warranty',
+                              )))
+                      );
+                      // try {
+                      //   debugPrint('pdf generating');
+                      //   LayoutCallbackWithData builder;
+                      //   PdfPageFormat pageFormat;
+                      //   // builder = generateInvoice;
+                      //   // generateInvoice(pageFormat, data).then((value) {
+                      //   //   build(context);
+                      //   debugPrint('pdf generated sucess');
+                      //   // });
+                      // } catch (ex) {
+                      //   debugPrint(ex.toString());
+                      // }
+                      });
+                    },
+                  );
+                }),
+            // IconButton(
+            //     icon: const Icon(Icons.list),
+            //     onPressed: () {
+            //       argumentsPass = {
+            //         'mode': 'selectedLedger',
+            //         'name': dataInformation['ToName'],
+            //         'id': dataInformation['Customer']
+            //       };
+            //       Navigator.pushNamed(
+            //         context,
+            //         '/select_ledger',
+            //       );
+            //     }),
+            // IconButton(
+            //     icon: const Icon(Icons.picture_in_picture),
+            //     onPressed: () {
+            //       sample image for test
+            //       _capturePng().then((value) async {
+            //         // Path tempDir = await getTemporaryDirectzory();
+            //         var tempDir = await getTemporaryDirectory();
+            //         var path = '${tempDir.path}/image.png';
+            //         var iss = await File(path).exists();
+            //         if (iss)
+            //           OpenFile.open(path);
+            //         File files = await File(path).create();
+            //         await files.writeAsBytesSync(value);
+            //       });
+            //     }),
+            // IconButton(
+            //     icon: const Icon(Icons.print),
+            //     onPressed: () {
+            //       _capturePng().then((value) => {
+            //             setState(() {
+            //               byteImage = value;
+            //               askPrintDevice(
+            //                   context,
+            //                   '${title}_ref_${dataInformation['RealEntryNo']}',
+            //                   companySettings!,
+            //                   settings!,
+            //                   data,
+            //                   byteImage!,
+            //                   customerBalance,
+            //                   printerType,
+            //                   printerDevice,
+            //                   printModel);
+            //             })
+            //           });
+            //     })
+          
+          ],
+        ),
+        body:
+        //  entryNo > 0
+            // ? 
+            SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: _isLoading
+                  ? Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          CircularProgressIndicator(
+                            strokeWidth: 5,
+                            color: Colors.grey,
+                            backgroundColor: Colors.red,
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            "Loading",
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          )
+                        ],
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: SingleChildScrollView(
+                          child: Column(
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 30,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300], border: Border.all()),
+                            child: Center(
+                                child: Text(
+                              'Wrarranty Invoice',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            )),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: 100,
+                            decoration: const BoxDecoration(
+                                border: Border(
+                                    left: BorderSide(),
+                                    right: BorderSide(),
+                                    bottom: BorderSide())),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  No                :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${entryNo.toString()}",
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  Date             :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${formattedDate}",
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "  To                 :",
+                                      style: TextStyle(fontSize: 9),
+                                    ),
+                                    Text(
+                                      "   ${customerNameController.text}",
+                                      style: const TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: const BoxDecoration(
+                                // color: Colors.grey[300],
+                                 border: Border(
+                                  left: BorderSide(
+                                    width: 1,
+                                  ),
+                                  right: BorderSide(
+                                    width: 1,
+                                  ),
+                                 )
+                                 ),
+                            child: Table(
+                              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                                1: FlexColumnWidth(22),
+                                2: FlexColumnWidth(10),
+                                3: FlexColumnWidth(10),
+                                4: FlexColumnWidth(10),
+                                5: FlexColumnWidth(12),
+                                6: FlexColumnWidth(12),
+                              },
+                              children: [
+                                TableRow(
+                                  children: [
+                                  Center(
+                                      child: Column(
+                                    children: const [
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          'No',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Item Name',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Qty',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Srate',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Status',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Total',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                              
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Complaint',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                              
+                                ]
+                                ),
+                              
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(border: Border.all()),
+                            child: Table(
+                              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                                1: FlexColumnWidth(22),
+                                2: FlexColumnWidth(10),
+                                3: FlexColumnWidth(10),
+                                4: FlexColumnWidth(10),
+                                5: FlexColumnWidth(12),
+                                6: FlexColumnWidth(12),
+                              },
+                              children: [
+                                for (var i = 0; i < dParticulars.length; i++)
+                                  TableRow(children: [
+                                    Center(
+                                        child: Column(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(2.0),
+                                          child: Text(
+                                            '${i + 1}',
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        dParticulars[i].productName!,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontSize: 7,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Center(
+                                        child: Text(
+                                          dParticulars[i].qty!
+                                              .toStringAsFixed(2),
+                                          style: const TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(dParticulars[i].sRate!
+                                                .toStringAsFixed(2),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            dParticulars[i].status
+                                                .toString(),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            dParticulars[i].total!
+                                                .toStringAsFixed(2),
+                                            style: const TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                      Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        i < complaints.length ? complaints[i].complaint! : ''!,
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ]),
+                                  if(rParticulars.isEmpty)
+                                if (7 < 10)
+                                  for (var k = 0; k < 8; k++)
+                                    TableRow(children: [
+                                      Center(
+                                          child: Column(
+                                        children: const [
+                                          Padding(
+                                            padding: EdgeInsets.all(2.0),
+                                            child: Text(
+                                              '\n',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      )),
+                                      const Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          '',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Center(
+                                          child: Text(
+                                            '',
+                                            style: TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    
+                                    ]),
+                             
+                              ],
+                            ),
+                          ),
+                          if(rParticulars.isNotEmpty)
+                          Container(
+                            height: 15,
+                            decoration: BoxDecoration(
+                              border: Border.all()
+                            ),
+                            child: Center(child: Text('Replace',
+                             style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                            )),
+                          ),
+                      if(rParticulars.isNotEmpty)
+                           Container(
+          decoration: const BoxDecoration(
+                                // color: Colors.grey[300],
+                                 border: Border(
+                                  left: BorderSide(
+                                    width: 1,
+                                  ),
+                                  right: BorderSide(
+                                    width: 1,
+                                  ),
+                                 )
+                                 ),
+            
+            child: Table(
+                border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+              columnWidths: const {
+                  0: FixedColumnWidth(15),
+                  1: FlexColumnWidth(22),
+                  2: FlexColumnWidth(10),
+                  3: FlexColumnWidth(10),
+                  4: FlexColumnWidth(22),
+              },
+              children: [
+                // Table header
+                TableRow(
+                    children: [
+                                  Center(
+                                      child: Column(
+                                    children: const [
+                                      Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          'No',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Item Name',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Qty',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Srate',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.all(2.0),
+                                    child: Center(
+                                      child: Text(
+                                        'Narration',
+                                        style: TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                ),
+
+                // Replacement cart data rows
+                
+              ],
+            ),
+          ),
+          if(rParticulars.isNotEmpty)
+          Container(
+            decoration: BoxDecoration(border: Border.all()),
+            child: Table(
+              border: const TableBorder(
+                                horizontalInside: BorderSide
+                                    .none, // Remove horizontal borders inside the table
+                                verticalInside:
+                                    BorderSide(), // Keep vertical borders
+                              ),
+                              columnWidths: const {
+                                0: FixedColumnWidth(15),
+                  1: FlexColumnWidth(22),
+                  2: FlexColumnWidth(10),
+                  3: FlexColumnWidth(10),
+                  4: FlexColumnWidth(22),
+                              },
+              children: [
+                for (var i = 0; i < rParticulars.length; i++)
+                  TableRow(
+                    children: [
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Text(
+                            '${i + 1}',
+                            style: const TextStyle(
+                                fontSize: 6, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Text(
+                          rParticulars[i].productName ?? '',
+                          style: const TextStyle(
+                              fontSize: 7, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Center(
+                          child: Text(
+                            rParticulars[i].qty!.toStringAsFixed(2),
+                            style: const TextStyle(
+                                fontSize: 6, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Center(
+                          child: Text(
+                            rParticulars[i].sRate!.toStringAsFixed(2),
+                            style: const TextStyle(
+                                fontSize: 6, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Center(
+                          child: Text(
+                            
+                            rParticulars[i].narration ?? '',
+                            style: const TextStyle(
+                                fontSize: 6, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (5 < 10)
+                                  for (var k = 0; k < 8; k++)
+                                    TableRow(children: [
+                                      Center(
+                                          child: Column(
+                                        children: const [
+                                          Padding(
+                                            padding: EdgeInsets.all(2.0),
+                                            child: Text(
+                                              '\n',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ],
+                                      )),
+                                      const Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Text(
+                                          '',
+                                          style: TextStyle(
+                                              fontSize: 6,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      const Padding(
+                                        padding: EdgeInsets.all(2.0),
+                                        child: Center(
+                                          child: Text(
+                                            '',
+                                            style: TextStyle(
+                                                fontSize: 6,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(2.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: const [
+                                            Text(
+                                              '',
+                                              style: TextStyle(
+                                                  fontSize: 6,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                    ]),
+                             
+              ],
+            ),
+          )
+                       
+                        ],
+                      ))),
+            ),
+          )
+          // : const Center(child: Text('Not Found'))
+          );
+          
+  }
+  
+      // Container(
+                          //   decoration: BoxDecoration(
+                          //       color: Colors.grey[300],
+                          //       border: const Border(
+                          //           bottom: BorderSide(),
+                          //           left: BorderSide(),
+                          //           right: BorderSide())),
+                          //   child: Table(
+                          //     border: const TableBorder(
+                          //       horizontalInside: BorderSide
+                          //           .none, // Remove horizontal borders inside the table
+                          //       verticalInside:
+                          //           BorderSide(), // Keep vertical borders
+                          //     ),
+                          //     columnWidths: const {
+                          //       0: FixedColumnWidth(15),
+                          //       1: FlexColumnWidth(20),
+                          //       2: FlexColumnWidth(10),
+                          //       3: FlexColumnWidth(10),
+                          //       4: FlexColumnWidth(10),
+                          //       5: FlexColumnWidth(20),
+                          //     },
+                          //     children: [
+                          //       TableRow(children: [
+                          //         Center(
+                          //             child: Column(
+                          //           children: const [
+                          //             Padding(
+                          //               padding: EdgeInsets.all(2.0),
+                          //               child: Text(
+                          //                 '',
+                          //                 style: TextStyle(
+                          //                     fontSize: 6,
+                          //                     fontWeight: FontWeight.bold),
+                          //               ),
+                          //             ),
+                          //           ],
+                          //         )),
+                          //         const Padding(
+                          //           padding: EdgeInsets.all(2.0),
+                          //           child: Center(
+                          //             child: Text(
+                          //               'Total',
+                          //               style: TextStyle(
+                          //                   fontSize: 6,
+                          //                   fontWeight: FontWeight.bold),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.all(2.0),
+                          //           child: Center(
+                          //             child: Text(
+                          //               totalQuantity.toStringAsFixed(2),
+                          //               style: const TextStyle(
+                          //                   fontSize: 6,
+                          //                   fontWeight: FontWeight.bold),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         const Padding(
+                          //           padding: EdgeInsets.all(2.0),
+                          //           child: Center(
+                          //             child: Text(
+                          //               '',
+                          //               style: TextStyle(
+                          //                   fontSize: 6,
+                          //                   fontWeight: FontWeight.bold),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         const Padding(
+                          //           padding: EdgeInsets.all(2.0),
+                          //           child: Center(
+                          //             child: Text(
+                          //               '',
+                          //               style: TextStyle(
+                          //                   fontSize: 6,
+                          //                   fontWeight: FontWeight.bold),
+                          //             ),
+                          //           ),
+                          //         ),
+                          //         Padding(
+                          //           padding: const EdgeInsets.all(2.0),
+                          //           child: Row(
+                          //             mainAxisAlignment: MainAxisAlignment.end,
+                          //             children: [
+                          //               Text(
+                          //                 '${lineTotal.toStringAsFixed(2)} ',
+                          //                 style: const TextStyle(
+                          //                     fontSize: 6,
+                          //                     fontWeight: FontWeight.bold),
+                          //               ),
+                          //             ],
+                          //           ),
+                          //         ),
+                          //       ]),
+                          //     ],
+                          //   ),
+                          // ),
+                         
+                          // Container(
+                          //   width: MediaQuery.of(context).size.width,
+                          //   height: 108,
+                          //   decoration: const BoxDecoration(
+                          //     border: Border(
+                          //       // top: BorderSide(color: Colors.black, width: 2),
+                          //       right:
+                          //           BorderSide(color: Colors.black, width: 1),
+                          //       bottom:
+                          //           BorderSide(color: Colors.black, width: 1),
+                          //       left: BorderSide(color: Colors.black, width: 1),
+                          //     ),
+                          //   ),
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.all(8.0),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.start,
+                          //       crossAxisAlignment: CrossAxisAlignment.start,
+                          //       children: [
+                          //         // Expanded(
+                          //         //   child: SizedBox(
+                          //         //     width:
+                          //         //         MediaQuery.of(context).size.width / 2,
+                          //         //     child: Column(
+                          //         //       crossAxisAlignment:
+                          //         //           CrossAxisAlignment.start,
+                          //         //       children: [
+                          //         //         const Text(
+                          //         //           "Amount In Words :",
+                          //         //           style: TextStyle(
+                          //         //               fontSize: 8,
+                          //         //               decoration:
+                          //         //                   TextDecoration.underline),
+                          //         //         ),
+                          //         //         Text(
+                          //         //           NumberToWord().convertDouble(
+                          //         //               'en',
+                          //         //               double.tryParse(dataInformation[
+                          //         //                       'GrandTotal']
+                          //         //                   .toString())),
+                          //         //           style: const TextStyle(
+                          //         //             fontSize: 8,
+                          //         //           ),
+                          //         //         )
+                          //         //       ],
+                          //         //     ),
+                          //         //   ),
+                          //         // ),
+                          //         // Expanded(
+                          //         //   child: SizedBox(
+                          //         //     width:
+                          //         //         MediaQuery.of(context).size.width / 2,
+                          //         //     child: Column(
+                          //         //       crossAxisAlignment:
+                          //         //           CrossAxisAlignment.end,
+                          //         //       children: [
+                          //         //         Row(
+                          //         //           mainAxisAlignment:
+                          //         //               MainAxisAlignment.spaceBetween,
+                          //         //           children: [
+                          //         //             Column(
+                          //         //               crossAxisAlignment:
+                          //         //                   CrossAxisAlignment.start,
+                          //         //               children: [
+                          //         //                 for (var i = 0;
+                          //         //                     i < otherAmount.length;
+                          //         //                     i++)
+                          //         //                   Text(
+                          //         //                     "${otherAmount[i]['LedName']} ",
+                          //         //                     style: const TextStyle(
+                          //         //                       fontSize: 7,
+                          //         //                     ),
+                          //         //                   ),
+                          //         //                 // const Text(
+                          //         //                 //   "Return Amt         :",
+                          //         //                 //   style: TextStyle(
+                          //         //                 //     fontSize: 8,
+                          //         //                 //   ),
+                          //         //                 // ),
+                          //         //                 const Text(
+                          //         //                   "BILL AMOUNT    :",
+                          //         //                   style: TextStyle(
+                          //         //                     fontSize: 8,
+                          //         //                   ),
+                          //         //                 ),
+                          //         //                 const Text(
+                          //         //                   "OB                        :",
+                          //         //                   style: TextStyle(
+                          //         //                     fontSize: 8,
+                          //         //                   ),
+                          //         //                 ),
+                          //         //                 const Text(
+                          //         //                   "Cash Paid   :",
+                          //         //                   style: TextStyle(
+                          //         //                     fontSize: 8,
+                          //         //                   ),
+                          //         //                 ),
+                          //         //                 const Text(
+                          //         //                   "Balance               :",
+                          //         //                   style: TextStyle(
+                          //         //                     fontSize: 8,
+                          //         //                   ),
+                          //         //                 ),
+                          //         //                 const SizedBox(
+                          //         //                   height: 5,
+                          //         //                 ),
+                          //         //                 // const Text(
+                          //         //                 //   "NET AMOUNT    :",
+                          //         //                 //   style: TextStyle(
+                          //         //                 //       fontSize: 8,
+                          //         //                 //       fontWeight:
+                          //         //                 //           FontWeight.bold),
+                          //         //                 // )
+                          //         //               ],
+                          //         //             ),
+                          //         //             Column(
+                          //         //               crossAxisAlignment:
+                          //         //                   CrossAxisAlignment.end,
+                          //         //               children: [
+                          //         //                 for (var i = 0;
+                          //         //                     i < otherAmount.length;
+                          //         //                     i++)
+                          //         //                   Text(
+                          //         //                     "${otherAmount[i]['Amount'].toStringAsFixed(2)} ",
+                          //         //                     style: const TextStyle(
+                          //         //                         fontSize: 8,
+                          //         //                         fontWeight:
+                          //         //                             FontWeight.bold),
+                          //         //                   ),
+                          //         //                 // Text(
+                          //         //                 //   "${dataInformation['ReturnAmount'].toStringAsFixed(2)} ",
+                          //         //                 //   style: const TextStyle(
+                          //         //                 //       fontSize: 8,
+                          //         //                 //       fontWeight:
+                          //         //                 //           FontWeight.bold),
+                          //         //                 // ),
+                          //         //                 Text(
+                          //         //                   "${dataInformation['GrandTotal'].toStringAsFixed(2)} ",
+                          //         //                   style: const TextStyle(
+                          //         //                       fontSize: 8,
+                          //         //                       fontWeight:
+                          //         //                           FontWeight.bold),
+                          //         //                 ),
+                          //         //                 Text(
+                          //         //                   "${dataInformation['Balance'].toStringAsFixed(2)} ",
+                          //         //                   style: const TextStyle(
+                          //         //                       fontSize: 8,
+                          //         //                       fontWeight:
+                          //         //                           FontWeight.bold),
+                          //         //                 ),
+                          //         //                 Text(
+                          //         //                   "${dataInformation['CashPaid'].toStringAsFixed(2)} ",
+                          //         //                   style: const TextStyle(
+                          //         //                       fontSize: 8,
+                          //         //                       fontWeight:
+                          //         //                           FontWeight.bold),
+                          //         //                 ),
+                          //         //                 Text(
+                          //         //                   "${(double.parse(dataInformation['GrandTotal'].toStringAsFixed(2)) + double.parse(dataInformation['Balance'].toStringAsFixed(2)) - double.parse(dataInformation['CashPaid'].toStringAsFixed(2))).toStringAsFixed(2)} ",
+                          //         //                   style: const TextStyle(
+                          //         //                       fontSize: 8,
+                          //         //                       fontWeight:
+                          //         //                           FontWeight.bold),
+                          //         //                 ),
+                          //         //                 const SizedBox(
+                          //         //                   height: 5,
+                          //         //                 ),
+                          //         //                 // Text(
+                          //         //                 //   "${(lineTotal - dataInformation['ReturnAmount'] + otherAmount.fold(0.0, (t, e) => t + double.parse(e['Symbol'] == '-' ? (e['Amount'] * -1).toString() : e['Amount'].toString()))).toStringAsFixed(2)} ",
+                          //         //                 //   style: const TextStyle(
+                          //         //                 //       fontSize: 8,
+                          //         //                 //       fontWeight:
+                          //         //                 //           FontWeight.bold),
+                          //         //                 // ),
+                          //         //               ],
+                          //         //             )
+                          //         //           ],
+                          //         //         ),
+                          //         //       ],
+                          //         //     ),
+                          //         //   ),
+                          //         // ),                              
+                          //       ],
+                          //     ),
+                          //   ),
+                          // )
+  
+  var pdfPath = '';
+  Future<String> _createPDF(
+    String title,
+   ) async {
+    
+  return makePDF( title)
+      .then((value) => savePreviewPDF(value, title));
+}
+Future<pw.Document> makePDF(
+    String title,
+   ) async {
+   var dParticulars  = cart;
+    var rParticulars = replacementCart;
+    var complaints = complaint;
+    double totalQuantity = dParticulars.fold(
+        0, (total, particular) => total + particular.qty!);
+        double lineTotal = dParticulars.fold(
+        0, (total, particular) => total + particular.total!);
+
+  bool printHeaderOnES =
+      ComSettings.appSettings('bool', 'key-print-header-es', false);
+  // var taxSale = dataInformation['TaxType'] == 'T' ? true : false;
+  // var invoiceHead = Settings.getValue<String>('key-purchase-return-head',
+      // defaultValue: 'PURCHASE RETURN');
+  // int? decimal = ComSettings.getValue('DECIMAL', settings).toString().isNotEmpty
+  //     ? int.tryParse(ComSettings.getValue('DECIMAL', settings).toString())
+  //     : 2;
+  // bool isItemSerialNo = ComSettings.getStatus('KEY ITEM SERIAL NO', settings);
+  // var labelSerialNo =
+  //     ComSettings.getValue('KEY ITEM SERIAL NO', settings).toString();
+  // labelSerialNo.isNotEmpty ?? 'SerialNo';
+  var tableHeaders = ["No", "Item Name", "Qty", "Srate", "Status", "Total"];
+
+  // final imageQr = byteImageQr != null
+  //     ? pw.MemoryImage(Uint8List.fromList(byteImageQr!))
+  //     : null;
+
+  final pdf = pw.Document();
+  var _pageFormat = PdfPageFormat.a4;
+
+
+       pdf.addPage(pw.MultiPage(
+          maxPages: 100,
+          pageFormat: PdfPageFormat.a4,
+          header: (pw.Context context) => _buildEstimateHeader(
+            settings, companySettings,
+          ),
+         
+          build: (pw.Context context) {
+            double calculateEstTotalAmount(List<dynamic> perticu) {
+              return perticu.fold(
+                  0,
+                  (total, particular) =>
+                      total + particular['Total'].toDouble());
+            }
+
+            double calculateEstTotalQuantity(List<dynamic> perticu) {
+              return perticu.fold(0,
+                  (total, particular) => total + particular['Qty'].toDouble());
+            }
+
+            final int totalRowCount = 53; // Desired total row count
+            final int existingRowCount = dParticulars.length;
+
+// Calculate the number of empty rows needed
+            final int emptyRowCount = totalRowCount - existingRowCount;
+            List<pw.Widget> widgets = [
+              pw.Container(
+                decoration: pw.BoxDecoration(border: pw.Border.all()),
+                child: pw.Table(
+                  border: const pw.TableBorder(
+                    horizontalInside: pw.BorderSide
+                        .none, // Remove horizontal borders inside the table
+
+                    verticalInside: pw.BorderSide(), // Keep vertical borders
+                  ),
+                  columnWidths: const {
+                    0: pw.FixedColumnWidth(15),
+                    1: pw.FlexColumnWidth(20),
+                    2: pw.FlexColumnWidth(10),
+                    3: pw.FlexColumnWidth(10),
+                    4: pw.FlexColumnWidth(10),
+                    5: pw.FlexColumnWidth(20),
+                    6: pw.FlexColumnWidth(20),
+                  },
+                  children: [
+                    for (var i = 0; i < dParticulars.length; i++)
+                      pw.TableRow(children: [
+                        pw.Center(
+                            child: pw.Column(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Text(
+                                '${i + 1}',
+                                style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        )),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Text(
+                            dParticulars[i].productName!,
+                            style: pw.TextStyle(
+                                fontSize: 9, fontWeight: pw.FontWeight.bold),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                             mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                               pw.Text(
+                            dParticulars[i].qty!.toStringAsFixed(2),
+                            style: pw.TextStyle(
+                                fontSize: 9, fontWeight: pw.FontWeight.bold),
+                          ),
+                            ]
+                          )
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                dParticulars[i].sRate!.toStringAsFixed(2),
+                                style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                              pw.Text(""),
+                            ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.Text(
+                                dParticulars[i].status!,
+                                style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                dParticulars[i].total!.toStringAsFixed(2),
+                                style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Text(
+                            i < complaints.length ? complaints[i].complaint! : '',
+                            maxLines: 3,
+                            style: pw.TextStyle(
+                                fontSize: 9,
+                                fontWeight: pw.FontWeight.bold),
+                          ),
+                        ),
+                      ]),
+                    // if (dataParticulars.length > 45)
+                    //   for (var k = 0; k < 45; k++)
+                    //     pw.TableRow(children: [
+                    //       pw.Center(
+                    //           child: pw.Column(
+                    //         children: [
+                    //           pw.Padding(
+                    //             padding: const pw.EdgeInsets.all(2.0),
+                    //             child: pw.Text(
+                    //               '\n',
+                    //               style: pw.TextStyle(
+                    //                   fontSize: 6,
+                    //                   fontWeight: pw.FontWeight.bold),
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       )),
+                    //       pw.Padding(
+                    //         padding: const pw.EdgeInsets.all(2.0),
+                    //         child: pw.Text(
+                    //           '',
+                    //           style: pw.TextStyle(
+                    //               fontSize: 6, fontWeight: pw.FontWeight.bold),
+                    //         ),
+                    //       ),
+                    //       pw.Padding(
+                    //         padding: const pw.EdgeInsets.all(2.0),
+                    //         child: pw.Center(
+                    //           child: pw.Text(
+                    //             '',
+                    //             style: pw.TextStyle(
+                    //                 fontSize: 6,
+                    //                 fontWeight: pw.FontWeight.bold),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //       pw.Padding(
+                    //         padding: const pw.EdgeInsets.all(2.0),
+                    //         child: pw.Row(
+                    //           mainAxisAlignment: pw.MainAxisAlignment.end,
+                    //           children: [
+                    //             pw.Text(
+                    //               '',
+                    //               style: pw.TextStyle(
+                    //                   fontSize: 6,
+                    //                   fontWeight: pw.FontWeight.bold),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       pw.Padding(
+                    //         padding: const pw.EdgeInsets.all(2.0),
+                    //         child: pw.Row(
+                    //           mainAxisAlignment: pw.MainAxisAlignment.end,
+                    //           children: [
+                    //             pw.Text(
+                    //               '',
+                    //               style: pw.TextStyle(
+                    //                   fontSize: 6,
+                    //                   fontWeight: pw.FontWeight.bold),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //       pw.Padding(
+                    //         padding: const pw.EdgeInsets.all(2.0),
+                    //         child: pw.Row(
+                    //           mainAxisAlignment: pw.MainAxisAlignment.end,
+                    //           children: [
+                    //             pw.Text(
+                    //               '',
+                    //               style: pw.TextStyle(
+                    //                   fontSize: 6,
+                    //                   fontWeight: pw.FontWeight.bold),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ]),
+                    for (var j = 0; j < emptyRowCount; j++)
+                      pw.TableRow(children: [
+                        pw.Center(
+                            child: pw.Column(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Text(
+                                '\n',
+                                style: pw.TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        )),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Text(
+                            '',
+                            style: pw.TextStyle(
+                                fontSize: 6, fontWeight: pw.FontWeight.bold),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Center(
+                            child: pw.Text(
+                              '',
+                              style: pw.TextStyle(
+                                  fontSize: 6, fontWeight: pw.FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                '',
+                                style: pw.TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                '',
+                                style: pw.TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                '',
+                                style: pw.TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                     
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(2.0),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.end,
+                            children: [
+                              pw.Text(
+                                '',
+                                style: pw.TextStyle(
+                                    fontSize: 6,
+                                    fontWeight: pw.FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
+                     
+                      ]),
+                 
+                  ],
+                ),
+              ),
+              // pw.Container(
+              //   decoration: const pw.BoxDecoration(
+              //       color: PdfColor.fromInt(0xFFCCCCCC),
+              //       border: pw.Border(
+              //           bottom: pw.BorderSide(),
+              //           left: pw.BorderSide(),
+              //           right: pw.BorderSide())),
+              //   child: pw.Table(
+              //     border: const pw.TableBorder(
+              //       horizontalInside: pw.BorderSide
+              //           .none, // Remove horizontal borders inside the tabl
+              //       verticalInside: pw.BorderSide(), // Keep vertical borders
+              //     ),
+              //     columnWidths: const {
+              //       0: pw.FixedColumnWidth(15),
+              //       1: pw.FlexColumnWidth(20),
+              //       2: pw.FlexColumnWidth(10),
+              //       3: pw.FlexColumnWidth(10),
+              //       4: pw.FlexColumnWidth(10),
+              //       5: pw.FlexColumnWidth(20),
+              //     },
+              //     children: [
+              //       pw.TableRow(children: [
+              //         pw.Center(
+              //             child: pw.Column(
+              //           children: [
+              //             pw.Padding(
+              //               padding: const pw.EdgeInsets.all(2.0),
+              //               child: pw.Text(
+              //                 '',
+              //                 style: pw.TextStyle(
+              //                     fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //               ),
+              //             ),
+              //           ],
+              //         )),
+              //         pw.Padding(
+              //           padding: const pw.EdgeInsets.all(2.0),
+              //           child: pw.Center(
+              //             child: pw.Text(
+              //               'Total',
+              //               style: pw.TextStyle(
+              //                   fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //             ),
+              //           ),
+              //         ),
+              //         pw.Padding(
+              //           padding: const pw.EdgeInsets.all(2.0),
+              //           child: pw.Center(
+              //             child: pw.Text(
+              //               '${calculateEstTotalQuantity(dataParticulars)}',
+              //               style: pw.TextStyle(
+              //                   fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //             ),
+              //           ),
+              //         ),
+              //         pw.Padding(
+              //           padding: const pw.EdgeInsets.all(2.0),
+              //           child: pw.Center(
+              //             child: pw.Text(
+              //               '',
+              //               style: pw.TextStyle(
+              //                   fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //             ),
+              //           ),
+              //         ),
+              //         pw.Padding(
+              //           padding: const pw.EdgeInsets.all(2.0),
+              //           child: pw.Center(
+              //             child: pw.Text(
+              //               '',
+              //               style: pw.TextStyle(
+              //                   fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //             ),
+              //           ),
+              //         ),
+              //         pw.Padding(
+              //           padding: const pw.EdgeInsets.all(2.0),
+              //           child: pw.Row(
+              //             mainAxisAlignment: pw.MainAxisAlignment.end,
+              //             children: [
+              //               pw.Text(
+              //                 '${calculateEstTotalAmount(dataParticulars).toStringAsFixed(2)} ',
+              //                 style: pw.TextStyle(
+              //                     fontSize: 6, fontWeight: pw.FontWeight.bold),
+              //               ),
+              //             ],
+              //           ),
+              //         ),
+              //       ]),
+              //     ],
+              //   ),
+              // ),
+           
+           ];
+
+            return widgets;
+          },
+        ));
+
+  documentPDF = pdf;
+  return pdf;
+}
+
+_buildEstimateHeader(
+    company, cSettings,) {
+  var companyState = ComSettings.getValue('COMP-STATE', company);
+  var companyStateCode = ComSettings.getValue('COMP-STATECODE', company);
+  var companyTaxNo = ComSettings.getValue('GST-NO', company);
+  return pw.Column(children: [
+   pw.Container(),
+    pw.Container(
+      width: double.infinity,
+      height: 30,
+      decoration: pw.BoxDecoration(
+          color: const pw.PdfColor.fromInt(0xFFCCCCCC),
+          border: pw.Border.all()),
+      child: pw.Center(
+          child: pw.Text(
+        'Warranty Invoice',
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+      )),
+    ),
+    pw.Container(
+      width: double.infinity,
+      height: 100,
+      decoration: const pw.BoxDecoration(
+          border: pw.Border(
+              left: pw.BorderSide(),
+              right: pw.BorderSide(),
+              bottom: pw.BorderSide())),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.SizedBox(
+            height: 8,
+          ),
+          pw.Row(
+            children: [
+              pw.Text(
+                "  No                :",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
+              pw.Text(
+                "   ${entryNo}",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
+            ],
+          ),
+          pw.Row(
+            children: [
+              pw.Text(
+                "  Date             :",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
+              pw.Text(
+                "   ${formattedDate}",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
+            ],
+          ),
+          pw.Row(
+            children: [
+              pw.Text(
+                "  To                :",
+                style: const pw.TextStyle(fontSize: 9),
+              ),
+              pw.Text(
+                "    ${customerNameController.text}",
+                style: const pw.TextStyle(fontSize: 8),
+              ),
+            ],
+          ),
+          // pw.Row(
+          //   crossAxisAlignment: pw.CrossAxisAlignment.start,
+          //   children: [
+          //     pw.Text(
+          //       "  Address       :",
+          //       style: const pw.TextStyle(fontSize: 9),
+          //     ),
+          //     // pw.Column(
+          //     //   crossAxisAlignment: pw.CrossAxisAlignment.start,
+          //     //   children: [
+          //     //     pw.Text(
+          //     //       "    ${dataInformation['Add1']}",
+          //     //       style: const pw.TextStyle(fontSize: 8),
+          //     //     ),
+          //     //     pw.Text(
+          //     //       "    ${dataInformation['Add2']}",
+          //     //       style: const pw.TextStyle(fontSize: 8),
+          //     //     ),
+          //     //     pw.Text(
+          //     //       "    ${dataInformation['Add3']}",
+          //     //       style: const pw.TextStyle(fontSize: 8),
+          //     //     ),
+          //     //     pw.Text(
+          //     //       "    ${dataInformation['Add4']}",
+          //     //       style: const pw.TextStyle(fontSize: 8),
+          //     //     ),
+          //     //   ],
+          //     // ),
+           
+          //   ],
+          // ),
+        ],
+      ),
+    ),
+    pw.Container(
+      decoration: pw.BoxDecoration(
+          color: const pw.PdfColor.fromInt(0xFFCCCCCC),
+          border: pw.Border.all()),
+      child: pw.Table(
+        border: const pw.TableBorder(
+          horizontalInside:
+              pw.BorderSide.none, // Remove horizontal borders inside the table
+
+          verticalInside: pw.BorderSide(), // Keep vertical borders
+        ),
+        columnWidths: const {
+          0: pw.FixedColumnWidth(15),
+          1: pw.FlexColumnWidth(20),
+          2: pw.FlexColumnWidth(10),
+          3: pw.FlexColumnWidth(10),
+          4: pw.FlexColumnWidth(10),
+          5: pw.FlexColumnWidth(20),
+          6: pw.FlexColumnWidth(20),
+        },
+        children: [
+          pw.TableRow(children: [
+            pw.Center(
+                child: pw.Column(
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(2.0),
+                  child: pw.Text(
+                    'No',
+                    style: pw.TextStyle(
+                        fontSize: 8, fontWeight: pw.FontWeight.bold),
+                  ),
+                ),
+              ],
+            )),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Item Name',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Qty',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Srate',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Status',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Total',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2.0),
+              child: pw.Center(
+                child: pw.Text(
+                  'Complaint',
+                  style:
+                      pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ),
+          ]),
+        ],
+      ),
+    ),
+  ]);
+}
+
+
+
+
   showErrorDialog(context, String msg) {
     debugPrint('error save warranty :$msg');
     setState(() {
@@ -2487,7 +4888,7 @@ void editWarranty() {
          var information = value[0];
         var particulars = value[1];
         var replacement = value[2];
-        var compliant = value[3];
+        var complaint = value[3];
         debugPrint(value.toString());
         // debugPrint(particulars.toString());
         entryNo = information[0]['EntryNo'].toString();
@@ -2518,8 +4919,8 @@ void editWarranty() {
           itemId: product['Itemid'],
           serialNo: product['Serialno'],
           qty: product['Qty'],
-          sRate: product['Srate'],
-          total: product['Total'],
+          sRate: product['Srate'].toDouble(),
+          total: product['Total'].toDouble(),
           narration: product['Narration'],
           eType: product['EType'],
           status: product['Status'],
@@ -2541,21 +4942,21 @@ void editWarranty() {
           itemId: items['Itemid'],
           serialNo: items['Serialno'],
           qty: items['Qty'],
-          sRate: items['Srate'],
-          total: items['Total'],
+          sRate: items['Srate'].toDouble(),
+          total: items['Total'].toDouble(),
           narration: items['Narration'],
           eType: items['EType'],
           status: items['Status'],
           gid: items['Gid'],
           location: items['Location'],
-          warrantyDate: items['WarrantyDate'],
+          warrantyDate: items['WarrentyDate'],
           fyId: items['FyId'] ?? 0,
           transferStatus: items['TransferStatus'],
           productName: items['ProductName']
             ), -1);
         }
-        for(var cm in compliant){
-          addCompliants(
+        for(var cm in complaint){
+          addComplaints(
             WarrantyComplaintModel(
             complaint: cm['Complaints'],
             gid: cm['gid']
@@ -2569,6 +4970,105 @@ void editWarranty() {
       }
     });
     
+  }
+
+  showPreview(context,int id)async{
+      setState(() {
+          isPrLoading = true;
+          // widgetID = false;
+        });
+    try {
+      api.fetchWarranty(id).then((value) {
+      if (value != null) {
+        var information = value[0];
+        var particulars = value[1];
+        var replacement = value[2];
+        var complaint = value[3];
+        debugPrint(value.toString());
+        // debugPrint(particulars.toString());
+        entryNo = information[0]['EntryNo'].toString();
+        entryNoController.text = entryNo;
+        formattedDate = DateUtil.dateDMY(information[0]['WDate']);
+        customerNameController.text = information[0]['CustomerName'];
+        customer = WarrantyCustomerModel(
+          auto: information[0]['Auto'],
+          entryNo: information[0]['EntryNo'],
+          wDate: information[0]['WDate'],
+          customer: information[0]['Customer'],
+          location: information[0]['Location'],
+          mobile: information[0]['mobile'],
+          userId: information[0]['UserID'],
+          warrantyLocation: information[0]['WarrentyLocation'],
+          salesman: information[0]['salesman'],
+          fyId: information[0]['FyID'],
+          transferStatus: information[0]['TransferStatus'],
+          customerName: information[0]['CustomerName']
+        ); 
+        for (var product in particulars){
+          addProduct( 
+               WarrantyCart(
+          entryNo: product['EntryNo'],
+          wDate: product['WDate'],
+          auto: product['Auto'],
+          barcode: product['Barcode'],
+          itemId: product['Itemid'],
+          serialNo: product['Serialno'],
+          qty: product['Qty'],
+          sRate: product['Srate'].toDouble(),
+          total: product['Total'].toDouble(),
+          narration: product['Narration'],
+          eType: product['EType'],
+          status: product['Status'],
+          gid: product['Gid'],
+          location: product['Location'],
+          warrantyDate: product['WarrentyDate'],
+          fyId: product['FyId'] ?? 0,
+          transferStatus: product['TransferStatus'],
+          productName: product['ProductName']
+        ), -1);
+        }
+        for(var items in replacement){
+          addReplacement(
+            WarrantyRepalceModel(
+              entryNo: items['EntryNo'],
+          wDate: DateUtil.dateDMY(items['WDate']),
+          auto: items['Auto'],
+          barcode: items['Barcode'],
+          itemId: items['Itemid'],
+          serialNo: items['Serialno'],
+          qty: items['Qty'],
+          sRate: items['Srate'].toDouble(),
+          total: items['Total'].toDouble(),
+          narration: items['Narration'],
+          eType: items['EType'],
+          status: items['Status'],
+          gid: items['Gid'],
+          location: items['Location'],
+          warrantyDate: items['WarrentyDate'],
+          fyId: items['FyId'] ?? 0,
+          transferStatus: items['TransferStatus'],
+          productName: items['ProductName']
+            ), -1);
+        }
+        for(var cm in complaint){
+          addComplaints(
+            WarrantyComplaintModel(
+            complaint: cm['Complaints'],
+            gid: cm['gid']
+          ), -1);
+        }
+        
+        setState(() {
+          isPrLoading = false;
+          nextWidget = 2;
+          widgetID = false;
+        });
+        
+      }
+    });
+    } catch (e) {
+      
+    }
   }
     
     void addProduct(product, int index) {
@@ -2597,7 +5097,7 @@ void editWarranty() {
     cart[index].serialNo = serialNo;
     cart[index].qty = qty;
     cart[index].sRate = sRate;
-    cart[index].total = total;
+    cart[index].total = total?.toDouble();
     cart[index].narration = narration;
     cart[index].eType = eType;
     cart[index].status = selectedStatus;
@@ -2607,9 +5107,126 @@ void editWarranty() {
     cart[index].transferStatus = transferStatus;
     cart[index].productName = productName;
    }
-   void addCompliants(cmp ,int index){
+   void updateReplacement(product,int index){
+    replacementCart[index].entryNo = int.parse(reEntryNo!);
+    replacementCart[index].wDate = reWDate;
+    replacementCart[index].auto = reAauto;
+    replacementCart[index].barcode = reBarcode;
+    replacementCart[index].itemId = reSelectedItemId;
+    replacementCart[index].serialNo = reSerialNo;
+    replacementCart[index].qty = reQty;
+    replacementCart[index].sRate = reSrate;
+    replacementCart[index].total = reTotal?.toDouble();
+    replacementCart[index].narration = narration;
+    replacementCart[index].eType = reEtype;
+    replacementCart[index].status = reStatus;
+    replacementCart[index].gid = reGid;
+    replacementCart[index].location = reLocation;
+    replacementCart[index].warrantyDate = reWarrantyDate;
+    replacementCart[index].transferStatus = reTransferStatus;
+    replacementCart[index].productName = reProductName;
+   }
+
+   void addComplaints(cmp ,int index){
     complaint.add(cmp);
    }
+  
+  clearValue(){
+   itemNameContrroler.text = '';
+   reItemNameContrroler.text = '';
+   qtyContrroler.text = '';
+   reQtyContrroler.text = '';
+   sRateContrroler.text = '';
+   reSrateContrroler.text = '';
+   narrationContrroler.text = '';
+   complaintsContrroler.text = '';
+   selectedWlocation  = 0;
+   wDate = '';
+   auto = 0;
+   barcode = 0;
+   itemId = 0;
+   serialNo = '';
+   reSerialNo = '';
+   qty = 0;
+   reUniquecode = 0;
+   sRate = 0;
+   total = 0;
+   narration = '';
+   eType = '';
+   status = '';
+   gid = 0;
+   location = 0;
+   warrantyDate = '';
+   fyId = 0;
+   transferStatus = 0;
+   productName = '';
+   reProductName = '';
+   selectedItemId = 0;
+   reSelectedItemId = 0;
+   reEtype = '';
+   reStatus = '';
+   reWDate = '';
+   reWarrantyDate = '';
+   reEntryNo = '';
+   reAauto = 0;
+   reBarcode = 0;
+   reQty = 0;
+   reGid = 0;
+   reLocation = 0;
+   reFyId = 0;
+   reTransferStatus = 0;
+   reSrate = 0;
+   reTotal = 0;
+  }
+   showMore(context, bool newBill) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () async{
+           try {
+          final value = await api.getWarrantyEntryNo('Reseed');
+          debugPrint(value);
+          setState(() {
+            entryNo = value;
+            entryNoController .text = entryNo;
+            // selectedSupplierId = 0;
+            // customerNameController.text = '';
+            // cart.clear();
+            // replacementCart.clear();
+            // complaint.clear();
+            isLoading = false;
+            _isLoading = false;
+            buttonEvent = false;
+          });
+        } catch (error) {
+          debugPrint("Error: $error");
+        } finally {
+          setState(() {
+            _isLoading = false;
+            isLoading = false; 
+            buttonEvent = false;
+          });
+        }
+          Navigator.of(context).pop();
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const Warranty())
+              );
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          setState(() {
+            nextWidget = 2;
+          });
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage:
+            'Do you want to Preview\nEntryNo : ${entryNo}',
+        title: newBill ? 'SAVED' : 'EDITED',
+        context: context);
+  }
 
   Future _selectDate() async {
     DateTime? picked = await showDatePicker(

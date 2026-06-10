@@ -5,12 +5,15 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   charset_converter
   cloud_firestore
+  connectivity_plus
+  file_saver
   file_selector_windows
   firebase_core
+  geolocator_windows
   local_auth_windows
   permission_handler_windows
   printing
-  share_plus
+  share_plus_windows
   url_launcher_windows
 )
 

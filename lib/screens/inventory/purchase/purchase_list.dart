@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 // ignore: avoid_web_libraries_in_flutter
-// import 'dart:html' as html;
+import 'dart:html' as html;
 
 import 'package:csv/csv.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -9,8 +9,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
+import 'package:sheraccerp/screens/html_previews/purchase_preview.dart';
 import 'package:sheraccerp/screens/inventory/purchase/purchase.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_list.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -71,12 +73,26 @@ class _PurchaseListState extends State<PurchaseList> {
   final controller = ScrollController();
   double offset = 0;
   List<dynamic> resultData = [];
+  List<dynamic> dataPType = [];
+  List<Map<String, dynamic>> selectedItems = [];
 
   @override
   void initState() {
     super.initState();
     fromDate = DateFormat('dd-MM-yyyy').format(now);
     toDate = DateFormat('dd-MM-yyyy').format(now);
+
+     selectedItems = voucherTypeList
+        .where((v) => v.voucher.toLowerCase() == 'purchase')
+        .map((v) => {"id": v.id, "name": v.name ?? v.voucher})
+        .toList();
+     dataPType = selectedItems.map((e) => {"id": e["id"]}).toList();
+    int salesManId = ComSettings.appSettings(
+              'int', 'key-dropdown-default-salesman-view', 1) -
+          1;
+      if (salesManId > 0) {
+        salesMan = DataJson(id: salesManId, name: '');
+      }   
   }
 
   @override
@@ -163,7 +179,9 @@ class _PurchaseListState extends State<PurchaseList> {
             'Purchase Report',
             style: TextStyle(
                 // fontSize: 15,
-                fontFamily: 'poppins'),
+                fontFamily: 'poppins',
+                color: white,
+                ),
           ),
         ),
         body: loadReport ? reportView(title) : selectData());
@@ -171,11 +189,11 @@ class _PurchaseListState extends State<PurchaseList> {
 
   reportView(statement) {
     controller.addListener(onScroll);
-    List<dynamic> dataPType = [];
+    // List<dynamic> dataPType = [];
 
-    VoucherType voucherTypeData = voucherTypeList
-        .firstWhere((element) => element.voucher.toLowerCase() == 'purchase');
-    dataPType.add({'id': voucherTypeData.id});
+    // VoucherType voucherTypeData = voucherTypeList
+    //     .firstWhere((element) => element.voucher.toLowerCase() == 'purchase');
+    // dataPType.add({'id': voucherTypeData.id});
 
     statement = dropdownItemsType
         .where((TypeItem element) => element.id == valueType)
@@ -195,15 +213,24 @@ class _PurchaseListState extends State<PurchaseList> {
 
     var sDate = fromDate!.isEmpty ? '2021-01-011' : formatYMD(fromDate);
     var eDate = toDate!.isEmpty ? '2021-01-011' : formatYMD(toDate);
-    var itemsId = itemId != null ? itemId['id'] : '0';
-    var supplierId = supplier != null ? supplier['id'] : '0';
-    var mfrId = mfr != null ? mfr['id'] : '0';
-    var categoryId = category != null ? category['id'] : '0';
-    var subcategoryId = subCategory != null ? subCategory['id'] : '0';
+    var itemsId = itemId != null ? itemId.id : '0';
+    var supplierId = supplier != null ? supplier.id : '0';
+    var mfrId = mfr != null ? mfr.id : '0';
+    var categoryId = category != null ? category.id : '0';
+    var subcategoryId = subCategory != null ? subCategory.id : '0';
     var locationsId = locationId != null ? locationId.id : '1';
-    var projectId = project != null ? project['id'] : '0';
-    var salesManId = salesMan != null ? salesMan['id'] : '0';
-    var taxGroupId = taxGroup != null ? taxGroup['id'] : '0';
+    var projectId = project != null ? project.id : '0';
+    var salesManId = salesMan != null ? salesMan.id : '0';
+    var taxGroupId = taxGroup != null ? taxGroup.id : '0';
+    // var itemsId = itemId != null ? itemId.id : '0';
+    // var supplierId = supplier != null ? supplier.id : '0';
+    // var mfrId = mfr != null ? mfr['id'] : '0';
+    // var categoryId = category != null ? category['id'] : '0';
+    // var subcategoryId = subCategory != null ? subCategory['id'] : '0';
+    // var locationsId = locationId != null ? locationId.id : '1';
+    // var projectId = project != null ? project['id'] : '0';
+    // var salesManId = salesMan != null ? salesMan['id'] : '0';
+    // var taxGroupId = taxGroup != null ? taxGroup['id'] : '0';
 
     //  for (var data in purchaseTypeList) {
     //   if (data.stock) dataSType.add({'id': data.id});
@@ -212,7 +239,7 @@ class _PurchaseListState extends State<PurchaseList> {
     if (statement == 'Daily') {
    return _purchaseListData(
           locationsId,
-          statementType,
+          'PurchaseList', //statementType,
           sDate,
           eDate,
           supplierId, 
@@ -244,6 +271,7 @@ class _PurchaseListState extends State<PurchaseList> {
                 ? jsonEncode(dataPType)
                 : jsonEncode({'id': 0}),
           })}]';
+          debugPrint(dataJson);
 
       return FutureBuilder<List<dynamic>>(
         future: api.getPurchaseReport(
@@ -253,8 +281,92 @@ class _PurchaseListState extends State<PurchaseList> {
             
             if (snapshot.data!.isNotEmpty) {
               var data = snapshot.data;
-              _data = data;
+              debugPrint(data.toString());
               var col = data![0].keys.toList();
+               if (statementType == 'P_ItemWise') {
+      Map<String, dynamic> totalData = {};
+
+      // First column will say "Total"
+      totalData[col[0]] = "Total";
+
+      // Define numeric columns you want totals for
+      final totalColumns = [
+        "qty",
+        "freeqty",
+        "prate",
+        "realprate",
+        "grossvalue",
+        "netamount",
+        "cgst",
+        "sgst",
+        "igst",
+        "cess",
+        "total"
+      ];
+
+      for (var key in col) {
+        if (totalColumns.contains(key.toLowerCase())) {
+          double sum = data.fold(
+            0.0,
+            (a, b) {
+              var val = b[key];
+              if (val == null || val.toString().isEmpty) return a;
+              return a + (double.tryParse(val.toString()) ?? 0.0);
+            },
+          );
+          totalData[key] = sum.toStringAsFixed(2);
+        } else if (key != col[0]) {
+          // For non-total fields, keep empty
+          totalData[key] = "";
+        }
+      }
+
+      // Add totals row
+      data.add(totalData);
+      _data = data;
+    } else {
+      _data = data;
+    }
+              //  if (
+              //     statementType == 'P_ItemWise' ) {
+              //   Map<String, dynamic> totalData = {};
+              //   for (int i = 0; i < col.length; i++) {
+              //     var cell = '';
+              //     if (col[i].toLowerCase() == ('Qty') ||
+              //         col[i].toLowerCase() == ('Prate') ||
+              //         col[i].toLowerCase() == ('RealPrate') ||
+              //         col[i].toLowerCase() == ('GrossValue') ||
+              //         col[i].toLowerCase() == ('NetAmount') ||
+              //         col[i].toLowerCase() == ('netamount') ||
+              //         col[i].toLowerCase() == ('CGST') ||
+              //         col[i].toLowerCase() == ('SGST') ||
+              //         col[i].toLowerCase() == ('IGST') ||
+              //         col[i].toLowerCase() == ('Cess') ||
+              //         col[i].toLowerCase() == ('Total') ) {
+              //       cell = data
+              //           .fold(
+              //               0.0,
+              //               (a, b) =>
+              //                   a +
+              //                   (b[col[i]] != null
+              //                       ? b[col[i]] == ''
+              //                           ? 0
+              //                           : double.tryParse(b[col[i]].toString()) ?? 0 
+              //                       : 0))
+              //           .toStringAsFixed(2);
+              //     }
+              //     if (i == 0) {
+              //       cell = 'Total';
+              //     }
+              //     totalData[col[i]] = cell;
+              //   }
+              //   if (totalData.isNotEmpty) {
+              //     data.add(totalData);
+              //   }
+              //   _data = data;
+              // } else {
+              //   _data = data;
+              // }
               tableColumn = data[0].keys.toList();
               return Padding(
                 padding: const EdgeInsets.all(5.0),
@@ -337,7 +449,7 @@ class _PurchaseListState extends State<PurchaseList> {
                                                     int.tryParse(
                                                         no.toString())!);
                                               }
-                                            },
+                                            }, 
                                           ),
                                         ),
                                       ),
@@ -617,6 +729,41 @@ class _PurchaseListState extends State<PurchaseList> {
               const SizedBox(
                 height: 10,
               ),
+               ContainerFieldWidget(
+                  widget: DropdownSearch<dynamic>.multiSelection(
+                      popupProps: const PopupPropsMultiSelection.modalBottomSheet(
+                        
+                        showSearchBox: true,
+                        showSelectedItems: true,
+                      ),
+
+                      items: voucherTypeList
+                          .where((v) => v.voucher.toLowerCase() == 'purchase')
+                          .map((v) => {"id": v.id, "name": v.name ?? v.voucher})
+                          .toList(),
+                      itemAsString: (item) => item["name"],
+                      selectedItems: selectedItems, 
+                      compareFn: (a, b) => a["id"] == b["id"],
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        dropdownSearchDecoration: InputDecoration(
+                          // labelText: "Select Purchase Vouchers",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      onChanged: (list) {
+                        setState(() {
+                          selectedItems = List<Map<String, dynamic>>.from(list);
+                          dataPType = selectedItems.map((e) => {"id": e["id"]}).toList();
+                        });
+                        // debugPrint("dataPType => $dataPType");
+                      },
+                    ),
+                  headTxt: 'Select Purchase Forms',
+                ),
+              const SizedBox(
+                height: 8,
+              ),
+
               ContainerFieldWidget(
                   widget: DropdownSearch<dynamic>(
                     popupProps: const PopupPropsMultiSelection.dialog(
@@ -661,9 +808,13 @@ class _PurchaseListState extends State<PurchaseList> {
                     ),
                     onChanged: (dynamic data) {
                       itemName = data;
+                      itemId = data;
                     },
                   ),
                   headTxt: 'Select Item Name'),
+              const SizedBox(
+                height: 8,
+              ),
               const SizedBox(
                 height: 8,
               ),
@@ -1152,17 +1303,17 @@ class _PurchaseListState extends State<PurchaseList> {
     title = title.replaceAll(new RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = await pdf.save();
-        // final blob = html.Blob([bytes], 'application/pdf');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.pdf';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.pdf';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -1205,17 +1356,17 @@ class _PurchaseListState extends State<PurchaseList> {
     title = title.replaceAll(new RegExp(r'[^\w\s]+'), '');
     if (kIsWeb) {
       try {
-        // final bytes = utf8.encode(csv);
-        // final blob = html.Blob([bytes], 'application/csv');
-        // final url = html.Url.createObjectUrlFromBlob(blob);
-        // final anchor = html.AnchorElement()
-        //   ..href = url
-        //   ..style.display = 'none'
-        //   ..download = '$title.csv';
-        // html.document.body.children.add(anchor);
-        // anchor.click();
-        // html.document.body.children.remove(anchor);
-        // html.Url.revokeObjectUrl(url);
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes], 'application/csv');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement()
+          ..href = url
+          ..style.display = 'none'
+          ..download = '$title.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
         return '';
       } catch (ex) {
         ex.toString();
@@ -1271,27 +1422,30 @@ class _PurchaseListState extends State<PurchaseList> {
         });
 
         List tempList = [];
-        var dataJsonS = '${'[${json.encode({
+         var dataJsonS = '[' +
+            json.encode({
               'statementType': statementType.isEmpty ? '' : statementType,
               'sDate': sDate.isEmpty ? '' : sDate,
               'eDate': eDate.isEmpty ? '' : eDate,
-              'itemId': int.tryParse(itemsId.toString()),
-              'customerId': int.tryParse(supplierId.toString()),
-              'supplierId': int.tryParse(supplierId.toString()),
-              'mfr': int.tryParse(mfrId.toString()),
-              'category': int.tryParse(categoryId.toString()),
-              'subcategory': int.tryParse(subcategoryId.toString()),
-              'location': int.tryParse(locationsId.toString()),
-              'project': int.tryParse(projectId.toString()),
-              'salesman': int.tryParse(salesManId.toString()),
-              'salesType': purchaseType != null
-                  ? jsonEncode(purchaseType)
-                  : jsonEncode({'id': 0}),
+              'itemId': itemsId ?? '0',
+              'customerId': supplierId ?? '0',
+              'supplierId': supplierId ?? '0',
+              'mfr': mfrId ?? '0',
+              'category': categoryId ?? '0',
+              'subcategory': subcategoryId ?? '0',
+              'location': int.tryParse(locationsId.toString()), //locationsId ?? '0',
+              'project': projectId ?? '0',
+              'salesman': salesManId ?? '0',
+              'salesType': jsonEncode({'id': 0}),
+              //  purchaseType != null
+              //     ? jsonEncode(purchaseType)
+              //     : jsonEncode({'id': 0}),
               "page": page,
               'areaId': 0,
               'groupId': 0,
               'taxGroup': 0
-            })}'}]';
+            }) +
+            ']';
         api.getListPageReport(dataJsonS).then((value) {
           final response = value;
           if (response.isNotEmpty) {
@@ -1371,9 +1525,19 @@ class _PurchaseListState extends State<PurchaseList> {
 
     return Column(
       children: [
-        dataDisplay.isEmpty
-            ? const Loading()
-            : Container(
+         isLoadingData?
+        const Center(child: Loading())
+        : dataDisplay.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    Center(child: Text('No Data Found..'))
+                  ],
+                ),
+              )
+            :Container(
                 decoration: BoxDecoration(
                     color: blue[200],
                     borderRadius: const BorderRadius.only(
@@ -1391,43 +1555,48 @@ class _PurchaseListState extends State<PurchaseList> {
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w700),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(
-                          'Cash:' +
-                              dataDisplayHead[0]["CashPaid"]
-                                  .toStringAsFixed(2),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                        Text(
-                          'Bank:' +
-                              dataDisplayHead[0]['BankAmount']
-                                  .toStringAsFixed(2),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text(
-                          'Total : ' +
-                              dataDisplayHead[0]['GrandTotal']
-                                  .toStringAsFixed(2),
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w600),
-                        ),
-                        Text(
-                          'Balance:' +
-                              dataDisplayHead[0]['Balance'].toStringAsFixed(2),
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //   children: [
+                    //     Text(
+                    //       'Cash:' ,
+                    //       // +
+                    //       //     dataDisplayHead[0]["CashPaid"]
+                    //       //         .toStringAsFixed(2),
+                    //       style: const TextStyle(
+                    //           fontSize: 18, fontWeight: FontWeight.w600),
+                    //     ),
+                    //     Text(
+                    //       'Bank:' ,
+                    //       // +
+                    //       //     dataDisplayHead[0]['BankAmount']
+                    //       //         .toStringAsFixed(2),
+                    //       style: const TextStyle(
+                    //           fontSize: 18, fontWeight: FontWeight.w600),
+                    //     ),
+                    //   ],
+                    // ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    //   children: [
+                    //     Text(
+                    //       'Total : ',
+                    //       //  +
+                    //       //     dataDisplayHead[0]['GrandTotal']
+                    //       //         .toStringAsFixed(2),
+                    //       style: const TextStyle(
+                    //           fontSize: 20, fontWeight: FontWeight.w600),
+                    //     ),
+                    //     Text(
+                    //       'Balance:' ,
+                    //       // +
+                    //       //     dataDisplayHead[0]['Balance'].toStringAsFixed(2),
+                    //       style: const TextStyle(
+                    //           fontSize: 18, fontWeight: FontWeight.w600),
+                    //     ),
+                    //   ],
+                    // ),
+                 
                   ],
                 )),
         Expanded(
@@ -1522,7 +1691,7 @@ class _PurchaseListState extends State<PurchaseList> {
                                                   ['Id']
                                               .toString()),
                                           'InvoiceNo': int.tryParse(
-                                              dataDisplay[index]['Invoice']
+                                              dataDisplay[index]['Id']
                                                   .toString()),
                                           'Type': _id.toString()
                                         }
@@ -1537,15 +1706,28 @@ class _PurchaseListState extends State<PurchaseList> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
+                                        // Text(
+                                        //   dataDisplay[index]['Name']
+                                        //       .toString(),
+                                        //       maxLines: 1,
+                                        //       overflow: TextOverflow.ellipsis,
+                                        //   style: const TextStyle(
+                                        //       color: Colors.black,
+                                        //       fontWeight: FontWeight.w700),
+                                        // ),
                                         Text(
-                                          dataDisplay[index]['FromSup']
-                                              .toString(),
-                                          style: const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w700),
-                                        ),
+                                                    dataDisplay[index]['Name']
+                                                        .toString(),
+                                                        overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      overflow: TextOverflow.ellipsis,
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w700),
+                                                  ),
                                         Text(
                                           'Invoice : ${dataDisplay[index]['Id']}',
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w600,
@@ -1553,6 +1735,7 @@ class _PurchaseListState extends State<PurchaseList> {
                                         ),
                                         Text(
                                           'Date     : ${dataDisplay[index]['Date']}',
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             color: Colors.black,
                                             fontWeight: FontWeight.w600,
@@ -1569,13 +1752,15 @@ class _PurchaseListState extends State<PurchaseList> {
                                 children: const [
                                   Text(
                                     'Bill          : ',
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600),
                                   ),
                                   Text(
-                                    'Cash     : ',
+                                    'Cash Paid: ',
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontSize: 14,
@@ -1583,6 +1768,7 @@ class _PurchaseListState extends State<PurchaseList> {
                                   ),
                                   Text(
                                     'Balance : ',
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontSize: 14,
@@ -1592,7 +1778,8 @@ class _PurchaseListState extends State<PurchaseList> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  int _id = int.tryParse(
+                                  int _id = 
+                                  int.tryParse(
                                       dataDisplay[index]['Type'].toString())!;
                                   // SalesType sData = salesTypeDataList
                                   //     .where((element) => element.id == _id)
@@ -1621,22 +1808,24 @@ class _PurchaseListState extends State<PurchaseList> {
                                       Text(
                                         dataDisplay[index]['Total']
                                             .toStringAsFixed(2),
+                                            overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700),
                                       ),
                                       Text(
-                                        dataDisplay[index]['Cash']
-                                            .toStringAsFixed(2),
+                                        dataDisplay[index]['Cash'].toStringAsFixed(2),
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 14,
                                             fontWeight: FontWeight.w700),
                                       ),
                                       Text(
-                                        dataDisplay[index]['Balance']
+                                        (dataDisplay[index]['Total'] - dataDisplay[index]['Cash'])
                                             .toStringAsFixed(2),
+                                            overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
                                             color: Colors.black,
                                             fontSize: 14,
@@ -1663,15 +1852,15 @@ class _PurchaseListState extends State<PurchaseList> {
   }
 
   showDetails(context, data, sType) {
-    // dataDynamic = [
-    //   {
-    //     'RealEntryNo': int.tryParse(data['Id'].toString()),
-    //     'EntryNo': int.tryParse(data['Id'].toString()),
-    //     'InvoiceNo': int.tryParse(data['Id'].toString()),
-    //     'Type': sType ?? 3
-    //   }
-    // ];
-    // Navigator.pushNamed(context, '/preview_show', arguments: {'title': 'Sale'});
+    dataDynamic = [
+      {
+        'RealEntryNo': int.tryParse(data['Id'].toString()),
+        'EntryNo': int.tryParse(data['Id'].toString()),
+        'InvoiceNo': int.tryParse(data['Id'].toString()),
+        'Type': sType ?? 3
+      }
+    ];
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PurchasePreviewShow(),));
   }
 
   showEditDialog(context, int _id) {

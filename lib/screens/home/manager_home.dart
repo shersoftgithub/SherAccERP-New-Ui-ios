@@ -5,7 +5,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/app_settings_page.dart';
 import 'package:sheraccerp/models/company_user.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/dash_report/dash_page.dart';
 import 'package:sheraccerp/screens/inventory/sales/sale.dart';
 import 'package:sheraccerp/service/api_dio.dart';
@@ -158,7 +158,7 @@ class _ManagerHomeState extends State<ManagerHome>
           child: Scaffold(
             appBar: AppBar(
               titleSpacing: -30,
-              toolbarHeight: 80,
+              toolbarHeight: 90,
               actions: [
                 IconButton(
                   icon: const Icon(Icons.logout),
@@ -184,7 +184,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),
@@ -198,7 +198,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -211,7 +211,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -224,7 +224,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -238,7 +238,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -252,7 +252,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -266,7 +266,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -279,7 +279,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -293,7 +293,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),
@@ -306,7 +306,7 @@ class _ManagerHomeState extends State<ManagerHome>
                             style: TextStyle(
                                 fontFamily: 'poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 13),
+                                fontSize: 12),
                           ),
                         ],
                       ),),

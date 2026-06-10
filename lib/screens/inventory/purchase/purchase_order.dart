@@ -14,7 +14,7 @@ import 'package:sheraccerp/models/product_register_model.dart';
 import 'package:sheraccerp/models/sales_model.dart';
 import 'package:sheraccerp/models/unit_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -52,7 +52,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
       widgetID = true,
       oldBill = false,
       newPurchaseOrder = false,
-      lastRecord = false;
+      lastRecord = false,
+      taxGroupUpdate = false;
   List<CartItemP> cartItem = [];
   CartItemP? cartModel;
   int page = 1, pageTotal = 0, totalRecords = 0,_dropDownUnit = 0;
@@ -75,7 +76,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
   @override
   void initState() {
     super.initState();
-    _purchaseProductsFuture = dio.fetchAllProductPurchase();
+    loadSettings();
+    _purchaseProductsFuture = dio.fetchAllProductPurchase(taxGroupUpdate);
     _getSalesListData = dio.getSalesListData('', 'sales_list/supplier');
     formattedDate =
         getToDay.isNotEmpty ? getToDay : DateFormat('dd-MM-yyyy').format(now);
@@ -86,7 +88,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
         purchaseAccountList.addAll(value);
       });
     });
-    loadSettings();
+    
   }
 
   loadSettings() {
@@ -105,6 +107,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
     useOLDBARCODE = ComSettings.getStatus('USE OLD BARCODE', settings);
     realPRATEBASEDPROFITPERCENTAGE =
         ComSettings.getStatus('REAL PRATE BASED PROFIT PERCENTAGE', settings);
+    taxGroupUpdate = 
+        ComSettings.getStatus('KEY TAXGROUP UPDATE', settings!);     
 
     salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
@@ -121,6 +125,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
 
   @override
   Widget build(BuildContext context) {
+     debugPrint('dataDynamic : ${dataDynamic.toString()}');
     return PopScope(
         canPop: false,
         onPopInvoked: (didPop) async {
@@ -317,7 +322,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
         ],
         title: const Text('Purchase Order'),
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white
         ),
       ) : null,
       body: ProgressHUD(
@@ -353,7 +359,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
           ],
           title: const Text('Purchase Order'),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
         ),
         body: Container(
@@ -443,7 +450,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
         centerTitle: true,
         title: const Text('Purchase Order'),
         titleTextStyle: const TextStyle(
-          fontFamily: 'poppins'
+          fontFamily: 'poppins',
+          color: white
         ),
       ),
       body: SingleChildScrollView(
@@ -894,7 +902,9 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                                 width: MediaQuery.of(context)
                                                     .size
                                                     .width,
-                                                child: Row(children: [
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
                                                   Container(
                                                       padding:
                                                           const EdgeInsets
@@ -918,15 +928,19 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                                             const TextStyle(
                                                                 fontSize: 12),
                                                       )),
-                                                  Text(
-                                                      ' ${cartItem[index].itemName}',
-                                                      style: const TextStyle(
-                                                          color: black,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          fontFamily:
-                                                              'poppins')),
-                                                  const Spacer(),
+                                                  Flexible(
+                                                    child: Text(
+                                                        ' ${cartItem[index].itemName}',
+                                                        overflow: TextOverflow.ellipsis,
+                                                        textAlign: TextAlign.left,
+                                                        style: const TextStyle(
+                                                            color: black,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontFamily:
+                                                                'poppins')),
+                                                  ),
+                                                  // const Spacer(),
                                                   
                                                 ]),
                                               ),
@@ -1208,6 +1222,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                         backgroundColor: green,
                         msg:'Bill Saved');
                       // showMore(context, 'Saved');
+                       showMoreN(context, true);
                     } else {
                       showInSnackBar('Error enter data correctly');
                     }
@@ -1297,7 +1312,8 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     });
                     if (_state) {
                       cartItem.clear();
-                      showMore(context, 'Edited');
+                       showMoreN(context, false);
+                      // showMore(context, 'Edited');
                     } else {
                       showInSnackBar('Error enter data correctly');
                     }
@@ -1360,11 +1376,12 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     });
                     if (_state) {
                       cartItem.clear();
-                      Navigator.pushReplacementNamed(context, '/purchaseOrder');
-                      Fluttertoast.showToast(
-                        backgroundColor: green,
-                        msg:'Bill Saved');
+                      // Navigator.pushReplacementNamed(context, '/purchaseOrder');
+                      // Fluttertoast.showToast(
+                      //   backgroundColor: green,
+                      //   msg:'Bill Saved');
                       // showMore(context, 'Saved');
+                       showMoreN(context, true);
                     } else {
                       showInSnackBar('Error enter data correctly');
                     }
@@ -1592,6 +1609,18 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
         csGST = 0;
         tax = 0;
       }
+   if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((net * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
       total = CommonService.getRound(
           decimal, (net + csGST + csGST + iGST + cess + adCess));
       // total = net + tax;
@@ -1626,6 +1655,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                 decimal, (((branch - rRate) * 100) / rRate))
             : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
       }
+ 
 
       unitValue = conversion > 0 ? conversion : 1;
     }
@@ -1726,6 +1756,18 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
         csGST = 0;
         tax = 0;
       }
+   if (cessOnNetAmount) {
+      if (cessPer > 0) {
+        cess = CommonService.getRound(4, ((net * cessPer) / 100));
+        adCess = CommonService.getRound(4, (quantity * adCessPer));
+      } else {
+        cess = 0;
+        adCess = 0;
+      }
+    } else {
+      cess = 0;
+      adCess = 0;
+    }
       total = CommonService.getRound(
           decimal, (net + csGST + csGST + iGST + cess + adCess));
       // total = net + tax;
@@ -1761,6 +1803,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
             : CommonService.getRound(decimal, (((branch - rate) * 100) / rate));
       }
 
+
       unitValue = conversion > 0 ? conversion : 1;
     }
 
@@ -1790,6 +1833,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
           // centerTitle: true,
           titleTextStyle: const TextStyle(
             fontFamily: 'poppins',
+            color: white
           ),
           leading: IconButton(
             onPressed: (){
@@ -1893,7 +1937,7 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   selectedProducteId = selectedItem.slNo;
                                   print(selectedProducteId);
                                   final fetchedPrice = await dio
-                                      .fetchProductPrize(selectedProducteId!);
+                                      .fetchProductPrize(selectedProducteId!,selectedCustomerId ?? 0);
                                  
                                   productModelPrize = fetchedPrice.toList();
                                   taxP = selectedItem.tax ?? 0;
@@ -2766,6 +2810,141 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                       ),
                     ),
                       const SizedBox(
+                      height: 6,
+                    ),
+                     Visibility(
+                      visible: cessOnNetAmount && cessPer > 0,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width/3.5,
+                              child: Text(
+                                  'Cess',
+                                  style: const TextStyle(
+                                      fontFamily: 'poppins',
+                                      // fontSize: 13,
+                                      fontWeight: FontWeight.w400)),
+                            ),
+                            // const Spacer(),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.orange),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  textAlign: TextAlign.right,
+                                  style: const TextStyle(fontSize: 13),
+                                  readOnly: true,
+                                  controller: TextEditingController(
+                                      text: cessPer.toStringAsFixed(decimal)),
+                                  // focusNode: focusNodeDiscount,
+                                  //   keyboardType:
+                                  //       const TextInputType
+                                  //           .numberWithOptions(
+                                  //           decimal: true),
+                                  //   inputFormatters: [
+                                  //     FilteringTextInputFormatter(
+                                  //         RegExp(r'[0-9]'),
+                                  //         allow: true,
+                                  //         replacementString:
+                                  //             '.')
+                                  //   ],
+                                  //                   onChanged: (value) {
+                                  //                     setState(() {
+                                  //   editableDiscountP = true;
+                                  //   discountPer = double.tryParse(value)!;
+                                  //   // calculate();
+                                  // });
+                                  //                   },
+                                  decoration: InputDecoration(
+                                    suffixIcon: Container(
+                                      decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          border: const Border(
+                                              left: BorderSide(
+                                                  color: Colors.orange)),
+                                          borderRadius: const BorderRadius.only(
+                                              bottomRight: Radius.circular(3),
+                                              topRight: Radius.circular(3))),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.percent_sharp,
+                                          color: Colors.orange,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              flex: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: grey),
+                                    borderRadius: BorderRadius.circular(3)),
+                                height: 35,
+                                child: TextField(
+                                  readOnly: true,
+                                  style: const TextStyle(fontSize: 13),
+                                  controller: TextEditingController(
+                                      text: cess.toStringAsFixed(decimal)),
+                                  // focusNode:
+                                  //     focusNodeDiscountPer,
+                                  // controller:
+                                  //     controllerDiscountPer,
+                                  // keyboardType:
+                                  //     const TextInputType
+                                  //         .numberWithOptions(
+                                  //         decimal: true),
+                                  // inputFormatters: [
+                                  //   FilteringTextInputFormatter(
+                                  //       RegExp(r'[0-9]'),
+                                  //       allow: true,
+                                  //       replacementString:
+                                  //           '.')
+                                  // ],
+                                  textAlign: TextAlign.right,
+                                  decoration: InputDecoration(
+                                    prefixIcon: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        border: const Border(
+                                            right: BorderSide(color: grey)),
+                                      ),
+                                      width: 25,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.currency_rupee_outlined,
+                                          color: Colors.grey,
+                                          size: 15,
+                                        ),
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        vertical: 6, horizontal: 3),
+                                    border: const OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                       const SizedBox(
                       height: 6,
                     ),
                     Row(
@@ -3696,34 +3875,34 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                     ),
                   );
                 } else {
-                  return InkWell(
-                    onTap: () {
-                      showEditDialog(context, dataDisplay[index]);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 2),
-                        // height: 80,
-                        constraints: const BoxConstraints(
-                          maxHeight: 110,
-                          minHeight: 80
-                        ),
-                        decoration: BoxDecoration(
-                          color: white,
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: const Offset(0, 5),
-                              blurRadius: 6,
-                              color: const Color(0xff000000).withOpacity(0.06),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(10),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
+                  return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      // height: 80,
+                      constraints: const BoxConstraints(
+                        maxHeight: 110,
+                        minHeight: 80
+                      ),
+                      decoration: BoxDecoration(
+                        color: white,
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, 5),
+                            blurRadius: 6,
+                            color: const Color(0xff000000).withOpacity(0.06),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(10),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: InkWell(
+                                onTap: () {
+                                  showEditDialog(context, dataDisplay[index]);
+                                },
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -3776,8 +3955,13 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   ],
                                 ),
                               ),
-                              Expanded(
-                                flex: 2,
+                            ),
+                            Expanded(
+                              flex: 2,
+                              child: InkWell(
+                                onTap: () {
+                                  showDetails(context, dataDisplay[index]);
+                                },
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
@@ -3798,23 +3982,23 @@ class _PurchaseOrderState extends State<PurchaseOrder> {
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        )
-                        // ListTile(
-                        //   title: Text(dataDisplay[index]['Name']),
-                        //   subtitle: Text('Date: ' +
-                        //       dataDisplay[index]['Date'] +
-                        //       ' / EntryNo : ' +
-                        //       dataDisplay[index]['Id'].toString()),
-                        //   trailing: Text(
-                        //       'Total : ' + dataDisplay[index]['Total'].toString()),
-                        //   onTap: () {
-                        //     showEditDialog(context, dataDisplay[index]);
-                        //   },
-                        // ),
+                            ),
+                          ],
                         ),
-                  );
+                      )
+                      // ListTile(
+                      //   title: Text(dataDisplay[index]['Name']),
+                      //   subtitle: Text('Date: ' +
+                      //       dataDisplay[index]['Date'] +
+                      //       ' / EntryNo : ' +
+                      //       dataDisplay[index]['Id'].toString()),
+                      //   trailing: Text(
+                      //       'Total : ' + dataDisplay[index]['Total'].toString()),
+                      //   onTap: () {
+                      //     showEditDialog(context, dataDisplay[index]);
+                      //   },
+                      // ),
+                      );
                 }
               },
               controller: _scrollController,
@@ -4266,7 +4450,7 @@ selectLedgerWidget() {
       if (items.isNotEmpty) isItemData = true;
     });
     return FutureBuilder<List<ProductPurchaseModel>>(
-      future: dio.fetchAllProductPurchase(),
+      future: dio.fetchAllProductPurchase(taxGroupUpdate),
       builder: (ctx, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data!.isNotEmpty) {
@@ -4387,7 +4571,7 @@ selectLedgerWidget() {
   bool _isPrize = false;
   itemDetails() {
     int id = productModel['slno'];
-    dio.fetchProductPrize(id).then((value) {
+    dio.fetchProductPrize(id,selectedCustomerId ?? 0).then((value) {
       productModelPrize = value[0];
       setState(() {
         _isPrize = true;
@@ -5344,6 +5528,17 @@ selectLedgerWidget() {
         title: 'Update',
         context: context);
   }
+    showDetails(context, data) {
+    dataDynamic = [
+      {
+        'RealEntryNo': data['Id'],
+        'EntryNo': data['Id'],
+        'InvoiceNo': data['Id'],
+        'Type': '2',
+      }
+    ];
+  //  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const PurchaseOrderPreviewShow(),));
+  }
 
   fetchPurchase(context, data) {
     DioService api = DioService();
@@ -5507,18 +5702,62 @@ selectLedgerWidget() {
   }
 }
 
+showMoreN(context, bool newBill) {
+    ConfirmAlertBox(
+        buttonColorForNo: Colors.red,
+        buttonColorForYes: Colors.green,
+        icon: Icons.check,
+        onPressedNo: () {
+          Navigator.of(context).pop();
+         Navigator.pushReplacementNamed(context, '/purchaseOrder');
+        },
+        onPressedYes: () {
+          Navigator.of(context).pop();
+          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchaseOrderPreviewShow(),));
+        },
+        buttonTextForNo: 'No',
+        buttonTextForYes: 'YES',
+        infoMessage:
+            'Do you want to Preview\nEntryNo : ${dataDynamic[0]['EntryNo']}',
+        title: newBill ? 'SAVED' : 'EDITED',
+        context: context);
+  }
+
 showMore(context, purchaseState) {
   ConfirmAlertBox(
-      buttonColorForNo: Colors.white,
+      buttonColorForNo: Colors.red,
       buttonColorForYes: Colors.green,
       icon: Icons.check,
-      onPressedYes: () {
+      onPressedNo: () {
         Navigator.of(context).pop();
         Navigator.pushReplacementNamed(context, '/purchaseOrder');
       },
-      // buttonTextForNo: 'No',
-      buttonTextForYes: 'OK',
-      infoMessage: 'Purchase Order $purchaseState',
-      title: 'SAVED',
+      onPressedYes: () {
+        Navigator.of(context).pop();
+        Navigator.pushReplacementNamed(context, '/purchaseOrderPreviewShow',
+            arguments: {'title': 'PurchaseOrder'});
+      },
+      buttonTextForNo: 'No',
+      buttonTextForYes: 'Yes',
+      infoMessage: 'Do you want to Preview Purchase Order',
+      title: purchaseState.toString().toUpperCase(),
       context: context);
 }
+
+
+
+// showMore(context, purchaseState) {
+//   ConfirmAlertBox(
+//       buttonColorForNo: Colors.white,
+//       buttonColorForYes: Colors.green,
+//       icon: Icons.check,
+//       onPressedYes: () {
+//         Navigator.of(context).pop();
+//         Navigator.pushReplacementNamed(context, '/purchaseOrder');
+//       },
+//       // buttonTextForNo: 'No',
+//       buttonTextForYes: 'OK',
+//       infoMessage: 'Purchase Order $purchaseState',
+//       title: 'SAVED',
+//       context: context);
+// }

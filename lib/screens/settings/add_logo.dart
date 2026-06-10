@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sheraccerp/util/res_color.dart';
 
 class AddLogo extends StatefulWidget {
   const AddLogo({Key? key}) : super(key: key);
@@ -25,7 +26,10 @@ class _AddLogoState extends State<AddLogo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Company Logo')),
+      appBar: AppBar(title: const Text('Add Company Logo'),
+      titleTextStyle: const TextStyle(
+        color: white,
+      ),),
       body: Form(
           key: _formKey,
           child: Padding(

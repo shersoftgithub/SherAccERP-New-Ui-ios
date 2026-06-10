@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -19,11 +20,13 @@ class SalesPredictionReport extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prediction Report'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () async {
-              // Generate and share the PDF report
               await shareReportAsPdf();
             },
           ),
@@ -78,7 +81,6 @@ class SalesPredictionReport extends StatelessWidget {
   Future<void> shareReportAsPdf() async {
     final pdf = pw.Document();
 
-    // Create the PDF content
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
@@ -104,10 +106,8 @@ class SalesPredictionReport extends StatelessWidget {
       ),
     );
 
-    // Save the PDF document to a file
     final Uint8List pdfBytes = await pdf.save();
 
-    // Save the file temporarily and share it
     final directory = await Directory.systemTemp.createTemp();
     final pdfFile = File('${directory.path}/sales_prediction_report.pdf');
     await pdfFile.writeAsBytes(pdfBytes);

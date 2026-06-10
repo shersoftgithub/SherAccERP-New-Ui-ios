@@ -42,6 +42,9 @@ class _QuickSearchState extends State<QuickSearch> {
     return Scaffold(
         appBar: AppBar(
           title: const Center(child: Text("Quick Search")),
+          titleTextStyle: TextStyle(
+            color: white,
+          ),
           actions: [
             IconButton(
                 onPressed: () {

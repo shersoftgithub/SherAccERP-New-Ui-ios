@@ -1,20 +1,15 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
-
-// import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/shared/constants.dart';
-import 'package:sheraccerp/util/dateUtil.dart';
 import 'package:sheraccerp/util/number_to_word.dart';
+import '../util/dateUtil.dart';
 import 'printerenum.dart' as Enu;
 import 'package:flutter/services.dart';
 
@@ -47,9 +42,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
     List<BluetoothDevice> devices = [];
     try {
       devices = await bluetooth.getBondedDevices();
-    } on PlatformException {
-      debugPrint('error....');
-    }
+    } on PlatformException {}
 
     bluetooth.onStateChanged().listen((state) {
       switch (state) {
@@ -124,86 +117,99 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Thermal Printer'),
+          title: const Text('Blue Thermal Printer'),
         ),
-        body: ListView.builder(
-            itemCount: _devices.length,
-            itemBuilder: (BuildContext context, int index) {
-              return InkWell(
-                onTap: () {
-                  _device = _devices[index];
-                  _connected ? printData(widget.data) : _connect();
-                },
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      height: 60,
-                      padding: const EdgeInsets.only(left: 10),
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        children: <Widget>[
-                          const Icon(Icons.print),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Text(_devices[index].name ?? ''),
-                                Text(_devices[index].address ?? ''),
-                                Text(
-                                  'Click to print receipt',
-                                  style: TextStyle(color: Colors.grey[700]),
-                                ),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  defaultPrinter = _devices[index].name!;
-                                  setDefaultPrinter();
-                                });
-                              },
-                              child: Text(defaultPrinter.isNotEmpty
-                                  ? _devices[index].name == defaultPrinter
-                                      ? 'Default'
-                                      : 'Set Default'
-                                  : 'Set Default'))
-                        ],
-                      ),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListView(
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Device:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
                     ),
-                    const Divider(),
-                  ],
+                  ),
+                  const SizedBox(width: 30),
+                  Expanded(
+                    child: DropdownButton(
+                      items: _getDeviceItems(),
+                      onChanged: (BluetoothDevice? value) =>
+                          setState(() => _device = value),
+                      value: _device,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  ElevatedButton(
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                    onPressed: () {
+                      initPlatformState();
+                    },
+                    child: const Text(
+                      'Refresh',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            _connected ? Colors.red : Colors.green),
+                    onPressed: _connected ? _disconnect : _connect,
+                    child: Text(
+                      _connected ? 'Disconnect' : 'Connect',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 10.0, right: 10.0, top: 50),
+                child: ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(backgroundColor: Colors.brown),
+                  onPressed: () async {
+                    printData(widget.data);
+                  },
+                  child: const Text('PRINT',
+                      style: TextStyle(color: Colors.white)),
                 ),
-              );
-            }),
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.refresh),
-          onPressed: () {
-            initPlatformState();
-          },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // List<DropdownMenuItem<BluetoothDevice>> _getDeviceItems() {
-  //   List<DropdownMenuItem<BluetoothDevice>> items = [];
-  //   if (_devices.isEmpty) {
-  //     items.add(const DropdownMenuItem(
-  //       child: Text('NONE'),
-  //     ));
-  //   } else {
-  //     _devices.forEach((device) {
-  //       items.add(DropdownMenuItem(
-  //         child: Text(device.name ?? ""),
-  //         value: device,
-  //       ));
-  //     });
-  //   }
-  //   return items;
-  // }
+  List<DropdownMenuItem<BluetoothDevice>> _getDeviceItems() {
+    List<DropdownMenuItem<BluetoothDevice>> items = [];
+    if (_devices.isEmpty) {
+      items.add(const DropdownMenuItem(
+        child: Text('NONE'),
+      ));
+    } else {
+      _devices.forEach((device) {
+        items.add(DropdownMenuItem(
+          child: Text(device.name ?? ""),
+          value: device,
+        ));
+      });
+    }
+    return items;
+  }
 
   void _connect() {
     if (_device != null) {
@@ -211,10 +217,8 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
         if (isConnected == false) {
           bluetooth.connect(_device!).catchError((error) {
             setState(() => _connected = false);
-          }).whenComplete(() => printData(widget.data));
-          setState(() {
-            _connected = true;
           });
+          setState(() => _connected = true);
         }
       });
     } else {
@@ -224,34 +228,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
 
   void _disconnect() {
     bluetooth.disconnect();
-    // setState(() => _connected = false);
-  }
-
-  @override
-  void dispose() {
-    _disconnect();
-    super.dispose();
-  }
-
-  String defaultPrinter = '';
-  void initDefaultData() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    defaultPrinter = pref.getString('defaultPrinter') ?? '';
-  }
-
-  void setDefaultPrinter() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString('defaultPrinter', defaultPrinter);
-  }
-
-  void printDefault() {
-    if (mounted) {
-      if (defaultPrinter.isNotEmpty) {
-        _device =
-            _devices.firstWhere((element) => element.name == defaultPrinter);
-        printData(widget.data);
-      }
-    }
+    setState(() => _connected = false);
   }
 
   Future show(
@@ -275,9 +252,9 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
     var printerSize = data[3];
     CompanyInformation companySettings = data[0];
     List<CompanySettings> settings = data[1];
+    var dataInformation = bill['Information'][0];
+    var dataParticulars = bill['Particulars'];
     if (widget.data[4] == 'SALE') {
-      var dataInformation = bill['Information'][0];
-      var dataParticulars = bill['Particulars'];
       // var dataSerialNO = bill['SerialNO'];
       // var dataDeliveryNote = bill['DeliveryNote'];
       var otherAmount = bill['otherAmount'];
@@ -298,29 +275,24 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   ? false
                   : true;
       var invoiceHead = salesTypeData!.type == 'SALES-ES'
-          ? Settings.getValue<String>('key-sales-estimate-head',
-              defaultValue: 'ESTIMATE')
+          ? Settings.getValue<String>('key-sales-estimate-head', defaultValue: 'ESTIMATE')
           : salesTypeData!.type == 'SALES-Q'
-              ? Settings.getValue<String>('key-sales-quotation-head',
-                  defaultValue: 'QUOTATION')
+              ? Settings.getValue<String>(
+                  'key-sales-quotation-head', defaultValue: 'QUOTATION')
               : salesTypeData!.type == 'SALES-O'
-                  ? Settings.getValue<String>('key-sales-order-head',
-                      defaultValue: 'ORDER')
-                  : Settings.getValue<String>('key-sales-invoice-head',
-                      defaultValue: 'INVOICE');
+                  ? Settings.getValue<String>('key-sales-order-head', defaultValue: 'ORDER')
+                  : Settings.getValue<String>(
+                      'key-sales-invoice-head', defaultValue: 'INVOICE');
       bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
       bool isEsQrCodeKSA =
           ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-      int? printCopy = Settings.getValue<int>('key-dropdown-print-copy-view',
-          defaultValue: 0);
-      int? printerModel = Settings.getValue<int>(
-          'key-dropdown-printer-model-view',
-          defaultValue: 0);
-      int? printerLines =
-          Settings.getValue<int>('key-dropdown-print-line', defaultValue: 0);
+      int? printCopy = Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
+      int? printerModel =
+          Settings.getValue<int>('key-dropdown-printer-model-view', defaultValue: 0);
+      int? printerLines = Settings.getValue<int>('key-dropdown-print-line', defaultValue: 0);
       bool isLogo = ComSettings.appSettings('bool', 'key-print-logo', false);
       //image max 300px X 300px
-     printerLines = printerLines! * 10;
+      printerLines = printerLines! * 10;
       String printerLine = "-";
       for (int k = 0; k <= printerLines; k++) {
         printerLine = printerLine + "-";
@@ -332,18 +304,15 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
         String dir = (await getApplicationDocumentsDirectory()).path;
         file = File('$dir/logo.png');
       }
-        var arabicWord = 'السلام flutter';
 
-      Uint8List bytes = await getCanvasImage(arabicWord, 500.0, 20, 25);
-
-      bluetooth.isConnected.then((isConnected) async {
+      bluetooth.isConnected.then((isConnected) {
         if (isConnected == true) {
           String line = "0";
           try {
             if (printerModel == 5) {
-               if (isLogo) {
+              if (isLogo) {
                 bluetooth.printNewLine();
-                if (file != null) {
+                if (file! != null) {
                   bluetooth.printImage(file.path); //path of your image/logo
                 }
                 bluetooth.printNewLine();
@@ -392,7 +361,10 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   Enu.Size.bold.val,
                   Enu.Align.left.val);
               line = "6";
-              var bal = double.tryParse(dataInformation['Balance'].toString());
+              var bal = double.tryParse(dataInformation['Balance'].toString())! +
+                  (double.tryParse(dataInformation['GrandTotal'].toString())! -
+                      double.tryParse(
+                          dataInformation['CashReceived'].toString())!);
               // bluetooth.printLeftRight(
               //   'Party Name:${dataInformation['ToName']}',
               //   'Party Balance:${bal.toStringAsFixed(2)}',
@@ -402,7 +374,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   'Party Name:${dataInformation['ToName']}',
                   '',
                   "",
-                  'Party Balance:${bal!.toStringAsFixed(2)}',
+                  'Party Balance:${bal.toStringAsFixed(2)}',
                   Enu.Size.bold.val,
                   format: "%-20s %5s %5s %20s %n");
               line = "7";
@@ -467,14 +439,10 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   Enu.Size.bold.val,
                   Enu.Align.right.val);
               line = "13";
-              for (var i = 0; i < otherAmount.length; i++) {
-                if (otherAmount[i]['Amount'].toDouble() > 0) {
-                  bluetooth.printCustom(
-                      '${otherAmount[i]['LedName']} :${double.tryParse(otherAmount[i]['Amount'].toString())!.toStringAsFixed(2)}',
-                      Enu.Size.bold.val,
-                      Enu.Align.right.val);
-                }
-              }
+              bluetooth.printCustom(
+                  'Discount:${dataInformation['OtherDiscount']}',
+                  Enu.Size.bold.val,
+                  Enu.Align.right.val);
               line = "14";
               bluetooth.printCustom(
                   'NET TOTAL:${dataInformation['GrandTotal']}',
@@ -664,11 +632,14 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
               if (Settings.getValue<bool>('key-print-balance', defaultValue: false)!) {
                 //
               } else {
-                var bal =
-                    double.tryParse(dataInformation['Balance'].toString());
+                var bal = double.tryParse(
+                        dataInformation['Balance'].toString())! +
+                    (double.tryParse(dataInformation['GrandTotal'].toString())! -
+                        double.tryParse(
+                            dataInformation['CashReceived'].toString())!);
                 bluetooth.printNewLine();
                 bluetooth.printCustom(
-                    'Party Balance: ${bal!.toStringAsFixed(2)}',
+                    'Party Balance: ${bal.toStringAsFixed(2)}',
                     Enu.Size.medium.val,
                     Enu.Align.left.val);
               }
@@ -681,339 +652,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
               //     .paperCut(); //some printer not supported (sometime making image not centered)
               //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
               // }else{}
-            } else if (printerModel == 8) {
-               var bal = double.tryParse(dataInformation['Balance'].toString());
-              if (isLogo) {
-                bluetooth.printNewLine();
-                if (file != null) {
-                  bluetooth.printImage(file.path); //path of your image/logo
-                }
-                bluetooth.printNewLine();
-              }
-              bluetooth.printNewLine();
-              bluetooth.printCustom(companySettings.name,
-                  Enu.Size.boldLarge.val, Enu.Align.center.val);
-              bluetooth.printNewLine();
-              line = "1";
-              if (companySettings.add1.toString().trim().isNotEmpty) {
-                bluetooth.printCustom(companySettings.add1.toString().trim(),
-                    Enu.Size.bold.val, Enu.Align.center.val);
-              }
-              if (companySettings.add2.toString().trim().isNotEmpty) {
-                bluetooth.printCustom(companySettings.add2.toString().trim(),
-                    Enu.Size.bold.val, Enu.Align.center.val);
-              }
-              bluetooth.printCustom(
-                  'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "2";
-              bluetooth.printCustom(
-                  companyTaxMode == 'INDIA'
-                      ? 'GSTNO: ${ComSettings.getValue('GST-NO', settings)}'
-                      : 'TRN NO: ${ComSettings.getValue('GST-NO', settings)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "3";
-              bluetooth.printCustom(
-                  invoiceHead!, Enu.Size.boldMedium.val, Enu.Align.center.val);
-              // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
-              // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-              line = "4";
-              bluetooth.print3Column(
-                  "Invoice No:${dataInformation['InvoiceNo']}",
-                  " ",
-                  'Date:${DateUtil.dateDMY(dataInformation['DDate'])}',
-                  Enu.Size.bold.val,
-                  format: "%-10s %-4s %-18s %n");
-              line = "5";
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "6";
-              bluetooth.printCustom('${dataInformation['ToName']}',
-                  Enu.Size.bold.val, Enu.Align.left.val);
-              line = "7";
-              bluetooth.printCustom(
-                  companyTaxMode == 'INDIA'
-                      ? 'GSTNO:${dataInformation['gstno'].toString().trim()}'
-                      : 'TRN:${dataInformation['gstno'].toString().trim()}',
-                  Enu.Size.bold.val,
-                  Enu.Align.left.val);
-              line = "8";
-              // bluetooth.printNewLine();
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "9";
-              bluetooth.print5Column("Description", "Qty", "Price", "Vat",
-                  "Total", Enu.Size.bold.val,
-                  format: "%-20s %-4s %-4s %-4s %-6s %n");
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "10";
-              for (var i = 0; i < dataParticulars.length; i++) {
-                var itemName = dataParticulars[i]['itemname'].toString();
-                bluetooth.printCustom(
-                    itemName, Enu.Size.bold.val, Enu.Align.left.val);
-                // bluetooth.print4Column(itemName, "", "", "", Enu.Size.bold.val,
-                //     format: "%35s %-1s %1s %1s %n");
-                bluetooth.print5Column(
-                    "",
-                    '${dataParticulars[i]['Qty']}',
-                    '${dataParticulars[i]['RealRate'].toStringAsFixed(2)}',
-                    (double.tryParse(dataInformation['CGST'].toString())! +
-                            double.tryParse(
-                                dataInformation['SGST'].toString())! +
-                            double.tryParse(dataInformation['IGST'].toString())!)
-                        .toStringAsFixed(2),
-                    '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                    Enu.Size.bold.val,
-                    format: "%-20s %4s %4s %4s %6s %n");
-              }
-              line = "11";
-              // bluetooth.printNewLine();
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              bluetooth.printCustom(
-                  'Gross Total:${dataInformation['NetAmount'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "12";
-              bluetooth.printCustom(
-                  'VAT:' +
-                      (double.tryParse(dataInformation['CGST'].toString())! +
-                              double.tryParse(
-                                  dataInformation['SGST'].toString())! +
-                              double.tryParse(
-                                  dataInformation['IGST'].toString())!)
-                          .toStringAsFixed(2),
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "13";
-              bluetooth.printCustom(
-                  'Discount:${dataInformation['OtherDiscount'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "14";
-              bluetooth.printCustom(
-                  'NET TOTAL:${dataInformation['GrandTotal'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              // bluetooth.printNewLine();
-              line = "15";
-              bluetooth.printCustom('${bill['message']}', Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "16";
-              bluetooth.printNewLine();
-              if (isQrCodeKSA) {
-                bluetooth.printQRcode(
-                    SaudiConversion.getBase64(
-                        companySettings.name,
-                        ComSettings.getValue('GST-NO', settings),
-                        DateUtil.dateTimeQrDMY(
-                            DateUtil.datedYMD(dataInformation['DDate']) +
-                                ' ' +
-                                DateUtil.timeHMS(dataInformation['BTime'])),
-                        double.tryParse(
-                                dataInformation['GrandTotal'].toString())!
-                            .toStringAsFixed(2),
-                        (double.tryParse(dataInformation['CGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['SGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['IGST'].toString())!)
-                            .toStringAsFixed(2)),
-                    200,
-                    200,
-                    Enu.Align.center.val);
-              }
-              bluetooth.printNewLine();
-              bluetooth.printNewLine();
-              // bluetooth
-              //     .paperCut(); //some printer not supported (sometime making image not centered)
-              //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
-              // }else{}
-            }
-             else if (printerModel == 19) {
-              bluetooth.printNewLine();
-              bluetooth.printImageBytes(bytes);
-              // bluetooth.printImage(tempFile.path);
-              bluetooth.printNewLine();
-            } else if (printerModel == 9) {
-              var bal = double.tryParse(dataInformation['Balance'].toString());
-              if (isLogo) {
-                bluetooth.printNewLine();
-                if (file != null) {
-                  bluetooth.printImage(file.path); //path of your image/logo
-                }
-                bluetooth.printNewLine();
-              }
-              bluetooth.printNewLine();
-              bluetooth.printCustom(companySettings.name,
-                  Enu.Size.boldLarge.val, Enu.Align.center.val);
-              bluetooth.printNewLine();
-              line = "1";
-              if (companySettings.add1.toString().trim().isNotEmpty) {
-                bluetooth.printCustom(companySettings.add1.toString().trim(),
-                    Enu.Size.bold.val, Enu.Align.center.val);
-              }
-              if (companySettings.add2.toString().trim().isNotEmpty) {
-                bluetooth.printCustom(companySettings.add2.toString().trim(),
-                    Enu.Size.bold.val, Enu.Align.center.val);
-              }
-              bluetooth.printCustom(
-                  'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "2";
-              bluetooth.printCustom(
-                  companyTaxMode == 'INDIA'
-                      ? 'GSTNO: ${ComSettings.getValue('GST-NO', settings)}'
-                      : 'VAT NO: ${ComSettings.getValue('GST-NO', settings)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "3";
-              bluetooth.printCustom(
-                  invoiceHead!, Enu.Size.boldMedium.val, Enu.Align.center.val);
-              // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
-              // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-              line = "4";
-              bluetooth.print3Column(
-                  "Invoice No:${dataInformation['InvoiceNo']}",
-                  " ",
-                  'Date:${DateUtil.dateDMY(dataInformation['DDate'])}',
-                  Enu.Size.bold.val,
-                  format: "%-10s %-4s %-18s %n");
-              line = "5";
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "6";
-              bluetooth.printCustom('${dataInformation['ToName']}',
-                  Enu.Size.bold.val, Enu.Align.left.val);
-              line = "7";
-              bluetooth.printCustom(
-                  companyTaxMode == 'INDIA'
-                      ? 'GSTNO:${dataInformation['gstno'].toString().trim()}'
-                      : 'VAT NO:${dataInformation['gstno'].toString().trim()}',
-                  Enu.Size.bold.val,
-                  Enu.Align.left.val);
-              line = "8";
-              // bluetooth.printNewLine();
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "9";
-              bluetooth.print5Column("Description", "Qty", "Price", "Vat",
-                  "Total", Enu.Size.bold.val,
-                  format: "%-20s %-4s %-4s %-4s %-6s %n");
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              line = "10";
-              for (var i = 0; i < dataParticulars.length; i++) {
-                if (dataParticulars[i]['RegItemName'].toString().isNotEmpty) {
-                  var itemName = dataParticulars[i]['RegItemName'].toString();
-                  Uint8List? bytes =
-                      await getCanvasImage(itemName, 500.0, 25, 30);
-                  bluetooth.printImageBytes(bytes);
-                } else {
-                  var itemName = dataParticulars[i]['itemname'].toString();
-                  bluetooth.printCustom(
-                      itemName, Enu.Size.bold.val, Enu.Align.left.val);
-                }
-                // bluetooth.print4Column(itemName, "", "", "", Enu.Size.bold.val,
-                //     format: "%35s %-1s %1s %1s %n");
-                bluetooth.print5Column(
-                    "",
-                    '${dataParticulars[i]['Qty']}',
-                    '${dataParticulars[i]['RealRate'].toStringAsFixed(2)}',
-                    (double.tryParse(dataInformation['CGST'].toString())! +
-                            double.tryParse(
-                                dataInformation['SGST'].toString())! +
-                            double.tryParse(dataInformation['IGST'].toString())!)
-                        .toStringAsFixed(2),
-                    '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                    Enu.Size.bold.val,
-                    format: "%-20s %4s %4s %4s %6s %n");
-              }
-              line = "11";
-              // bluetooth.printNewLine();
-              bluetooth.printCustom(
-                  '----------------------------------------------------------',
-                  Enu.Size.medium.val,
-                  Enu.Align.center.val);
-              bluetooth.printCustom(
-                  'Gross Total:${dataInformation['NetAmount'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "12";
-              bluetooth.printCustom(
-                  'VAT:' +
-                      (double.tryParse(dataInformation['CGST'].toString())! +
-                              double.tryParse(
-                                  dataInformation['SGST'].toString())! +
-                              double.tryParse(
-                                  dataInformation['IGST'].toString())!)
-                          .toStringAsFixed(2),
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "13";
-              bluetooth.printCustom(
-                  'Discount:${dataInformation['OtherDiscount'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              line = "14";
-              bluetooth.printCustom(
-                  'NET TOTAL:${dataInformation['GrandTotal'].toStringAsFixed(2)}',
-                  Enu.Size.bold.val,
-                  Enu.Align.right.val);
-              // bluetooth.printNewLine();
-              line = "15";
-              bluetooth.printCustom('${bill['message']}', Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "16";
-              bluetooth.printNewLine();
-              if (isQrCodeKSA) {
-                bluetooth.printQRcode(
-                    SaudiConversion.getBase64(
-                        companySettings.name,
-                        ComSettings.getValue('GST-NO', settings),
-                        DateUtil.dateTimeQrDMY(
-                            DateUtil.datedYMD(dataInformation['DDate']) +
-                                ' ' +
-                                DateUtil.timeHMS(dataInformation['BTime'])),
-                        double.tryParse(
-                                dataInformation['GrandTotal'].toString())!
-                            .toStringAsFixed(2),
-                        (double.tryParse(dataInformation['CGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['SGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['IGST'].toString())!)
-                            .toStringAsFixed(2)),
-                    200,
-                    200,
-                    Enu.Align.center.val);
-              }
-              bluetooth.printNewLine();
-              bluetooth.printNewLine();
-              // bluetooth
-              //     .paperCut(); //some printer not supported (sometime making image not centered)
-              //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
-              // }else{}
-            }
-             else {
+            } else {
               if (taxSale) {
                 if (isLogo) {
                   bluetooth.printNewLine();
@@ -1046,429 +685,60 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                 if (companySettings.telephone.toString().trim().isNotEmpty ||
                     companySettings.mobile.toString().trim().isNotEmpty) {
                   bluetooth.printCustom(
-                      companySettings.telephone! + ',' + companySettings.mobile!,
+                      'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
                       Enu.Size.bold.val,
                       Enu.Align.center.val);
                 }
                 line = "2";
-                bluetooth.printCustom(
-                    companyTaxMode == 'INDIA'
-                        ? 'GSTNO: ${ComSettings.getValue('GST-NO', settings)}'
-                        : companyTaxMode == 'GULF'
-                            ? 'TRN NO: ${ComSettings.getValue('GST-NO', settings)}'
-                            : 'TaxNo: ${ComSettings.getValue('GST-NO', settings)}',
-                    Enu.Size.bold.val,
-                    Enu.Align.center.val);
-                line = "3";
-                bluetooth.printCustom(
-                    invoiceHead!, Enu.Size.boldMedium.val, Enu.Align.center.val);
-                // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-                // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-                line = "4";
-                // bluetooth.print3Column(
-                //     "Invoice No : ${dataInformation['InvoiceNo']}",
-                //     " ",
-                //     'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
-                //     Enu.Size.bold.val,
-                //     format: "%-18s %-4s %-20s %n");
-                // bluetooth.printLeftRight(
-                //     "Invoice No : ${dataInformation['InvoiceNo']}",
-                //     'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
-                //     Enu.Size.bold.val);
-                bluetooth.printCustom(
-                    'Invoice No : ${dataInformation['InvoiceNo']}',
-                    Enu.Size.bold.val,
-                    Enu.Align.left.val);
-                bluetooth.printCustom(
-                    'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
-                    Enu.Size.bold.val,
-                    Enu.Align.left.val);
-                line = "5";
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "6";
-                bluetooth.printCustom('Bill To : ${dataInformation['ToName']}',
-                    Enu.Size.bold.val, Enu.Align.left.val);
-                line = "7";
-                if (dataInformation['gstno'].toString().trim().isNotEmpty) {
-                  bluetooth.printCustom(
-                      (companyTaxMode == 'INDIA'
-                          ? 'GSTNO : ${dataInformation['gstno'].toString().trim()}'
-                          : companyTaxMode == 'GULF'
-                              ? 'TRN : ${dataInformation['gstno'].toString().trim()}'
-                              : 'TaxNo : ${dataInformation['gstno'].toString().trim()}'),
-                      Enu.Size.bold.val,
-                      Enu.Align.left.val);
-                }
-                line = "8";
-                // bluetooth.printNewLine();
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "9";
-                if (printerSize == "2") {
-                  bluetooth.print4Column(
-                      "Description", "Qty", "Price", "Total", Enu.Size.bold.val,
-                      format: "%-10s %-4s %-4s %-6s %n");
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.print5Column("Description", "Qty", "Price", "Disc",
-                      "Total", Enu.Size.bold.val,
-                      format: "%-20s %-4s %-4s %-4s %-6s %n");
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "10";
-                for (var i = 0; i < dataParticulars.length; i++) {
-                  var itemName = dataParticulars[i]['itemname'].toString();
-                  bluetooth.printCustom(
-                      itemName, Enu.Size.bold.val, Enu.Align.left.val);
-                  // bluetooth.print4Column(itemName, "", "", "", Enu.Size.bold.val,
-                  //     format: "%35s %-1s %1s %1s %n");
-                  if (printerSize == "2") {
-                    bluetooth.print4Column(
-                        "",
-                        '${dataParticulars[i]['Qty']}',
-                        '${dataParticulars[i]['Rate'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        format: "%-10s %4s %4s %6s %n");
-                  } else {
-                    bluetooth.print5Column(
-                        "",
-                        '${dataParticulars[i]['Qty']}',
-                        '${dataParticulars[i]['Rate'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Disc'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        format: "%-20s %4s %4s %4s %6s %n");
-                  }
-                }
-                line = "11";
-                // bluetooth.printNewLine();
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                bluetooth.printCustom(
-                    'Gross Total :    ${dataInformation['NetAmount'].toStringAsFixed(2)}',
-                    Enu.Size.bold.val,
-                    Enu.Align.right.val);
-                line = "12";
-                bluetooth.printCustom(
-                    'Tax :     ' +
-                        (double.tryParse(dataInformation['CGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['SGST'].toString())! +
-                                double.tryParse(
-                                    dataInformation['IGST'].toString())!)
-                            .toStringAsFixed(2),
-                    Enu.Size.bold.val,
-                    Enu.Align.right.val);
-                line = "13";
-                for (var i = 0; i < otherAmount.length; i++) {
-                  if (otherAmount[i]['Amount'].toDouble() > 0) {
-                    bluetooth.printCustom(
-                        '${otherAmount[i]['LedName']} :${double.tryParse(otherAmount[i]['Amount'].toString())!.toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        Enu.Align.right.val);
-                  }
-                }
-                line = "14";
-                if (printerSize == "2") {
-                  bluetooth.printCustom(
-                      'Net Total : ${dataInformation['GrandTotal'].toStringAsFixed(2)}',
-                      Enu.Size.bold.val,
-                      Enu.Align.right.val);
-                } else {
-                  bluetooth.printCustom(
-                      'Net Total : ${dataInformation['GrandTotal'].toStringAsFixed(2)}',
-                      Enu.Size.boldMedium.val,
-                      Enu.Align.right.val);
-                }
-                // bluetooth.printNewLine();
-                line = "15";
-                if (isQrCodeKSA) {
-                  bluetooth.printQRcode(
-                      SaudiConversion.getBase64(
-                          companySettings.name,
-                          ComSettings.getValue('GST-NO', settings),
-                          DateUtil.dateTimeQrDMY(
-                              DateUtil.datedYMD(dataInformation['DDate']) +
-                                  ' ' +
-                                  DateUtil.timeHMS(dataInformation['BTime'])),
-                          double.tryParse(
-                                  dataInformation['GrandTotal'].toString())!
-                              .toStringAsFixed(2),
-                          (double.tryParse(dataInformation['CGST'].toString())! +
-                                  double.tryParse(
-                                      dataInformation['SGST'].toString())! +
-                                  double.tryParse(
-                                      dataInformation['IGST'].toString())!)
-                              .toStringAsFixed(2)),
-                      200,
-                      200,
-                      Enu.Align.center.val);
-                }
+                //
               } else {
-                if (ComSettings.appSettings(
-                    'bool', 'key-print-header-es', false)) {
-                  if (isLogo) {
-                    bluetooth.printNewLine();
-                    if (file != null) {
-                      bluetooth.printImage(file.path); //path of your image/logo
-                    }
-                    bluetooth.printNewLine();
+                if (isLogo) {
+                  bluetooth.printNewLine();
+                  if (file != null) {
+                    bluetooth.printImage(file.path); //path of your image/logo
                   }
                   bluetooth.printNewLine();
-                  bluetooth.printCustom(companySettings.name,
-                      Enu.Size.boldLarge.val, Enu.Align.center.val);
-                  bluetooth.printNewLine();
-                  line = "1";
-                  if (companySettings.add1.toString().trim().isNotEmpty) {
-                    bluetooth.printCustom(
-                        companySettings.add1.toString().trim(),
-                        Enu.Size.bold.val,
-                        Enu.Align.center.val);
-                  }
-                  if (companySettings.add2.toString().trim().isNotEmpty) {
-                    bluetooth.printCustom(
-                        companySettings.add2.toString().trim(),
-                        Enu.Size.bold.val,
-                        Enu.Align.center.val);
-                  }
-                  if (companySettings.add3.toString().trim().isNotEmpty) {
-                    bluetooth.printCustom(
-                        companySettings.add3.toString().trim(),
-                        Enu.Size.bold.val,
-                        Enu.Align.center.val);
-                  }
-                  if (companySettings.add4.toString().trim().isNotEmpty) {
-                    bluetooth.printCustom(
-                        companySettings.add4.toString().trim(),
-                        Enu.Size.bold.val,
-                        Enu.Align.center.val);
-                  }
-                  if (companySettings.telephone.toString().trim().isNotEmpty ||
-                      companySettings.mobile.toString().trim().isNotEmpty) {
-                    bluetooth.printCustom(
-                        'Tel : ${companySettings.telephone! + ',' + companySettings.mobile!}',
-                        Enu.Size.bold.val,
-                        Enu.Align.center.val);
-                  }
-                  line = "2";
                 }
-                line = "3";
-                bluetooth.printCustom(
-                    invoiceHead!, Enu.Size.bold.val, Enu.Align.center.val);
-                // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-                // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-                line = "4";
-                if (printerSize == "2") {
-                  bluetooth.printCustom(
-                      "Invoice No : ${dataInformation['InvoiceNo']}",
-                      Enu.Size.bold.val,
-                      Enu.Align.left.val);
-                  bluetooth.printCustom(
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
-                      Enu.Size.bold.val,
-                      Enu.Align.left.val);
-                  line = "5";
-                } else {
-                  bluetooth.print3Column(
-                      "Invoice No : ${dataInformation['InvoiceNo']}",
-                      " ",
-                      'Date : ${DateUtil.dateDMY(dataInformation['DDate']) + ' ' + DateUtil.timeHMSA(dataInformation['BTime'])}',
-                      Enu.Size.bold.val,
-                      format: "%-18s %-4s %-20s %n");
-                  line = "5";
-                }
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "6";
-                bluetooth.printCustom('${dataInformation['ToName']}',
-                    Enu.Size.bold.val, Enu.Align.left.val);
-                line = "7";
-                line = "8";
-                // bluetooth.printNewLine();
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "9";
-                if (printerSize == "2") {
-                  bluetooth.print4Column(
-                      "Description", "Qty", "Price", "Total", Enu.Size.bold.val,
-                      format: "%-10s %-4s %-4s %-6s %n");
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.print5Column("Description", "Qty", "Price", "Disc",
-                      "Total", Enu.Size.bold.val,
-                      format: "%-20s %-4s %-4s %-4s %-6s %n");
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                line = "10";
-                for (var i = 0; i < dataParticulars.length; i++) {
-                  var itemName = dataParticulars[i]['itemname'].toString();
-                  if (printerSize == "2") {
-                    bluetooth.printCustom(
-                        itemName, Enu.Size.bold.val, Enu.Align.left.val);
-                    bluetooth.print4Column(
-                        "",
-                        '${dataParticulars[i]['Qty']}',
-                        '${dataParticulars[i]['Rate'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        format: "%-10s %4s %4s %6s %n");
-                  } else {
-                    bluetooth.printCustom(
-                        itemName, Enu.Size.bold.val, Enu.Align.left.val);
-                    // bluetooth.print4Column(itemName, "", "", "", Enu.Size.bold.val,
-                    //     format: "%35s %-1s %1s %1s %n");
-                    bluetooth.print5Column(
-                        "",
-                        '${dataParticulars[i]['Qty']}',
-                        '${dataParticulars[i]['Rate'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Disc'].toStringAsFixed(2)}',
-                        '${dataParticulars[i]['Total'].toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        format: "%-20s %4s %4s %4s %6s %n");
-                  }
-                }
-                line = "11";
-                // bluetooth.printNewLine();
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                bluetooth.printCustom(
-                    'Gross Total : ${dataInformation['NetAmount'].toStringAsFixed(2)}',
-                    Enu.Size.bold.val,
-                    Enu.Align.right.val);
-                line = "12";
-                for (var i = 0; i < otherAmount.length; i++) {
-                  if (otherAmount[i]['Amount'].toDouble() > 0) {
-                    bluetooth.printCustom(
-                        '${otherAmount[i]['LedName']} :${double.tryParse(otherAmount[i]['Amount'].toString())!.toStringAsFixed(2)}',
-                        Enu.Size.bold.val,
-                        Enu.Align.right.val);
-                  }
-                }
-                line = "13";
-                bluetooth.printCustom(
-                    'Net Total : ${dataInformation['GrandTotal'].toStringAsFixed(2)}',
-                    Enu.Size.bold.val,
-                    Enu.Align.right.val);
-                // bluetooth.printNewLine();
-                line = "14";
-                if (isQrCodeKSA) {
-                  bluetooth.printQRcode(
-                      SaudiConversion.getBase64(
-                          companySettings.name,
-                          ComSettings.getValue('GST-NO', settings),
-                          DateUtil.dateTimeQrDMY(
-                              DateUtil.datedYMD(dataInformation['DDate']) +
-                                  ' ' +
-                                  DateUtil.timeHMS(dataInformation['BTime'])),
-                          double.tryParse(
-                                  dataInformation['GrandTotal'].toString())!
-                              .toStringAsFixed(2),
-                          (double.tryParse(dataInformation['CGST'].toString())! +
-                                  double.tryParse(
-                                      dataInformation['SGST'].toString())! +
-                                  double.tryParse(
-                                      dataInformation['IGST'].toString())!)
-                              .toStringAsFixed(2)),
-                      200,
-                      200,
-                      Enu.Align.center.val);
-                }
-              }
-
-              if (!Settings.getValue<bool>('key-print-balance', defaultValue: false)!) {
-                if (printerSize == "2") {
-                  bluetooth.printCustom('--------------------------------',
-                      Enu.Size.medium.val, Enu.Align.center.val);
-                } else {
-                  bluetooth.printCustom(
-                      '----------------------------------------------------------',
-                      Enu.Size.medium.val,
-                      Enu.Align.center.val);
-                }
-                bluetooth.printLeftRight(
-                    "CashReceived : ",
-                    "${dataInformation['CashReceived'].toStringAsFixed(2)}",
-                    Enu.Size.bold.val);
-                bluetooth.printLeftRight(
-                    "Old Balance : ",
-                    "${dataInformation['LedgerBalance'].toStringAsFixed(2)}",
-                    Enu.Size.bold.val);
-                bluetooth.printLeftRight(
-                    "Balance : ",
-                    "${dataInformation['Balance'].toStringAsFixed(2)}",
-                    Enu.Size.bold.val);
-              }
-              bluetooth.printNewLine();
-              bluetooth.printCustom('${bill['message']}', Enu.Size.bold.val,
-                  Enu.Align.center.val);
-              line = "15";
-              bluetooth.printNewLine();
-              bluetooth.printNewLine();
-              if (printerSize == "2") {
                 bluetooth.printNewLine();
+                bluetooth.printCustom(companySettings.name,
+                    Enu.Size.boldLarge.val, Enu.Align.center.val);
+                bluetooth.printNewLine();
+                line = "1";
+                if (companySettings.add1.toString().trim().isNotEmpty) {
+                  bluetooth.printCustom(companySettings.add1.toString().trim(),
+                      Enu.Size.bold.val, Enu.Align.center.val);
+                }
+                if (companySettings.add2.toString().trim().isNotEmpty) {
+                  bluetooth.printCustom(companySettings.add2.toString().trim(),
+                      Enu.Size.bold.val, Enu.Align.center.val);
+                }
+                if (companySettings.add3.toString().trim().isNotEmpty) {
+                  bluetooth.printCustom(companySettings.add3.toString().trim(),
+                      Enu.Size.bold.val, Enu.Align.center.val);
+                }
+                if (companySettings.add4.toString().trim().isNotEmpty) {
+                  bluetooth.printCustom(companySettings.add4.toString().trim(),
+                      Enu.Size.bold.val, Enu.Align.center.val);
+                }
+                if (companySettings.telephone.toString().trim().isNotEmpty ||
+                    companySettings.mobile.toString().trim().isNotEmpty) {
+                  bluetooth.printCustom(
+                      'Phone No: ${companySettings.telephone! + ',' + companySettings.mobile!}',
+                      Enu.Size.bold.val,
+                      Enu.Align.center.val);
+                }
+
+                line = "2";
+                //
               }
             }
           } catch (e, s) {
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'blue print:$line');
+            // FirebaseCrashlytics.instance
+            //     .recordError(e, s, reason: 'blue print:' + line);
           }
         }
       });
     } else if (widget.data[4] == 'SALES RETURN') {
-      var dataInformation = bill['Information'][0];
-      var dataParticulars = bill['Particulars'];
       // var dataSerialNO = bill['SerialNO'];
       // var dataDeliveryNote = bill['DeliveryNote'];
       var otherAmount = bill['otherAmount'];
@@ -1481,34 +751,32 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
           )['LedName']
           .toString();
       // header
-      var invoiceHead = Settings.getValue<String>('key-sales-return-head',
-          defaultValue: 'Sales Return');
+      var invoiceHead =
+          Settings.getValue<String>('key-sales-return-head', defaultValue: 'Sales Return');
       bool isQrCodeKSA = ComSettings.getStatus('KEY QRCODE KSA', settings);
       bool isEsQrCodeKSA =
           ComSettings.getStatus('KEY QRCODE KSA ON ES', settings);
-      int printCopy = Settings.getValue<int>('key-dropdown-print-copy-view',
-          defaultValue: 0)!;
-      int printerModel = Settings.getValue<int>(
-          'key-dropdown-printer-model-view',
-          defaultValue: 0)!;
-      int printerLines =
-          Settings.getValue<int>('key-dropdown-print-line', defaultValue: 0)!;
+      int? printCopy = Settings.getValue<int>('key-dropdown-print-copy-view', defaultValue: 0);
+      int? printerModel =
+          Settings.getValue<int>('key-dropdown-printer-model-view', defaultValue: 0);
+      int? printerLines = Settings.getValue<int>('key-dropdown-print-line', defaultValue: 0);
       //image max 300px X 300px
-      printerLines = printerLines * 10;
+      printerLines = printerLines! * 10;
       String printerLine = "-";
       for (int k = 0; k <= printerLines; k++) {
-        printerLine = "$printerLine-";
+        printerLine = printerLine + "-";
       }
 
       ///image from File path
       // String filename = 'yourlogo.png';
-      // ByteData bytesData = await rootBundle.load("assets/logo1.png");
+      // ByteData bytesData = await rootBundle.load("assets/images/yourlogo.png");
       // String dir = (await getApplicationDocumentsDirectory()).path;
       // File file = await File('$dir/$filename').writeAsBytes(bytesData.buffer
       //     .asUint8List(bytesData.offsetInBytes, bytesData.lengthInBytes));
 
       ///image from Asset
-      ByteData bytesAsset = await rootBundle.load("assets/logo1.png");
+      ByteData bytesAsset =
+          await rootBundle.load("assets/images/logo/green.png");
       Uint8List imageBytesFromAsset = bytesAsset.buffer
           .asUint8List(bytesAsset.offsetInBytes, bytesAsset.lengthInBytes);
 
@@ -1575,7 +843,8 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   Enu.Size.bold.val,
                   Enu.Align.left.val);
               line = "6";
-              var bal = double.tryParse(dataInformation['Balance'].toString());
+              var bal = double.tryParse(dataInformation['Balance'].toString())! -
+                  double.tryParse(dataInformation['GrandTotal'].toString())!;
               // bluetooth.printLeftRight(
               //   'Party Name:${dataInformation['ToName']}',
               //   'Party Balance:${bal.toStringAsFixed(2)}',
@@ -1585,7 +854,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
                   'Party Name:${dataInformation['ToName']}',
                   '',
                   "",
-                  'Party Balance:${bal!.toStringAsFixed(2)}',
+                  'Party Balance:${bal.toStringAsFixed(2)}',
                   Enu.Size.bold.val,
                   format: "%-20s %5s %5s %20s %n");
               line = "7";
@@ -1674,7 +943,7 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
               //bluetooth.drawerPin2(); // or you can use bluetooth.drawerPin5();
               // }else{}
             } else if (printerModel == 7) {
-               bluetooth.printNewLine();
+              bluetooth.printNewLine();
               bluetooth.printImageBytes(imageBytesFromAsset); //image from Asset
               bluetooth.printNewLine();
               bluetooth.printNewLine();
@@ -1839,11 +1108,12 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
               if (Settings.getValue<bool>('key-print-balance', defaultValue: false)!) {
                 //
               } else {
-                var bal =
-                    double.tryParse(dataInformation['Balance'].toString());
+                var bal = double.tryParse(
+                        dataInformation['Balance'].toString())! -
+                    double.tryParse(dataInformation['GrandTotal'].toString())!;
                 bluetooth.printNewLine();
                 bluetooth.printCustom(
-                    'Party Balance: ${bal!.toStringAsFixed(2)}',
+                    'Party Balance: ${bal.toStringAsFixed(2)}',
                     Enu.Size.medium.val,
                     Enu.Align.left.val);
               }
@@ -1861,427 +1131,11 @@ class _BlueThermalPrintState extends State<BlueThermalPrint> {
               //
             }
           } catch (e, s) {
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'blue print:$line');
-          }
-        }
-      });
-    } else if (widget.data[4] == 'RECEIPT') {
-       bill = bill[0][0];
-
-      bool isLogo = ComSettings.appSettings('bool', 'key-print-logo', false);
-      //image max 300px X 300px
-      //image from File path
-      File? file;
-      if (isLogo) {
-        String dir = (await getApplicationDocumentsDirectory()).path;
-        file = File('$dir/logo.png');
-      }
-
-      var invoiceHead =
-          Settings.getValue<String>('key-receipt-voucher-head', defaultValue: 'RECEIPT')!
-                  .isNotEmpty
-              ? Settings.getValue<String>('key-receipt-voucher-head', defaultValue: 'RECEIPT')
-              : 'Receipt Invoice';
-
-      bluetooth.isConnected.then((isConnected) {
-        if (isConnected == true) {
-          String line = "0";
-          try {
-            if (isLogo) {
-              bluetooth.printNewLine();
-              if (file != null) {
-                bluetooth.printImage(file.path); //path of your image/logo
-              }
-              bluetooth.printNewLine();
-            }
-            bluetooth.printNewLine();
-            bluetooth.printCustom(companySettings.name, Enu.Size.boldLarge.val,
-                Enu.Align.center.val);
-            bluetooth.printNewLine();
-            line = "1";
-            if (companySettings.add1.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add1.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add2.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add2.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add3.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add3.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add4.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add4.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.telephone.toString().trim().isNotEmpty ||
-                companySettings.mobile.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(
-                  companySettings.telephone! + ',' + companySettings.mobile!,
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-            }
-            line = "2";
-            bluetooth.printCustom(
-                companyTaxMode == 'INDIA'
-                    ? 'GSTNO: ${ComSettings.getValue('GST-NO', settings)}'
-                    : companyTaxMode == 'GULF'
-                        ? 'TRN NO: ${ComSettings.getValue('GST-NO', settings)}'
-                        : 'TaxNo: ${ComSettings.getValue('GST-NO', settings)}',
-                Enu.Size.bold.val,
-                Enu.Align.center.val);
-            line = "3";
-            bluetooth.printCustom(
-                invoiceHead!, Enu.Size.boldMedium.val, Enu.Align.center.val);
-            // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-            // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-            // line = "4";
-            bluetooth.printCustom('Invoice No : ${bill['entryNo']}',
-                Enu.Size.bold.val, Enu.Align.left.val);
-            bluetooth.printCustom('Date : ${DateUtil.dateDMY(bill['date'])}',
-                Enu.Size.bold.val, Enu.Align.left.val);
-            bluetooth.printCustom('From : ${bill['name']}', Enu.Size.bold.val,
-                Enu.Align.left.val);
-            bluetooth.printCustom(
-                '----------------------------------------------------------',
-                Enu.Size.medium.val,
-                Enu.Align.center.val);
-
-            bluetooth.print3Column(
-                "Amount   : ",
-                " ",
-                double.tryParse(bill['amount'].toString())!.toStringAsFixed(2),
-                Enu.Size.bold.val,
-                format: "%-18s %-4s %20s %n");
-            bluetooth.print3Column(
-                "Discount : ",
-                " ",
-                double.tryParse(bill['discount'].toString())!.toStringAsFixed(2),
-                Enu.Size.bold.val,
-                format: "%-18s %-4s %20s %n");
-            if (Settings.getValue<bool>('key-print-balance', defaultValue: false)!) {
-              bluetooth.print3Column(
-                  "Total    : ",
-                  " ",
-                  double.tryParse(bill['total'].toString())!.toStringAsFixed(2),
-                  Enu.Size.bold.val,
-                  format: "%-18s %-4s %20s %n");
-            } else {
-              if (bill['name'] != 'CASH') {
-                // var bal = bill['oldBalance'].toString().split(' ')[0];
-                // double oldBalancexx =
-                //     double.tryParse(bill['oldBalance'].toString());
-                bluetooth.print3Column(
-                    "Total    : ",
-                    " ",
-                    double.tryParse(bill['total'].toString())!
-                        .toStringAsFixed(2),
-                    Enu.Size.bold.val,
-                    format: "%-18s %-4s %20s %n");
-                bluetooth.printCustom(
-                    '----------------------------------------------------------',
-                    Enu.Size.medium.val,
-                    Enu.Align.center.val);
-                bluetooth.printLeftRight(
-                    "Old Balance : ",
-                    double.tryParse(bill['oldBalance'].toString())!
-                        .toStringAsFixed(2),
-                    Enu.Size.bold.val);
-                double balance = double.tryParse(bill['balance'].toString())!;
-                bluetooth.printLeftRight("Balance : ",
-                    balance.toStringAsFixed(2), Enu.Size.bold.val);
-              } else {
-                bluetooth.print3Column(
-                    "Total    : ",
-                    " ",
-                    double.tryParse(bill['total'].toString())!
-                        .toStringAsFixed(2),
-                    Enu.Size.bold.val,
-                    format: "%-18s %-4s %20s %n");
-              }
-            }
-
-            bluetooth.printNewLine();
-            bluetooth.printCustom(
-                '${bill['message']}', Enu.Size.bold.val, Enu.Align.center.val);
-            line = "15";
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-          } catch (e, s) {
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'blue print:' + line);
-          }
-        }
-      });
-    } else if (widget.data[4] == 'PAYMENT') {
-      bill = bill[0][0];
-
-      bool isLogo = ComSettings.appSettings('bool', 'key-print-logo', false);
-      //image max 300px X 300px
-      //image from File path
-      File? file;
-      if (isLogo) {
-        String dir = (await getApplicationDocumentsDirectory()).path;
-        file = File('$dir/logo.png');
-      }
-
-      var invoiceHead =
-          Settings.getValue<String>('key-payment-voucher-head', defaultValue: 'PAYMENT')!
-                  .isNotEmpty
-              ? Settings.getValue<String>('key-payment-voucher-head', defaultValue: 'PAYMENT')
-              : 'Payment Invoice';
-
-      bluetooth.isConnected.then((isConnected) {
-        if (isConnected == true) {
-          String line = "0";
-          try {
-            if (isLogo) {
-              bluetooth.printNewLine();
-              if (file != null) {
-                bluetooth.printImage(file.path); //path of your image/logo
-              }
-              bluetooth.printNewLine();
-            }
-            bluetooth.printNewLine();
-            bluetooth.printCustom(companySettings.name, Enu.Size.boldLarge.val,
-                Enu.Align.center.val);
-            bluetooth.printNewLine();
-            line = "1";
-            if (companySettings.add1.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add1.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add2.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add2.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add3.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add3.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.add4.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(companySettings.add4.toString().trim(),
-                  Enu.Size.bold.val, Enu.Align.center.val);
-            }
-            if (companySettings.telephone.toString().trim().isNotEmpty ||
-                companySettings.mobile.toString().trim().isNotEmpty) {
-              bluetooth.printCustom(
-                  companySettings.telephone! + ',' + companySettings.mobile!,
-                  Enu.Size.bold.val,
-                  Enu.Align.center.val);
-            }
-            line = "2";
-            bluetooth.printCustom(
-                companyTaxMode == 'INDIA'
-                    ? 'GSTNO: ${ComSettings.getValue('GST-NO', settings)}'
-                    : companyTaxMode == 'GULF'
-                        ? 'TRN NO: ${ComSettings.getValue('GST-NO', settings)}'
-                        : 'TaxNo: ${ComSettings.getValue('GST-NO', settings)}',
-                Enu.Size.bold.val,
-                Enu.Align.center.val);
-            line = "3";
-            bluetooth.printCustom(
-                invoiceHead!, Enu.Size.boldMedium.val, Enu.Align.center.val);
-            // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-            // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-            // line = "4";
-            bluetooth.printCustom('Invoice No : ${bill['entryNo']}',
-                Enu.Size.bold.val, Enu.Align.left.val);
-            bluetooth.printCustom('Date : ${DateUtil.dateDMY(bill['date'])}',
-                Enu.Size.bold.val, Enu.Align.left.val);
-            bluetooth.printCustom('From : ${bill['name']}', Enu.Size.bold.val,
-                Enu.Align.left.val);
-            bluetooth.printCustom(
-                '----------------------------------------------------------',
-                Enu.Size.medium.val,
-                Enu.Align.center.val);
-
-            bluetooth.print3Column(
-                "Amount   : ",
-                " ",
-                double.tryParse(bill['amount'].toString())!.toStringAsFixed(2),
-                Enu.Size.bold.val,
-                format: "%-18s %-4s %20s %n");
-            bluetooth.print3Column(
-                "Discount : ",
-                " ",
-                double.tryParse(bill['discount'].toString())!.toStringAsFixed(2),
-                Enu.Size.bold.val,
-                format: "%-18s %-4s %20s %n");
-            if (Settings.getValue<bool>('key-print-balance', defaultValue: false)!) {
-              bluetooth.print3Column(
-                  "Total    : ",
-                  " ",
-                  double.tryParse(bill['total'].toString())!.toStringAsFixed(2),
-                  Enu.Size.bold.val,
-                  format: "%-18s %-4s %20s %n");
-            } else {
-              if (bill['name'] != 'CASH') {
-                // var bal = bill['oldBalance'].toString().split(' ')[0];
-                double oldBalance =
-                    double.tryParse(bill['oldBalance'].toString())!;
-                bluetooth.print3Column(
-                    "Total    : ",
-                    " ",
-                    double.tryParse(bill['total'].toString())!
-                        .toStringAsFixed(2),
-                    Enu.Size.bold.val,
-                    format: "%-18s %-4s %20s %n");
-                bluetooth.printCustom(
-                    '----------------------------------------------------------',
-                    Enu.Size.medium.val,
-                    Enu.Align.center.val);
-                bluetooth.printLeftRight("Old Balance : ",
-                    oldBalance.toStringAsFixed(2), Enu.Size.bold.val);
-                double balance = double.tryParse(bill['balance'].toString())!;
-                bluetooth.printLeftRight("Balance : ",
-                    balance.toStringAsFixed(2), Enu.Size.bold.val);
-              } else {
-                bluetooth.print3Column(
-                    "Total    : ",
-                    " ",
-                    double.tryParse(bill['total'].toString())!
-                        .toStringAsFixed(2),
-                    Enu.Size.bold.val,
-                    format: "%-18s %-4s %20s %n");
-              }
-            }
-
-            bluetooth.printNewLine();
-            bluetooth.printCustom(
-                '${bill['message']}', Enu.Size.bold.val, Enu.Align.center.val);
-            line = "15";
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-          } catch (e, s) {
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'blue print:' + line);
-          }
-        }
-      });
-       } else if (widget.data[4] == 'STOCK') {
-       bill = bill;
-
-      bluetooth.isConnected.then((isConnected) {
-        if (isConnected == true) {
-          String line = "0";
-          try {
-            bluetooth.printNewLine();
-            line = "1";
-            bluetooth.printCustom(
-                'Stock Report ${bill[0]['Location']}'.toString().trim(),
-                Enu.Size.bold.val,
-                Enu.Align.center.val);
-            bluetooth.printNewLine();
-            line = "2";
-            bluetooth.printLeftRight('ItemName', 'Qty', Enu.Size.bold.val);
-            bluetooth.printNewLine();
-            for (var i = 0; i < bill.length; i++) {
-              // bluetooth.print3Column("${bill[i]['ItemName'].toString()} : ",
-              //     " ", bill[i]['Qty'].toString(), Enu.Size.bold.val,
-              //     format: "%-18s %-4s %20s %n");
-              if (i == bill.length - 1) {
-                bluetooth.printNewLine();
-                bluetooth.printLeftRight('Total Item $i = ',
-                    bill[i]['Qty'].toString(), Enu.Size.bold.val);
-              } else {
-                bluetooth.printLeftRight(bill[i]['ItemName'].toString(),
-                    bill[i]['Qty'].toString(), Enu.Size.bold.val);
-              }
-            }
-            // line = "3";
-            // bluetooth.printCustom('total item = ${bill.length}',
-            //     Enu.Size.bold.val, Enu.Align.center.val);
-            line = "3";
-            bluetooth.printNewLine();
-            bluetooth.printNewLine();
-          } catch (e, s) {
-            FirebaseCrashlytics.instance
-                .recordError(e, s, reason: 'blue print:' + line);
+            // FirebaseCrashlytics.instance
+            //     .recordError(e, s, reason: 'blue print:' + line);
           }
         }
       });
     }
-  }
-   Future<Uint8List> getCanvasImage(
-      String text, double _size, double fontSize, int height) async {
-    Uint8List? result;
-    final recorder = PictureRecorder();
-    var newCanvas = Canvas(recorder);
-    newCanvas.drawColor(Colors.white, BlendMode.darken);
-
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: fontSize),
-      ),
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout(minWidth: 0, maxWidth: _size);
-    textPainter.paint(newCanvas, Offset.zero);
-    final picture = recorder.endRecording();
-    var res = await picture.toImage(_size.toInt(), height);
-    ByteData? data = await res.toByteData(format: ImageByteFormat.png);
-
-    if (data != null) {
-      result = Uint8List.view(data.buffer);
-    }
-    return result!;
-  }
-    Future<Uint8List> getCanvasImage0(String str, double sized) async {
-    int height = 0;
-    int width = 0;
-    Uint8List? result;
-    var style =
-        const TextStyle(color: Colors.blue, backgroundColor: Colors.brown);
-    var builder = ParagraphBuilder(ParagraphStyle(fontStyle: FontStyle.normal));
-    builder.addText(str);
-    builder.pushStyle(style.getTextStyle());
-    Paragraph paragraph = builder.build();
-    paragraph.layout(const ParagraphConstraints(width: 100));
-
-    final recorder = PictureRecorder();
-    var newCanvas = Canvas(recorder);
-
-    newCanvas.drawParagraph(paragraph, Offset.zero);
-    newCanvas.drawColor(Colors.black, BlendMode.darken);
-
-    final picture = recorder.endRecording();
-    var res = await picture.toImage(100, 20);
-    ByteData? data = await res.toByteData(format: ImageByteFormat.png);
-
-    if (data != null) {
-      var result0 = Uint8List.view(
-          data.buffer); //, data.offsetInBytes, data.lengthInBytes);
-      // img.Image image = img.decodePng(result0);
-      // var pixels = result0;
-      // height = image.height;
-      // width = image.width;
-      // if (image.width > image.height) {
-      //   return pixels;
-      // }
-      // if (pixels[3] == 0) {
-      //   return pixels;
-      // }
-      // int red = pixels[0], green = pixels[1], blue = pixels[2];
-      // if (red != 255 && green != 255 && blue != 255) {
-      //   return pixels;
-      // }
-      // for (int i = 0, len = pixels.length; i < len; i += 4) {
-      //   if (pixels[i] == red &&
-      //       pixels[i + 1] == green &&
-      //       pixels[i + 2] == blue) {
-      //     pixels[i + 3] = 0;
-      //   }
-      // }
-      result = result0; //pixels;
-    }
-    return result!;
   }
 }

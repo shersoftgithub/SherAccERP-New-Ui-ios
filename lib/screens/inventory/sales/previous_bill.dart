@@ -17,6 +17,9 @@ class PreviousBill extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Previous Bill"),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       backgroundColor: kPrimaryDarkColor,
       body: Container(

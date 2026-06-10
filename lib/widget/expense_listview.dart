@@ -5,10 +5,8 @@
 // class ExpenseListView extends StatelessWidget {
 //   final List<ExpenseListItemModel> ?listViewModels;
 //   var branchId;
-
 //   ExpenseListView({Key ?key, this.listViewModels, this.branchId})
 //       : super(key: key);
-
 //   @override
 //   Widget build(BuildContext context) {
 //     return ListView.separated(
@@ -23,7 +21,6 @@
 //           return createViewItem(listViewModels![position], context);
 //         });
 //   }
-
 //   Widget createViewItem(
 //       ExpenseListItemModel listItemModel, BuildContext context) {
 //     return ListTile(
@@ -72,6 +69,7 @@
 //   //       MaterialPageRoute(builder: (_) => ExpenseList(expenseItem, branchId)));
 //   // }
 // }
+
 import 'package:flutter/material.dart';
 import 'package:sheraccerp/models/expense_list_item_model.dart';
 import 'package:sheraccerp/util/res_color.dart';
@@ -123,7 +121,14 @@ class ExpenseListView extends StatelessWidget {
                                 maxLines: 2,
                               ),
                             ),
-                            DataCell(Text(item.amount)),
+                            DataCell(
+
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(item.amount,
+                                                            textAlign: TextAlign.right,
+                                                            ),
+                              )),
                           ],
                         ),
                       )

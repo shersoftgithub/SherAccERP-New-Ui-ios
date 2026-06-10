@@ -1,5 +1,5 @@
 name: sheraccerp
-description: "A new SherSoft Flutter project."
+description: "SherAcc ERP web app"
 
 publish_to: 'none' 
 
@@ -14,7 +14,7 @@ dependencies:
   flutter:
     sdk: flutter
  
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.2
   animated_text_kit:
   autocomplete_textfield:
   blue_thermal_printer:
@@ -61,7 +61,7 @@ dependencies:
   flutter_settings_screen_ex: 
   flutter_awesome_alert_box:
   # flutter_sunmi_printer:
-  open_file:
+  open_file: ^3.5.4
   # ping_discover_network:
   ping_discover_network_plus:
   pdf: 
@@ -76,7 +76,7 @@ dependencies:
   shared_preferences:
   # syncfusion_flutter_datagrid: ^26.2.14
   scoped_model:
-  share_plus: ^10.0.0
+  share_plus:
   sqflite:
   # sunmi_printer_service:
   # sunmi_print_ticket:
@@ -109,6 +109,25 @@ dependencies:
   infinite_scroll_pagination: ^4.0.0
   pinch_zoom: ^2.0.0
   async: ^2.11.0
+  webview_flutter_web: 
+  share_plus_web: ^3.1.0
+  share_plus_linux: ^3.0.1
+  share_plus_macos: ^3.0.1
+  share_plus_windows: ^4.0.0
+  url_strategy: ^0.3.0
+  motion_toast: ^2.11.0
+  flutter_local_notifications: ^18.0.1
+  syncfusion_flutter_maps: ^20.4.54
+  geolocator: ^12.0.0
+  syncfusion_flutter_charts: ^20.4.54
+  flutter_map: ^4.0.0
+  latlong2: ^0.8.2
+  connectivity_plus: ^6.1.4
+  flutter_blurhash: ^0.9.1
+  shimmer: ^3.0.0
+  file_saver: ^0.2.6
+  universal_html: ^2.2.4
+  gallery_saver: ^2.3.2
  
 
 dev_dependencies:
@@ -129,11 +148,8 @@ flutter_icons:
   linux: true
   
 flutter:
-
- 
   uses-material-design: true
 
- 
   assets:
     - assets/
     - assets/icons/

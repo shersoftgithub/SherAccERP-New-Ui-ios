@@ -5,8 +5,12 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_awesome_alert_box/flutter_awesome_alert_box.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
@@ -14,8 +18,9 @@ import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/rp_model.dart';
 import 'package:sheraccerp/models/sms_data_model.dart';
 import 'package:sheraccerp/models/voucher_type_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
+import 'package:sheraccerp/screens/html_previews/sales_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/color_palette.dart';
@@ -26,7 +31,11 @@ import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/progress_hud.dart';
 
 class RPVoucher extends StatefulWidget {
-  const RPVoucher({Key? key}) : super(key: key);
+  final bool oldRvPv;
+  const RPVoucher({
+    Key? key,
+    required this.oldRvPv
+    }) : super(key: key);
 
   @override
   State<RPVoucher> createState() => _RPVoucherState();
@@ -47,6 +56,7 @@ class _RPVoucherState extends State<RPVoucher> {
   String? formattedDate, narration = '', projectId = '-1';
   double? balance = 0, total = 0, amount = 0, discount = 0,oldBalance = 0;
   var accountId = '', accountName = '';
+  var pointData = [];
   LedgerModel? ledData;
   bool _isLoading = false,
       isSelected = false,
@@ -61,7 +71,15 @@ class _RPVoucherState extends State<RPVoucher> {
       keyEditAndDeleteAdminOnlyDaysBefore = false,
       isNarrationAsCalculator = false,
       isProjectSoftware = false,
-      daysBefore = false;
+      daysBefore = false,
+      isAdminUser = false,
+      whatsappApi = false,
+      disableWhatsappOnSave = false,
+      sendPdfInWhatsapp = false,
+      isPointForCustomers = false,
+      directPrintOnSave = false,
+      enableDeleteMultiRvPv = false,
+      keySalesManSelecttion = false;
   int refNo = 0, acId = 0;
   int page = 1, pageTotal = 0, totalRecords = 0, valueDaysBefore = 0;
   int locationId = 1,
@@ -73,9 +91,11 @@ class _RPVoucherState extends State<RPVoucher> {
   VoucherType voucherTypeData = VoucherType.emptyData();
   List<CompanySettings>? settings;
   CompanyInformation? companySettings;
+  String whatsappKey = '';
   final TextEditingController _controllerAmount = TextEditingController();
   final TextEditingController _controllerDiscount = TextEditingController();
   final TextEditingController _controllerNarration = TextEditingController();
+  bool _isRoutesLoaded = false;
 
   @override
   void initState() {
@@ -102,12 +122,34 @@ class _RPVoucherState extends State<RPVoucher> {
         });
       },
                       );
+      isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;                
 
-    loadSettings();
+    // Future.microtask(() {
+    //   if (mounted) {
+        loadSettings();
+    //   }
+    // });
     loadAsset();
+   directPrintOnSave =
+        ComSettings.appSettings('bool', 'key-direct-print', false);     
   }
+  
 String cashAc = '';
   int cashId = 0;
+  var routes;
+  var title;
+
+   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    if (!_isRoutesLoaded) {
+      loadRoutes();
+      _isRoutesLoaded = true;
+    }
+  }
+
   loadSettings() {
     companySettings = ScopedModel.of<MainModel>(context).getCompanySettings();
     settings = ScopedModel.of<MainModel>(context).getSettings();
@@ -139,6 +181,8 @@ String cashAc = '';
         ? int.tryParse(ComSettings.getValue('DECIMAL', settings!).toString())!
         : 2;
     isMultiRvPv = ComSettings.getStatus('KEY MULTI RV-PV', settings!);
+    keyLockCashAccount =
+        ComSettings.getStatus('KEY LOCK CASH ACCOUNT', settings!);
     groupId =
         ComSettings.appSettings('int', 'key-dropdown-default-group-view', 0) -
             1;
@@ -156,17 +200,88 @@ String cashAc = '';
 
     isSalesManWiseLedger =
         ComSettings.getStatus('KEY SALESMAN WISE LEDGER', settings!);
+    disableWhatsappOnSave =
+        ComSettings.getStatus('DISABLE WHATSAPP ON ENTRY SAVE', settings!);    
+    whatsappApi =
+        ComSettings.getStatus('ENABLE WHATSAPP API', settings!);    
+    sendPdfInWhatsapp =
+        ComSettings.getStatus('SEND PDF IN SALES WHATSAPP MSG', settings!);   
+    whatsappKey = Settings.getValue('whatsappKey') ?? ''; 
+    isPointForCustomers = ComSettings.getStatus(
+              'ENABLE POINT FOR CUSTOMER CASH COLLECTION', settings!);      
+    enableDeleteMultiRvPv = ComSettings.getStatus(
+              'KEY ENABLE MULTI RV-PV DELETE', settings!);      
 
     userDateCheck(DateUtil.dateYMD(formattedDate));
 
     isNarrationAsCalculator =
         ComSettings.getStatus('KEY NARRATION AS CALCULATOR', settings!);
+    keySalesManSelecttion =
+        ComSettings.getStatus('KEY SALESMAN SELECTION IN RV-PV', settings!);
+    if(keySalesManSelecttion){
+      setState(() {
+        salesManId = 0;
+      });
+    }
 
     isProjectSoftware = ComSettings.getStatus('PROJECT SOFTWARE', settings!);
     if (isProjectSoftware) {
       api.getProject().then((value) {
         projectList = value;
       });
+    }
+    // if (widget.oldRvPv != null && widget.oldRvPv!) {
+    //   _isLoading = true;
+    //   fetchVoucher(context, dataDynamic[0],title);
+    //   _isLoading = false;
+    // }
+  }
+
+  String fromDailyReport = '';
+
+  void loadRoutes() {
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs != null) {
+      final args = routeArgs as Map<String, dynamic>;
+      
+      // Extract dataDynamic from arguments
+      if (args.containsKey('dataDynamic')) {
+        dataDynamic = List<Map<String, dynamic>>.from(args['dataDynamic']);
+      }
+      
+      // Extract mode/title from arguments
+      title = args['mode']?.toString() ?? '';
+      if(title.isEmpty){
+        if (args.containsKey('voucher')) {
+         title = args['voucher']?.toString() ?? '';
+      }
+      }
+
+      fromDailyReport = args['fromDaily']?.toString() ?? '';
+      
+       if (voucherTypeList.isNotEmpty && title != null) {
+        setState(() {
+          voucherTypeData = title == 'Payment'
+              ? voucherTypeList.firstWhere(
+                  (element) => element.voucher.toLowerCase() == 'payment')
+              : title == 'Receipt'
+                  ? voucherTypeList.firstWhere(
+                      (element) => element.voucher.toLowerCase() == 'receipt')
+                  : title == 'Receipt Order'
+                      ? voucherTypeList.firstWhere((element) =>
+                          element.voucher.toLowerCase() == 'receipt order')
+                      : title == 'Payment Order'
+                          ? voucherTypeList.firstWhere((element) =>
+                              element.voucher.toLowerCase() == 'Payment order')
+                          : VoucherType.emptyData();
+        });
+      }
+
+      if (widget.oldRvPv != null && widget.oldRvPv! && dataDynamic != null && dataDynamic!.isNotEmpty) {
+        fetchVoucher(context, dataDynamic![0], title!);
+      }
+      
+     
     }
   }
 
@@ -192,25 +307,25 @@ String cashAc = '';
   @override
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
-    final routes = (ModalRoute.of(context)!.settings.arguments) != null
-        ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
-        : {'voucher': ''};
-    var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
-    if (voucherTypeList.isNotEmpty) {
-      voucherTypeData = title == 'Payment'
-          ? voucherTypeList.firstWhere(
-              (element) => element.voucher.toLowerCase() == 'payment')
-          : title == 'Receipt'
-              ? voucherTypeList.firstWhere(
-                  (element) => element.voucher.toLowerCase() == 'receipt')
-                  : title == 'Receipt Order'
-                  ? voucherTypeList.firstWhere((element) =>
-                      element.voucher.toLowerCase() == 'receipt order')
-                      : title == 'Payment Order'
-                       ? voucherTypeList.firstWhere((element) =>
-                          element.voucher.toLowerCase() == 'Payment order')
-                            : VoucherType.emptyData();
-    }
+    // final routes = (ModalRoute.of(context)!.settings.arguments) != null
+    //     ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
+    //     : {'voucher': ''};
+    // var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
+    // if (voucherTypeList.isNotEmpty) {
+    //   voucherTypeData = title == 'Payment'
+    //       ? voucherTypeList.firstWhere(
+    //           (element) => element.voucher.toLowerCase() == 'payment')
+    //       : title == 'Receipt'
+    //           ? voucherTypeList.firstWhere(
+    //               (element) => element.voucher.toLowerCase() == 'receipt')
+    //               : title == 'Receipt Order'
+    //               ? voucherTypeList.firstWhere((element) =>
+    //                   element.voucher.toLowerCase() == 'receipt order')
+    //                   : title == 'Payment Order'
+    //                    ? voucherTypeList.firstWhere((element) =>
+    //                       element.voucher.toLowerCase() == 'Payment order')
+    //                         : VoucherType.emptyData();
+    // }
     return PopScope(
         canPop: false,
         onPopInvoked: (didPop) async {
@@ -366,10 +481,10 @@ String cashAc = '';
                         }
                         }
                       },
-                      icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+                      icon: const Icon(Icons.save,color: white,)),
             ],
             title: Text(title),
-            titleTextStyle: const TextStyle(fontFamily: 'poppins'),
+            titleTextStyle: const TextStyle(fontFamily: 'poppins',color: white),
           ),
           body: ProgressHUD(
             inAsyncCall: _isLoading,
@@ -479,6 +594,11 @@ String cashAc = '';
     return FutureBuilder<CustomerModel>(
       future: api.getCustomerDetail(id),
       builder: (context, snapshot) {
+        // if (snapshot.connectionState == ConnectionState.waiting) {
+        //   return Center(
+        //     child: CircularProgressIndicator(),
+        //   );
+        // }
         ledgerData = snapshot.data;
           if (snapshot.hasData) {
           oldBalance = oldVoucher
@@ -553,11 +673,80 @@ String cashAc = '';
   //   );
   // }
 
+  Future<void> requestNotificationPermission() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+}
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+Future<void> initNotifications() async {
+  requestNotificationPermission();
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  
+  const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+  
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+  
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+  );
+}
+
+// Function to show notifications
+Future<void> showNotification({required String title, required String body, bool isSuccess = true}) async {
+  AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+    'whatsapp_channel', 
+    'WhatsApp Notifications',
+    channelDescription: 'Notifications for WhatsApp message status',
+    importance: Importance.max,
+    priority: Priority.high,
+    icon: '@mipmap/ic_launcher',
+    color: isSuccess ? kPrimaryColor : Colors.red,
+  );
+  
+  DarwinNotificationDetails iosNotificationDetails = const DarwinNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+  );
+  
+  NotificationDetails notificationDetails = NotificationDetails(
+    android: androidNotificationDetails,
+    iOS: iosNotificationDetails,
+  );
+  
+  await flutterLocalNotificationsPlugin.show(
+    DateTime.now().millisecond, // Unique ID
+    title,
+    body,
+    notificationDetails,
+  );
+}
+
+
+
   void submitData(mode, operation) async {
     if (accountId.isEmpty) {
-      Fluttertoast.showToast(msg: 'Select Cash Account');
+      Fluttertoast.showToast(
+        msg: 'Select Cash Account',
+        backgroundColor: red
+      );
     } else {
-      if (isMultiRvPv) {
+      if(keySalesManSelecttion && salesManId <= 0){
+        Fluttertoast.showToast(
+          msg: 'Select Salesman',
+          backgroundColor: red
+          );
+      }else{
+        if (isMultiRvPv) {
         setState(() {
           _isLoading = true;
           buttonEvent = true;
@@ -597,6 +786,7 @@ String cashAc = '';
             // 'Update_Rv'  Update_Pv Delete_Pv Delete_Rv  FindPv FindRv
           }
         ];
+        debugPrint(data.toString());
         refNo = await api.addVoucher(data);
         if (refNo > 0) {
           setState(() {
@@ -639,7 +829,7 @@ String cashAc = '';
                       balance = oldBalance! - (data[0]['total'] as double?)!;
                     } else {
                       balance = operation == 'UPDATE'
-                          ? oldBalance
+                          ? oldBalance      
                           : oldBalance! - (data[0]['total'] as double?)!;
                     }
                   } else {
@@ -712,6 +902,141 @@ String cashAc = '';
                   } else {
                     debugPrint('sms data is empty');
                   }
+                }else{
+                  if (whatsappApi) {
+  if (whatsappKey.isNotEmpty && ledgerData!.phone!.isNotEmpty) {
+    String cNumber = ledgerData!.phone!;
+    
+    String formatMobileNumber(String mobileNo) {
+      mobileNo = mobileNo.replaceAll(RegExp(r'\D'), ''); 
+      if (mobileNo.length == 10) {
+        return '91$mobileNo'; 
+      } else if (mobileNo.length == 12 && mobileNo.startsWith('91')) {
+        return mobileNo; 
+      } else {
+        return mobileNo; 
+      }
+    }
+    
+    cNumber = formatMobileNumber(cNumber);
+    debugPrint(cNumber);
+    String form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+    
+    SmsDataModel smsData = smsSettingsList.firstWhere(
+      (element) => element.voucher == form,
+      orElse: () => SmsDataModel.emptyData()
+    );
+    
+    String prepareMessageBody() {
+      var bal = ledgerData!.balance.toString().split(' ');
+      double oldBalanceValue;
+      
+      if (bal[1] == 'Dr') {
+        oldBalanceValue = double.tryParse(bal[0].toString()) ?? 0;
+        if (mode == 'Payment') {
+          balance = oldBalance! - (data[0]['total'] as double?)!;
+        } else {
+          balance = operation == 'UPDATE' 
+              ? oldBalance 
+              : oldBalance! - (data[0]['total'] as double?)!;
+        }
+      } else {
+        oldBalanceValue = (double.tryParse(bal[0].toString()) ?? 0) * (-1);
+        balance = oldBalance! - (data[0]['total'] as double?)!;
+      }
+      
+      double billAmount = (data[0]['total'] as double?)!;
+      double cashReceived = 0;
+      
+      if (smsData != null && smsData.apiLink.isNotEmpty) {
+        String smsBody = smsData.messageBody;
+        return smsBody
+          .replaceFirst("#Customer#", ledData.name.toString())
+          .replaceFirst("#OB#", oldBalanceValue.toStringAsFixed(2))
+          .replaceFirst("#EntryNo#", data[0]['entryno'].toString())
+          .replaceFirst("#ThisBill#", billAmount.toStringAsFixed(2))
+          .replaceFirst("#CashReceived#", cashReceived.toStringAsFixed(2))
+          .replaceFirst("#TotalBalance#", (billAmount + cashReceived).toStringAsFixed(2))
+          .replaceFirst("#NetBalance#", balance.toString())
+          .replaceFirst("#GrandTotal#", billAmount.toStringAsFixed(2))
+          .replaceFirst("#Narration#", ledData.narration);
+      } else {
+        String grand = billAmount.toString();
+        String ob = oldBalanceValue.toString();
+        String customer = ledData.name.toString();
+        String customerOBTotalR = (oldBalanceValue - billAmount).toString();
+        String customerOBTotalP = (oldBalanceValue + billAmount).toString();
+        
+        if (isPointForCustomers && form == 'RECEIPT') {
+          String point = pointData.isNotEmpty ? pointData[0][0]['point'].toString() : '0';
+          String pointtotal = pointData.isNotEmpty ? pointData[0][0]['total'].toString() : '0';
+          
+          
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Received The sum of rupees $grand\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalR\n" +
+                 "Points This Bill = $point\n" +
+                 "Total Points = $pointtotal\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        } else if (form == 'PAYMENT') {
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Paid The Sum of Rupees $grand\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalP\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        } else {
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Received The sum of rupees $grand\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalR\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        }
+      }
+    }
+    
+    String messageBody = prepareMessageBody();
+    
+    if (!disableWhatsappOnSave) {
+      final bodyWhatsappMsg = {
+        "appkey": whatsappKey,
+        "authkey": '6p1I5OoIZKIYlAQ5XCsaKeaNd2z6ugb0mtR0YstXT3f0Ei83AX',
+        "to": cNumber,
+        "message": messageBody,
+      };
+      
+      api.sendWhatsappMsg(bodyWhatsappMsg).then((result) {
+        showNotification(
+          title: result['success'] == true ? 'Message Sent' : 'Sending Failed',
+          body: result['success'] == true 
+              ? 'Message Successfully Sent :${result['to']}'
+              : 'Message sending failed :${result['to']}',
+          isSuccess: result['success'] == true
+        );
+      }).catchError((error) {
+        showNotification(
+          title: 'Sending Failed',
+          body: 'Error: Connection Failed',
+          isSuccess: false
+        );
+      });
+    }
+    
+    if (isPointForCustomers) {
+      api.findPoint(
+        ledData.id, 
+        data[0]['entryno'],
+        (form == 'RECEIPT' ? 'RV' : 'PV')
+      ).then((pointDataValue) {
+        if (pointDataValue.isNotEmpty) {
+          setState(() {
+            pointData.add(pointDataValue);
+          });
+        }
+      });
+    }
+  }
+}
                 }
               }
               actionShow(mode, context, [
@@ -743,12 +1068,15 @@ String cashAc = '';
         }
       } else {
         if (total! <= 0 || ledData!.id <= 0) {
-          Fluttertoast.showToast(msg: 'Select Account and amount');
+          Fluttertoast.showToast(
+            msg: ledData!.id <= 0 ? 'Select Account' : 'Enter Amount',
+            backgroundColor: red
+          );
           setState(() {
             buttonEvent = false;
           });
         } else {
-          setState(() {
+           setState(() {
             _isLoading = true;
             buttonEvent = true;
           });
@@ -760,7 +1088,7 @@ String cashAc = '';
                 'Ledid': ledData!.id
               })}]';
           var data = [
-            {
+            { 
               'entryno':
                   oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '0',
               'date': formatDMY(formattedDate),
@@ -816,7 +1144,9 @@ String cashAc = '';
                     'message': footerMessage
                   }
                 ];
-                actionShow(mode, context, dataAll);
+                // if(!directPrintOnSave && printType != 2 && printDevice != 6){
+                  actionShow(mode, context, dataAll); 
+                // }
                 if (ComSettings.appSettings(
                     'bool', 'key-sms-customer', false)) {
                   var bal = ledgerData!.balance.toString().split(' ');
@@ -900,9 +1230,153 @@ String cashAc = '';
                     debugPrint('sms data is empty');
                   }
                
+                }else{
+                   if (whatsappApi) {
+  if (whatsappKey.isNotEmpty && ledgerData!.phone!.isNotEmpty) {
+    String cNumber = ledgerData!.phone!;
+    
+    String formatMobileNumber(String mobileNo) {
+      mobileNo = mobileNo.replaceAll(RegExp(r'\D'), ''); 
+      if (mobileNo.length == 10) {    
+        return '91$mobileNo'; 
+      } else if (mobileNo.length == 12 && mobileNo.startsWith('91')) {
+        return mobileNo; 
+      } else {
+        return mobileNo; 
+      }
+    }
+    
+    cNumber = formatMobileNumber(cNumber);
+    debugPrint(cNumber);
+    String form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+    
+    SmsDataModel smsData = smsSettingsList.firstWhere(
+      (element) => element.voucher == form,
+      orElse: () => SmsDataModel.emptyData()
+    );
+    
+    String prepareMessageBody() {
+      var bal = ledgerData!.balance.toString().split(' ');
+      double oldBalanceValue;
+      
+      if (bal[1] == 'Dr') {
+        oldBalanceValue = double.tryParse(bal[0].toString()) ?? 0;
+        if (mode == 'Payment') {
+          balance = oldBalance! - (data[0]['total'] as double?)!;
+        } else {
+          balance = operation == 'UPDATE' 
+              ? oldBalance 
+              : oldBalance! - (data[0]['total'] as double?)!;
+        }
+      } else {
+        oldBalanceValue = (double.tryParse(bal[0].toString()) ?? 0) * (-1);
+        balance = oldBalance! - (data[0]['total'] as double?)!;
+      }
+      
+      double billAmount = (data[0]['total'] as double?)!;
+      double cashReceived = 0;
+      
+      if (smsData != null && smsData.apiLink.isNotEmpty) {
+        String smsBody = smsData.messageBody;
+        return smsBody
+          .replaceFirst("#Customer#", ledgerData!.name.toString())
+          .replaceFirst("#OB#", oldBalanceValue.toStringAsFixed(2))
+          .replaceFirst("#EntryNo#", data[0]['entryno'].toString())
+          .replaceFirst("#ThisBill#", billAmount.toStringAsFixed(2))
+          .replaceFirst("#CashReceived#", cashReceived.toStringAsFixed(2))
+          .replaceFirst("#TotalBalance#", (billAmount + cashReceived).toStringAsFixed(2))
+          .replaceFirst("#NetBalance#", balance.toString())
+          .replaceFirst("#GrandTotal#", billAmount.toStringAsFixed(2))
+          .replaceFirst("#Narration#", narration!);
+      } else {
+        String grand = billAmount.toString();
+        String ob = oldBalanceValue.toString();
+        String customer = ledgerData!.name.toString();
+        String customerOBTotalR = (oldBalanceValue -  billAmount).toString();
+        String customerOBTotalP = (oldBalanceValue +  billAmount).toString();
+        String apiDate = data[0]['date'].toString(); // "2025-11-24"
+        DateTime dt = DateTime.parse(apiDate);
+        String formattedDate = DateFormat('dd/MM/yyyy').format(dt);
+        
+        if (isPointForCustomers && form == 'RECEIPT') {
+          String point = pointData.isNotEmpty ? pointData[0][0]['point'].toString() : '0';
+          String pointtotal = pointData.isNotEmpty ? pointData[0][0]['total'].toString() : '0';
+          
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Received The sum of rupees $grand\n" +
+                 "Date: $formattedDate\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalR\n" +
+                 "Points This Bill = $point\n" +
+                 "Total Points = $pointtotal\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        } else if (form == 'PAYMENT') {
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Paid The Sum of Rupees $grand\n" +
+                 "Date: $formattedDate\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalP\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        } else {
+          return "Hi, Mr/Mrs:$customer\n" +
+                 "Received The sum of rupees $grand\n" +
+                 "Date: $formattedDate\n" +
+                 "Your OldBalance = $ob\n" +
+                 "Balance Amount = $customerOBTotalR\n" +
+                 "Regards,\nTeam ${companySettings!.name}";
+        }
+      }
+    }
+    
+    String messageBody = prepareMessageBody();
+    
+    if (!disableWhatsappOnSave) {
+      final bodyWhatsappMsg = {
+        "appkey": whatsappKey,
+        "authkey": '6p1I5OoIZKIYlAQ5XCsaKeaNd2z6ugb0mtR0YstXT3f0Ei83AX',
+        "to": cNumber,
+        "message": messageBody,
+      };
+      
+      api.sendWhatsappMsg(bodyWhatsappMsg).then((result) {
+        showNotification(
+          title: result['success'] == true ? 'Message Sent' : 'Sending Failed',
+          body: result['success'] == true 
+              ? 'Message Successfully Sent :${result['to']}'
+              : 'Message sending failed :${result['to']}',
+          isSuccess: result['success'] == true
+        );
+      }).catchError((error) {
+        showNotification(
+          title: 'Sending Failed',
+          body: 'Error: Connection Failed',
+          isSuccess: false
+        );
+      });
+    }
+    
+    if (isPointForCustomers) {
+      api.findPoint(
+        ledgerData!.id, 
+        data[0]['entryno'],
+        (form == 'RECEIPT' ? 'RV' : 'PV')
+      ).then((pointDataValue) {
+        if (pointDataValue.isNotEmpty) {
+          setState(() {
+            pointData.add(pointDataValue);
+          });
+        }
+      });
+    }
+  }
+}
                 }
               }
-              clearData();
+              if(widget.oldRvPv! && fromDailyReport.isNotEmpty && int.tryParse(fromDailyReport)! > 0){
+
+              }else{
+                clearData();
+              }
             });
           } else {
             var opr = operation == 'DELETE'
@@ -912,7 +1386,9 @@ String cashAc = '';
                     : 'error : Cannot save this ' + mode;
             showInSnackBar(opr);
           }
+        
         }
+      }
       }
     }
   }
@@ -975,92 +1451,100 @@ String cashAc = '';
     byteImage = Uint8List.view(buffer);
   }
   
-  Future<String?> selectPositionDialog(BuildContext context, int length) async {
-    return await showDialog<String>(
-        context: context,
-        barrierDismissible: true,
-        builder: (BuildContext context) {
-          return SimpleDialog(
-            title: const Text('Select SlNo'),
-            children: List.generate(
-              length,
-              (index) => SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, index.toString());
-                },
-                child: Text('${index + 1}'),
-              ),
-            ),
-          );
-        });
-  }
+ Future<String?> selectPositionDialog(BuildContext context, int length) async {
+  return await showDialog<String>(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return SimpleDialog(
+        title: const Text('Select SlNo'),
+        children: List.generate(
+          length,
+          (index) => SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context, index.toString());
+            },
+            child: Text('${index + 1}'),
+          ),
+        ),
+      );
+    },
+  );  
+}
 
-  actionShow(mode, context, data) async {
-    var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
-    var title = mode == 'Payment' ? 'Payment Voucher' : 'Receipt Voucher';
-
-    ConfirmAlertBox(
-        buttonColorForNo: Colors.red,
-        buttonColorForYes: Colors.green,
-        icon: Icons.check,
-        onPressedNo: () {
-          clearData();
+ actionShow(mode, context, data) async {
+  var form = mode == 'Payment' ? 'PAYMENT' : 'RECEIPT';
+  var title = mode == 'Payment' ? 'Payment Voucher' : 'Receipt Voucher';
+  
+  ConfirmAlertBox(
+    buttonColorForNo: Colors.red,
+    buttonColorForYes: Colors.green,
+    icon: Icons.check,
+    onPressedNo: () {
+      if(widget.oldRvPv! && fromDailyReport.isNotEmpty && int.tryParse(fromDailyReport)! > 0){
+              Navigator.of(context).pop();
+              }else{
+                clearData();
+              }
+      particularList = [];
+      Navigator.of(context).pop();
+    },
+    onPressedYes: () async {  
+      Navigator.of(context).pop();
+      
+      if (isMultiRvPv) {
+        final value = await selectPositionDialog(context, particularList.length);
+        if (value != null) {  
+          int index = int.parse(value);
+          RpVoucherParticularModel partData = particularList[index];
+          ledData = LedgerModel(id: partData.id, name: partData.name);
+          var particular = '[${json.encode({
+            'amount': partData.amount,
+            'discount': partData.discount,
+            'total': partData.total,
+            'narration': partData.narration,
+            'Ledid': ledData!.id
+          })}]';
+          
+          data = [
+            {
+              'entryNo': oldVoucher
+                  ? dataDynamic[0]['EntryNo'].toString()
+                  : refNo.toString(),
+              'date': formatDMY(formattedDate),
+              'debitAccount': accountId,
+              'amount': partData.amount,
+              'discount': partData.discount,
+              'total': partData.total,
+              'particular': particular,
+              'account': accountName,
+              'name': ledData!.name,
+              'balance': partData.balance.toString() == "0"
+                  ? '0 Dr'
+                  : partData.balance,
+              'oldBalance': oldBalance,
+              'message': footerMessage
+            }
+          ];
           particularList = [];
-          Navigator.of(context).pop();
-        },
-        onPressedYes: () {
-          Navigator.of(context).pop();
-          // _showPrinterSize(context).then((value) => printBluetooth(context,
-          //     title, companySettings, settings, data, byteImage, value, form));
-          if (isMultiRvPv) {
-            selectPositionDialog(context, particularList.length).then((value) {
-              int index = int.parse(value!);
-              RpVoucherParticularModel partData = particularList[index];
-              ledData = LedgerModel(id: partData.id, name: partData.name);
-              var particular = '[${json.encode({
-                    'amount': partData.amount,
-                    'discount': partData.discount,
-                    'total': partData.total,
-                    'narration': partData.narration,
-                    'Ledid': ledData!.id
-                  })}]';
-              data = [
-                {
-                  'entryNo': dataDynamic[0]['EntryNo'].toString(),
-                  'entryNo': oldVoucher
-                      ? dataDynamic[0]['EntryNo'].toString()
-                      : refNo.toString(),
-                  'date': formatDMY(formattedDate),
-                  'debitAccount': accountId,
-                  'amount': partData.amount,
-                  'discount': partData.discount,
-                  'total': partData.total,
-                  'particular': particular,
-                  'account': accountName,
-                  'name': ledData!.name,
-                  'balance': partData.balance.toString() == "0"
-                      ? '0 Dr'
-                      : partData.balance,
-                  'oldBalance': oldBalance,
-                  'message': footerMessage
-                }
-              ];
-
-              particularList = [];
-              clearData();
-              return sentToPreview(title, form, data);
-            });
-          } else {
-            clearData();
-            return sentToPreview(title, form, data);
-          }
-        },
-        buttonTextForNo: 'No',
-        buttonTextForYes: 'YES',
-        infoMessage: 'Do you want to preview \nRefNo:${data[0]['entryNo']}',
-        title: 'Print Voucher',
-        context: context);
-  }
+          clearData();
+          return sentToPreview(title, form, data);
+        }else{
+          particularList = [];
+          clearData();
+        }
+      } else {
+        clearData();
+        return sentToPreview(title, form, data);
+      }
+    },
+    buttonTextForNo: 'No',
+    buttonTextForYes: 'YES',
+    infoMessage: 'Do you want to preview \nRefNo:${data[0]['entryNo']}',
+    title: 'Print Voucher',
+    context: context,
+  );
+}
 
   // List<String> newDataList = ["2", "3", "4"];
 
@@ -1524,14 +2008,10 @@ String cashAc = '';
         accountId = information['LedCode'].toString();
         acId = information['LedCode'];
         projectId = information['Project'].toString();
-        var part1 = particulars[0];
-        ledData = LedgerModel(id: part1['LedCode'], name: part1['LedName']);
-        amount = double.tryParse(part1['Amount'].toString())!;
-        discount = double.tryParse(part1['Discount'].toString())!;
-        total = double.tryParse(part1['Total'].toString())!;
-        narration = part1['Narration'].toString();
-        oldVoucher = true;
-         if (isMultiRvPv) {
+        salesManId = information['SalesMan'] ?? 0;
+        locationId = information['Location'] ?? 0;
+
+        if (isMultiRvPv) {
           for (var part in particulars) {
             particularList.add(RpVoucherParticularModel(
                 id: part['LedCode'],
@@ -1574,8 +2054,11 @@ String cashAc = '';
             widgetID = false;
             oldVoucher = true;
             isSelected = true;
+            //  _controllerAmount.text = '';
+            _controllerDiscount.text = '';
+            // _controllerNarration.text = '';
             _controllerAmount.text = amount.toString();
-            _controllerDiscount.text = discount! > 0 ? discount.toString() : '';
+            // _controllerDiscount.text = discount! > 0 ? discount.toString() : '';
             _controllerNarration.text = narration.toString();
           }else {
             ledData = LedgerModel(id: 0, name: '');
@@ -1766,42 +2249,79 @@ String cashAc = '';
             height: 10,
           ),
           ContainerFieldWidget(
-              widget: DropdownSearch<LedgerModel>(
-                popupProps: const PopupPropsMultiSelection.dialog(
-                    showSearchBox: true,
-                    isFilterOnline: true,
-                    
-                    // constraints: BoxConstraints(
-                    //   maxHeight: 300,
-                    // )
-                    ),
-                asyncItems: (String filter) async {
-                  nameLike = filter.isNotEmpty ? filter : 'a';
-                  var models = isSalesManWiseLedger
-                ? api.getLedgerBySalesManLike(salesManId, nameLike)
-                : api.getCustomerNameListLike(
-                    groupId, areaId, routeId, salesManId, nameLike);
-                  return models;
-                },
-                dropdownDecoratorProps: const DropDownDecoratorProps(
-                  dropdownSearchDecoration: InputDecoration(
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 5,
-                      horizontal: 5
-                    ),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                onChanged: (LedgerModel? data) {
-                  // print(data);
-                  ledData = data;
-                  setState(() {
-                    isSelected = true;
-                  });
-                },
-                selectedItem: ledData,
-              ),
-              headTxt: 'Select Ledger Name'),
+  widget: TypeAheadField<LedgerModel>(
+    suggestionsCallback: (String pattern) async {
+      nameLike = pattern.isNotEmpty ? pattern : 'a';
+      return isSalesManWiseLedger
+          ? await api.getLedgerBySalesManLike(salesManId, nameLike)
+          : await api.getCustomerNameListLike(
+              groupId, areaId, routeId, salesManId, nameLike);
+    },
+    itemBuilder: (context, LedgerModel suggestion) {
+      return ListTile(
+        title: Text(suggestion.name ?? ""),
+        // subtitle: suggestion.balance != null
+        //     ? Text("Balance: ${suggestion.balance}")
+        //     : null,
+      );
+    },
+    onSelected: (LedgerModel suggestion) {
+      ledData = suggestion;
+      setState(() {
+        isSelected = true;
+      });
+    },
+    controller: TextEditingController(text: ledData?.name ?? ""),
+    builder: (context, controller, focusNode) {
+      return TextField(
+        controller: controller,
+        focusNode: focusNode,
+        decoration: const InputDecoration(
+          contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+          border: OutlineInputBorder(),
+        ),
+      );
+    },
+  ),
+  headTxt: 'Select Ledger Name',
+),
+          // ContainerFieldWidget(
+          //     widget: DropdownSearch<LedgerModel>(
+          //       popupProps: const PopupPropsMultiSelection.dialog(
+          //           showSearchBox: true,
+          //           isFilterOnline: true,                 
+          //           // constraints: BoxConstraints(
+          //           //   maxHeight: 300,
+          //           // )
+          //           ),
+          //       asyncItems: (String filter) async {
+          //         nameLike = filter.isNotEmpty ? filter : 'a';
+          //         var models = isSalesManWiseLedger
+          //       ? api.getLedgerBySalesManLike(salesManId, nameLike)
+          //       : api.getCustomerNameListLike(
+          //           groupId, areaId, routeId, salesManId, nameLike);
+          //         return models;
+          //       },
+          //       dropdownDecoratorProps: const DropDownDecoratorProps(
+          //         dropdownSearchDecoration: InputDecoration(
+          //           contentPadding: EdgeInsets.symmetric(
+          //             vertical: 5,
+          //             horizontal: 5
+          //           ),
+          //           border: OutlineInputBorder(),
+          //         ),
+          //       ),
+          //       onChanged: (LedgerModel? data) {
+          //         // print(data);
+          //         ledData = data;
+          //         setState(() {
+          //           isSelected = true;
+          //         });
+          //       },
+          //       selectedItem: ledData,
+          //     ),
+          //     headTxt: 'Select Ledger Name'),
+          
           const SizedBox(
             height: 8,
           ),
@@ -1890,6 +2410,46 @@ String cashAc = '';
           ),
           const SizedBox(
             height: 8,
+          ),
+          Visibility(
+            visible: keySalesManSelecttion && salesmanList.isNotEmpty,
+            child: ContainerFieldWidget(
+              headTxt: 'Salesman',
+              widget: Container(
+                padding: const 
+                EdgeInsets.symmetric(horizontal: 3),
+                  width: MediaQuery.of(context).size.width,
+                  height: 47,
+                  decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(4)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: salesManId <= 0 || !salesmanList.any((e) => e.key == salesManId && e.key != 0) 
+                    ? null 
+                    : salesManId,
+                    items: salesmanList
+                    .where((e) => e.key != 0)
+                    .map((e) => DropdownMenuItem<int>(
+                          value: e.key,
+                          child: Text(e.value),
+                        ))
+                    .toList(),
+                    onChanged: (value) {
+                  setState(() {
+                    salesManId = value!;
+                  });
+                    },
+                  ),
+                ),
+              )
+            ),
+          ),
+           Visibility(
+            visible: keySalesManSelecttion && salesmanList.isNotEmpty,
+            child: const SizedBox(
+            height: 6,
+           ),
           ),
           ContainerFieldWidget(
               widget: TextField(
@@ -2107,9 +2667,9 @@ String cashAc = '';
                     children: [
                       const Text(' Date',
                        style: TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 15,
-                                        fontFamily: 'poppins'),
+                       fontWeight: FontWeight.w500,
+                       fontSize: 15,
+                       fontFamily: 'poppins'),
                       ),
                       const SizedBox(
                         height: 4,
@@ -2181,35 +2741,37 @@ String cashAc = '';
           const SizedBox(
             height: 10,
           ),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  elevation: 3,
-                  backgroundColor: kPrimaryColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5))),
-              onPressed: () {
-                var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
-                Navigator.pushNamed(context, '/ledger',
-                    arguments: {'parent': under});
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.add,
-                    color: white,
-                  ),
-                  Text(
-                    'Add New Ledger',
-                    style: TextStyle(
-                        fontFamily: 'poppins', color: white, fontSize: 16),
-                  )
-                ],
-              )),
+          Visibility(
+            visible: isAdminUser ,
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    elevation: 3,
+                    backgroundColor: kPrimaryColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5))),
+                onPressed: () {
+                  var under = mode == 'Payment' ? 'SUPPLIERS' : 'CUSTOMERS';
+                  Navigator.pushNamed(context, '/ledger',
+                      arguments: {'parent': under});
+                },
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add,
+                      color: white,
+                    ),
+                    Text(
+                      'Add New Ledger',
+                      style: TextStyle(
+                          fontFamily: 'poppins', color: white, fontSize: 16),
+                    )
+                  ],
+                )),
+          ),
           // Card(
           //   elevation: 5,
           //   color: kPrimaryColor,
-
           //   child: Row(
           //     mainAxisAlignment: MainAxisAlignment.center,
           //     children: [
@@ -2379,6 +2941,46 @@ String cashAc = '';
           const SizedBox(
             height: 6,
           ),
+            Visibility(
+            visible: keySalesManSelecttion && salesmanList.isNotEmpty,
+            child: ContainerFieldWidget(
+              headTxt: 'Salesman',
+              widget: Container(
+                padding: const 
+                EdgeInsets.symmetric(horizontal: 3),
+                  width: MediaQuery.of(context).size.width,
+                  height: 47,
+                  decoration: BoxDecoration(
+                      border: Border.all(color: grey),
+                      borderRadius: BorderRadius.circular(4)),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<int>(
+                    value: salesManId <= 0 || !salesmanList.any((e) => e.key == salesManId && e.key != 0) 
+                    ? null 
+                    : salesManId,
+                    items: salesmanList
+                    .where((e) => e.key != 0)
+                    .map((e) => DropdownMenuItem<int>(
+                          value: e.key,
+                          child: Text(e.value),
+                        ))
+                    .toList(),
+                    onChanged: (value) {
+                  setState(() {
+                    salesManId = value!;
+                  });
+                    },
+                  ),
+                ),
+              )
+            ),
+          ),
+          Visibility(
+            visible: keySalesManSelecttion,
+            child: const SizedBox(
+            height: 6,
+           ),
+          ),
           ContainerFieldWidget(
               widget: TextField(
                 controller: _controllerNarration,
@@ -2455,25 +3057,46 @@ String cashAc = '';
           physics: BouncingScrollPhysics(),
           itemBuilder: (context, index) {
             RpVoucherParticularModel data = particularList[index];
-            return Card(
-              color: white,
-              elevation: 0,
-              child: ListTile(
-                title: Text(data.name),
-                subtitle: Text(
-                    'Amount: ${data.amount} Disc: ${data.discount} Total :${data.total}'),
-                trailing: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        if (companyUserData!.deleteData) {
-                          particularList.removeAt(index);
-                        }
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                      color: red,
-                    )),
+            return InkWell(
+              // onLongPress: () {
+              //   ledData = LedgerModel(id: data.id, name: data.name);
+              //   // ledData!.id = data.id;
+              //   // ledData!.name = data.name;
+              //   total = data.total;
+              //   _controllerAmount.text = data.amount.toString();
+              //   _controllerDiscount.text = data.discount.toString();
+              //   _controllerNarration.text = data.narration;
+              //   amount = data.amount;
+              //   discount = data.discount;
+              //   narration = data.narration;
+              //   isSelected = true;
+              // },
+              child: Card(
+                color: white,
+                elevation: 0,
+                child: ListTile(
+                  title: Text(data.name),
+                  subtitle: Text(
+                      'Amount: ${data.amount} Disc: ${data.discount} Total :${data.total}'),
+                  trailing: Visibility(
+                    visible: isAdminUser,
+                    child: Visibility(
+                      visible: enableDeleteMultiRvPv,
+                      child: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              if (companyUserData!.deleteData) {
+                                particularList.removeAt(index);
+                              }
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: red,
+                          )),
+                    ),
+                  ),
+                ),
               ),
             );
           },

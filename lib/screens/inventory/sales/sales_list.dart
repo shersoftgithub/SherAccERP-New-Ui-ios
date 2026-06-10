@@ -46,7 +46,8 @@ class _SalesListState extends State<SalesList> {
       stockValuation = false,
       isType = false,
       classic = true,
-      newMode = false;
+      newMode = false,
+      isAdminUser = false;
   List<String> tableColumn = [];
   DateTime now = DateTime.now();
   DioService api = DioService();
@@ -66,47 +67,72 @@ class _SalesListState extends State<SalesList> {
   List<dynamic> resultData = [];
   List<SalesType> salesTypeDataList = [];
   List<TypeItem> dropdownItemsType = [
-    TypeItem(1, 'Daily'),
+     TypeItem(1, 'Daily'),
     TypeItem(2, 'Summary'),
-    TypeItem(3, 'ItemWise'),
-    TypeItem(4, 'Item Summary'),
-    TypeItem(5, 'Customer Summary'),
-    TypeItem(6, 'Loading Slip'),
-    TypeItem(7, 'Daily Sales Tax Report'),
-    TypeItem(8, 'IVA Report'),
-    TypeItem(9, 'Customer Summary (Cost Center)'),
-    TypeItem(10, 'Counter Wise Report'),
-    TypeItem(11, 'Simple With SerialNo'),
-    TypeItem(12, 'Address List'),
-    TypeItem(13, 'Scheme Report'),
-    TypeItem(14, 'ItemWise Monthly'),
-    TypeItem(15, 'Insurance Report'),
-    TypeItem(16, 'Qty Total'),
-    TypeItem(17, 'Group Summery'),
-    TypeItem(18, 'Loading Slip (Two Unit)'),
-    TypeItem(19, 'ItemWise Rate Analysis'),
-    TypeItem(20, 'E-Invoice Report'),
-    TypeItem(21, 'Delivery Note Summary'),
-    TypeItem(22, 'Item Month Wise Summary'),
-    TypeItem(23, 'Supplier Wise Sales Total'),
-    TypeItem(24, 'ItemWise Customer Grouping'),
-    TypeItem(25, 'Summary -DC'),
-    TypeItem(26, "Sales Q / Sales Differance"),
-    TypeItem(27, 'Customer Volume Analysis'),
-    TypeItem(28, 'Customer Visit Analysis'),
-    TypeItem(29, 'Customer Wise Item Qty Total'),
-    TypeItem(30, 'Customer Wise Daily Sales Total'),
-    TypeItem(31, 'Daily Sales Details'),
-    TypeItem(32, 'Custom ItemWise'),
-    TypeItem(33, 'Sales Itemwise Comparison on Stock Rates'),
-    TypeItem(34, 'Serial No Sellout Report'),
-    TypeItem(35, 'Delivery Slip (Print)'),
-    TypeItem(36, 'Customer Wise Sales Total'),
-    TypeItem(37, 'Location Wise Monthly Report'),
-    TypeItem(38, 'Sales Tender Report'),
-    TypeItem(39, 'Location Wise Category Summary'),
-    TypeItem(40, 'Price Range Sales Report'),
-    TypeItem(41, 'Custom ItemWise ||'),
+    TypeItem(3, 'Sales Daily'),
+    TypeItem(4, 'Sales ItemWise'),
+    TypeItem(5, 'Item Summary'),
+    TypeItem(6, 'P&L Summary'),
+    TypeItem(7, 'P&L ItemWise'),
+    TypeItem(8, 'P&L ItemSimple'),
+    TypeItem(9, 'Packing Slip'),
+    TypeItem(10, 'Customer Summary'),
+    TypeItem(11, 'Daily Sales Tax Report'),
+    TypeItem(12, 'IVA Report'),
+    TypeItem(13, 'Customer Summery Invoice'),
+    TypeItem(14, 'Counter Wise Report'),
+    TypeItem(15, 'Replace P&L ItemWise'),
+    TypeItem(16, 'Simple P&l Report'),
+    TypeItem(17, 'Scheme Report'),
+    TypeItem(18, 'ItemWise Monthly'),
+    TypeItem(19, 'P&L ItemWise New'),
+    TypeItem(20, 'Customer Address'),
+    TypeItem(21, 'Insurance Report'),
+    TypeItem(22, 'Sales Qty Total'),
+    TypeItem(23, 'Location Wise Summary'),
+    TypeItem(24, 'Location Wise Qty Total'),
+    TypeItem(25, 'Delivery Slip (PRINT)'),
+    // TypeItem(1, 'Daily'),
+    // TypeItem(2, 'Summary'),
+    // TypeItem(3, 'ItemWise'),
+    // TypeItem(4, 'Item Summary'),
+    // TypeItem(5, 'Customer Summary'),
+    // TypeItem(6, 'Loading Slip'),
+    // TypeItem(7, 'Daily Sales Tax Report'),
+    // TypeItem(8, 'IVA Report'),
+    // TypeItem(9, 'Customer Summary (Cost Center)'),
+    // TypeItem(10, 'Counter Wise Report'),
+    // TypeItem(11, 'Simple With SerialNo'),
+    // TypeItem(12, 'Address List'),
+    // TypeItem(13, 'Scheme Report'),
+    // TypeItem(14, 'ItemWise Monthly'),
+    // TypeItem(15, 'Insurance Report'),
+    // TypeItem(16, 'Qty Total'),
+    // TypeItem(17, 'Group Summery'),
+    // TypeItem(18, 'Loading Slip (Two Unit)'),
+    // TypeItem(19, 'ItemWise Rate Analysis'),
+    // TypeItem(20, 'E-Invoice Report'),
+    // TypeItem(21, 'Delivery Note Summary'),
+    // TypeItem(22, 'Item Month Wise Summary'),
+    // TypeItem(23, 'Supplier Wise Sales Total'),
+    // TypeItem(24, 'ItemWise Customer Grouping'),
+    // TypeItem(25, 'Summary -DC'),
+    // TypeItem(26, "Sales Q / Sales Differance"),
+    // TypeItem(27, 'Customer Volume Analysis'),
+    // TypeItem(28, 'Customer Visit Analysis'),
+    // TypeItem(29, 'Customer Wise Item Qty Total'),
+    // TypeItem(30, 'Customer Wise Daily Sales Total'),
+    // TypeItem(31, 'Daily Sales Details'),
+    // TypeItem(32, 'Custom ItemWise'),
+    // TypeItem(33, 'Sales Itemwise Comparison on Stock Rates'),
+    // TypeItem(34, 'Serial No Sellout Report'),
+    // TypeItem(35, 'Delivery Slip (Print)'),
+    // TypeItem(36, 'Customer Wise Sales Total'),
+    // TypeItem(37, 'Location Wise Monthly Report'),
+    // TypeItem(38, 'Sales Tender Report'),
+    // TypeItem(39, 'Location Wise Category Summary'),
+    // TypeItem(40, 'Price Range Sales Report'),
+    // TypeItem(41, 'Custom ItemWise ||'),
     
   ];
   int valueType = 1;
@@ -128,6 +154,26 @@ class _SalesListState extends State<SalesList> {
     //       .map((e) => e.key)
     //       .first;
     // }
+    salesTypeDataList = salesTypeList;
+
+    isAdminUser =
+        companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
+    if (!isAdminUser) {
+      locationId = ComSettings.appSettings(
+              'int', 'key-dropdown-default-location-view', 2) -
+          1;
+      OtherRegistrationModel otherData = otherRegLocationList.firstWhere(
+          (element) => element.id == locationId,
+          orElse: () => OtherRegistrationModel(
+              add1: '',
+              add2: '',
+              add3: '',
+              description: '',
+              email: '',
+              id: locationId,
+              name: defaultLocation,
+              type: ''));
+      location = DataJson(id: otherData.id, name: otherData.name);
 
       // for (OtherRegistrationModel element in otherRegAreaList) {
       //   areaDataList.add(
@@ -153,8 +199,7 @@ class _SalesListState extends State<SalesList> {
       if (salesManId > 0) {
         salesMan = DataJson(id: salesManId, name: '');
       }
-
-    salesTypeDataList = salesTypeList;
+    }
   }
 
   void itemChange(bool val, int index) {
@@ -281,7 +326,8 @@ class _SalesListState extends State<SalesList> {
             )
           ],
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
           title: Text(title + ' Report'),
         ),
@@ -298,105 +344,157 @@ class _SalesListState extends State<SalesList> {
           .map((e) => e.name)
           .first;
     }
-    var statementType = title == 'BillWise' ||
+     var statementType = title == 'BillWise' ||
             title == 'Summary' ||
             title == 'Sales'
         ? 'Sales_Summery'
-      : title == 'Sales ItemWise'
-                  ? 'Sales_ItemWise'
-                  : title == 'Daily' || title == 'Sales Daily'
-                      ? 'Sales_Daily'
-                      : title == 'P&L Summary'
-                          ? 'P_l_Summery'
-                          : title == 'P&L ItemWise'
-                              ? 'P_l_ItemWise_New'
-                              : title == 'P&L ItemSimple'
-                                  ? 'P_l_ItemSimple'
-                                  : title == 'Item Summary'
-                                      ? 'Item_Summery'
-                                      : title == 'Packing Slip'
-                                          ? 'Packing_Slip'
-                                          : title == 'Customer Summary'
-                                              ? 'Sales_Customer_Summery'
-                                              : title == 'Daily Sales Tax Report'
-                                                  ? 'Daily Sales Tax Report'
-                                                  : title == 'IVA Report'
-                                                      ? 'IVA Report'
-                                                      : title == 'Customer Summary (Cost Center)'
-                                                          ? 'Customer_Summery_Invoice"'
-                                                          : title == 'Counter Wise Report'
-                                                              ? 'Counter_Wise_Report'
-                                                              : title == 'Replace P&L ItemWise'
-                                                                  ? 'Replace_p_l_Itemwise'
-                                                                  : title == 'Qty Total'
-                                                                      ? 'Sales_QtyTotal'
-                                                                      : title == 'Simple P&l Report'
-                                                                          ? 'Simple_P_l_Report'
-                                                                          : title == 'Scheme Report'
-                                                                              ? 'SchemeReport'
-                                                                              : title == 'ItemWise Monthly'
-                                                                                  ? 'Itemwise_monthly'
-                                                                                  : title == 'Insurance Report'
-                                                                                      ? 'Insurance_Report'
-                                                                                      : title == 'Group Summery'
-                                                                                          ? 'Group_Summery_Custom'
-                                                                                          : title == 'Loading Slip (Two Unit)'
-                                                                                              ? 'Packing_Slip_Unit'
-                                                                                               : title == 'Loading Slip'
-                                                                                                ? 'Packing_Slip'
-                                                                                                 : title == 'ItemWise Rate Analysis'
-                                                                                                  ? 'ItemWise_Rate_Analysis'
-                                                                                                  : title == 'E-Invoice Report'
-                                                                                                      ? 'SalesEinvoice_Report'
-                                                                                                      : title == 'Simple With SerialNo'
-                                                                                                      ? 'Simple_P_l_Report'
-                                                                                                      :  title == 'Address List'
-                                                                                                      ? 'CustomerAdress'
-                                                                                                        : title == 'Delivery Note Summary'
-                                                                                                          ? 'DELIVERYNOTE_Summery'
-                                                                                                          : title == 'Item Month Wise Summary'
-                                                                                                              ? 'Item Month Wise Summary'
-                                                                                                              : title == 'Supplier Wise Sales Total'
-                                                                                                                  ? 'Supplier Wise Sales Total'
-                                                                                                                  : title == 'ItemWise Customer Grouping'
-                                                                                                                      ? 'Sales_ItemWise_Customer_Grouping'
-                                                                                                                      : title == 'Summary -DC'
-                                                                                                                          ? 'Sales_Summery_DC'
-                                                                                                                          : title == 'Customer Volume Analysis'
-                                                                                                                              ? 'Customer_Volume_Analysis'
-                                                                                                                               : title == 'Customer Visit Analysis'
-                                                                                                                                ? 'Customer Visit Analysis'
-                                                                                                                                : title == 'Customer Wise Item Qty Total'
-                                                                                                                                  ? 'Customer Wise Item Qty Total'
-                                                                                                                                  : title == 'Customer Wise Daily Sales Total'
-                                                                                                                                    ? 'Customer Wise Daily Sales Total'
-                                                                                                                                    : title == 'Daily Sales Details'
-                                                                                                                                      ? 'Daily Sales Details'
-                                                                                                                                      : title == 'Custom ItemWise'
-                                                                                                                                        ? 'Custom_Sales_ItemWise'
-                                                                                                                                        : title == 'Sales Itemwise Comparison on Stock Rates'
-                                                                                                                                          ? 'Sales Itemwise Comparison on Stock Rates'
-                                                                                                                                          : title == 'Serial No Sellout Report'
-                                                                                                                                            ? 'Sellout_Report'
-                                                                                                                                            : title == 'Delivery Slip (Print)'
-                                                                                                                                              ? 'DeliverySlip_Print'
-                                                                                                                                              : title == 'Customer Wise Sales Total'
-                                                                                                                                                ? 'Customer_Wise_Sales_Total'
-                                                                                                                                                : title == 'Location Wise Monthly Report'
-                                                                                                                                                  ? 'Location Wise Monthly Report'
-                                                                                                                                                  : title == 'Sales Tender Report'
-                                                                                                                                                    ? 'Sales Tender Report'
-                                                                                                                                                    : title == 'Location Wise Category Summary'
-                                                                                                                                                      ? 'Location Wise Category Summary'
-                                                                                                                                                      : title == 'Price Range Sales Report'
-                                                                                                                                                        ? 'Price_Range_SalesReport'
-                                                                                                                                                        : title == 'Custom ItemWise ||'
-                                                                                                                                                          ? 'Custom ItemWise ||'
-                                                                                                                                                          : title == 'Location Wise Summary'
-                                                                                                                                                            ? 'Location Wise Summary'
-                                                                                                                                                            : title == 'Location Wise Qty Total'
-                                                                                                                                                              ? 'Location Wise Qty Total'
-                                                                                                                                                              : 'Sales_Summery';
+        : title == 'Sales ItemWise'
+            ? 'Sales_ItemWise'
+            : title == 'Daily' || title == 'Sales Daily'
+                ? 'Sales_Daily'
+                : title == 'P&L Summary'
+                    ? 'P_l_Summery'
+                    : title == 'P&L ItemWise'
+                        ? 'P_l_ItemWise_New'
+                        : title == 'P&L ItemSimple'
+                            ? 'P_l_ItemSimple'
+                            : title == 'Item Summary'
+                                ? 'Item_Summery'
+                                : title == 'Packing Slip'
+                                    ? 'Packing_Slip'
+                                    : title == 'Delivery Slip (PRINT)'
+                                      ? 'DeliverySlip_Print'
+                                      : title == 'Customer Summary'
+                                        ? 'Sales_Customer_Summery'
+                                        : title == 'Daily Sales Tax Report'
+                                            ? 'Daily Sales Tax Report'
+                                            : title == 'IVA Report'
+                                                ? 'IVA Report'
+                                                : title ==
+                                                        'Customer Summery Invoice'
+                                                    ? 'Customer_Summery_Invoice'
+                                                    : title ==
+                                                            'Counter Wise Report'
+                                                        ? 'Counter_Wise_Report'
+                                                        : title ==
+                                                                'Replace P&L ItemWise'
+                                                            ? 'Replace_p_l_Itemwise'
+                                                            : title ==
+                                                                    'Simple P&l Report'
+                                                                ? 'Simple_P_l_Report'
+                                                                : title ==
+                                                                        'Scheme Report'
+                                                                    ? 'SchemeReport'
+                                                                    : title ==
+                                                                            'ItemWise Monthly'
+                                                                        ? 'Itemwise_monthly'
+                                                                        : title ==
+                                                                                'Sales Qty Total'
+                                                                            ? 'Sales_QtyTotal'
+                                                                            : title == 'Location Wise Summary'
+                                                                                ? 'Location Wise Summary'
+                                                                                : title == 'Location Wise Qty Total'
+                                                                                    ? 'Location Wise Qty Total'
+                                                                                    : 'Sales_Summery';
+    // var statementType = title == 'BillWise' ||
+    //         title == 'Summary' ||
+    //         title == 'Sales'
+    //     ? 'Sales_Summery'
+    //   : title == 'Sales ItemWise'
+    //               ? 'Sales_ItemWise'
+    //               : title == 'Daily' || title == 'Sales Daily'
+    //                   ? 'Sales_Daily'
+    //                   : title == 'P&L Summary'
+    //                       ? 'P_l_Summery'
+    //                       : title == 'P&L ItemWise'
+    //                           ? 'P_l_ItemWise_New'
+    //                           : title == 'P&L ItemSimple'
+    //                               ? 'P_l_ItemSimple'
+    //                               : title == 'Item Summary'
+    //                                   ? 'Item_Summery'
+    //                                   : title == 'Packing Slip'
+    //                                       ? 'Packing_Slip'
+    //                                       : title == 'Customer Summary'
+    //                                           ? 'Sales_Customer_Summery'
+    //                                           : title == 'Daily Sales Tax Report'
+    //                                               ? 'Daily Sales Tax Report'
+    //                                               : title == 'IVA Report'
+    //                                                   ? 'IVA Report'
+    //                                                   : title == 'Customer Summary (Cost Center)'
+    //                                                       ? 'Customer_Summery_Invoice"'
+    //                                                       : title == 'Counter Wise Report'
+    //                                                           ? 'Counter_Wise_Report'
+    //                                                           : title == 'Replace P&L ItemWise'
+    //                                                               ? 'Replace_p_l_Itemwise'
+    //                                                               : title == 'Qty Total'
+    //                                                                   ? 'Sales_QtyTotal'
+    //                                                                   : title == 'Simple P&l Report'
+    //                                                                       ? 'Simple_P_l_Report'
+    //                                                                       : title == 'Scheme Report'
+    //                                                                           ? 'SchemeReport'
+    //                                                                           : title == 'ItemWise Monthly'
+    //                                                                               ? 'Itemwise_monthly'
+    //                                                                               : title == 'Insurance Report'
+    //                                                                                   ? 'Insurance_Report'
+    //                                                                                   : title == 'Group Summery'
+    //                                                                                       ? 'Group_Summery_Custom'
+    //                                                                                       : title == 'Loading Slip (Two Unit)'
+    //                                                                                           ? 'Packing_Slip_Unit'
+    //                                                                                            : title == 'Loading Slip'
+    //                                                                                             ? 'Packing_Slip'
+    //                                                                                              : title == 'ItemWise Rate Analysis'
+    //                                                                                               ? 'ItemWise_Rate_Analysis'
+    //                                                                                               : title == 'E-Invoice Report'
+    //                                                                                                   ? 'SalesEinvoice_Report'
+    //                                                                                                   : title == 'Simple With SerialNo'
+    //                                                                                                   ? 'Simple_P_l_Report'
+    //                                                                                                   :  title == 'Address List'
+    //                                                                                                   ? 'CustomerAdress'
+    //                                                                                                     : title == 'Delivery Note Summary'
+    //                                                                                                       ? 'DELIVERYNOTE_Summery'
+    //                                                                                                       : title == 'Item Month Wise Summary'
+    //                                                                                                           ? 'Item Month Wise Summary'
+    //                                                                                                           : title == 'Supplier Wise Sales Total'
+    //                                                                                                               ? 'Supplier Wise Sales Total'
+    //                                                                                                               : title == 'ItemWise Customer Grouping'
+    //                                                                                                                   ? 'Sales_ItemWise_Customer_Grouping'
+    //                                                                                                                   : title == 'Summary -DC'
+    //                                                                                                                       ? 'Sales_Summery_DC'
+    //                                                                                                                       : title == 'Customer Volume Analysis'
+    //                                                                                                                           ? 'Customer_Volume_Analysis'
+    //                                                                                                                            : title == 'Customer Visit Analysis'
+    //                                                                                                                             ? 'Customer Visit Analysis'
+    //                                                                                                                             : title == 'Customer Wise Item Qty Total'
+    //                                                                                                                               ? 'Customer Wise Item Qty Total'
+    //                                                                                                                               : title == 'Customer Wise Daily Sales Total'
+    //                                                                                                                                 ? 'Customer Wise Daily Sales Total'
+    //                                                                                                                                 : title == 'Daily Sales Details'
+    //                                                                                                                                   ? 'Daily Sales Details'
+    //                                                                                                                                   : title == 'Custom ItemWise'
+    //                                                                                                                                     ? 'Custom_Sales_ItemWise'
+    //                                                                                                                                     : title == 'Sales Itemwise Comparison on Stock Rates'
+    //                                                                                                                                       ? 'Sales Itemwise Comparison on Stock Rates'
+    //                                                                                                                                       : title == 'Serial No Sellout Report'
+    //                                                                                                                                         ? 'Sellout_Report'
+    //                                                                                                                                         : title == 'Delivery Slip (Print)'
+    //                                                                                                                                           ? 'DeliverySlip_Print'
+    //                                                                                                                                           : title == 'Customer Wise Sales Total'
+    //                                                                                                                                             ? 'Customer_Wise_Sales_Total'
+    //                                                                                                                                             : title == 'Location Wise Monthly Report'
+    //                                                                                                                                               ? 'Location Wise Monthly Report'
+    //                                                                                                                                               : title == 'Sales Tender Report'
+    //                                                                                                                                                 ? 'Sales Tender Report'
+    //                                                                                                                                                 : title == 'Location Wise Category Summary'
+    //                                                                                                                                                   ? 'Location Wise Category Summary'
+    //                                                                                                                                                   : title == 'Price Range Sales Report'
+    //                                                                                                                                                     ? 'Price_Range_SalesReport'
+    //                                                                                                                                                     : title == 'Custom ItemWise ||'
+    //                                                                                                                                                       ? 'Custom ItemWise ||'
+    //                                                                                                                                                       : title == 'Location Wise Summary'
+    //                                                                                                                                                         ? 'Location Wise Summary'
+    //                                                                                                                                                         : title == 'Location Wise Qty Total'
+    //                                                                                                                                                           ? 'Location Wise Qty Total'
+    //                                                                                                                                                           : 'Sales_Summery';
 
     for (var data in salesTypeDataList) {
       if (data.stock) dataSType.add({'id': data.id});
@@ -410,11 +508,18 @@ class _SalesListState extends State<SalesList> {
       return _saleListData('SalesList', dataSType, title);
     } else {
       var locationData = [];
-      
-      for (var data in locationList) {
-        if (data.value.toString().isNotEmpty) {
-          locationData.add({'id': data.key});
+           if (isAdminUser) {
+        if (isBranchSelected) {
+          locationData.add({'id': location!.id});
+        } else {
+          for (var data in locationList) {
+            if (data.value.toString().isNotEmpty) {
+              locationData.add({'id': data.key});
+            }
+          }
         }
+      } else {
+        locationData.add({'id': location!.id});
       }
       String areaId = area.isNotEmpty ? area : '0';
       String routeId = route.isNotEmpty ? route : '0';
@@ -434,7 +539,7 @@ class _SalesListState extends State<SalesList> {
             'subcategory': subCategory != null ? subCategory.id : '0',
             'location': locationId != null
                 ? jsonEncode([
-                    {'id': locationId.id}
+                    {'id': locationId}
                   ])
                 : jsonEncode(locationData),
             'project': project != null ? project.id : '0',
@@ -468,7 +573,7 @@ class _SalesListState extends State<SalesList> {
             'supLed': '0',
           }) +
           ']';
-
+    debugPrint(dataJson);
       return FutureBuilder<List<dynamic>>(
         future: api.getSalesReport(dataJson),
         builder: (ctx, snapshot) {
@@ -558,6 +663,7 @@ class _SalesListState extends State<SalesList> {
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: DataTable(
+                                
                                 headingRowColor: const MaterialStatePropertyAll(
                                     kPrimaryColor),
                                 border:
@@ -760,6 +866,7 @@ class _SalesListState extends State<SalesList> {
                                                     data[index][col[0]][2]
                                                         .toString(),
                                                     style: const TextStyle(
+                                                      overflow: TextOverflow.ellipsis,
                                                         color: Colors.black,
                                                         fontWeight:
                                                             FontWeight.w700),
@@ -776,6 +883,7 @@ class _SalesListState extends State<SalesList> {
                                                     'date : ' +
                                                         data[index][col[0]][0]
                                                             .toString(),
+                                                            overflow: TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       color: Colors.black,
                                                     ),
@@ -815,6 +923,7 @@ class _SalesListState extends State<SalesList> {
                                                     'Balance : ' +
                                                         data[index]['Balance']
                                                             .toStringAsFixed(2),
+                                                            overflow: TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                         color: Colors.black,
                                                         fontSize: 18,
@@ -911,7 +1020,20 @@ class _SalesListState extends State<SalesList> {
         });
 
         List tempList = [];
-
+         var _location = '0';
+        if(isAdminUser){
+          if (isBranchSelected) {
+              if (location != null) {
+          _location = location!.id.toString() ?? '0';
+        }
+          }else{
+          _location = '0';
+        }
+        }else{
+                if (location != null) {
+          _location = location!.id.toString() ?? '0';
+        }
+          }
         // statement, page, '1', salesTypeData.id.toString(), ' ', ' '
 
         var dataJsonS = '[' +
@@ -924,7 +1046,7 @@ class _SalesListState extends State<SalesList> {
               'mfr': mfr != null ? mfr.id : '0',
               'category': category != null ? category.id : '0',
               'subcategory': subCategory != null ? subCategory.id : '0',
-              'location': locationId != null ? locationId.id : '0',
+              'location': _location ,
               'project': project != null ? project.id : '0',
               'salesman': salesMan != null ? salesMan.id : '0',
               'salesType': dataSType != null
@@ -933,6 +1055,7 @@ class _SalesListState extends State<SalesList> {
               "page": page
             }) +
             ']';
+            debugPrint(dataJsonS);
         api.getSalesListReport(dataJsonS).then((value) {
           final response = value;
           pageTotal = response[1][0]['Filtered'];
@@ -1058,6 +1181,7 @@ class _SalesListState extends State<SalesList> {
                               child: Stack(
                                 children: <Widget>[
                                   Container(
+                                    padding: const EdgeInsets.all(5.0),
                                     height: 80,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(6),
@@ -1155,7 +1279,9 @@ class _SalesListState extends State<SalesList> {
                                                   Text(
                                                     dataDisplay[index]['ToName']
                                                         .toString(),
+                                                        overflow: TextOverflow.ellipsis,
                                                     style: const TextStyle(
+                                                      overflow: TextOverflow.ellipsis,
                                                         color: Colors.black,
                                                         fontWeight:
                                                             FontWeight.w700),
@@ -1165,6 +1291,7 @@ class _SalesListState extends State<SalesList> {
                                                         dataDisplay[index]
                                                                 ['Invoice']
                                                             .toString(),
+                                                            overflow: TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight:
@@ -1176,6 +1303,7 @@ class _SalesListState extends State<SalesList> {
                                                         dataDisplay[index]
                                                                 ['Date']
                                                             .toString(),
+                                                            overflow: TextOverflow.ellipsis,
                                                     style: const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight:
@@ -1187,13 +1315,14 @@ class _SalesListState extends State<SalesList> {
                                             ),
                                           ),
                                         ),
-                                        Column(
+                                        const Column(
                                           mainAxisSize: MainAxisSize.min,
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          children: const [
+                                          children: [
                                             Text(
                                               'Bill          : ',
+                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 14,
@@ -1250,6 +1379,7 @@ class _SalesListState extends State<SalesList> {
                                                 Text(
                                                   dataDisplay[index]['Total']
                                                       .toStringAsFixed(2),
+                                                      overflow: TextOverflow.ellipsis,
                                                   style: const TextStyle(
                                                       color: Colors.black,
                                                       fontSize: 14,
@@ -1259,6 +1389,7 @@ class _SalesListState extends State<SalesList> {
                                                 Text(
                                                   dataDisplay[index]['Cash']
                                                       .toStringAsFixed(2),
+                                                      overflow: TextOverflow.ellipsis,
                                                   style: const TextStyle(
                                                       color: Colors.black,
                                                       fontSize: 14,
@@ -1268,6 +1399,7 @@ class _SalesListState extends State<SalesList> {
                                                 Text(
                                                   dataDisplay[index]['Balance']
                                                       .toStringAsFixed(2),
+                                                      overflow: TextOverflow.ellipsis,
                                                   style: const TextStyle(
                                                       color: Colors.black,
                                                       fontSize: 14,
@@ -1393,7 +1525,6 @@ class _SalesListState extends State<SalesList> {
                   ),
                 ],
               ),
-             
               const SizedBox(
                 height: 10,
               ),
@@ -1414,77 +1545,292 @@ class _SalesListState extends State<SalesList> {
               //     },
               //   ),
               // ),
-              ContainerFieldWidget(
-                  widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.dialog(
-                        showSearchBox: true,
-                        // constraints: BoxConstraints(
-                        //   maxHeight: 300,
-                        // )
+              Visibility(
+                visible: isAdminUser,
+                child: ContainerFieldWidget(
+                    widget: DropdownSearch<dynamic>(
+                      popupProps: const PopupPropsMultiSelection.dialog(
+                          showSearchBox: true,
+                          // constraints: BoxConstraints(
+                          //   maxHeight: 300,
+                          // )
+                          ),
+                      asyncItems: (String filter) =>
+                          api.getSalesListData(filter, 'sales_list/location'),
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        dropdownSearchDecoration:
+                            InputDecoration(
+                                                 contentPadding: EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8
                         ),
-                    asyncItems: (String filter) =>
-                        api.getSalesListData(filter, 'sales_list/location'),
-                    dropdownDecoratorProps: const DropDownDecoratorProps(
-                      dropdownSearchDecoration:
-                          InputDecoration(
-                                               contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
+                              border: OutlineInputBorder(
+                
+                              )),
                       ),
-                            border: OutlineInputBorder(
-
-                            )),
+                      onChanged: (dynamic data) {
+                        location = data;
+                        isBranchSelected = true;
+                      },
                     ),
-                    onChanged: (dynamic data) {
-                      locationId = data;
-                    },
-                  ),
-                  headTxt: 'Select Branch'),
+                    headTxt: 'Select Branch'),
+              ),
+              Visibility(
+                visible: !isAdminUser,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width > 600
+                          ? (MediaQuery.of(context).size.width / 2) - 30
+                          : MediaQuery.of(context).size.width,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor.withOpacity(.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.account_tree_outlined,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Default Branch',
+                                    style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Use system branch',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: 'poppins',
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Radio<bool>(
+                              value: true,
+                              groupValue: location == null,
+                              activeColor: kPrimaryColor,
+                              onChanged: (value) {
+                                setState(() {
+                                  location = null;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    if (keySalesmanSelectionInSalesList)
+
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width > 600
+                            ? (MediaQuery.of(context).size.width / 2) - 30
+                            : MediaQuery.of(context).size.width,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: kPrimaryColor.withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.person_outline,
+                                  color: Colors.black,
+                                  size: 22,
+                                ),
+                              ),
+
+                              const SizedBox(width: 12),
+
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Default Salesman',
+                                      style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Use default salesman',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: 'poppins',
+                                        fontSize: 11,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              Radio<bool>(
+                                value: true,
+                                groupValue: salesMan == null,
+                                activeColor: kPrimaryColor,
+                                onChanged: (value) {
+                                  setState(() {
+                                    salesMan = null;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Visibility(
+              //       visible: !isAdminUser,
+              //       child: Row(
+              //         children: [
+              //           const Text('Default Branch',
+              //            style: TextStyle(
+              //             fontWeight: FontWeight.w500,
+              //             fontSize: 15,
+              //             fontFamily: 'poppins'),
+              //           ),
+              //           Checkbox(
+              //             value: location == null,
+              //             activeColor: kPrimaryColor,
+              //             onChanged: (value) {
+              //               setState(() {
+              //                 location = null;
+              //               });
+              //             },
+              //           )
+              //         ],
+              //       )),
+              //         Visibility(
+              //          visible: !isAdminUser && keySalesmanSelectionInSalesList,
+              //          child: const SizedBox(
+              //                          height: 4,
+              //                        ),
+              //        ),
+              //       Visibility(
+              //       visible: !isAdminUser && keySalesmanSelectionInSalesList,
+              //       child: Row(
+              //         children: [
+              //           const Text('Default Salesman',
+              //            style: TextStyle(
+              //             fontWeight: FontWeight.w500,
+              //             fontSize: 15,
+              //             fontFamily: 'poppins'),
+              //           ),
+              //           Checkbox(
+              //             value: salesMan == null,
+              //             activeColor: kPrimaryColor,
+              //             onChanged: (value) {
+              //               setState(() {
+              //                 salesMan = null;
+              //               });
+              //             },
+              //           )
+              //         ],
+              //       )),
               const SizedBox(
                 height: 8,
               ),
               isType
                   ?
-                   Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        const Text('Type ',
-                        style: TextStyle(fontFamily: 'poppins',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15
+                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       const Text('Type ',
+                       style: TextStyle(fontFamily: 'poppins',
+                       fontWeight: FontWeight.w500,
+                       fontSize: 15
+                       ),
+                       ),
+                        const SizedBox(
+                          height: 4,
                         ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(3),
-                              border: Border.all(color: grey)),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton(
-                                isExpanded: true,
-                                value: valueType,
-                                items: dropdownItemsType.map((TypeItem item) {
-                                  return DropdownMenuItem<int>(
-                                    value: item.id,
-                                    child: Text(item.name,style: const TextStyle(
-                                      fontFamily: 'poppins',
-                                      fontSize: 14
-                                    ),),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    valueType = value!;
-                                  });
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
+                       Container(
+                         padding: const EdgeInsets.symmetric(horizontal: 6),
+                         decoration: BoxDecoration(
+                           borderRadius: BorderRadius.circular(3),
+                           border: Border.all(color: grey)),
+                         child: DropdownButtonHideUnderline(
+                           child: DropdownButton(
+                             isExpanded: true,
+                             value: valueType,
+                             items: dropdownItemsType.map((TypeItem item) {
+                               return DropdownMenuItem<int>(
+                                 value: item.id,
+                                 child: Text(item.name,style: const TextStyle(
+                                   fontFamily: 'poppins',
+                                   fontSize: 14
+                                 ),),
+                               );
+                             }).toList(),
+                             onChanged: (value) {
+                               setState(() {
+                                 valueType = value!;
+                               });
+                             },
+                           ),
+                         ),
+                       ),
+                     ],
+                   )
                   : Container(),
               // Divider(),
               const SizedBox(
@@ -1498,6 +1844,11 @@ class _SalesListState extends State<SalesList> {
                 onPressed: () {
                   setState(() {
                     loadReport = true;
+                    location = isAdminUser
+                        ? isBranchSelected
+                            ? location
+                            : DataJson(id: 1, name: defaultLocation)
+                        : location;
                   });
                 },
                 child: const Text(
@@ -1714,33 +2065,39 @@ class _SalesListState extends State<SalesList> {
                     },
                   ),
                   headTxt: 'Select Sub Category'),
-              const SizedBox(
-                height: 8,
+              Visibility(
+                visible: isAdminUser,
+                child: const SizedBox(
+                  height: 8,
+                ),
               ),
-              ContainerFieldWidget(
-                  widget: DropdownSearch<dynamic>(
-                    popupProps: const PopupPropsMultiSelection.dialog(
-                        showSearchBox: true,
-                        // constraints: BoxConstraints(
-                        //   maxHeight: 300,
-                        // )
+              Visibility(
+                visible: isAdminUser,
+                child: ContainerFieldWidget(
+                    widget: DropdownSearch<dynamic>(
+                      popupProps: const PopupPropsMultiSelection.dialog(
+                          showSearchBox: true,
+                          // constraints: BoxConstraints(
+                          //   maxHeight: 300,
+                          // )
+                          ),
+                      asyncItems: (String filter) =>
+                          api.getSalesListData(filter, 'sales_list/salesMan'),
+                      dropdownDecoratorProps: const DropDownDecoratorProps(
+                        dropdownSearchDecoration: InputDecoration(
+                                             contentPadding: EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8
                         ),
-                    asyncItems: (String filter) =>
-                        api.getSalesListData(filter, 'sales_list/salesMan'),
-                    dropdownDecoratorProps: const DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
-                                           contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
+                          border: OutlineInputBorder(),
+                        ),
                       ),
-                        border: OutlineInputBorder(),
-                      ),
+                      onChanged: (dynamic data) {
+                        salesMan = data;
+                      },
                     ),
-                    onChanged: (dynamic data) {
-                      salesMan = data;
-                    },
-                  ),
-                  headTxt: 'Select Salesman'),
+                    headTxt: 'Select Salesman'),
+              ),
               const SizedBox(
                 height: 8,
               ),
@@ -1822,39 +2179,45 @@ class _SalesListState extends State<SalesList> {
                     },
                   ),
                   headTxt: 'Select Supplier'),
-              const SizedBox(
-                height: 8,
+              Visibility(
+                visible: isAdminUser,
+                child: const SizedBox(
+                  height: 8,
+                ),
               ),
-              ContainerFieldWidget(
-                  widget: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    width: MediaQuery.sizeOf(context).width,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        border: Border.all(color: grey),
-                        borderRadius: BorderRadius.circular(3)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<OtherRegistrationModel>(
-                        isExpanded: true,
-                        // icon: const Icon(Icons.keyboard_arrow_down),
-                        items: otherRegAreaList
-                            .map((OtherRegistrationModel items) {
-                          return DropdownMenuItem<OtherRegistrationModel>(
-                            value: items,
-                            child: Text(items.name),
-                          );
-                        }).toList(),
-                        value: areaModel,
-                        onChanged: (value) {
-                          setState(() {
-                            areaModel = value;
-                            area = value!.id.toString();
-                          });
-                        },
+              Visibility(
+                visible: isAdminUser,
+                child: ContainerFieldWidget(
+                    widget: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      width: MediaQuery.sizeOf(context).width,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          border: Border.all(color: grey),
+                          borderRadius: BorderRadius.circular(3)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<OtherRegistrationModel>(
+                          isExpanded: true,
+                          // icon: const Icon(Icons.keyboard_arrow_down),
+                          items: otherRegAreaList
+                              .map((OtherRegistrationModel items) {
+                            return DropdownMenuItem<OtherRegistrationModel>(
+                              value: items,
+                              child: Text(items.name),
+                            );
+                          }).toList(),
+                          value: areaModel,
+                          onChanged: (value) {
+                            setState(() {
+                              areaModel = value;
+                              area = value!.id.toString();
+                            });
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  headTxt: 'Select Area'),
+                    headTxt: 'Select Area'),
+              ),
               // Card(
               //   elevation: 5,
               //   child: Row(

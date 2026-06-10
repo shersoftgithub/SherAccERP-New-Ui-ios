@@ -35,6 +35,7 @@ class _SalesManHomeState extends State<SalesManHome> {
   ScrollController? scrollController;
   bool dialVisible = true, isExpired = false;
   DateTime now = DateTime.now();
+   int salesMan = 0;
 
   @override
   void initState() {
@@ -60,6 +61,10 @@ class _SalesManHomeState extends State<SalesManHome> {
     notify();
     load();
     setToDay = DateFormat('dd-MM-yyyy').format(now);
+     salesMan = 
+         ComSettings.appSettings(
+                'int', 'key-dropdown-default-salesman-view', 1) -
+            1;
   }
 
   notify() async {
@@ -191,6 +196,7 @@ class _SalesManHomeState extends State<SalesManHome> {
 
   @override
   Widget build(BuildContext context) {
+    // debugPrint("DATA BASE NAME : ${dataBase.toString()}");
     final CompanyUser args =
         ModalRoute.of(context)!.settings.arguments as CompanyUser;
     int daysLeft = 0;
@@ -215,9 +221,10 @@ class _SalesManHomeState extends State<SalesManHome> {
       child: Scaffold(
         backgroundColor: bagroundColor,
           appBar: AppBar(
-            title: const Text("SherAcc"),
+            title: const Text("SherAccERP"),
             titleTextStyle: const TextStyle(
-              fontFamily: 'poppins'
+              fontFamily: 'poppins',
+              color: Colors.white
             ),
             actions: [
               IconButton(
@@ -243,7 +250,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(
-                                    20.0,
+                                    20.0
                                   ),
                                 ),
                               ),
@@ -420,7 +427,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                       
                         const SizedBox(
                           height: 50,
-                        ),
+                        ),                  
                         Visibility(
                           visible: ComSettings.userControl('SALE ORDER'),
                           child: Container(
@@ -475,7 +482,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               },
                             ),
                           ),
-                        ),
+                        ),                     
                         Visibility(
                           visible: ComSettings.userControl('SALE'),
                           child: Container(
@@ -570,6 +577,67 @@ class _SalesManHomeState extends State<SalesManHome> {
                                         : _expire(args, context)
                                     : Navigator.pushNamed(context, '/RPVoucher',
                                         arguments: {'voucher': 'Receipt'});
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('BANK RECEIPT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Bank Receipt',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? Navigator.pushNamed(
+                                            context, '/BankVoucher',
+                                            arguments: {'voucher': 'Receipt'})
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(context, '/BankVoucher',
+                                        arguments: {'voucher': 'Receipt'});
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: ComSettings.userControl('PRODUCT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Product Register',
+                                  style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? Navigator.pushNamed(context, '/product')
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(context, '/product');
                               },
                             ),
                           ),
@@ -877,6 +945,43 @@ class _SalesManHomeState extends State<SalesManHome> {
                           ),
                         ),
                         Visibility(
+                          visible: ComSettings.userControl('JOURNAL REPORT'),
+                          child: Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                            child: TextButton(
+                              child: const Text('Journal Report',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                              onPressed: () {
+                                argumentsPass = {'mode': 'JournalList'};
+                                args.active == "false"
+                                    ? _commonService.getTrialPeriod(args.atDate)
+                                        ? 
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/select_ledger',
+                                          )
+                                        : _expire(args, context)
+                                    : Navigator.pushNamed(
+                                            context,
+                                            '/select_ledger',
+                                          );
+                              },
+                            ),
+                          ),
+                        ),
+                        Visibility(
                           visible: ComSettings.userControl('GROUP LIST'),
                           child: Container(
                             margin: const EdgeInsets.only(
@@ -985,7 +1090,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                             ),
                           ),
                         ),
-                         Visibility(
+                        Visibility(
                             visible: ComSettings.userControl('STOCK REPORT'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1010,7 +1115,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                          Visibility(
+                        Visibility(
                             visible: ComSettings.userControl('SALESMAN REPORT'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1039,7 +1144,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                          Visibility(
+                        Visibility(
                             visible: ComSettings.userControl('RECEIPT REPORT'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1068,7 +1173,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                          Visibility(
+                        Visibility(
                             visible: ComSettings.userControl('PAYMENT REPORT'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1097,7 +1202,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                          Visibility(
+                        Visibility(
                             visible: ComSettings.userControl('PRICE LIST'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1122,8 +1227,65 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                        
-                          Visibility(
+                        Visibility(
+                            visible: ComSettings.userControl('PAYABLE'),
+                            child: Container(
+                               margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('PAYABLE',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  argumentsPass = {'mode': 'Payable'};
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/select_ledger',
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        Visibility(
+                            visible: ComSettings.userControl('RECEIVABLE'),
+                            child: Container(
+                               margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('RECEIVABLE',
+                                   style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  argumentsPass = {'mode': 'Receivable'};
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/select_ledger',
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        Visibility(
                             visible: ComSettings.userControl('WARRANTY'),
                             child: Container(
                               margin: const EdgeInsets.only(
@@ -1135,7 +1297,7 @@ class _SalesManHomeState extends State<SalesManHome> {
                                   borderRadius: BorderRadius.circular(3)
                                   ),
                               child: TextButton(
-                                child: const Text('WARRANTY',
+                                child: const Text('Warranty',
                                     style: TextStyle(
                                     color: kPrimaryColor,
                                                                     fontFamily: 'poppins',
@@ -1148,7 +1310,112 @@ class _SalesManHomeState extends State<SalesManHome> {
                               ),
                             ),
                           ),
-                        
+                        Visibility(
+                            visible: ComSettings.userControl('WARRANTY REPORT'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Warranty Report',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/WarrantyReport');
+                                },
+                              ),
+                            ),
+                          ),
+                        Visibility(
+                            visible: ComSettings.userControl('ATTENDANCE REGISTOR'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Attendance Register',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  if (salesMan == 0){
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Select Salesman First'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+
+                            }else{
+                              Navigator.pushNamed(context, '/AttendanceRegister');
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => pages[index],
+                              //   ));
+                            }
+                                  // Navigator.pushNamed(context, '/AttendanceRegister');
+                                },
+                              ),
+                            ),
+                          ),
+                         Visibility(
+                            visible: ComSettings.userControl('VISIT LIST'),
+                            child: Container(
+                              margin: const EdgeInsets.only(
+                              bottom: 6
+                            ),
+                             decoration: BoxDecoration(
+                              color: white,
+                                  border: Border.all(color: grey),
+                                  borderRadius: BorderRadius.circular(3)
+                                  ),
+                              child: TextButton(
+                                child: const Text('Visit List',
+                                    style: TextStyle(
+                                    color: kPrimaryColor,
+                                                                    fontFamily: 'poppins',
+                                                                    fontSize: 16,
+                                                                    fontWeight: FontWeight.w500
+                                                                  ),),
+                                onPressed: () {
+                                  if (salesMan == 0){
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Select Salesman First'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }else{
+                              Navigator.pushNamed(context, '/Visitlist');
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => pages[index],
+                              //   ));
+                            }
+                                  // Navigator.pushNamed(context, '/AttendanceRegister');
+                                },
+                              ),
+                            ),
+                          ),
                         Container(
                           margin: const EdgeInsets.only(
                               bottom: 6
@@ -1175,22 +1442,22 @@ class _SalesManHomeState extends State<SalesManHome> {
                             },
                           ),
                         ),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3)
-                            )
-                          ),
-                            onPressed: () async {
-                              sentBachUpData();
-                            },
-                            child: const Text('Share Catch File', style: TextStyle(
-                                    color: kPrimaryColor,
-                                                                    fontFamily: 'poppins',
-                                                                    fontSize: 16,
-                                                                    fontWeight: FontWeight.w500
-                                                                  ),))
+                        // OutlinedButton(
+                        //   style: OutlinedButton.styleFrom(
+                        //     backgroundColor: white,
+                        //     shape: RoundedRectangleBorder(
+                        //       borderRadius: BorderRadius.circular(3)
+                        //     )
+                        //   ),
+                        //     onPressed: () async {
+                        //       sentBachUpData();
+                        //     },
+                        //     child: const Text('Share Catch File', style: TextStyle(
+                        //             color: kPrimaryColor,
+                        //                                             fontFamily: 'poppins',
+                        //                                             fontSize: 16,
+                        //                                             fontWeight: FontWeight.w500
+                        //                                           ),))
                       ],
                     ),
                   )),
@@ -1215,62 +1482,132 @@ class _SalesManHomeState extends State<SalesManHome> {
   }
 
   _expireWidget(CompanyUser args, context) {
-    return Center(
-      child: Card(
-        elevation: 4,
+       return Center(
+      child: Container(
         margin: const EdgeInsets.all(10),
-        child: Container(
-          padding: const EdgeInsets.all(0.0),
-          height: 250,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                height: 100,
-                width: 90,
-              ),
-              Text(
-                firm.toUpperCase(),
-                style:
-                    const TextStyle(
-                      fontFamily: 'poppins',
-                      fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "CustomerId : $fId / $_regId",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: blue),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "UserId : ${args.userId}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: blue),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "Dear ${args.username}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: red),
-              ),
-              const Text(
-                'Your trial period expired',
-                style: TextStyle(fontWeight: FontWeight.bold, color: red),
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(1.0),
+        decoration: BoxDecoration(
+          color: white,
+          borderRadius: BorderRadius.circular(5)
+        ),
+        height: 300,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: 85,
+              width: 75,
+            ),
+            Text(
+              textAlign: TextAlign.center,
+              firm.toUpperCase(),
+              style:
+                  const TextStyle(
+                    
+                    fontFamily: 'poppins',
+                    fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "CustomerId : $fId / $_regId",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w600, fontSize: 17, color: kPrimaryColor),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "UserId : ${args.userId}",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w600, fontSize: 17, color: kPrimaryColor),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "Dear ${args.username}",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w500, fontSize: 17, color: red),
+            ),
+            const Text(
+              'Your trial period expired',
+              style: TextStyle(
+                fontFamily: 'poppins',
+                fontWeight: FontWeight.w500,
+                // fontSize: 17,
+                 color: red),
+            ),
+          ],
         ),
       ),
     );
+    // return Center(
+    //   child: Card(
+    //     elevation: 4,
+    //     margin: const EdgeInsets.all(10),
+    //     child: Container(
+    //       padding: const EdgeInsets.all(0.0),
+    //       height: 250,
+    //       child: Column(
+    //         crossAxisAlignment: CrossAxisAlignment.center,
+    //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //         children: [
+    //           Image.asset(
+    //             'assets/logo.png',
+    //             height: 100,
+    //             width: 90,
+    //           ),
+    //           Text(
+    //             firm.toUpperCase(),
+    //             style:
+    //                 const TextStyle(
+    //                   fontFamily: 'poppins',
+    //                   fontWeight: FontWeight.bold, fontSize: 20),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "CustomerId : $fId / $_regId",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: blue),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "UserId : ${args.userId}",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: blue),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "Dear ${args.username}",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: red),
+    //           ),
+    //           const Text(
+    //             'Your trial period expired',
+    //             style: TextStyle(fontWeight: FontWeight.bold, color: red),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
+  
   }
     Future<bool> showExitPopup() async {
     return await showDialog(
@@ -1294,58 +1631,127 @@ class _SalesManHomeState extends State<SalesManHome> {
   }
 
   _expireWarningWidget(CompanyUser args, context, int daysLeft) {
-    return Center(
-      child: Card(
-        elevation: 10,
+      return Center(
+      child: Container(
         margin: const EdgeInsets.all(10),
-        child: Container(
-          padding: const EdgeInsets.all(0.0),
-          height: 220,
-          child: Column(
-            children: [
-              Image.asset(
-                'assets/logo.png',
-                height: 100,
-                width: 90,
-              ),
-              Text(
-                firm.toUpperCase(),
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "CustomerId : $fId / $_regId",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: blue),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "UserId : ${args.userId}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: blue),
-              ),
-              const Divider(
-                height: 1,
-              ),
-              Text(
-                "Dear ${args.username}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: red),
-              ),
-              Text(
-                'Your trial period $daysLeft days left',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 19, color: red),
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(1.0),
+        decoration: BoxDecoration(
+          color: white,
+          borderRadius: BorderRadius.circular(5)
+        ),
+        height: 300,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(
+              'assets/logo.png',
+              height: 85,
+              width: 75,
+            ),
+            Text(
+              textAlign: TextAlign.center,
+              firm.toUpperCase(),
+              style:
+                  const TextStyle(
+                    
+                    fontFamily: 'poppins',
+                    fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "CustomerId : $fId / $_regId",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w600, fontSize: 17, color: kPrimaryColor),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "UserId : ${args.userId}",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w600, fontSize: 17, color: kPrimaryColor),
+            ),
+            const Divider(
+              height: 1,
+              color: bagroundColor,
+            ),
+            Text(
+              "Dear ${args.username}",
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                  fontWeight: FontWeight.w500, fontSize: 17, color: red),
+            ),
+             Text(
+              'Your trial period $daysLeft days left',
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                fontWeight: FontWeight.w500,
+                // fontSize: 17,
+                 color: red),
+            ),
+          ],
         ),
       ),
     );
+    // return Center(
+    //   child: Card(
+    //     elevation: 10,
+    //     margin: const EdgeInsets.all(10),
+    //     child: Container(
+    //       padding: const EdgeInsets.all(0.0),
+    //       height: 220,
+    //       child: Column(
+    //         children: [
+    //           Image.asset(
+    //             'assets/logo.png',
+    //             height: 100,
+    //             width: 90,
+    //           ),
+    //           Text(
+    //             firm.toUpperCase(),
+    //             style:
+    //                 const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "CustomerId : $fId / $_regId",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: blue),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "UserId : ${args.userId}",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: blue),
+    //           ),
+    //           const Divider(
+    //             height: 1,
+    //           ),
+    //           Text(
+    //             "Dear ${args.username}",
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: red),
+    //           ),
+    //           Text(
+    //             'Your trial period $daysLeft days left',
+    //             style: const TextStyle(
+    //                 fontWeight: FontWeight.bold, fontSize: 19, color: red),
+    //           ),
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 }

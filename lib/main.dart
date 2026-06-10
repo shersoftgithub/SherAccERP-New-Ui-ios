@@ -7,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_settings_screen_ex/flutter_settings_screen_ex.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:scoped_model/scoped_model.dart';
+import 'package:sheraccerp/attendance/attendance_home.dart';
 import 'package:sheraccerp/cache_provider.dart';
+import 'package:sheraccerp/data_loader.dart';
 import 'package:sheraccerp/firebase_options.dart';
 import 'package:sheraccerp/landing.dart';
 import 'package:sheraccerp/models/expense_list_item_model.dart';
@@ -16,13 +18,15 @@ import 'package:sheraccerp/provider/app_provider.dart';
 import 'package:sheraccerp/provider/ledger_provider.dart';
 import 'package:sheraccerp/provider/product_provider.dart';
 import 'package:sheraccerp/provider/purchase_provider.dart';
+import 'package:sheraccerp/provider/sales_delivery_provider.dart';
 import 'package:sheraccerp/provider/sales_provider.dart';
 import 'package:sheraccerp/provider/stock_provider.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/accounts/bank_voucher.dart';
 import 'package:sheraccerp/screens/accounts/journal.dart';
 import 'package:sheraccerp/screens/accounts/project_profit_loss.dart';
 import 'package:sheraccerp/screens/accounts/receipt_order.dart';
+import 'package:sheraccerp/screens/accounts/rv_pv_list.dart';
 import 'package:sheraccerp/screens/accounts/salesman_report.dart';
 import 'package:sheraccerp/screens/accounts/tax_report.dart';
 import 'package:sheraccerp/screens/html_previews/purchase_return_preview.dart';
@@ -33,6 +37,7 @@ import 'package:sheraccerp/screens/inventory/jobcard/Replacement/jobcardreplacem
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/Job_card_home.dart';
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/job_card_entry.dart';
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/jobcardmenu.dart';
+import 'package:sheraccerp/screens/inventory/sales/sales_list_calendar_view.dart';
 import 'package:sheraccerp/screens/inventory/serial_no_list.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_page.dart';
 import 'package:sheraccerp/screens/other_registration.dart';
@@ -81,24 +86,59 @@ import 'package:sheraccerp/screens/inventory/stock_report.dart';
 import 'package:sheraccerp/screens/inventory/products_list_page.dart';
 import 'package:sheraccerp/screens/inventory/stock_transfer.dart';
 import 'package:sheraccerp/screens/user_login_screen.dart';
+import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/delivery_report_wrapper.dart';
 import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/add_user_screen.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:url_strategy/url_strategy.dart';
 
 ValueNotifier<Color> accentColor = ValueNotifier(kPrimaryColor);
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform );
+
+  //   if (kIsWeb) {
+  //   setPathUrlStrategy();
+  // }
+
+ WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyAh8GaZ7u9u9nsMcXgkYjlhMV3MQoLrLCs",
+          authDomain: "sheraccerp-8495a.firebaseapp.com",
+          projectId: "sheraccerp-8495a",
+          storageBucket: "sheraccerp-8495a.appspot.com",
+          messagingSenderId: "990122522024",
+          appId: "1:990122522024:web:15a4c8932a5680e359199d",
+          measurementId: "G-ZTVFDPN3DL"));
 
   runZonedGuarded(() {
     initSettings().then((_) {
       runApp(ProviderScope(
         child: provider.MultiProvider(
             providers: [
+               provider.Provider<DioService>(
+                create: (_) => DioService(),
+              ),
+              
               provider.ChangeNotifierProvider(
                   create: (context) => AppProvider()),
+
+              provider.ChangeNotifierProvider(
+                create: (context) => DeliveryReportProvider(
+                  context.read<DioService>(),
+                ),
+              ),    
+              // provider.ChangeNotifierProvider(
+              //     create: (context) => LedgerProvider()),
+              // provider.ChangeNotifierProvider(
+              //     create: (context) => StockProvider()),
+              // provider.ChangeNotifierProvider(
+              //     create: (context) => SalesProvider()),
+              // provider.ChangeNotifierProvider(
+              //     create: (context) => PurchaseProvider()),
+
               // ChangeNotifierProvider(create: (context) => LedgerProvider()),
               // ChangeNotifierProvider(create: (context) => ProductProvider()),
               // ChangeNotifierProvider(create: (context) => StockProvider()),
@@ -128,28 +168,50 @@ Future<void> initSettings() async {
 }
 
 Future<void> _initializeFirebase() async {
-  if (kDebugMode) {
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
-  } else {
-    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
-  } 
+  // if (kDebugMode) {
+  //   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
+  // } else {
+  //   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+  // } 
 }
 
 class MyApp extends StatelessWidget {
   final MainModel? model;
-  const MyApp({Key? key, @required this.model}) : super(key: key);
+   MyApp({Key? key, @required this.model}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ScopedModel<MainModel>(
         model: model!,
-        child: ValueListenableBuilder<Color>(
-          valueListenable: accentColor,
-          builder: (_, color, __) => MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'SherAcc',
-            routes: {
-              '/': (context) => const Landing(),
+        child: DataLoader(
+          model: model!,
+          child: ValueListenableBuilder<Color>(
+            valueListenable: accentColor,
+            builder: (_, color, __) => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'SherAcc',
+               navigatorKey: NavigatorService.navigatorKey, 
+               onGenerateRoute: (settings) {
+              if (settings.name == '/') {
+                return MaterialPageRoute(builder: (_) => const Landing());
+              }
+              
+              final routeBuilder = _routes[settings.name];
+              if (routeBuilder != null) {
+                return MaterialPageRoute(builder: (context) => routeBuilder(context));
+              }
+              
+              return MaterialPageRoute(builder: (_) => const Landing());
+            },
+            initialRoute: '/',
+            routes: _routes,
+            theme: themeData(),
+            ),
+          ),
+        ));
+  }
+  final Map<String, WidgetBuilder> _routes = {
+     '/': (context) => const Landing(),
               '/login_company': (context) => const LoginScreen(),
               '/login': (context) => const UserLoginScreen(),
               '/register': (context) => const Register(),
@@ -190,7 +252,9 @@ class MyApp extends StatelessWidget {
                   '0',
                   '0',
                   '0'),
-              '/RPVoucher': (context) => const RPVoucher(),
+              '/RPVoucher': (context) => const RPVoucher(
+                oldRvPv: false,
+              ),
               '/SalesList': (context) => const SalesList(),
               '/PurchaseList': (context) => const PurchaseList(),
               '/StockReport': (context) => const StockReport(),
@@ -230,14 +294,20 @@ class MyApp extends StatelessWidget {
               '/jobcardentry': (context) => const Jobcardentry(),
               '/jobcardreplacement': (context) => const JobCardReplacement(),
               '/TaxReport': (context) => const TaxReport(),
-              '/BankVoucher': (context) => const BankVoucher(),
+              '/BankVoucher': (context) => const BankVoucher(
+                oldRvPv: false,
+              ),
               '/serialNoList': (context) => const SerialNoList(),
               '/ReceiptOrder': (context) => const ReceiptOrder(),
-            },
-            theme: themeData(),
-          ),
-        ));
-  }
+              '/AttendanceRegister': (context) => const AttendanceHome(),
+              '/rvpvList': (context) => const RvPvList(),
+              '/salesDeliveryReport': (context) =>
+                  const DeliveryReportWrapper(),
+              '/SalesListcalendarView': (context) => const SalesListCalendarView(),    
+              // '/Visitlist': (context) =>  const VisitListHomepage(),
+              // '/purchasePreviewShow': (context) => const PurchasePreviewShow(),
+              // '/purchaseOrderPreviewShow': (context) => const PurchaseOrderPreviewShow(),
+  };
 }
 
 ThemeData themeData() {
@@ -349,4 +419,22 @@ ThemeData themeData() {
       selectionColor: Color(0xffffB59B),
     ),
   );
+}
+class NavigatorService {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  static Future<dynamic> navigateTo(String routeName) {
+    return navigatorKey.currentState!.pushNamed(routeName);
+  }
+
+  static void goBack() {
+    return navigatorKey.currentState!.pop();
+  }
+
+  static Future<dynamic> clearStackAndNavigate(String routeName) {
+    return navigatorKey.currentState!.pushNamedAndRemoveUntil(
+      routeName,
+      (Route<dynamic> route) => false,
+    );
+  }
 }

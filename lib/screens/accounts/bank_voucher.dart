@@ -10,7 +10,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/customer_model.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/screens/html_previews/rpv_preview.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -24,7 +24,11 @@ import 'package:sheraccerp/widget/progress_hud.dart';
 // import '../../scoped-models/main.dart';
 
 class BankVoucher extends StatefulWidget {
-  const BankVoucher({Key? key}) : super(key: key);
+  final bool oldRvPv;
+  const BankVoucher({
+    Key? key,
+    required this.oldRvPv
+  }) : super(key: key);
 
   @override
   State<BankVoucher> createState() => _BankVoucherState();
@@ -46,7 +50,7 @@ class _BankVoucherState extends State<BankVoucher> {
       chequeNo = '',
       narration = '',
       projectId = '-1';
-  double balance = 0, total = 0, amount = 0, discount = 0, bankCharge = 0;
+  double balance = 0, total = 0, amount = 0, discount = 0, bankCharge = 0,oldBalance = 0;
   var accountId = '', accountName = '';
   LedgerModel? ledData;
   bool _isLoading = false,
@@ -73,6 +77,7 @@ class _BankVoucherState extends State<BankVoucher> {
   final TextEditingController _controllerChequeNo = TextEditingController();
   final TextEditingController _controllerBankCharge = TextEditingController();
   final TextEditingController _controllerNarration = TextEditingController();
+  bool _isRoutesLoaded = false;
 
   @override
   void initState() {
@@ -94,6 +99,18 @@ class _BankVoucherState extends State<BankVoucher> {
 
     loadSettings();
     loadAsset();
+  }
+    var routes;
+  var title;
+
+   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    if (!_isRoutesLoaded) {
+      loadRoutes();
+      _isRoutesLoaded = true;
+    }
   }
 
   loadSettings() {
@@ -118,16 +135,67 @@ class _BankVoucherState extends State<BankVoucher> {
     routeId =
         ComSettings.appSettings('int', 'key-dropdown-default-route-view', 0) -
             1;
+    // if (widget.oldRvPv != null && widget.oldRvPv! && dataDynamic != null && dataDynamic!.isNotEmpty) {
+    //     fetchVoucher(context, dataDynamic![0], title!);
+    //   }            
   }
+
+   String fromDailyReport = '';
+
+  void loadRoutes() {
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    if (routeArgs != null) {
+      final args = routeArgs as Map<String, dynamic>;
+      
+      if (args.containsKey('dataDynamic')) {
+        dataDynamic = List<Map<String, dynamic>>.from(args['dataDynamic']);
+      }
+      
+      title = args['mode']?.toString() ?? '';
+      if(title.isEmpty){
+        if (args.containsKey('voucher')) {
+         title = args['voucher']?.toString() ?? '';
+         title = 'Bank $title';
+      }
+      }
+
+      fromDailyReport = args['fromDaily']?.toString() ?? '';
+      
+      //  if (voucherTypeList.isNotEmpty && title != null) {
+      //   setState(() {
+      //     voucherTypeData = title == 'Payment'
+      //         ? voucherTypeList.firstWhere(
+      //             (element) => element.voucher.toLowerCase() == 'payment')
+      //         : title == 'Receipt'
+      //             ? voucherTypeList.firstWhere(
+      //                 (element) => element.voucher.toLowerCase() == 'receipt')
+      //             : title == 'Receipt Order'
+      //                 ? voucherTypeList.firstWhere((element) =>
+      //                     element.voucher.toLowerCase() == 'receipt order')
+      //                 : title == 'Payment Order'
+      //                     ? voucherTypeList.firstWhere((element) =>
+      //                         element.voucher.toLowerCase() == 'Payment order')
+      //                     : VoucherType.emptyData();
+      //   });
+      // }
+
+      if (widget.oldRvPv != null && widget.oldRvPv! && dataDynamic != null && dataDynamic!.isNotEmpty) {
+        fetchVoucher(context, dataDynamic![0], title!);
+      }
+      
+     
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     deviceSize = MediaQuery.of(context).size;
-      final routes = (ModalRoute.of(context)!.settings.arguments) != null
-        ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
-        : {'voucher': ''};
-    var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
-    title = 'Bank $title';
+    //   final routes = (ModalRoute.of(context)!.settings.arguments) != null
+    //     ? (ModalRoute.of(context)!.settings.arguments) as Map<String, String>
+    //     : {'voucher': ''};
+    // var title = routes.isNotEmpty ? routes['voucher'].toString() : 'Voucher';
+    // title = 'Bank $title';
     return PopScope(
         canPop: false,
         onPopInvoked: (didPop) async {
@@ -235,9 +303,13 @@ class _BankVoucherState extends State<BankVoucher> {
                       onPressed: () {
                         //save
                         if (accountId.trim().isEmpty) {
-                          accountId = int.parse(accountId) > 0
-                              ? accountId.toString()
-                              : '0';
+                          Fluttertoast.showToast(
+                            msg: 'Select Bank Account',
+                            backgroundColor: red
+                            );
+                          // accountId = int.parse(accountId) > 0
+                          //     ? accountId.toString()
+                          //     : '0';
                         }
                          if (buttonEvent) {
                         return;
@@ -255,11 +327,12 @@ class _BankVoucherState extends State<BankVoucher> {
                         }
                       }
                       },
-                      icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+                      icon: const Icon(Icons.save,color: white,)),
             ],
             title: Text(title),
             titleTextStyle: const TextStyle(
-              fontFamily: 'poppins'
+              fontFamily: 'poppins',
+              color: white
             ),
           ),
           body: ProgressHUD(
@@ -308,7 +381,8 @@ class _BankVoucherState extends State<BankVoucher> {
           ],
           title: Text(mode),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white
           ),
         ),
         body: Padding(
@@ -431,7 +505,7 @@ class _BankVoucherState extends State<BankVoucher> {
             ']';
         var data = [
           {
-            'entryno': oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '1',
+            'entryno': oldVoucher ? dataDynamic[0]['EntryNo'].toString() : refNo.toString(),
             'nameId': ledData!.id,
             'bankId': accountId,
             'type': dropDownType,
@@ -469,7 +543,7 @@ class _BankVoucherState extends State<BankVoucher> {
               var dataAll = [
                 {
                   'entryno':
-                      oldVoucher ? dataDynamic[0]['EntryNo'].toString() : '0',
+                      oldVoucher ? dataDynamic[0]['EntryNo'].toString() : refNo.toString(),
                   'nameId': ledData!.id,
                   'bankId': accountId,
                   'type': dropDownType,
@@ -557,6 +631,11 @@ class _BankVoucherState extends State<BankVoucher> {
         buttonColorForYes: Colors.green,
         icon: Icons.check,
         onPressedNo: () {
+          if(widget.oldRvPv! && fromDailyReport.isNotEmpty && int.tryParse(fromDailyReport)! > 0){
+              Navigator.of(context).pop();
+              }else{
+                clearData();
+              }
           Navigator.of(context).pop();
         },
         onPressedYes: () {
@@ -567,7 +646,7 @@ class _BankVoucherState extends State<BankVoucher> {
         },
         buttonTextForNo: 'No',
         buttonTextForYes: 'YES',
-        infoMessage: 'Do you want to preview \nRefNo:${data[0]['entryNo']}',
+        infoMessage: 'Do you want to preview \nRefNo:${data[0]['entryno']}',
         title: 'Print Voucher',
         context: context);
   }
@@ -821,7 +900,10 @@ class _BankVoucherState extends State<BankVoucher> {
                               ),
                               onTap: () {
                                 
-                                // showDetails(context, dataDisplay[index]);
+                                showDetails(context,
+                                    mode,
+                                    int.tryParse(
+                                        dataDisplay[index]['Id'].toString())!);
                               },
                             ),
                           ),
@@ -1456,6 +1538,97 @@ class _BankVoucherState extends State<BankVoucher> {
       ),
     );
   }
+
+  showDetails(context, mode, int id) {
+    //fetchVoucher(context, data, mode) {
+    double voucherTotal = 0;
+    int row = 0;
+    api
+        .fetchBankVoucher(
+            id, mode == 'Bank Payment' ? 'FindPv' : 'FindRv')
+        .then((value) {
+      if (value != null) {
+        var information = value[0][0];
+        footerMessage = value[1][0]['s_Value'];
+        formattedDate = DateUtil.dateDMY(information['DDate']);
+        formattedClearDate = DateUtil.dateDMY(information['ClrDate']);
+
+        dataDynamic = [
+          {
+            'RealEntryNo': information['EntryNo'],
+            'EntryNo': information['EntryNo'],
+            'InvoiceNo': information['EntryNo'],
+            'Type': '0'
+          }
+        ];
+        _dropDownValue = information['BankId'].toString() +
+            '-' +
+            information['BankName'].toString();
+        accountName = information['BankName'].toString();
+        accountId = information['BankId'].toString();
+        acId = information['NameId'];
+        ledData = LedgerModel(
+            id: information['NameId'], name: information['LedgerName']);
+        amount = double.tryParse(information['Amount'].toString())!;
+        bankCharge = double.tryParse(information['BankCharge'].toString())!;
+        discount = double.tryParse(information['Discount'].toString())!;
+        // total = double.tryParse(information['Total'].toString());
+        dropDownType = information['Type'].toString();
+        chequeNo = information['ChequeNo'].toString();
+        dropDownStatusType = information['Status'].toString();
+        narration = information['Narration'].toString();
+        if(mode == "Bank Payment" || mode == "Bank Receipt"){
+          getOldBalance(
+              ledData!.id,
+              (mode == 'Bank Payment' ? 'SupplierOB' : 'CustomerOB'),
+              mode,
+              DateUtil.dateYMD(formattedDate),
+              information['EntryNo']);
+        }
+        setState(() {
+            var dataAll = [
+                {
+                  'entryno':
+                       dataDynamic[0]['EntryNo'].toString() ,
+                  'nameId': ledData!.id,
+                  'bankId': accountId,
+                  'type': dropDownType,
+                  'chequeNo':chequeNo,
+                  'status': dropDownStatusType,
+                  'date': formatDMY(formattedDate),
+                  'clrdate': formatDMY(formattedClearDate),
+                  'location': locationId,
+                  'amount': amount,
+                  'bankCharge': bankCharge,
+                  'discount': discount,
+                  'narration': narration,
+                  'user': userIdC,
+                  'account': accountName,
+                  'name': ledData!.name,
+                  'oldBalance': oldBalance,// ledgerData!.balance,
+                  'message': footerMessage
+                }
+              ];
+              actionShow(mode, context, dataAll);
+          // widgetID = false;
+          // oldVoucher = true;
+          // isSelected = true;
+          // _controllerAmount.text = amount.toString();
+          // _controllerBankCharge.text =
+          //     bankCharge > 0 ? bankCharge.toString() : '';
+          // _controllerDiscount.text = discount > 0 ? discount.toString() : '';
+          // _controllerNarration.text = narration.toString();
+          // _controllerChequeNo.text = chequeNo.toString();
+        });
+      }
+    });
+  }
+   getOldBalance(int Id, String statement, String type, String date, entryno) {
+    api.getBalance(Id, statement, type, date, entryno).then((value) {
+      oldBalance = double.parse(value['oldBalance'].toString());
+    });
+  }
+
 
   voucherParticularWidget(mode) {}
 }

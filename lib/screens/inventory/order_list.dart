@@ -107,7 +107,8 @@ class _OrderListState extends State<OrderList> {
           // ignore: prefer_const_constructors
           title: const Text('Order Report'),
           titleTextStyle: const TextStyle(
-            fontFamily: 'poppins'
+            fontFamily: 'poppins',
+            color: white,
           ),
         ),
         body: loadReport

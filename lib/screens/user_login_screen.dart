@@ -86,7 +86,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
             // backgroundColor: Theme.of(context).colorScheme.background,
             title: const Text(
               'Login',
-              style: TextStyle(fontFamily: 'poppins'),
+              style: TextStyle(fontFamily: 'poppins',color: white,),
             ),
             // brightness: Brightness.dark,
             actions: [

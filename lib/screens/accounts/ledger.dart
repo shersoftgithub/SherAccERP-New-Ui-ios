@@ -1,4 +1,5 @@
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
+import 'package:easy_autocomplete/easy_autocomplete.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,7 @@ import 'package:sheraccerp/models/company.dart';
 import 'package:sheraccerp/models/ledger_name_model.dart';
 import 'package:sheraccerp/models/ledger_parent.dart';
 import 'package:sheraccerp/models/other_registrations.dart';
-import 'package:sheraccerp/scoped-models/main.dart';
+import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
 import 'package:sheraccerp/util/dateUtil.dart';
@@ -188,7 +189,9 @@ class _LedgerState extends State<Ledger> {
         ],
         title: const Text(
           "Ledger",
-          style: TextStyle(fontFamily: 'poppins'),
+          style: TextStyle(fontFamily: 'poppins',
+          color: white,
+          ),
         ),
       ),
       body: ProgressHUD(
@@ -238,22 +241,24 @@ class _LedgerState extends State<Ledger> {
         drAmount = _debitAmountCtr.text.isNotEmpty
             ? double.tryParse(_debitAmountCtr.text)
             : 0;
+     String phone = mobile;
+     String mobileNo = phone.replaceAll(RegExp(r'\s+'), '');          
     var data = [
       {
         'name': name.toUpperCase(),
         'parent': _dropDownValue,
-        'add1': add1,
-        'add2': add2,
-        'add3': add3,
-        'add4': add4,
+        'add1': add1.toUpperCase(),
+        'add2': add2.toUpperCase(),
+        'add3': add3.toUpperCase(),
+        'add4': add4.toUpperCase(),
         'city': city,
         'route': route,
         'state': state.toUpperCase(),
         'stateCode': stateCode,
-        'mobile': mobile,
+        'mobile': mobileNo,
         'salesMan': salesManId > 0 ? salesManId.toString() : '0',
         'email': email,
-        'taxNo': taxNo,
+        'taxNo': taxNo.toUpperCase(),
         'active': valueActive ? 1 : 0,
         'obDate': DateUtil.dateDMY2YMD(obDate),
         'credit': crAmount,
@@ -609,10 +614,10 @@ class _LedgerState extends State<Ledger> {
                               height: 10,
                             ),
                             ContainerFieldWidget(
-                                widget: SimpleAutoCompleteTextField(
-                                  key: keyLedgerName,
+                                widget: EasyAutocomplete(
+                                  // key: keyLedgerName,
                                   controller: _nameCtr,
-                                  clearOnSubmit: false,
+                                  // clearOnSubmit: false,
                                   suggestions: ledgerListDisplay,
                                   decoration: const InputDecoration(
                                     contentPadding: EdgeInsets.symmetric(
@@ -621,7 +626,7 @@ class _LedgerState extends State<Ledger> {
                                     ),
                                     border: OutlineInputBorder(),
                                   ),
-                                  textSubmitted: (data) {
+                                  onSubmitted: (data) {
                                     lName = data;
                                     if (lName.isNotEmpty) {
                                       int _id = ledgerList
@@ -818,9 +823,9 @@ class _LedgerState extends State<Ledger> {
                             height: 4,
                           ),
                           ContainerFieldWidget(
-                              widget: SimpleAutoCompleteTextField(
-                                clearOnSubmit: false,
-                                key: keyCity,
+                              widget: EasyAutocomplete(
+                                // clearOnSubmit: false,
+                                // key: keyCity,
                                 suggestions: cityList,
                                 decoration: const InputDecoration(
                                    contentPadding: EdgeInsets.symmetric(
@@ -831,7 +836,7 @@ class _LedgerState extends State<Ledger> {
                                     
                                   ),
                                 ),
-                                textSubmitted: (data) {
+                                onSubmitted: (data) {
                                   cityData = otherRegAreaList.firstWhere(
                                     (element) => element.name == data,
                                     orElse: () =>
@@ -845,9 +850,9 @@ class _LedgerState extends State<Ledger> {
                             height: 4,
                           ),
                           ContainerFieldWidget(
-                              widget: SimpleAutoCompleteTextField(
-                                clearOnSubmit: false,
-                                key: keyRoute,
+                              widget: EasyAutocomplete(
+                                // clearOnSubmit: false,
+                                // key: keyRoute,
                                 suggestions: routeList,
                                 decoration: const InputDecoration(
                                    contentPadding: EdgeInsets.symmetric(
@@ -856,7 +861,7 @@ class _LedgerState extends State<Ledger> {
                                   ),
                                   border: OutlineInputBorder(),
                                 ),
-                                textSubmitted: (data) {
+                                onSubmitted: (data) {
                                   routeData = otherRegRouteList.firstWhere(
                                     (element) => element.name == data,
                                     orElse: () =>

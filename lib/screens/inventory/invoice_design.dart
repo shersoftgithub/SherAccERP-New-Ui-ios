@@ -5,6 +5,7 @@ import 'package:open_file/open_file.dart';
 import 'package:sheraccerp/models/print_settings_model.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/shared/constants.dart';
+import 'package:sheraccerp/util/res_color.dart';
 import 'package:sheraccerp/widget/loading.dart';
 import 'package:sheraccerp/widget/pdf_screen.dart';
 
@@ -44,6 +45,9 @@ class _InvoiceDesignState extends State<InvoiceDesign> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoice Designer Preview'),
+        titleTextStyle: const TextStyle(
+          color: white,
+        ),
       ),
       body: widgetId == 1
           ? downloadAndOpen()
