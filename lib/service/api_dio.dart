@@ -1380,7 +1380,34 @@ class DioService {
       return [];
     }
   } 
- 
+
+  Future<List<dynamic>> getProfitAndLossReport(data) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String dataBase = 'cSharp';
+    dataBase = isEstimateDataBase
+        ? (pref.getString('DBName') ?? "cSharp")
+        : (pref.getString('DBNameT') ?? "cSharp");
+    try {
+      final response = await dio.post(
+          '${pref.getString('api')}${apiV}profitAndLossStatement/$dataBase',
+          // 'http://192.168.0.111:8090/api/v26/profitAndLossStatement/$dataBase',
+          data: data,
+          options: Options(headers: {'Content-Type': 'application/json'}));
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data;
+      } else {
+        debugPrint('Failed to load data');
+        return [];
+      }
+    } catch (e) {
+      final errorMessage =
+          DioExceptions.fromDioError('$e' as DioError).toString();
+      debugPrint(errorMessage.toString());
+      return [];
+    }
+  } 
 
   Future<List<dynamic>> getSalesListReport(data) async {
     SharedPreferences pref = await SharedPreferences.getInstance();

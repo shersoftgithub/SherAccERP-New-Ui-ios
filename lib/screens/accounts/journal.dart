@@ -205,7 +205,7 @@ class _JournalState extends State<Journal> {
                       }
                     }
                     },
-                    icon: Image.asset('assets/icons/Save instagram@2x.png',scale: 1.6,)),
+                    icon: const Icon(Icons.save,color: white,)),
           ],
           title: const Text('Journal'),
           titleTextStyle: const TextStyle(fontFamily: 'poppins',

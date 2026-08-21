@@ -26,6 +26,7 @@ import 'package:sheraccerp/models/sales_type.dart';
 import 'package:sheraccerp/scoped-models/mains.dart';
 import 'package:sheraccerp/service/api_dio.dart';
 import 'package:sheraccerp/service/blue_thermal.dart';
+import 'package:sheraccerp/service/blue_thermal_web.dart';
 import 'package:sheraccerp/service/bt_print.dart';
 import 'package:sheraccerp/service/com_service.dart';
 import 'package:sheraccerp/shared/constants.dart';
@@ -499,22 +500,32 @@ class _SalesPreviewShowState extends State<SalesPreviewShow> {
             IconButton(
                 icon: Image.asset('assets/icons/ic_printer.png',scale: 2.8,),
                 onPressed: () {
-                  _capturePng().then((value) => {
-                        setState(() {
-                          byteImage = value;
-                          askPrintDevice(
+                  askPrintDevice(
                               context,
                               title + '_ref_${dataInformation['RealEntryNo']}',
                               companySettings!,
                               settings!,
                               data,
-                              byteImage!,
                               customerBalance,
                               printerType,
                               printerDevice,
                               printModel);
-                        })
-                      });
+                  // _capturePng().then((value) => {
+                  //       setState(() {
+                  //         byteImage = value;
+                  //         askPrintDevice(
+                  //             context,
+                  //             title + '_ref_${dataInformation['RealEntryNo']}',
+                  //             companySettings!,
+                  //             settings!,
+                  //             data,
+                  //             byteImage!,
+                  //             customerBalance,
+                  //             printerType,
+                  //             printerDevice,
+                  //             printModel);
+                  //       })
+                  //     });
                 }
                 )
           ],
@@ -14028,7 +14039,7 @@ askPrintDevice(
     CompanyInformation companySettings,
     List<CompanySettings> settings,
     var data,
-    Uint8List byteImage,
+    // Uint8List byteImage,
     var customerModel,
     int printerType,
     int printerDevice,
@@ -14044,11 +14055,19 @@ askPrintDevice(
     } else if (printerDevice == 5) {
       //                5: 'ESC/POS',
       _showPrinterSize(
-          context, title, companySettings, settings, data, byteImage);
+          context, title, companySettings, settings, data, Uint8List(0));
     } else if (printerDevice == 6) {
+       printReceiptViaMobilePrintUtil(
+        context,
+        companySettings: companySettings,
+        settings: settings,
+        bill: data,
+        printerSize: paperSize.toString(),
+        docType: 'SALE', 
+      );
       //                6: 'Thermal',
-      _selectBtThermalPrint(
-          context, title, companySettings, settings, data, byteImage, paperSize.toString());
+      // _selectBtThermalPrint(
+      //     context, title, companySettings, settings, data, Uint8List(0), paperSize.toString());
     } else if (printerDevice == 7) {
       //                7: 'RP_80',
     } else if (printerDevice == 8) {
@@ -14088,11 +14107,11 @@ askPrintDevice(
     } else if (printerDevice == 5) {
       //                5: 'ESC/POS',
       _showPrinterSize(
-          context, title, companySettings, settings, data, byteImage);
+          context, title, companySettings, settings, data, Uint8List(0));
     } else if (printerDevice == 6) {
       //                6: 'Thermal',
       _selectBtThermalPrint(
-          context, title, companySettings, settings, data, byteImage, paperSize.toString());
+          context, title, companySettings, settings, data, Uint8List(0), paperSize.toString());
     } else if (printerDevice == 7) {
       //                7: 'RP_80',
     } else if (printerDevice == 8) {
@@ -14113,7 +14132,7 @@ askPrintDevice(
     }
   } else if (printerType == 6) {
     // 6: 'TCP',
-    printPOS(context, title, companySettings, settings, data, byteImage, 0);
+    printPOS(context, title, companySettings, settings, data, Uint8List(0), 0);
   } else if (printerType == 7) {
     // 7: 'WiFi',
     //
@@ -14234,6 +14253,8 @@ _selectBtThermalPrint(
   // dataAll.add('Settings[' + settings + ']');b
   Navigator.push(context,
       MaterialPageRoute(builder: (_) => BlueThermalPrint(dataAll, byteImage)));
+  // Navigator.push(context,
+  //   MaterialPageRoute(builder: (_) => BlueThermalPrintWeb(dataAll)));
 }
 
 Future<dynamic> printBluetooth(

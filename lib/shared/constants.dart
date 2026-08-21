@@ -58,12 +58,12 @@ bool isDarkTheme = false;
 bool isUsingHive = true;
 String deviceId = '0';
 const String isApp = '1';
-const String softwarePassword = 'SHERSOFT';
+const String softwarePassword = 'SHERSOFT';                             
 String _sherSoftPassword = '';
 String get sherSoftPassword => _sherSoftPassword;
 set sherSoftPassword(String value) => _sherSoftPassword = value;
 
-const String apiV = 'v29/';
+const String apiV = 'v27/';
 
 const currencySymbol = '₹';
 // const bool isVariant = false;

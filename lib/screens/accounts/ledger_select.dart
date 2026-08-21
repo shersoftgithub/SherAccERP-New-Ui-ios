@@ -56,14 +56,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
   List<CompanySettings> settings = [];
   List<OtherRegistrationModel> otherRegAreaDataList = [];
   List<OtherRegistrationModel> otherRegRouteDataList = [];
-   List<LedgerModel> cashBankACList = [];
-   List<LedgerModel> cashBankACListAll = [];
-   var accountId = '', accountName = '';
+  List<LedgerModel> cashBankACList = [];
+  List<LedgerModel> cashBankACListAll = [];
+  var accountId = '', accountName = '';
   List<String> statusType = ['', 'PENDING', 'CLEARED', 'BOUNCED', 'CANCELLED'];
   String dropDownType = '', dropDownStatusType = '';
   bool showProfit = false;
   bool showSalesProfit = false;
-
   @override
   void initState() {
     super.initState();
@@ -77,7 +76,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
           .map((e) => e.key)
           .first;
     }
-       api.getLedgerListByType('SelectbankOnly').then((value) {
+     api.getLedgerListByType('SelectbankOnly').then((value) {
       List<LedgerModel> _dataTemp = [];
       for (var ledger in value) {
         _dataTemp
@@ -88,7 +87,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
         
       });
     }); 
-           api.getCashBankAc().then((value) {
+        api.getCashBankAc().then((value) {
       setState(() {
         cashBankACListAll.addAll(value);
       });
@@ -106,7 +105,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
     int salesManId = ComSettings.appSettings(
             'int', 'key-dropdown-default-salesman-view', 1) -
         1;
-        isAdminUser =
+        isAdminUser = 
         companyUserData!.userType.toUpperCase() == 'ADMIN' ? true : false;
     if (!isAdminUser) {
       locationId = ComSettings.appSettings(
@@ -155,6 +154,13 @@ var _ledger, _id, locationId, _dropDownBranchId;
         _loading = false;
         _ledger = 'CASH';
         _id = 0;
+      } else if (mode == "ReceiptList" ||
+          mode == 'PaymentList' ||
+          mode == 'JournalList') {
+        statement = mode;
+        _loading = false;
+        _ledger = 'CASH';
+        _id = 0;
       }else if(mode == "BankReceiptList" ||
        mode == "BankPaymentList"){
         statement = mode;
@@ -168,13 +174,6 @@ var _ledger, _id, locationId, _dropDownBranchId;
             selectedStockValue = selectedItem.name;
           });
         });
-      } else if (mode == "ReceiptList" ||
-          mode == 'PaymentList' ||
-          mode == 'JournalList') {
-        statement = mode;
-        _loading = false;
-        _ledger = 'CASH';
-        _id = 0;
       } else if (mode == "CashBook") {
         statement = 'Ledger_Report';
         _loading = false;
@@ -280,6 +279,19 @@ var _ledger, _id, locationId, _dropDownBranchId;
           {'id': '3', 'name': 'Detailed'},
           {'id': '4', 'name': 'Due Bill Date'},
         ];
+        //  List<dynamic> groupValues = [
+        //   {'id': '1', 'name': 'Normal'},
+        //   {'id': '2', 'name': 'Invoice Wise'},
+        //   {'id': '3', 'name': 'Detailed'},
+        //   {'id': '4', 'name': 'Due Bill Date'},
+        //   {'id': '5', 'name': 'Due Bills'},
+        //   {'id': '6', 'name': 'Ageing Report'},
+        //   {'id': '7', 'name': 'Receipt Wise Invoice Balance'},
+        //   {'id': '8', 'name': 'Payment Wise Invoice Balance'},
+        //   {'id': '9', 'name': 'B2B Customer Balance'},
+        //   {'id': '10', 'name': 'Bill Ageing Creditors'},
+        //   {'id': '11', 'name': 'Nearly Due Report'},
+        // ];
         // List<dynamic> stockValue = [
         //   {'id': '13', 'name': 'SUPPLIERS'},
         //   {'id': '9', 'name': 'ACCOUNTS PAYABLE'}
@@ -305,7 +317,22 @@ var _ledger, _id, locationId, _dropDownBranchId;
           {'id': '2', 'name': 'Invoice Wise'},
           {'id': '3', 'name': 'Detailed'},
           {'id': '4', 'name': 'Due Bill Date'},
+          {'id': '5', 'name': 'Due Bills'},
+          {'id': '6', 'name': 'Receipt Wise Invoice Balance'},
         ];
+        //  List<dynamic> groupValues = [
+        //   {'id': '1', 'name': 'Normal'},
+        //   {'id': '2', 'name': 'Invoice Wise'},
+        //   {'id': '3', 'name': 'Detailed'},
+        //   {'id': '4', 'name': 'Due Bill Date'},
+        //   {'id': '5', 'name': 'Due Bills'},
+        //   {'id': '6', 'name': 'Ageing Report'},
+        //   {'id': '7', 'name': 'Receipt Wise Invoice Balance'},
+        //   {'id': '8', 'name': 'Payment Wise Invoice Balance'},
+        //   {'id': '9', 'name': 'B2B Customer Balance'},
+        //   {'id': '10', 'name': 'Bill Ageing Creditors'},
+        //   {'id': '11', 'name': 'Nearly Due Report'},
+        // ];
         setState(() {
           items.addAll(groupValues);
           selectedGroupValues = items[0]['name'];
@@ -377,7 +404,6 @@ var _ledger, _id, locationId, _dropDownBranchId;
         ],
         titleTextStyle:
             const TextStyle(fontFamily: 'poppins', 
-            color: white,
             fontWeight: FontWeight.w500),
         title: Text(mode == 'ledger'
             ? 'Ledger Report'
@@ -457,7 +483,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
   }
 
   var stmtType = 'Closing Report';
-  var _dropDownValue = '';
+var _dropDownValue = '';
   _loadWidget() {
     return mode == "ledger"
         ? Container(
@@ -577,6 +603,29 @@ var _ledger, _id, locationId, _dropDownBranchId;
                         });
                       },
                     ),
+                    // const Text(
+                    //   'Show Qty',
+                    //   style: TextStyle(
+                    //       fontWeight: FontWeight.w500,
+                    //       fontSize: 15,
+                    //       fontFamily: 'poppins'),
+                    // ),
+                    // Checkbox(
+                    //   value: _showQty,
+                    //   activeColor: kPrimaryColor,
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       _showQty = value!;
+                    //     });
+                    //   },
+                    // )
+                  ],
+                ),
+                 const SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  children: [
                     const Text(
                       'Show Qty',
                       style: TextStyle(
@@ -620,11 +669,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                   child: ContainerFieldWidget(
                       widget: DropdownSearch<dynamic>(
                         popupProps:
-                            const PopupPropsMultiSelection.modalBottomSheet(
+                            const PopupPropsMultiSelection.dialog(
                                 showSearchBox: true,
-                                constraints: BoxConstraints(
-                                  maxHeight: 300,
-                                )),
+                                // constraints: BoxConstraints(
+                                //   maxHeight: 300,
+                                // )
+                                ),
                         asyncItems: (String filter) =>
                             api.getSalesListData(filter, 'sales_list/location'),
                         dropdownDecoratorProps: const DropDownDecoratorProps(
@@ -642,7 +692,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                       ),
                       headTxt: 'Select Branch'),
                 ),
-                 Visibility(
+                  Visibility(
                     visible: !isAdminUser,
                     child: Row(
                       children: [
@@ -842,30 +892,34 @@ var _ledger, _id, locationId, _dropDownBranchId;
                     //     },
                     //   ),
                     // ),
-                    ContainerFieldWidget(
-                        widget: DropdownSearch<dynamic>(
-                          popupProps:
-                              const PopupPropsMultiSelection.modalBottomSheet(
-                                  showSearchBox: true,
-                                  constraints: BoxConstraints(
-                                    maxHeight: 300,
-                                  )),
-                          asyncItems: (String filter) => api.getSalesListData(
-                              filter, 'sales_list/location'),
-                          dropdownDecoratorProps: const DropDownDecoratorProps(
-                            dropdownSearchDecoration: InputDecoration(
-                       contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
-                      ),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          onChanged: (dynamic data) {
-                            locationId = data;
-                          },
+                    Visibility(
+                      visible: isAdminUser,
+                      child: ContainerFieldWidget(
+                          widget: DropdownSearch<dynamic>(
+                            popupProps:
+                                const PopupPropsMultiSelection.dialog(
+                                    showSearchBox: true,
+                                    // constraints: BoxConstraints(
+                                    //   maxHeight: 300,
+                                    // )
+                                    ),
+                            asyncItems: (String filter) => api.getSalesListData(
+                                filter, 'sales_list/location'),
+                            dropdownDecoratorProps: const DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                         contentPadding: EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 8
                         ),
-                        headTxt: 'Select Branch'),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            onChanged: (dynamic data) {
+                              locationId = data;
+                            },
+                          ),
+                          headTxt: 'Select Branch'),
+                    ),
                     const SizedBox(
                       height: 10,
                     ),
@@ -1324,7 +1378,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                 ),
                                 Row(
                                   children: [
-                                     const Text('Show Closing Stock',
+                                    const Text('Show Closing Stock',
                                     style: TextStyle(
                                       fontFamily: 'poppins'
                                     ),),
@@ -1923,37 +1977,41 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                               const SizedBox(
                                                 height: 10,
                                               ),
-                                              ContainerFieldWidget(
-                                                  widget: DropdownSearch<dynamic>(
-                                                    popupProps:
-                                                        const PopupPropsMultiSelection
-                                                            .modalBottomSheet(
-                                                            showSearchBox: true,
-                                                            constraints:
-                                                                BoxConstraints(
-                                                                    maxHeight:
-                                                                        300)),
-                                                    asyncItems: (String filter) =>
-                                                        api.getSalesListData(
-                                                            filter,
-                                                            'sales_list/location'),
-                                                    dropdownDecoratorProps:
-                                                        const DropDownDecoratorProps(
-                                                      dropdownSearchDecoration:
-                                                          InputDecoration(
-                                                                                   contentPadding: EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8
-                      ),
-                                                        border:
-                                                            OutlineInputBorder(),
+                                              Visibility(
+                                                visible: isAdminUser,
+                                                child: ContainerFieldWidget(
+                                                    widget: DropdownSearch<dynamic>(
+                                                      popupProps:
+                                                          const PopupPropsMultiSelection
+                                                              .dialog(
+                                                              showSearchBox: true,
+                                                              // constraints:
+                                                              //     BoxConstraints(
+                                                              //         maxHeight:
+                                                              //             300)
+                                                                          ),
+                                                      asyncItems: (String filter) =>
+                                                          api.getSalesListData(
+                                                              filter,
+                                                              'sales_list/location'),
+                                                      dropdownDecoratorProps:
+                                                          const DropDownDecoratorProps(
+                                                        dropdownSearchDecoration:
+                                                            InputDecoration(
+                                                                      contentPadding: EdgeInsets.symmetric(
+                                                                      horizontal: 4,
+                                                                      vertical: 8
+                                                                      ),
+                                                          border:
+                                                              OutlineInputBorder(),
+                                                        ),
                                                       ),
+                                                      onChanged: (dynamic data) {
+                                                        locationId = data;
+                                                      },
                                                     ),
-                                                    onChanged: (dynamic data) {
-                                                      locationId = data;
-                                                    },
-                                                  ),
-                                                  headTxt: 'Select Branch'),
+                                                    headTxt: 'Select Branch'),
+                                              ),
                                               const SizedBox(
                                                 height: 10,
                                               ),
@@ -2112,8 +2170,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       child: DropdownButton<
                                                           OtherRegistrationModel>(
                                                         isExpanded: true,
-                                                        icon: const Icon(Icons
-                                                            .keyboard_arrow_down),
+                                                        icon: const Icon(Icons.keyboard_arrow_down),
                                                         items: otherRegAreaList.map(
                                                             (OtherRegistrationModel
                                                                 items) {
@@ -2166,18 +2223,51 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                         child: Text(items.name),
                                                       );
                                                     }).toList(),
-                                                    value: areaModel,
+                                                    value: routeModel,
                                                     onChanged: (value) {
                                                       setState(() {
-                                                        areaModel = value;
-                                                        area =
+                                                        routeModel = value;
+                                                        route =
                                                             value!.id.toString();
                                                       });
                                                     },
                                                   ),
                                                     ),
                                                   ),
-                                                  headTxt: 'Select Route')
+                                                  headTxt: 'Select Route'),
+                                                  Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(maxHeight: 300)
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getSalesListData(
+                                                                                filter,
+                                                                                'sales_list/salesMan'),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              salesMan =
+                                                                                  data.id.toString();
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Salesman'),
+                                                                    ),
                                             ],
                                           ),
                                         ),
@@ -2364,46 +2454,49 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                     const SizedBox(
                                                       height: 10,
                                                     ),
-                                                    ContainerFieldWidget(
-                                                        widget: DropdownSearch<
-                                                            dynamic>(
-                                                          popupProps: const PopupPropsMultiSelection
-                                                              .dialog(
-                                                              showSearchBox:
-                                                                  true,
-                                                              // constraints:
-                                                              //     BoxConstraints(
-                                                              //   maxHeight: 300,
-                                                              // )
+                                                    Visibility(
+                                                      visible: isAdminUser,
+                                                      child: ContainerFieldWidget(
+                                                          widget: DropdownSearch<
+                                                              dynamic>(
+                                                            popupProps: const PopupPropsMultiSelection
+                                                                .dialog(
+                                                                showSearchBox:
+                                                                    true,
+                                                                // constraints:
+                                                                //     BoxConstraints(
+                                                                //   maxHeight: 300,
+                                                                // )
+                                                                ),
+                                                            asyncItems: (String
+                                                                    filter) =>
+                                                                api.getSalesListData(
+                                                                    filter,
+                                                                    'sales_list/location'),
+                                                            dropdownDecoratorProps:
+                                                                const DropDownDecoratorProps(
+                                                              dropdownSearchDecoration:
+                                                                  InputDecoration(
+                                                                            contentPadding: EdgeInsets.symmetric(
+                                                                            horizontal: 4,
+                                                                            vertical: 8
+                                                                            ),
+                                                                border:
+                                                                    OutlineInputBorder(),
                                                               ),
-                                                          asyncItems: (String
-                                                                  filter) =>
-                                                              api.getSalesListData(
-                                                                  filter,
-                                                                  'sales_list/location'),
-                                                          dropdownDecoratorProps:
-                                                              const DropDownDecoratorProps(
-                                                            dropdownSearchDecoration:
-                                                                InputDecoration(
-                                                                  contentPadding: EdgeInsets.symmetric(
-                                                                  horizontal: 4,
-                                                                  vertical: 8
-                                                                  ),
-                                                              border:
-                                                                  OutlineInputBorder(),
                                                             ),
+                                                            onChanged:
+                                                                (dynamic data) {
+                                                              locationId = data;
+                                                            },
                                                           ),
-                                                          onChanged:
-                                                              (dynamic data) {
-                                                            locationId = data;
-                                                          },
-                                                        ),
-                                                        headTxt:
-                                                            'Select Branch'),
+                                                          headTxt:
+                                                              'Select Branch'),
+                                                    ),
                                                     const SizedBox(
                                                       height: 10,
                                                     ),
-                                                    Container(
+                                                     Container(
                                                       margin: const EdgeInsets.only(bottom: 16),
                                                       padding: const EdgeInsets.all(12),
                                                       decoration: BoxDecoration(
@@ -2432,7 +2525,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               overflow: TextOverflow.ellipsis,
                                                               style: TextStyle(
                                                                 fontFamily: 'poppins',
-                                                                fontSize: 14,
+                                                                // fontSize: 14,
                                                                 // fontWeight: FontWeight.w600,
                                                                 color: Colors.black87,
                                                               ),
@@ -2456,7 +2549,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                       ),
                                                     ),
                                                     const SizedBox(
-                                                      height: 10,
+                                                      height: 4,
                                                     ),
                                                     Container(
                                                       margin: const EdgeInsets.only(bottom: 16),
@@ -2487,7 +2580,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               overflow: TextOverflow.ellipsis,
                                                               style: TextStyle(
                                                                 fontFamily: 'poppins',
-                                                                fontSize: 14,
+                                                                // fontSize: 14,
                                                                 // fontWeight: FontWeight.w600,
                                                                 color: Colors.black87,
                                                               ),
@@ -2523,7 +2616,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     DateUtil.dateDMY2YMD(
                                                                         toDate),
                                                                     'Closing Report',
-                                                                    locationId != null
+                                                                      locationId != null
                                                                       ? locationId.name
                                                                       :'',
                                                                     statement,
@@ -2536,8 +2629,8 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         : [
                                                                             0
                                                                           ],
-                                                                    showProfit ? '1' : '0', // area
-                                                                    showSalesProfit ? '1' : '0', // route!,
+                                                                   showProfit ? '1' : '0',// area!,
+                                                                   showSalesProfit ? '1' : '0', // route!,
                                                                     '0')));
                                                       },
                                                       style: ButtonStyle(
@@ -3358,10 +3451,128 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 const SizedBox(
                                                                   height: 10,
                                                                 ),
+                                                                 ContainerFieldWidget(widget:  DropdownSearch<
+                                                                    dynamic>(
+                                                                  popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                                 asyncItems: (String filter) => api.getSalesListData(
+                                                                          filter,
+                                                                          'sales_list/customer'),
+                                                                  // onFind: (String
+                                                                  //         filter) =>
+                                                                  //     api.getSalesListData(
+                                                                  //         filter,
+                                                                  //         'sales_list/customer'),
+                                                                   dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                  onChanged:
+                                                                      (dynamic
+                                                                          data) {
+                                                                    // _ledger = itemDisplay[index].name;
+                                                                    // _id = itemDisplay[index].id;
+                                                                    // customer = data;
+                                                                    _id =
+                                                                        data.id;
+                                                                  },
+                                                                  // showSearchBox:
+                                                                  //     true,
+                                                                ), headTxt: 'Select Customer'),
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                 Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(maxHeight: 300)
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getSalesListData(
+                                                                                filter,
+                                                                                'sales_list/salesMan'),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              salesMan =
+                                                                                  data.id.toString();
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Salesman'),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          10,
+                                                                    ),
+                                                                // const Divider(),
+                                                                ContainerFieldWidget(widget:DropdownSearch<
+                                                                    dynamic>(
+                                                                  popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                                asyncItems: (String filter) => api.getSalesListData(
+                                                                          filter,
+                                                                          'sales_list/location'),
+                                                                  // onFind: (String
+                                                                  //         filter) =>
+                                                                  //     api.getSalesListData(
+                                                                  //         filter,
+                                                                  //         'sales_list/location'),
+                                                                  dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                  onChanged:
+                                                                      (dynamic
+                                                                          data) {
+                                                                    locationId =
+                                                                        data;
+                                                                  },
+                                                                  // showSearchBox:
+                                                                  //     true,
+                                                                ),headTxt: 'Select Location',),
                                                                 TextButton(
                                                                   onPressed:
                                                                       () {
-                                                                    statement = mode ==
+                                                                        statement = mode ==
                                                                             'Payable'
                                                                         ? selectedGroupValues ==
                                                                                 'Invoice Wise'
@@ -3370,20 +3581,65 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 ? 'Receivable_Details'
                                                                                 : selectedGroupValues == 'Due Bill Date'
                                                                                     ? 'DueBillBalance_Report'
-                                                                                    : 'ReceivblesCreditOnly'
+                                                                                    : selectedGroupValues == 'Due Bills'
+                                                                                        ? 'DueBills_Receivable'
+                                                                                        : selectedGroupValues == 'Ageing Report'
+                                                                                            ? 'Receivable_Ageing'
+                                                                                            : selectedGroupValues == 'Receipt Wise Invoice Balance'
+                                                                                                ? 'ReceiptWiseCustomerbalance'
+                                                                                                : selectedGroupValues == 'Payment Wise Invoice Balance'
+                                                                                                    ? 'PaymentWiseSupplierbalance'
+                                                                                                    : selectedGroupValues == 'B2B Customer Balance'
+                                                                                                        ? 'B2B_Customer_Balance'
+                                                                                                        : selectedGroupValues == 'Bill Ageing Creditors'
+                                                                                                            ? 'Bill_Ageing_Creditors'
+                                                                                                            : selectedGroupValues == 'Nearly Due Report'
+                                                                                                                ? 'Nearly_Due_Report'
+                                                                                                                : 'ReceivblesCreditOnly'
                                                                         : selectedGroupValues == 'Invoice Wise'
                                                                             ? 'InvoiceWiseBalanceCustomers'
                                                                             : selectedGroupValues == 'Detailed'
                                                                                 ? 'Receivable_Master_Detail'
                                                                                 : selectedGroupValues == 'Due Bill Date'
                                                                                     ? 'DueBillBalance_Report'
-                                                                                    : 'ReceivblesDebitOnly';
+                                                                                    : selectedGroupValues == 'Due Bills'
+                                                                                        ? 'DueBills_Receivable'
+                                                                                        : selectedGroupValues == 'Ageing Report'
+                                                                                            ? 'DueBills_Receivable'
+                                                                                            : selectedGroupValues == 'Receipt Wise Invoice Balance'
+                                                                                                ? 'ReceiptWiseCustomerbalance'
+                                                                                                : selectedGroupValues == 'Payment Wise Invoice Balance'
+                                                                                                    ? 'DueBills_Receivable'
+                                                                                                    : selectedGroupValues == 'B2B Customer Balance'
+                                                                                                        ? 'DueBills_Receivable'
+                                                                                                        : selectedGroupValues == 'Bill Ageing Creditors'
+                                                                                                            ? 'DueBills_Receivable'
+                                                                                                            : selectedGroupValues == 'Nearly Due Report'
+                                                                                                                ? 'DueBills_Receivable'
+                                                                                                                : 'ReceivblesDebitOnly';
+                                                                    // statement = mode ==
+                                                                    //         'Payable'
+                                                                    //     ? selectedGroupValues ==
+                                                                    //             'Invoice Wise'
+                                                                    //         ? 'InvoiceWiseBalanceSuppliers'
+                                                                    //         : selectedGroupValues == 'Detailed'
+                                                                    //             ? 'Receivable_Details'
+                                                                    //             : selectedGroupValues == 'Due Bill Date'
+                                                                    //                 ? 'DueBillBalance_Report'
+                                                                    //                 : 'ReceivblesCreditOnly'
+                                                                    //     : selectedGroupValues == 'Invoice Wise'
+                                                                    //         ? 'InvoiceWiseBalanceCustomers'
+                                                                    //         : selectedGroupValues == 'Detailed'
+                                                                    //             ? 'Receivable_Master_Detail'
+                                                                    //             : selectedGroupValues == 'Due Bill Date'
+                                                                    //                 ? 'DueBillBalance_Report'
+                                                                    //                 : 'ReceivblesDebitOnly';
 
                                                                     Navigator.push(
                                                                         context,
                                                                         MaterialPageRoute(
-                                                                            builder: (BuildContext context) => ReportView(
-                                                                                selectedItem.id.toString(),
+                                                                          builder: (BuildContext context) => ReportView(
+                                                                                selectedGroupValues == 'Due Bills' ? (_id != null ? _id.toString() : '0') : selectedItem.id.toString(),
                                                                                 (_ob ? '1' : '0'),
                                                                                 DateUtil.dateDMY2YMD(fromDate),
                                                                                 DateUtil.dateDMY2YMD(toDate),
@@ -3394,7 +3650,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                                 locationId != null ? [locationId.id] : [_dropDownBranchId],
                                                                                 area!,
                                                                                 route!,
-                                                                                '0')));
+                                                                                _id != null ? _id.toString() : '0')));
                                                                   },
                                                                   style:
                                                                       ButtonStyle(
@@ -3866,50 +4122,87 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                     ),
                                                                     ContainerFieldWidget(
                                                                           widget: Container(
-                                                                          padding: const EdgeInsets.symmetric(
-                                                                            horizontal: 5
-                                                                          ),
-                                                                          decoration: BoxDecoration(
-                                                                            border: Border.all(color: grey),
-                                                                            borderRadius: BorderRadius.circular(3)
-                                                                          ),
-                                                                          child: DropdownButtonHideUnderline(
-                                                                            child: DropdownButton<String>(
-                                                                              isExpanded: true,
-                                                                              hint: Text(_dropDownValue.isNotEmpty
-                                                                                  ? _dropDownValue.split('-')[1]
-                                                                                  : 'Select bank account',
-                                                                                  style: const TextStyle(
-                                                                                    fontFamily: 'poppins',
-                                                                                    color: black
-                                                                                  ),
-                                                                                  ),
-                                                                              items: cashBankACList.map<DropdownMenuItem<String>>((item) {
-                                                                                return DropdownMenuItem<String>(
-                                                                                  value: item.id.toString() + "-" + item.name,
-                                                                                  child: Text(item.name,
-                                                                                  style: const TextStyle(
-                                                                                    fontFamily: 'poppins',
-                                                                                    color: black
-                                                                                  ),
-                                                                                  ),
-                                                                                );
-                                                                              }).toList(),
-                                                                              onChanged: (value) {
-                                                                                setState(() {
-                                                                                  _dropDownValue = value!;
-                                                                                  accountId = value.split('-')[0];
-                                                                                  accountName = value.split('-')[1];
-                                                                                });
-                                                                              },
-                                                                            ),
-                                                                          ),
-                                                                        ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 5
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(color: grey),
+        borderRadius: BorderRadius.circular(3)
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          hint: Text(_dropDownValue.isNotEmpty
+              ? _dropDownValue.split('-')[1]
+              : 'Select bank account',
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),
+              ),
+          items: cashBankACList.map<DropdownMenuItem<String>>((item) {
+            return DropdownMenuItem<String>(
+              value: item.id.toString() + "-" + item.name,
+              child: Text(item.name,
+              style: const TextStyle(
+                fontFamily: 'poppins',
+                color: black
+              ),
+              ),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _dropDownValue = value!;
+              accountId = value.split('-')[0];
+              accountName = value.split('-')[1];
+            });
+          },
+        ),
+      ),
+    ),
                                                                           headTxt:
                                                                               'Bank Account'),
-                                                                                      const SizedBox(
-                                                                        height:
-                                                                            10,
+                                                                      const SizedBox(
+                                                                        height: 10,
+                                                                      ),
+                                                                      Visibility(
+                                                                      visible: isAdminUser,
+                                                                      child: ContainerFieldWidget(
+                                                                          widget: DropdownSearch<
+                                                                              dynamic>(
+                                                                            popupProps: const PopupPropsMultiSelection
+                                                                                .dialog(
+                                                                                showSearchBox: true,
+                                                                                // constraints: BoxConstraints(
+                                                                                //   maxHeight: 300,
+                                                                                // )
+                                                                                ),
+                                                                            asyncItems: (String filter) => api.getSalesListData(
+                                                                                filter,
+                                                                                'sales_list/location'),
+                                                                            dropdownDecoratorProps:
+                                                                                const DropDownDecoratorProps(
+                                                                              dropdownSearchDecoration:
+                                                                                  InputDecoration(
+                                                                                                           contentPadding: EdgeInsets.symmetric(
+                                                                                            horizontal: 4,
+                                                                                            vertical: 8
+                                                                                            ),
+                                                                                border: OutlineInputBorder(),
+                                                                              ),
+                                                                            ),
+                                                                            onChanged:
+                                                                                (dynamic data) {
+                                                                              locationId =
+                                                                                  data;
+                                                                            },
+                                                                          ),
+                                                                          headTxt:
+                                                                              'Select Branch'),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        height: 10,
                                                                       ),
                                                                                TextButton(
                                                                       onPressed:
@@ -4187,7 +4480,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                 ),
                                                               )
                                                             
-                                                            : Container(
+                                                              : Container(
                                                                 padding: const EdgeInsets
                                                                     .symmetric(
                                                                     horizontal:
@@ -4314,11 +4607,12 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                                         widget: DropdownSearch<
                                                                             dynamic>(
                                                                           popupProps: const PopupPropsMultiSelection
-                                                                              .modalBottomSheet(
+                                                                              .dialog(
                                                                               showSearchBox: true,
-                                                                              constraints: BoxConstraints(
-                                                                                maxHeight: 300,
-                                                                              )),
+                                                                              // constraints: BoxConstraints(
+                                                                              //   maxHeight: 300,
+                                                                              // )
+                                                                              ),
                                                                           asyncItems: (String filter) => api.getSalesListData(
                                                                               filter,
                                                                               'sales_list/location'),
@@ -4383,7 +4677,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
                                                               );
   }
 
-   var _dropDownValueAcc = '';
+ var _dropDownValueAcc = '';
   widgetAccount() {
     return Container(
       // height: 35,
@@ -4397,7 +4691,7 @@ var _ledger, _id, locationId, _dropDownBranchId;
           hint: Center(
             child: Text(
               _dropDownValueAcc.isNotEmpty
-                  ? _dropDownValueAcc.split('-')[1]
+                  ? _dropDownValueAcc.split('-')[1]      
                   : 'Select Account',
               style: const TextStyle(
               fontFamily: 'poppins', 
@@ -4434,7 +4728,6 @@ var _ledger, _id, locationId, _dropDownBranchId;
       ),
     );
   }
-
 
   _listItem(index) {
     return Container(

@@ -128,6 +128,8 @@ dependencies:
   file_saver: ^0.2.6
   universal_html: ^2.2.4
   gallery_saver: ^2.3.2
+  flutter_web_bluetooth: ^1.1.0
+  esc_pos_utils_plus: ^2.0.1+6
  
 
 dev_dependencies:

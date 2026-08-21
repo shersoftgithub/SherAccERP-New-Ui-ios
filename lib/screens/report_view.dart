@@ -73,6 +73,7 @@ class _ReportViewState extends State<ReportView> {
   final controller = ScrollController();
   double offset = 0;
   bool fullLedgerReprt = false;
+  bool cardWIseLedger = false;
   var _data;
   List<dynamic> location = [
     {'id': 0}
@@ -129,6 +130,7 @@ class _ReportViewState extends State<ReportView> {
         : widget.statement; //'ReceivblesDebitOnly';
     api.getReportDesignByName(form).then((value) => reportDesign = value);
     fullLedgerReprt = ComSettings.appSettings('bool', 'key-ledger-report-all', false);
+    cardWIseLedger = ComSettings.appSettings('bool', 'key-ledger-report-card', false);
   }
 
   @override
@@ -470,7 +472,7 @@ class _ReportViewState extends State<ReportView> {
                                                                               'Payable' ||
                                                                           widget.type ==
                                                                               'Receivable'
-                                                                      ? reportView()
+                                                                      ? reportViewReceivablePayable()
                                                                       : widget.type == 'PaymentList' ||
                                                                               widget.type == 'ReceiptList' ||
                                                                               widget.type == 'JournalList'
@@ -678,6 +680,358 @@ class _ReportViewState extends State<ReportView> {
         showEditPurchaseDialog(context, int.tryParse(values['EntryNo']?.toString() ?? '0') ?? 0,voucher);
       }  
   }
+}
+
+Widget _ledgerCard(Map<String, dynamic> row, int index) {
+  String date = row['Date']?.toString() ?? '';
+  String particulars = row['Particulars']?.toString() ?? '';
+  String voucher = row['Voucher']?.toString() ?? '';
+  String debit = row['Debit']?.toString() ?? '';
+  String credit = row['Credit']?.toString() ?? '';
+  String balance = row['Balance']?.toString() ?? '';
+  String entryNo = row['EntryNo']?.toString() ?? '';
+  String narration = row['Narration']?.toString() ?? '';
+
+  if (debit.contains('===') || credit.contains('===') || 
+      particulars.contains('===') || date.contains('===') || particulars.isEmpty) {
+    return const SizedBox.shrink();
+  }
+
+  bool isOpeningBalance = particulars.toLowerCase().contains('opening balance');
+  bool isClosingBalance = particulars.toLowerCase().contains('closing balance');
+  bool isSpecialEntry = isOpeningBalance || isClosingBalance;
+
+  String amount = '';
+  String amountType = '';
+  Color amountColor = Colors.black;
+  
+  if (debit.isNotEmpty && debit != '0.00' && debit != '0') {
+    amount = debit;
+    amountType = 'Dr';
+    // amountColor = Colors.red;
+  } else if (credit.isNotEmpty && credit != '0.00' && credit != '0') {
+    amount = credit;
+    amountType = 'Cr';
+    // amountColor = Colors.green;
+  }
+
+  String balanceDisplay = '';
+  if (balance.isNotEmpty && !balance.contains('===')) {
+    if (balance.toLowerCase().contains('dr')) {
+      balanceDisplay = balance;
+    } else if (balance.toLowerCase().contains('cr')) {
+      balanceDisplay = balance;
+    } else if (balance.isNotEmpty && balance != '0.00' && balance != '0') {
+      bool isBalanceDebit = debit.isNotEmpty && debit != '0.00';
+      balanceDisplay = '$balance ${isBalanceDebit ? 'Dr' : 'Cr'}';
+    }
+  }
+
+  return GestureDetector(
+    onDoubleTap: () {
+       if(companyUserData!.userType == 'Admin'){
+        _handleEntryNoTap(
+            row, context, index);
+      }
+    },
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Container(
+         decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: white,
+              ),
+        padding: const EdgeInsets.all(12),      
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (date.isNotEmpty || voucher.isNotEmpty)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  '${_formatDate(date)}${voucher.isNotEmpty ? ' · $voucher' : ''} ${entryNo.isNotEmpty ? '#$entryNo' : ''}',
+                  style: TextStyle(
+                    // fontSize: 12,
+                    color: Colors.grey.shade500,
+                    // fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
+                    isSpecialEntry ? particulars : (particulars.isNotEmpty ? particulars : '—'),
+                    style: TextStyle(
+                      fontWeight: isSpecialEntry ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 15,
+                      color:
+                      // isOpeningBalance ? Colors.blue : 
+                      //        isClosingBalance ? kPrimaryColor : 
+                             Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (amount.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    child: Text(
+                      '${_formatAmount(amount)} $amountType',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        color: amountColor,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          
+            if (balanceDisplay.isNotEmpty)
+              if(!isOpeningBalance)
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                alignment: Alignment.centerRight,
+                child: Text(
+                  balanceDisplay,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ),
+    
+            if(widget.statement == 'Ledger_Report_Qty')
+             ...row.entries
+                .where((entry) =>
+                    entry.value != null &&
+                    entry.value.toString().trim().isNotEmpty &&
+                    !entry.value.toString().contains('===') &&
+                    !_isMainField(entry.key))
+                .map((entry) {
+              return Container(
+                margin: const EdgeInsets.only(top: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '${entry.key}:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        entry.value.toString(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+            if(widget.statement != 'Ledger_Report_Qty')
+            if(narration.isNotEmpty)
+               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                  Divider(
+                    thickness: 0.2,
+                    color: Colors.grey.shade400,
+                  ),
+                   Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      narration,
+                       style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade400,
+                        // fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                               ),
+                 ],
+               )
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+String _formatDate(String date) {
+  if (date.isEmpty) return '';
+  try {
+    if (date.contains('/')) {
+      List parts = date.split('/');
+      if (parts.length == 3) {
+        String day = parts[0];
+        String month = _getMonthAbbreviation(int.parse(parts[1]));
+        String year = parts[2].substring(parts[2].length - 2);
+        return '$day/$month/$year';
+      }
+    }
+    return date;
+  } catch (e) {
+    return date;
+  }
+}
+
+String _getMonthAbbreviation(int month) {
+  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  return months[month - 1];
+}
+
+String _formatAmount(String amount) {
+  try {
+    double value = double.parse(amount);
+    if (value == value.floor()) {
+      return value.toStringAsFixed(0);
+    } else {
+      return value.toStringAsFixed(2);
+    }
+  } catch (e) {
+    return amount;
+  }
+}
+
+bool _isMainField(String key) {
+  return key == 'Date' ||
+      key == 'Particulars' ||
+      key == 'Voucher' ||
+      key == 'EntryNo' ||
+      key == 'Debit' ||
+      key == 'Credit' ||
+      key == 'Balance';
+}
+
+Widget cardView(double totalAmount, String closingBalance) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+         Center(
+          child: Text(widget.name +
+              ' Date : From ' +
+              DateUtil.dateDMY(widget.sDate) +
+              ' To ' +
+              DateUtil.dateDMY(widget.eDate)),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: white,
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Total Amount',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '₹ ${_formatAmount(totalAmount.toString())}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: white,
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Closing balance',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      closingBalance.isNotEmpty ? closingBalance : '0.00',
+                      style: const TextStyle(
+                        // fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        // color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget headerSection(List<dynamic> data) {
+  double totalAmount = 0.0;
+  String closingBalance = '';
+
+  for (var row in data) {
+    String debit = row['Debit']?.toString() ?? '';
+    String credit = row['Credit']?.toString() ?? '';
+
+    if (row['Particulars'] == "Closing Balance") {
+      if (debit.isNotEmpty && debit != '0.00') {
+        closingBalance = '$debit Dr';
+      } else {
+        closingBalance = '$credit Cr';
+      }
+    } else if(row['Particulars'] == ''){
+      if (debit.isNotEmpty && debit != '0.00') {
+        totalAmount += double.tryParse(debit) ?? 0.0;
+      }
+      if (credit.isNotEmpty && credit != '0.00') {
+        totalAmount += double.tryParse(credit) ?? 0.0;
+      }
+    }
+  }
+
+  return cardView(totalAmount, closingBalance);
 }
 
 
@@ -1512,6 +1866,629 @@ class _ReportViewState extends State<ReportView> {
     //   },
     // ),
   }
+  
+  reportViewReceivablePayable() {
+    if (widget.type != 'ledger') {
+      classic = true;
+    } else {
+      if (MediaQuery.of(context).orientation == Orientation.landscape) {
+        classic = true;
+      } else if(fullLedgerReprt){
+        classic = true;
+      } else{
+        classic = false;
+      }
+    }
+
+project = [
+  {'id': widget.partyId}
+];
+
+var dataJson = '[' +
+    json.encode({
+      'statementType': widget.statement.isEmpty ? '' : widget.statement,
+      'sDate': widget.sDate.isEmpty ? '' : widget.sDate,
+      'eDate': widget.eDate.isEmpty ? '' : widget.eDate,
+      'id': widget.id ?? '',
+      'Check_openingbalance': widget.ob ?? 0,
+      'location': jsonEncode(location),
+      'project': jsonEncode(project),
+      'salesMan': int.tryParse(widget.salesMan) ?? 0,
+      'fyId': currentFinancialYear!.id,
+      'partyId': widget.partyId
+    }) +
+    ']';
+    debugPrint('reportView dataJson: $dataJson');
+return FutureBuilder<List<dynamic>>(
+  future: api.fetchLedgerReport(dataJson),
+  builder: (ctx, snapshot) {
+    if (snapshot.hasData) {
+      if (snapshot.data!.isNotEmpty) {
+        var data = snapshot.data;
+        bool totalIsIn = false;
+        if (widget.statement == 'Ledger_Report_Qty') {
+          var filterItems = data;
+          for (ReportDesign design in reportDesignList!) {
+            if (!design.visibility) {
+              for (var item in filterItems!) {
+                item.remove(design.caption.trim());
+              }
+            }
+          }
+          // Map<String, dynamic> singleItem = {"type": "P"};
+          // filterItems.removeWhere(
+          //     (element) => element.keys. =>  == singleItem.keys.first);
+          data = filterItems;
+        } else {
+          var filterItems = data;
+          for (ReportDesign design in reportDesign!) {
+            if (!design.visibility) {
+              for (var item in filterItems!) {
+                item.remove(design.caption.replaceAll(' ', '').trim());
+              }
+            }
+          }
+        }
+        tableColumn = data![0].keys.toList();
+        if (widget.statement == 'ReceiptWiseCustomerbalance' ||
+            widget.statement == 'PaymentWiseSupplierbalance') {
+          data = sortReceiptPaymentReport(data);
+        }
+        if (widget.type == 'Invoice Wise Balance Customers' ||
+            widget.type == 'Invoice Wise Balance Suppliers' ||
+            widget.type == 'Payable' ||
+            widget.type == 'Receivable') {
+          Map<String, dynamic> totalData = {};
+          for (int i = 0; i < tableColumn.length; i++) {
+            var cell = '';
+            if (tableColumn[i].toLowerCase() == ('debit') ||
+                tableColumn[i].toLowerCase() == ('opbalance') ||
+                tableColumn[i].toLowerCase() == ('credit') ||
+                tableColumn[i].toLowerCase() == ('balance') ||
+                tableColumn[i].toLowerCase() == ('amount') ||
+                tableColumn[i].toLowerCase() == ('total')) {
+              cell = data
+                  .fold(
+                      0.0,
+                      (a, b) =>
+                          a +
+                          (double.tryParse(b[tableColumn[i]].toString()) ??
+                              0))
+                  .toStringAsFixed(2);
+            }
+            if (i == 0) {
+              cell = 'Total';
+            }
+            totalData[tableColumn[i]] = cell;
+          }
+          if (totalData.isNotEmpty & !totalIsIn) {
+            data.add(totalData);
+            totalIsIn = true;
+          }
+          _data = data;
+        } else {
+          _data = data;
+        }
+        return cardWIseLedger
+        ? Column(
+          children: [
+            headerSection(data),
+            Expanded(
+              child: ListView.separated(
+                controller: controller,
+                itemCount: data!.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 4),
+                itemBuilder: (context, index) {
+                  final row = data![index];
+                  return _ledgerCard(row, index);
+                },
+              ),
+            ),
+          ],
+        )
+        : classic
+            ? Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                controller: controller,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(widget.name +
+                          ' Date : From ' +
+                          DateUtil.dateDMY(widget.sDate) +
+                          ' To ' +
+                          DateUtil.dateDMY(widget.eDate)),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: MaterialStateColor.resolveWith(
+                            (states) => kPrimaryColor),
+                        border: TableBorder.all(width: 1.0, color: grey),
+                        dataRowHeight: 22,
+                        headingRowHeight: 30,
+                        columns: [
+                          for (int i = 0; i < tableColumn.length; i++)
+                            DataColumn(
+                              label: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  tableColumn[i],
+                                  style: const TextStyle(
+                                      color: white, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                        rows: data
+                            .asMap()
+                            .entries
+                            .map(
+                              (entry) {
+                                final index = entry.key;
+                                final values = entry.value;
+                                return DataRow(
+                                  cells: [
+                                    for (int i = 0; i < values.length; i++)
+                                      tableColumn[i] == 'EntryNo'
+                                          ? DataCell(
+                                              GestureDetector(
+                                                onDoubleTap: () {
+                                                  if(companyUserData!.userType == 'Admin'){
+                                                  _handleEntryNoTap(
+                                                      values, context, index);
+                                                }
+                                                },
+                                                // onLongPress: () {
+                                                //  if(companyUserData!.userType == 'Admin'){
+                                                //    _handleEntryNoTap(
+                                                //       values, context, index);
+                                                //  }
+                                                // },
+                                                child: Align(
+                                                  alignment: ComSettings.oKNumeric(
+                                                    values[tableColumn[i]] != null
+                                                        ? values[tableColumn[i]].toString()
+                                                        : '',
+                                                  )
+                                                      ? Alignment.centerRight
+                                                      : Alignment.centerLeft,
+                                                      // child: Text(
+                                                      //   tableColumn[i] == 'Narration'
+                                                      //       ? splitNarration(values[tableColumn[i]]?.toString() ?? '')
+                                                      //       : (values[tableColumn[i]]?.toString() ?? ''),
+                                                      //   softWrap: true,
+                                                      //   overflow: TextOverflow.visible,
+                                                      // ),
+                                                  child: Text(
+                                                    values[tableColumn[i]] != null
+                                                        ? values[tableColumn[i]].toString()
+                                                        : '',
+                                                    softWrap: true,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : DataCell(
+                                              Align(
+                                                alignment: ComSettings.oKNumeric(
+                                                  values[tableColumn[i]] != null
+                                                      ? values[tableColumn[i]].toString()
+                                                      : '',
+                                                )
+                                                    ? Alignment.centerRight
+                                                    : Alignment.centerLeft,
+                                                    // child: Text(
+                                                    //     tableColumn[i] == 'Narration'
+                                                    //         ? splitNarration(values[tableColumn[i]]?.toString() ?? '')
+                                                    //         : (values[tableColumn[i]]?.toString() ?? ''),
+                                                    //     softWrap: true,
+                                                    //     overflow: TextOverflow.visible,
+                                                    //   ),
+                                                child: Text(
+                                                  values[tableColumn[i]] != null
+                                                      ? values[tableColumn[i]].toString()
+                                                      : '',
+                                                  softWrap: true,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                  ],
+                                );
+                              },
+                            )
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ) : Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RepaintBoundary(
+                  key: _globalKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                              Text(
+                              widget.statement == "Ledger_Report" || widget.statement == "Ledger_Report_Qty" 
+                              ? 'LEDGER REPORT'
+                              : "ACCOUNT SUMMARY",
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              widget.name,
+                              style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "From  ${DateUtil.dateDMY(widget.sDate)}",
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(
+                                  width: 15,
+                                ),
+                                Text(
+                                  "To  ${DateUtil.dateDMY(widget.eDate)}",
+                                  style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 0,
+                        ),
+                        const Divider(
+                          color: kPrimaryColor,
+                        ),
+                        Container(
+                          height: 20,
+                          color: kPrimaryColor,
+                          child: Table(
+                            columnWidths: const {
+                              0: FixedColumnWidth(45),
+                              1: FlexColumnWidth(15),
+                              2: FlexColumnWidth(8),
+                              3: FlexColumnWidth(9),
+                              4: FlexColumnWidth(8),
+                            },
+                            children: const [
+                              TableRow(children: [
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children:  [
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      '  Date',
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children:  [
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      '  Description',
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children:  [
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      'Debit',
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children:  [
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      'Credit',
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  children:  [
+                                    SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text(
+                                      "Balanace",
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                            ],
+                            border: TableBorder.all(
+                                width: 1, color: kPrimaryColor),
+                          ),
+                        ),
+                        Table(
+                          columnWidths: const {
+                            0: FixedColumnWidth(45),
+                            1: FlexColumnWidth(15),
+                            2: FlexColumnWidth(8),
+                            3: FlexColumnWidth(9),
+                            4: FlexColumnWidth(8),
+                          },
+                          children: [
+                            for (var i = 0; i < data.length; i++)
+                              TableRow(children: [
+                                Center(
+                                    child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        // '10/20/2020',
+                                        '${data[i]['Date']}',
+
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+
+                                )),
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Text(  
+                                    '${data[i]['Particulars']}',
+                                    style: const TextStyle(
+                                        fontSize: 6,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '${data[i]['Debit']?? ''}',
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '${data[i]['Credit'] ?? ''}',
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: Text(
+                                        "${data[i]['Balance'] ?? ''}",
+                                        style: const TextStyle(
+                                            fontSize: 6,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                          ],
+                          border:
+                              TableBorder.all(width: .4, color: kPrimaryColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+      } else {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [SizedBox(height: 20), Text('No Data Found..')],
+          ),
+        );
+      }
+    } else if (snapshot.hasError) {
+      return AlertDialog(
+        title: const Text(
+          'An Error Occurred!',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.redAccent,
+          ),
+        ),
+        content: Text(
+          "${snapshot.error}",
+          style: const TextStyle(
+            color: Colors.blueAccent,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text(
+              'Go Back',
+              style: TextStyle(
+                color: Colors.redAccent,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    }
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const <Widget>[
+          CircularProgressIndicator(),
+          SizedBox(height: 20),
+          Text('This may take some time..')
+        ],
+      ),
+    );
+  },
+);
+}
+
+
+  List<dynamic> sortReceiptPaymentReport(List<dynamic> data) {
+    Map<String, List<dynamic>> customerMap = {};
+
+    for (var item in data) {
+      String customer = '';
+
+      if (item.containsKey('Customer')) {
+        customer = item['Customer']?.toString() ?? '';
+      } else if (item.containsKey('Particulars')) {
+        customer = item['Particulars']?.toString() ?? '';
+      }
+
+      customer = customer.trim();
+
+      if (!customerMap.containsKey(customer)) {
+        customerMap[customer] = [];
+      }
+
+      customerMap[customer]!.add(item);
+    }
+
+    List<dynamic> finalList = [];
+
+    customerMap.forEach((customer, items) {
+      List<dynamic> opening = [];
+      List<dynamic> transactions = [];
+      List<dynamic> pending = [];
+      List<dynamic> total = [];
+      List<dynamic> others = [];
+
+      for (var row in items) {
+        String entryNo =
+            (row['EntryNo'] ?? '').toString().trim().toLowerCase();
+
+        if (entryNo.contains('opening')) {
+          opening.add(row);
+        }
+
+        else if (entryNo.contains('pending')) {
+          pending.add(row);
+        }
+
+        else if (entryNo.contains('total')) {
+          total.add(row);
+        }
+
+        else if (entryNo.contains('sales') ||
+            entryNo.contains('purchase') ||
+            entryNo.contains('receipt') ||
+            entryNo.contains('payment') ||
+            entryNo.contains('sales-bc')) {
+          transactions.add(row);
+        } else {
+          others.add(row);
+        }
+      }
+
+      transactions.sort((a, b) {
+        DateTime dateA = DateTime.tryParse(
+                a['SalesDate']?.toString() ??
+                    a['Date']?.toString() ??
+                    '') ??
+            DateTime(2000);
+
+        DateTime dateB = DateTime.tryParse(
+                b['SalesDate']?.toString() ??
+                    b['Date']?.toString() ??
+                    '') ??
+            DateTime(2000);
+
+        return dateA.compareTo(dateB);
+      });
+
+      finalList.addAll(opening);
+      finalList.addAll(transactions);
+      finalList.addAll(others);
+      finalList.addAll(pending);
+      finalList.addAll(total);
+    });
+
+    return finalList;
+  }
+
 
   reportViewFundFlow() {
     var dataJson = '[' +

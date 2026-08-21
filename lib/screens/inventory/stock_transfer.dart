@@ -3062,16 +3062,16 @@ class _StockTransferState extends State<StockTransfer>
 
   Widget _buildBody() {
     switch (_screen) {
-      case 0: return _buildListScreen();
-      case 1: return _buildCartScreen();
-      case 2: return _buildProductPicker();
-      case 3: return _buildItemDetailScreen();
+      case 0: return listScreen();
+      case 1: return cartScreen();
+      case 2: return productPicker();
+      case 3: return itemDetailScreen();
       default: return const SizedBox.shrink();
     }
   }
 
 
-  Widget _buildListScreen() {
+  Widget listScreen() {
     if (dataDisplay.isEmpty && isLoadingData) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -3158,16 +3158,16 @@ class _StockTransferState extends State<StockTransfer>
   }
 
 
-  Widget _buildCartScreen() {
+  Widget cartScreen() {
     _calcTotal();
     return Column(children: [
-      _buildTransferHeader(),
-      Expanded(child: cartItem.isEmpty ? _emptyCart() : _buildCartList()),
-      _buildCartFooter(),
+      transferHeader(),
+      Expanded(child: cartItem.isEmpty ? _emptyCart() : cartList()),
+      cartFooter(),
     ]);
   }
 
-  Widget _buildTransferHeader() {
+  Widget transferHeader() {
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -3267,13 +3267,13 @@ class _StockTransferState extends State<StockTransfer>
         style: TextStyle(fontFamily: 'poppins', color: Colors.grey.shade400, fontSize: 15)),
   ]));
 
-  Widget _buildCartList() => ListView.builder(
+  Widget cartList() => ListView.builder(
     padding: const EdgeInsets.symmetric(horizontal: 16),
     itemCount: cartItem.length,
-    itemBuilder: (_, i) => _buildCartRow(i),
+    itemBuilder: (_, i) => cartRow(i),
   );
 
-  Widget _buildCartRow(int index) {
+  Widget cartRow(int index) {
     final ci = cartItem[index];
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -3351,7 +3351,7 @@ class _StockTransferState extends State<StockTransfer>
     );
   }
 
-  Widget _buildCartFooter() {
+  Widget cartFooter() {
     _calcTotal();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -3372,8 +3372,7 @@ class _StockTransferState extends State<StockTransfer>
     );
   }
 
-
-  Widget _buildProductPicker() {
+  Widget productPicker() {
     if (_itemDataFromLocation != locationFromId) {
       _itemDataLoaded = false;
       _allItems = [];
@@ -3508,10 +3507,9 @@ class _StockTransferState extends State<StockTransfer>
     });
   }
 
-
-  Widget _buildItemDetailScreen() {
+  Widget itemDetailScreen() {
     if (productModel?.hasVariant == true && !editItem && _selectedProduct == null) {
-      return _buildVariantPicker();
+      return variantPicker();
     }
 
     if (_selectedProduct == null) {
@@ -3532,7 +3530,7 @@ class _StockTransferState extends State<StockTransfer>
     );
   }
 
-  Widget _buildVariantPicker() {
+  Widget variantPicker() {
     return FutureBuilder<List<StockProduct>>(
       future: dio.fetchStockVariant(productModel!.id!, taxGroupUpdate, 0),
       builder: (_, snap) {

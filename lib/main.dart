@@ -37,6 +37,7 @@ import 'package:sheraccerp/screens/inventory/jobcard/Replacement/jobcardreplacem
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/Job_card_home.dart';
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/job_card_entry.dart';
 import 'package:sheraccerp/screens/inventory/jobcard/jobcardentry/jobcardmenu.dart';
+import 'package:sheraccerp/screens/inventory/sales/profit_and_loss.dart';
 import 'package:sheraccerp/screens/inventory/sales/sales_list_calendar_view.dart';
 import 'package:sheraccerp/screens/inventory/serial_no_list.dart';
 import 'package:sheraccerp/screens/inventory/warranty/warranty_page.dart';
@@ -303,6 +304,8 @@ class MyApp extends StatelessWidget {
               '/rvpvList': (context) => const RvPvList(),
               '/salesDeliveryReport': (context) =>
                   const DeliveryReportWrapper(),
+              '/profitandlossstatement': (context) =>
+                  const ProfitAndLossStatement(),    
               '/SalesListcalendarView': (context) => const SalesListCalendarView(),    
               // '/Visitlist': (context) =>  const VisitListHomepage(),
               // '/purchasePreviewShow': (context) => const PurchasePreviewShow(),
